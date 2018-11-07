@@ -10,7 +10,7 @@ function ExportPlatformingVariables takes Platformer p returns nothing
     call DisplayTextToForce(bj_FORCE_PLAYER[p.PID], "[msoff] Move Speed's Offset Effect against cur Velocity: " + R2S(p.MoveSpeedVelOffset))
     call DisplayTextToForce(bj_FORCE_PLAYER[p.PID], "[ga] Gravitational Acceleration: " + R2S(p.GravitationalAccel / PlatformerGlobals_GAMELOOP_TIMESTEP))
     call DisplayTextToForce(bj_FORCE_PLAYER[p.PID], "[vj] Vertical Jump: " + R2S(p.vJumpSpeed / PlatformerGlobals_GAMELOOP_TIMESTEP))
-    call DisplayTextToForce(bj_FORCE_PLAYER[p.PID], "[v2h] Vertical 2 Horizontal Jump: " + R2S(p.v2hJumpRatio / PlatformerGlobals_GAMELOOP_TIMESTEP))
+    call DisplayTextToForce(bj_FORCE_PLAYER[p.PID], "[v2h] Vertical 2 Horizontal Jump: " + R2S(p.v2hJumpRatio))
     call DisplayTextToForce(bj_FORCE_PLAYER[p.PID], "[hj] Horizontal Jump: " + R2S(p.hJumpSpeed / PlatformerGlobals_GAMELOOP_TIMESTEP))
     call DisplayTextToForce(bj_FORCE_PLAYER[p.PID], "[om] Ocean Motion: " + R2S(PlatformerOcean_OCEAN_MOTION / PlatformerOcean_TIMESTEP))
     call DisplayTextToForce(bj_FORCE_PLAYER[p.PID], "[ovj] Ocean Jump Height: " + R2S(JUMPHEIGHTINOCEAN / PlatformerGlobals_GAMELOOP_TIMESTEP))

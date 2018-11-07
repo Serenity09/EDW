@@ -2,11 +2,11 @@ library PlatformerProfile initializer Init requires PlatformerGlobals
     globals        
         public constant integer             DefaultProfileID = 1
         public constant integer             CrazyIceProfileID = 2
-	public constant integer		    MoonProfileID = 3
+        public constant integer		    MoonProfileID = 3
         
         private constant integer   vJUMPSPEED      = 715      //default vertical jump speed
-        private constant integer   hJUMPSPEED      = 715      //default horizontal jump speed
-        private constant real   v2hJUMPSPEED    = .75000      //vWALLJUMP * vJUMPSPEED = vTOTALJUMPHEIGHT for wall jumps
+        private constant integer   hJUMPSPEED      = 785      //default horizontal jump speed
+        private constant real   v2hJUMPSPEED       = .8000       //vWALLJUMP * vJUMPSPEED = vTOTALJUMPHEIGHT for wall jumps
         private constant integer   xFALLOFF        = 45       //linear rate horizontal speed falls off
         private constant integer   yFALLOFF        = 30       //linear rate vertical speed falls off
         private constant integer   XTERMINAL       = 350      //default cap before x velocity starts falling off much faster
