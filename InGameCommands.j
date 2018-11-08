@@ -79,6 +79,20 @@ function PrintMemoryAnalysis takes integer pID returns nothing
     debug call DisplayTextToForce(bj_FORCE_PLAYER[pID], "IndexedUnit_AutoId: " + I2S(IndexedUnit_GetAutoId()))
     debug call DisplayTextToForce(bj_FORCE_PLAYER[pID], "IndexedUnit_RecycleCount: " + I2S(IndexedUnit_GetRecycleCount()))
 endfunction
+
+function DistanceCallback takes nothing returns nothing
+    local unit selectedUnit = GetEnumUnit()
+    local integer pID = GetPlayerId(GetTriggerPlayer())
+    local unit playerUnit = User(pID).ActiveUnit
+    local real x = GetUnitX(selectedUnit) - GetUnitX(playerUnit)
+    local real y = GetUnitY(selectedUnit) - GetUnitY(playerUnit)
+    
+    call DisplayTextToForce(bj_FORCE_PLAYER[pID], "Distance: " + R2S(SquareRoot(x*x + y*y)))
+    
+    set selectedUnit = null
+    set playerUnit = null
+endfunction
+
 /*
 function ProfileChange takes nothing returns nothing
     local string msg = GetEventPlayerChatString()
@@ -158,6 +172,7 @@ function Trig_InGamePlatformingChanges_Actions takes nothing returns nothing
     local User u = User(pID)
     local Platformer p = u.Platformer
     local Teams_MazingTeam team = User(pID).Team
+    local group unitgroup
     
     //debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "msg: " + msg)
     
@@ -208,7 +223,10 @@ function Trig_InGamePlatformingChanges_Actions takes nothing returns nothing
 		set PlatformerIce_SLOW_VELOCITY = val
 	elseif cmd == "ifs" then
 		set PlatformerIce_FAST_VELOCITY = val
-		
+    elseif cmd == "distance" or cmd == "dist" then
+        set unitgroup = CreateGroup()
+        call GroupEnumUnitsSelected(unitgroup, Player(pID), null)
+        call ForGroup(unitgroup, function DistanceCallback)
 	elseif cmd == "level" or cmd == "lvl" then
 		if Levels_Levels[intVal] != null then
 			call Levels_Levels[team.OnLevel].SwitchLevels(team, Levels_Levels[intVal])

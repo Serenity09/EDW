@@ -24,7 +24,7 @@ globals
     private constant real   hJUMPCUTOFF     = 1.0       //if less than this value, set to 0
     private constant real   INSTANT_MS      = 1.25       //.MoveSpeed * INSTANT_MS = the amount offset immediately on left/right key press -- higher = more reactive
     
-    private constant boolean DEBUG_GAMEMODE = true
+    private constant boolean DEBUG_GAMEMODE = false
     
     private constant boolean DEBUG_VELOCITY = false
     private constant boolean DEBUG_VELOCITY_TERRAIN = false

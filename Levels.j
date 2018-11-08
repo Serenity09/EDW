@@ -104,10 +104,11 @@ library Levels initializer Init requires ListModule, Teams, GameModesGlobals, IS
         public rect        Vision          //the bounds placed on a player's vision
         //readonly rect        CPToHere        //the checkpoint that triggers this level
         public static trigger CPToHereTrigger = CreateTrigger()
-        readonly region array CPGates[4]     //entering this region triggers the CP update action
-        readonly rect array  CPCenters[4]    //where to refocus the revive rect to
-        public integer array CPColors[4]   //what color key should be applied (if any) after transfering
-        public integer array CPDefaultGameModes[4]  //
+        readonly region array CPGates[8]     //entering this region triggers the CP update action
+        readonly rect array  CPCenters[8]    //where to refocus the revive rect to
+        public integer array CPColors[8]   //what color key should be applied (if any) after transfering
+        public integer array CPDefaultGameModes[8]  //
+        public boolean array CPRequiresLastCP[8] //can the unit activate this checkpoint at any moment, allowing skill skips, or is it too abusable for this cp and it's easiest to require that they've gotten the last CP already
         private string  TeamStartCB
         private string  TeamStopCB
         readonly static Teams_MazingTeam CBTeam
@@ -278,8 +279,8 @@ library Levels initializer Init requires ListModule, Teams, GameModesGlobals, IS
             if mt != 0 then
                 loop
                     if (r == level.CPGates[cur]) then
-                        //call DisplayTextToForce(bj_FORCE_PLAYER[0], "On checkpoint " + I2S(cur))
-                        if cur > mt.OnCheckpoint then //alternatively cur == mt.OnCheckpoint + 1 if want to ensure no skipping in level                            
+                        //call DisplayTextToForce(bj_FORCE_PLAYER[0], "Mathched checkpoint " + I2S(cur) + ", team on: " + I2S(mt.OnCheckpoint))
+                        if cur > mt.OnCheckpoint and (not level.CPRequiresLastCP[cur] or mt.OnCheckpoint + 1 == cur) then //alternatively cur == mt.OnCheckpoint + 1 if want to ensure no skipping in level                            
                             call level.SetCheckpointForTeam(mt, cur)
                             
                             call CPEffect(i)
@@ -297,19 +298,19 @@ library Levels initializer Init requires ListModule, Teams, GameModesGlobals, IS
                 
         public method AddCheckpoint takes rect gate, rect center returns integer
             local integer cpID = .CPCount
-            //if .CPCount == 0 then
-                //set .CPTrigger = CreateTrigger()
-                //call TriggerAddAction(.CPTrigger, function Levels_Level.EntersCheckpoint)
-            //endif            
             set .CPCenters[cpID] = center
-            set .CPGates[cpID] = CreateRegion()
-            set .CPColors[cpID] = KEY_NONE //by default no color
-            set .CPDefaultGameModes[cpID] = Teams_GAMEMODE_STANDARD
             
+            //TODO handle Checkpoint and level transfer logic via custom rect iterator, which only iterates the active levels instead of all available
+            set .CPGates[cpID] = CreateRegion()
             if gate != null then
                 call RegionAddRect(.CPGates[cpID], gate)
                 call TriggerRegisterEnterRegion(.CPTrigger, .CPGates[cpID], PlayerOwned)
             endif
+            
+            //set defaults
+            set .CPColors[cpID] = KEY_NONE //by default no color
+            set .CPDefaultGameModes[cpID] = Teams_GAMEMODE_STANDARD
+            set .CPRequiresLastCP[cpID] = false
             
             set .CPCount = .CPCount + 1
             

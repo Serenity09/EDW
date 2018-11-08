@@ -257,12 +257,13 @@ library GameStart initializer Init requires Levels, EDWVisualVote, UnitGlobals, 
         
         //LEVEL 2
         set l = Levels_Level.create(16, "PW2Start", "PW2Stop", gg_rct_PWR_2_1, gg_rct_PW2_Vision, gg_rct_PW1_End, l) //gg_rct_PW1_Vision
-        set cpID = l.AddCheckpoint(gg_rct_PWCP_2_1, gg_rct_PWR_2_2)
+        //set cpID = l.AddCheckpoint(gg_rct_PWCP_2_1, gg_rct_PWR_2_2)
         set cpID = l.AddCheckpoint(gg_rct_PWCP_2_2, gg_rct_PWR_2_3)
         set cpID = l.AddCheckpoint(gg_rct_PWCP_2_3, gg_rct_PWR_2_4)
         set l.CPDefaultGameModes[cpID] = Teams_GAMEMODE_PLATFORMING
         set cpID = l.AddCheckpoint(gg_rct_PWCP_2_4, gg_rct_PWR_2_5)
         set l.CPDefaultGameModes[cpID] = Teams_GAMEMODE_PLATFORMING
+        set l.CPRequiresLastCP[cpID] = true
                 
         set startables = SimpleList_List.create()
         set l.Content.Startables = startables
