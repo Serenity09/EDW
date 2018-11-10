@@ -80,6 +80,16 @@ function PrintMemoryAnalysis takes integer pID returns nothing
     debug call DisplayTextToForce(bj_FORCE_PLAYER[pID], "IndexedUnit_RecycleCount: " + I2S(IndexedUnit_GetRecycleCount()))
 endfunction
 
+function RelayCallback takes nothing returns nothing
+    local unit selectedUnit = GetEnumUnit()
+    local integer pID = GetPlayerId(GetTriggerPlayer())
+    local RelayUnit turnUnitInfo = RelayGenerator.UnitIDToRelayUnitID[GetUnitId(selectedUnit)]
+    
+    call DisplayTextToForce(bj_FORCE_PLAYER[pID], "Lane: " + I2S(turnUnitInfo.LaneNumber))
+    call DisplayTextToForce(bj_FORCE_PLAYER[pID], "Turn center: " + RelayTurn(turnUnitInfo.CurrentTurn.value).Center.toString())
+    call DisplayTextToForce(bj_FORCE_PLAYER[pID], "-----")
+endfunction
+
 function DistanceCallback takes nothing returns nothing
     local unit selectedUnit = GetEnumUnit()
     local integer pID = GetPlayerId(GetTriggerPlayer())
@@ -174,6 +184,7 @@ function Trig_InGamePlatformingChanges_Actions takes nothing returns nothing
     local Teams_MazingTeam team = User(pID).Team
     local group unitgroup
     
+    
     //debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "msg: " + msg)
     
 	//set i equal to the position of first space in message
@@ -227,6 +238,14 @@ function Trig_InGamePlatformingChanges_Actions takes nothing returns nothing
         set unitgroup = CreateGroup()
         call GroupEnumUnitsSelected(unitgroup, Player(pID), null)
         call ForGroup(unitgroup, function DistanceCallback)
+        call DestroyGroup(unitgroup)
+        set unitgroup = null
+    elseif cmd == "debugrelay" or cmd == "dbgrelay" then
+        set unitgroup = CreateGroup()
+        call GroupEnumUnitsSelected(unitgroup, Player(pID), null)
+        call ForGroup(unitgroup, function RelayCallback)
+        call DestroyGroup(unitgroup)
+        set unitgroup = null
 	elseif cmd == "level" or cmd == "lvl" then
 		if Levels_Levels[intVal] != null then
 			call Levels_Levels[team.OnLevel].SwitchLevels(team, Levels_Levels[intVal])

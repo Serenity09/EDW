@@ -155,6 +155,13 @@ private function CollisionMediumIter takes nothing returns nothing
                 set mu = null
                 set cu = null
                 return
+            elseif cuTypeID == ICETROLL and dist < 58 then
+                call CollisionDeathEffect(mu)
+                
+                call User(pID).SwitchGameModesDefaultLocation(Teams_GAMEMODE_DYING)
+                set mu = null
+                set cu = null
+                return
             elseif InWorldPowerup.IsPowerupUnit(cuTypeID) and dist < 65 then
                 set IsNotColliding[pID] = false
                 set LastCollidedUnit[pID] = cu
