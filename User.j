@@ -469,6 +469,12 @@ struct User extends array
         endif
     endmethod
     
+    public method IsActiveUnitInRect takes rect r returns boolean
+        return GetUnitX(.ActiveUnit) >= GetRectMinX(r) and GetUnitX(.ActiveUnit) <= GetRectMaxX(r) and GetUnitY(.ActiveUnit) >= GetRectMinY(r) and GetUnitY(.ActiveUnit) <= GetRectMaxY(r)
+    endmethod
+    public method IsActiveUnitInArea takes vector2 topLeft, vector2 botRight returns boolean
+        return GetUnitX(.ActiveUnit) >= topLeft.x and GetUnitX(.ActiveUnit) <= botRight.x and GetUnitY(.ActiveUnit) >= botRight.y and GetUnitY(.ActiveUnit) <= topLeft.y
+    endmethod
     
     //TODO get rid of PlayerID field entirely
     public static method GetUserFromPlayerID takes integer playerID returns User

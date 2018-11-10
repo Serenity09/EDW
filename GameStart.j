@@ -3,6 +3,12 @@ library GameStart initializer Init requires Levels, EDWVisualVote, UnitGlobals, 
         constant real GAME_INIT_TIME_INITIAL = 0.01 //how long into the game before we start
         //constant real GAME_INIT_TIME_STEP = .5
         public timer GameInitTimer
+        
+        constant string PRIMARY_SPEAKER_NAME = "SARGE"
+        constant string SECONDARY_SPEAKER_NAME = "Cupcake"
+        
+        constant real DEFAULT_SHORT_TEXT_SPEED = 3.0
+        constant real DEFAULT_LONG_TEXT_SPEED = 6.0
     endglobals
     
     private function PlayerInit takes nothing returns nothing
@@ -91,7 +97,11 @@ library GameStart initializer Init requires Levels, EDWVisualVote, UnitGlobals, 
         
         debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "Finished GameStart")
     endfunction
-        
+    
+    private function GetEDWSpeakerMessage takes string speaker, string message returns string
+        return speaker + ": " + message
+    endfunction
+    
     public function Init takes nothing returns nothing
         local Levels_Level l
         local integer cpID
@@ -104,6 +114,9 @@ library GameStart initializer Init requires Levels, EDWVisualVote, UnitGlobals, 
         
         local SimpleGenerator sg
         local RelayGenerator rg
+        
+        local Cinematic cine
+        local CinemaMessage cineMsg
         
         local integer i
         
@@ -130,6 +143,11 @@ library GameStart initializer Init requires Levels, EDWVisualVote, UnitGlobals, 
         call startables.add(boundedSpoke)
         
         set l.Content.Startables = startables
+        
+        set cineMsg = CinemaMessage.create(null, GetEDWSpeakerMessage(PRIMARY_SPEAKER_NAME, "Being on ice makes you go wherever you're facing."), DEFAULT_SHORT_TEXT_SPEED)
+        set cine = Cinematic.create(gg_rct_IceTutorial, false, false, cineMsg)
+        call cine.AddMessage(null, GetEDWSpeakerMessage(PRIMARY_SPEAKER_NAME, "Darker ice makes for faster going."), DEFAULT_SHORT_TEXT_SPEED)
+        call cine.AddMessage(null, GetEDWSpeakerMessage(PRIMARY_SPEAKER_NAME, "Type '-track' or '-t' to keep the camera focused on your hero"), DEFAULT_SHORT_TEXT_SPEED)
         
         //DOORS HARD CODED
         //currently no start or stop logic
@@ -197,14 +215,14 @@ library GameStart initializer Init requires Levels, EDWVisualVote, UnitGlobals, 
         call startables.add(DrunkWalker_DrunkWalkerSpawn.create(gg_rct_IW4_Drunks, 6, 5, LGUARD, 24))
         call startables.add(Blackhole.create(8958, 6400))
         //
-        set rg = RelayGenerator.create(5373, 9984, 3, 270, 0, LGUARD, 2.)
+        set rg = RelayGenerator.create(5373, 9984, 3, 6, 270, 0, LGUARD, 2.)
         call rg.AddTurnSimple(0, 6)
         call rg.AddTurnSimple(90, 0)
         call rg.EndTurns(90)
         
         call startables.add(rg)
         //
-        set rg = RelayGenerator.create(6654, 6528, 3, 90, 7, LGUARD, 1.5)
+        set rg = RelayGenerator.create(6654, 6528, 3, 6, 90, 7, LGUARD, 1.5)
         call rg.AddTurnSimple(180, 7)
         call rg.AddTurnSimple(270, 1)
         call rg.AddTurnSimple(0, 13)
@@ -218,7 +236,7 @@ library GameStart initializer Init requires Levels, EDWVisualVote, UnitGlobals, 
         
         call startables.add(rg)
         //
-        set rg = RelayGenerator.create(3830, 6278, 3, 90, 3, GUARD, 3.)
+        set rg = RelayGenerator.create(3830, 6278, 3, 6, 90, 3, GUARD, 3.)
         call rg.AddTurnSimple(0, 1)
         call rg.AddTurnSimple(270, 3)
         call rg.EndTurns(270)
@@ -282,7 +300,7 @@ library GameStart initializer Init requires Levels, EDWVisualVote, UnitGlobals, 
         call startables.add(DrunkWalker_DrunkWalkerSpawn.create(gg_rct_PW2_Drunks_3, 5, 2.5, LGUARD, 14))
         call startables.add(DrunkWalker_DrunkWalkerSpawn.create(gg_rct_PW2_Drunks_4, 4, 6, LGUARD, 10))
         
-        set rg = RelayGenerator.create(8186, -3191, 3, 0, 0, LGUARD, 2.)
+        set rg = RelayGenerator.create(8186, -3191, 3, 5, 0, 0, ICETROLL, 2.)
         call rg.AddTurnSimple(90, 4)
         call rg.AddTurnSimple(180, 1)
         call rg.AddTurnSimple(270, 0)
@@ -300,7 +318,9 @@ library GameStart initializer Init requires Levels, EDWVisualVote, UnitGlobals, 
         call rg.AddTurnSimple(90, 0)
         call rg.AddTurnSimple(0, 12)
         call rg.EndTurns(0)
-        //call rg.DrawTurns()
+        
+        //call DisplayTextToForce(bj_FORCE_PLAYER[0], "PW2 RG: " + rg.ToString())
+        debug call rg.DrawTurns()
         
         call startables.add(rg)
         

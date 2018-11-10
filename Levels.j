@@ -1,11 +1,13 @@
-library Levels initializer Init requires ListModule, Teams, GameModesGlobals, IStartable
+library Levels initializer Init requires SimpleList, Teams, GameModesGlobals, IStartable
     globals
         public Levels_Level array   Levels[100]                 //an array containing all the levels. the index of the array should match its elements levelnumber
-        public timer                LevelTimer = CreateTimer()
         public constant integer     INTRO_LEVEL_ID = 1
         public constant integer     DOORS_LEVEL_ID = 2
         public constant integer     TEMP_LEVEL_ID = 1000
         private region array        DoorsRegions[NumberPlayers]
+        
+        public constant real CINEMATIC_TIMER_TIMEOUT = .5
+        public constant real CHECKPOINT_TIMER_TIMEOUT = .1
     endglobals
     
     struct LevelContent //extends IStartable
@@ -103,7 +105,7 @@ library Levels initializer Init requires ListModule, Teams, GameModesGlobals, IS
         //readonly rect        StartRect       //marks the position to move the revive rect
         public rect        Vision          //the bounds placed on a player's vision
         //readonly rect        CPToHere        //the checkpoint that triggers this level
-        public static trigger CPToHereTrigger = CreateTrigger()
+        public static trigger CPToHereTrigger
         readonly region array CPGates[8]     //entering this region triggers the CP update action
         readonly rect array  CPCenters[8]    //where to refocus the revive rect to
         public integer array CPColors[8]   //what color key should be applied (if any) after transfering
@@ -113,28 +115,28 @@ library Levels initializer Init requires ListModule, Teams, GameModesGlobals, IS
         private string  TeamStopCB
         readonly static Teams_MazingTeam CBTeam
         readonly integer     CPCount         //how many checkpoints there are registered for the level
-        public static trigger CPTrigger = CreateTrigger() //this trigger handles the levels CP events
+        public static trigger CPTrigger //this trigger handles the levels CP events
         public Level         NextLevel       //pointer to the next Level struct
         public Level         PrevLevel       //pointer to the prev Level struct
         //public integer       DefaultGameMode
+        public SimpleList_List Cinematics //any cinematics that might be on the level
         
-        readonly boolean     Starting        //true if another thread is starting this level
-        readonly boolean     Stopping        //true if another thread is stopping this level
+        public SimpleList_List ActiveTeams
+        
+        public static SimpleList_List ActiveLevels
                         
         public method Start takes nothing returns nothing
             debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "Trying to start level " + I2S(this.LevelID) + ", count: " + I2S(Teams_MazingTeam.GetCountOnLevel(.LevelID)))
             
-            if Teams_MazingTeam.GetCountOnLevel(.LevelID) == 0 and not .Starting then
-                set .Starting = true
-                                
+            if Teams_MazingTeam.GetCountOnLevel(.LevelID) == 0 then
+                call .ActiveLevels.add(this)
+                
                 call .Content.Start()
                 
                 if .NextLevel != 0 and .Content.HasPreload() and not .NextLevel.IsPreloaded and Teams_MazingTeam.GetCountOnLevel(.NextLevel.LevelID) == 0 then
                     set .IsPreloaded = true
                     call ExecuteFunc(.Content.PreloadFunction)
                 endif
-                
-                set .Starting = false
                 
                 //debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "Started level " + I2S(this.LevelID))
             endif
@@ -147,13 +149,11 @@ library Levels initializer Init requires ListModule, Teams, GameModesGlobals, IS
             
             debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "Trying to stop level " + I2S(this.LevelID) + ", count: " + I2S(countprev))
             
-            if countprev == 0 and not .Stopping and not .Starting then
-                set .Stopping = true
+            if countprev == 0 then
+                call .ActiveLevels.remove(this)
                 
                 call .Content.Stop()
                 call .RemoveGreenFromLevel()
-                
-                set .Stopping = false
                 
                 //debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "Stopped level " + I2S(this.LevelID))
             endif
@@ -340,12 +340,15 @@ library Levels initializer Init requires ListModule, Teams, GameModesGlobals, IS
             debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "From " + I2S(this) + " To " + I2S(nextLevel))
             
             set this.CBTeam = mt
+            call this.ActiveTeams.remove(mt)
             
             set mt.OnLevel = TEMP_LEVEL_ID
             call this.Stop() //only stops the level if no ones on it. reloads preload scripts after if necessary
             //debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "Stopped")
             call nextLevel.Start() //only starts the next level if there is one -- also preloads the following level
+            
             set mt.OnLevel = nextLevel.LevelID
+            call nextLevel.ActiveTeams.add(mt)
             
             if this.TeamStopCB != null then
                 call ExecuteFunc(this.TeamStopCB)
@@ -435,8 +438,6 @@ library Levels initializer Init requires ListModule, Teams, GameModesGlobals, IS
             //set new.StartRect = startspawn
             set new.Vision = vision
             
-            set new.Starting = false //these shouldn't
-            set new.Stopping = false
             set new.IsPreloaded = false
             
             set Levels[new.LevelID] = new
@@ -492,6 +493,34 @@ library Levels initializer Init requires ListModule, Teams, GameModesGlobals, IS
             set .Content.Startables = startables
         endmethod
         
+        public static method CheckCinematics takes nothing returns nothing
+            local SimpleList_ListNode curLevel = thistype.ActiveLevels.first
+            local SimpleList_ListNode curCinematic
+            //local Cinematic cinematic
+            local SimpleList_ListNode curUser
+            
+            loop
+            exitwhen curLevel == 0
+                set curCinematic = thistype(curLevel.value).Cinematics.first
+                //set cinematic = Cinematic(curCinematic.value)
+                
+                loop
+                exitwhen curCinematic == 0
+                    set curUser = Teams_MazingTeam(thistype(curLevel.value).ActiveTeams.first.value).Users.first
+                    
+                    loop
+                    exitwhen curUser == 0
+                        if not Cinematic(curCinematic.value).HasUserViewed(User(curUser.value)) and User(curUser.value).IsActiveUnitInRect(Cinematic(curCinematic.value).ActivationArea) then
+                            call Cinematic(curCinematic.value).Activate(curUser.value)
+                        endif
+                    set curUser = curUser.next
+                    endloop
+                set curCinematic = curCinematic.next
+                endloop
+            set curLevel = curLevel.next
+            endloop
+        endmethod
+        
         //creates a level struct
         static method create takes integer LevelID, /*string name, integer diff, */string startFunction, string stopFunction, rect startspawn, rect vision, rect tothislevel, Level previouslevel returns Level
             local Level new = Level.allocate()
@@ -515,8 +544,9 @@ library Levels initializer Init requires ListModule, Teams, GameModesGlobals, IS
             set new.TeamStopCB = null
             
             set new.IsPreloaded = false
-            set new.Starting = false
-            set new.Stopping = false
+            
+            set new.Cinematics = SimpleList_List.create()
+            set new.ActiveTeams = SimpleList_List.create()
             
             if (previouslevel != 0) then
                 //don't point backwards to partial levels
@@ -543,8 +573,14 @@ library Levels initializer Init requires ListModule, Teams, GameModesGlobals, IS
     endstruct
     
     private function Init takes nothing returns nothing
+        set Levels_Level.CPToHereTrigger = CreateTrigger()
+        set Levels_Level.CPTrigger = CreateTrigger()
+        set Levels_Level.ActiveLevels = SimpleList_List.create()
+    
         call TriggerAddAction(Levels_Level.CPToHereTrigger, function Levels_Level.EntersLevelTransfer)
         call TriggerAddAction(Levels_Level.CPTrigger, function Levels_Level.EntersCheckpoint)
+        
+        call TimerStart(CreateTimer(), CINEMATIC_TIMER_TIMEOUT, true, function Levels_Level.CheckCinematics)
     endfunction
 
 endlibrary

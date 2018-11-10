@@ -220,7 +220,31 @@ public struct MazingTeam
                 //debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "respawning " + I2S(u))
                 //call DisplayTextToForce(bj_FORCE_PLAYER[0], "cur " + I2S(fp) + ", next " + I2S(fp.next))
                 
-                call u.RespawnAtRect(newlocation, moveliving)                
+                call u.RespawnAtRect(newlocation, moveliving)
+                
+                /*
+                if u.IsPlaying and (moveliving or u.GameMode == GAMEMODE_DEAD) then
+                    //call DisplayTextToForce(bj_FORCE_PLAYER[0], "need to respawn")
+                    
+                    loop
+                        set x = GetRandomReal(GetRectMinX(newlocation), GetRectMaxX(newlocation))
+                        set y = GetRandomReal(GetRectMinY(newlocation), GetRectMaxY(newlocation))
+                        //check these values to see if they're on abyss, redo if so
+                        set ttype = GetTerrainType(x, y)
+                        
+                        if .DefaultGameMode == GAMEMODE_STANDARD then
+                            exitwhen (ttype != ABYSS and ttype != LAVA and ttype != RUNEBRICKS)
+                        elseif .DefaultGameMode == GAMEMODE_PLATFORMING then
+                            exitwhen (ttype != LAVA and ttype != LRGBRICKS and ttype != RUNEBRICKS and TerrainGlobals_IsTerrainPathable(ttype))
+                        endif
+                    endloop
+                    
+                    call u.SwitchGameModes(.DefaultGameMode, x, y)
+                    //call u.ReviveActiveHero(x, y)
+                    
+                    set u.IsAlive = true
+                endif
+                */
             set fp = fp.next
             endloop
             
@@ -336,7 +360,7 @@ public struct MazingTeam
         
         //TODO: Uneven teams handicap bonus
         
-        debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "initial continues: " + R2S(weighted))
+        //debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "initial continues: " + R2S(weighted))
         
         return R2I(weighted)
     endmethod
@@ -359,7 +383,7 @@ public struct MazingTeam
         
         //TODO: Uneven teams handicap bonus
         
-        debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "level reward continues: " + R2S(weighted))
+        //debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "level reward continues: " + R2S(weighted))
         
         return R2I(weighted)
     endmethod
@@ -443,7 +467,7 @@ public struct MazingTeam
             endloop
         endif
                 
-        debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "Adding user: " + I2S(User(pID)) + " to team: " + I2S(this))
+        //debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "Adding user: " + I2S(User(pID)) + " to team: " + I2S(this))
         
         call Users.addEnd(User(pID))
         set User(pID).Team = this
@@ -535,7 +559,7 @@ public struct MazingTeam
         local integer i = 0
         local real avgSize = 0
         
-        debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "computing team weights")
+        //debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "computing team weights")
         
         //compute average team size
         loop
