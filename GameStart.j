@@ -149,6 +149,8 @@ library GameStart initializer Init requires Levels, EDWVisualVote, UnitGlobals, 
         call cine.AddMessage(null, GetEDWSpeakerMessage(PRIMARY_SPEAKER_NAME, "Darker ice makes for faster going."), DEFAULT_SHORT_TEXT_SPEED)
         call cine.AddMessage(null, GetEDWSpeakerMessage(PRIMARY_SPEAKER_NAME, "Type '-track' or '-t' to keep the camera focused on your hero"), DEFAULT_SHORT_TEXT_SPEED)
         
+        call l.Cinematics.addEnd(cine)
+        
         //DOORS HARD CODED
         //currently no start or stop logic
         call Levels_Level.CreateDoors(l, null, null, gg_rct_HubWorld_R, gg_rct_HubWorld_Vision, gg_rct_IntroWorld_End)

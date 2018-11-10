@@ -507,10 +507,14 @@ library Levels initializer Init requires SimpleList, Teams, GameModesGlobals, IS
                 loop
                 exitwhen curCinematic == 0
                     set curUser = Teams_MazingTeam(thistype(curLevel.value).ActiveTeams.first.value).Users.first
+                    //call DisplayTextToForce(bj_FORCE_PLAYER[0], "Checking cinematic " + I2S(curCinematic.value))
                     
                     loop
                     exitwhen curUser == 0
+                        //call DisplayTextToForce(bj_FORCE_PLAYER[0], "Checking player " + I2S(curUser.value))
+                        
                         if not Cinematic(curCinematic.value).HasUserViewed(User(curUser.value)) and User(curUser.value).IsActiveUnitInRect(Cinematic(curCinematic.value).ActivationArea) then
+                            //call DisplayTextToForce(bj_FORCE_PLAYER[0], "Activating cinematic for player " + I2S(curUser.value))
                             call Cinematic(curCinematic.value).Activate(curUser.value)
                         endif
                     set curUser = curUser.next

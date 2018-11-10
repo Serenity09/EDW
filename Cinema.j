@@ -99,12 +99,16 @@ struct Cinematic extends array
                     endloop
                 endif
             endif
+            
+            call ReleaseTimer(t)
         else
             //finished current message in cinematic but there's still more
             set cinemaCBModel.CurrentMessage = cinemaCBModel.CurrentMessage.next
             //call SetTimerData(t, cinemaCBModel) //re-using same model, so original ID attached to timer is still applicable
             call TimerStart(t, messageTime, false, function thistype.PlayMessageCallback)
         endif
+        
+        set t = null
     endmethod
     
     public method Activate takes User user returns nothing
@@ -136,6 +140,9 @@ struct Cinematic extends array
             
             set cbModel = CinemaCallbackModel.create(this, .CinemaMessages.first, user)
             set t = NewTimerEx(cbModel)
+            
+            call TimerStart(t, .0, false, function thistype.PlayMessageCallback)
+            set t = null
         endif
     endmethod
     
