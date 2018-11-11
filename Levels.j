@@ -1,4 +1,4 @@
-library Levels initializer Init requires SimpleList, Teams, GameModesGlobals, IStartable
+library Levels initializer Init requires SimpleList, Teams, GameModesGlobals, Cinema, User, IStartable
     globals
         public Levels_Level array   Levels[100]                 //an array containing all the levels. the index of the array should match its elements levelnumber
         public constant integer     INTRO_LEVEL_ID = 1
@@ -496,31 +496,49 @@ library Levels initializer Init requires SimpleList, Teams, GameModesGlobals, IS
         public static method CheckCinematics takes nothing returns nothing
             local SimpleList_ListNode curLevel = thistype.ActiveLevels.first
             local SimpleList_ListNode curCinematic
-            //local Cinematic cinematic
+            local SimpleList_ListNode curTeam
             local SimpleList_ListNode curUser
+            
+            local User user
             
             loop
             exitwhen curLevel == 0
                 set curCinematic = thistype(curLevel.value).Cinematics.first
-                //set cinematic = Cinematic(curCinematic.value)
                 
                 loop
                 exitwhen curCinematic == 0
-                    set curUser = Teams_MazingTeam(thistype(curLevel.value).ActiveTeams.first.value).Users.first
                     //call DisplayTextToForce(bj_FORCE_PLAYER[0], "Checking cinematic " + I2S(curCinematic.value))
+                    set curTeam = thistype(curLevel.value).ActiveTeams.first
                     
                     loop
-                    exitwhen curUser == 0
-                        //call DisplayTextToForce(bj_FORCE_PLAYER[0], "Checking player " + I2S(curUser.value))
+                    exitwhen curTeam == 0
+                        //call DisplayTextToForce(bj_FORCE_PLAYER[0], "Checking team " + I2S(curTeam.value))
+                        set curUser = Teams_MazingTeam(curTeam.value).Users.first
+                                                
+                        loop
+                        exitwhen curUser == 0
+                            set user = User(curUser.value)
+                            //call DisplayTextToForce(bj_FORCE_PLAYER[0], "Checking player " + I2S(curUser.value))
+                            
+                            if Cinematic(curCinematic.value).CanUserActivate(User(curUser.value)) then
+                                //call Cinematic(curCinematic.value).Activate(curUser.value)
+                                if Cinematic(curCinematic.value).Individual then
+                                    call DisplayTextToForce(bj_FORCE_PLAYER[0], "User " + I2S(user) + " activating cine " + I2S(curCinematic.value) + " for self")
+                                    call user.AddCinematicToQueue(curCinematic.value)
+                                else
+                                    call DisplayTextToForce(bj_FORCE_PLAYER[0], "User " + I2S(user) + " activating cine " + I2S(curCinematic.value) + " for team")
+                                    call Teams_MazingTeam(curTeam.value).AddTeamCinema(curCinematic.value, user)
+                                endif
+                            endif
+                        set curUser = curUser.next
+                        endloop
                         
-                        if not Cinematic(curCinematic.value).HasUserViewed(User(curUser.value)) and User(curUser.value).IsActiveUnitInRect(Cinematic(curCinematic.value).ActivationArea) then
-                            //call DisplayTextToForce(bj_FORCE_PLAYER[0], "Activating cinematic for player " + I2S(curUser.value))
-                            call Cinematic(curCinematic.value).Activate(curUser.value)
-                        endif
-                    set curUser = curUser.next
+                    set curTeam = curTeam.next
                     endloop
+                    
                 set curCinematic = curCinematic.next
                 endloop
+                
             set curLevel = curLevel.next
             endloop
         endmethod

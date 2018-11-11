@@ -4,11 +4,23 @@ library GameStart initializer Init requires Levels, EDWVisualVote, UnitGlobals, 
         //constant real GAME_INIT_TIME_STEP = .5
         public timer GameInitTimer
         
+        constant string SPEAKER_COLOR = "FFFFBD33"
+        constant string DEFAULT_TEXT_COLOR = null
+        constant string HAPPY_TEXT_COLOR = null
+        constant string SAD_TEXT_COLOR = null
+        constant string ANGRY_TEXT_COLOR = null
+        constant string STERN_TEXT_COLOR = null
+        
         constant string PRIMARY_SPEAKER_NAME = "SARGE"
         constant string SECONDARY_SPEAKER_NAME = "Cupcake"
         
+        constant string FINAL_BOSS_PRE_REVEAL = "???"
+        constant string FINAL_BOSS_NAME = "???" //??? no, seriously, what's the final boss?
+        
+        constant real DEFAULT_TINY_TEXT_SPEED = 1.0
         constant real DEFAULT_SHORT_TEXT_SPEED = 3.0
-        constant real DEFAULT_LONG_TEXT_SPEED = 6.0
+        constant real DEFAULT_MEDIUM_TEXT_SPEED = 5.0
+        constant real DEFAULT_LONG_TEXT_SPEED = 8.0
     endglobals
     
     private function PlayerInit takes nothing returns nothing
@@ -98,9 +110,31 @@ library GameStart initializer Init requires Levels, EDWVisualVote, UnitGlobals, 
         debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "Finished GameStart")
     endfunction
     
-    private function GetEDWSpeakerMessage takes string speaker, string message returns string
-        return speaker + ": " + message
+    private function GetEDWSpeakerMessage takes string speaker, string message, string messageColor returns string
+        if messageColor == null then
+            return "|c" + SPEAKER_COLOR + speaker + "|r" + ": " + message
+        else
+            return "|c" + SPEAKER_COLOR + speaker + "|r" + ": " + "|c" + messageColor + message + "|r"
+        endif
     endfunction
+    
+    private function IsUserRed takes User user returns boolean
+        return MazerColor[user] == KEY_RED
+    endfunction
+    private function IsUserNotRed takes User user returns boolean
+        return MazerColor[user] != KEY_RED
+    endfunction
+    private function IsUserPlayerOne takes User user returns boolean
+        return user == 0
+    endfunction
+    private function IsUserPlayerTwo takes User user returns boolean
+        return user == 1
+    endfunction
+    private function IsUserCinemaQueueBig takes User user returns boolean
+        return user.CinematicQueue >= 3
+    endfunction
+    
+    
     
     public function Init takes nothing returns nothing
         local Levels_Level l
@@ -144,10 +178,45 @@ library GameStart initializer Init requires Levels, EDWVisualVote, UnitGlobals, 
         
         set l.Content.Startables = startables
         
-        set cineMsg = CinemaMessage.create(null, GetEDWSpeakerMessage(PRIMARY_SPEAKER_NAME, "Being on ice makes you go wherever you're facing."), DEFAULT_SHORT_TEXT_SPEED)
+        set cineMsg = CinemaMessage.create(null, GetEDWSpeakerMessage(FINAL_BOSS_PRE_REVEAL, "Welcome", DEFAULT_TEXT_COLOR), DEFAULT_SHORT_TEXT_SPEED)
+        set cine = Cinematic.create(gg_rct_WelcomeMessage, false, false, cineMsg)
+        call cine.AddMessage(null, GetEDWSpeakerMessage(FINAL_BOSS_PRE_REVEAL, "To", DEFAULT_TEXT_COLOR), DEFAULT_SHORT_TEXT_SPEED)
+        call cine.AddMessage(null, GetEDWSpeakerMessage(FINAL_BOSS_PRE_REVEAL, "Dream World", DEFAULT_TEXT_COLOR), DEFAULT_SHORT_TEXT_SPEED)
+        call l.Cinematics.addEnd(cine)
+        
+        set cineMsg = CinemaMessage.create(null, GetEDWSpeakerMessage(PRIMARY_SPEAKER_NAME, "Hey you!", STERN_TEXT_COLOR), DEFAULT_SHORT_TEXT_SPEED)
+        set cine = Cinematic.create(gg_rct_WelcomeMessage, false, false, cineMsg)
+        call cine.AddMessage(null, GetEDWSpeakerMessage(PRIMARY_SPEAKER_NAME, "Yeah, you", DEFAULT_TEXT_COLOR), DEFAULT_SHORT_TEXT_SPEED)
+        call cine.AddMessage(null, GetEDWSpeakerMessage(PRIMARY_SPEAKER_NAME, "...Maggot", ANGRY_TEXT_COLOR), DEFAULT_SHORT_TEXT_SPEED)
+        call cine.AddMessage(null, GetEDWSpeakerMessage(PRIMARY_SPEAKER_NAME, "Sorry, but that just felt right", DEFAULT_TEXT_COLOR), DEFAULT_SHORT_TEXT_SPEED)
+        call l.Cinematics.addEnd(cine)
+                
+        set cineMsg = CinemaMessage.create(null, GetEDWSpeakerMessage(PRIMARY_SPEAKER_NAME, "Anyways, like I was saying, how'd we even get into this shit pit?", DEFAULT_TEXT_COLOR), DEFAULT_MEDIUM_TEXT_SPEED)
+        set cine = Cinematic.create(gg_rct_SargeIntro, false, false, cineMsg)
+        call cine.AddMessage(null, GetEDWSpeakerMessage(PRIMARY_SPEAKER_NAME, "Well one things for clear", DEFAULT_TEXT_COLOR), DEFAULT_SHORT_TEXT_SPEED)
+        call cine.AddMessage(null, GetEDWSpeakerMessage(PRIMARY_SPEAKER_NAME, "I drank WAY too much last night", DEFAULT_TEXT_COLOR), DEFAULT_SHORT_TEXT_SPEED)
+        call cine.AddMessage(null, GetEDWSpeakerMessage(PRIMARY_SPEAKER_NAME, "And you definitely shouldn't get near those colorful dragons", STERN_TEXT_COLOR), DEFAULT_MEDIUM_TEXT_SPEED)
+        call cine.AddMessage(null, GetEDWSpeakerMessage(PRIMARY_SPEAKER_NAME, "...I think they might be pedophiles", DEFAULT_TEXT_COLOR), DEFAULT_SHORT_TEXT_SPEED)
+        call l.Cinematics.addEnd(cine)
+        
+        set cineMsg = CinemaMessage.create(null, GetEDWSpeakerMessage(PRIMARY_SPEAKER_NAME, "Whoa!", STERN_TEXT_COLOR), DEFAULT_TINY_TEXT_SPEED)
+        set cine = Cinematic.create(gg_rct_SargeFireWarning, true, false, cineMsg)
+        set cine.ActivationCondition = IsUserNotRed
+        call cine.AddMessage(null, GetEDWSpeakerMessage(PRIMARY_SPEAKER_NAME, "Better stay clear of that fire, I don't think it likes the look of you", STERN_TEXT_COLOR), DEFAULT_MEDIUM_TEXT_SPEED)
+        call l.Cinematics.addEnd(cine)
+        
+        set cineMsg = CinemaMessage.create(null, GetEDWSpeakerMessage(PRIMARY_SPEAKER_NAME, "Nice!", HAPPY_TEXT_COLOR), DEFAULT_TINY_TEXT_SPEED)
+        set cine = Cinematic.create(gg_rct_SargeFoundRed, true, false, cineMsg)
+        set cine.ActivationCondition = IsUserRed
+        call cine.AddMessage(null, GetEDWSpeakerMessage(PRIMARY_SPEAKER_NAME, "Your skin's glowing red!", DEFAULT_TEXT_COLOR), DEFAULT_MEDIUM_TEXT_SPEED)
+        call cine.AddMessage(null, GetEDWSpeakerMessage(PRIMARY_SPEAKER_NAME, "I bet you could go through that fire now", DEFAULT_TEXT_COLOR), DEFAULT_SHORT_TEXT_SPEED)
+        call cine.AddMessage(null, GetEDWSpeakerMessage(PRIMARY_SPEAKER_NAME, "Everyone knows that the best color is the same color!", DEFAULT_TEXT_COLOR), DEFAULT_MEDIUM_TEXT_SPEED)
+        call l.Cinematics.addEnd(cine)
+                        
+        set cineMsg = CinemaMessage.create(null, GetEDWSpeakerMessage(PRIMARY_SPEAKER_NAME, "Being on ice makes you go wherever you're facing.", DEFAULT_TEXT_COLOR), DEFAULT_SHORT_TEXT_SPEED)
         set cine = Cinematic.create(gg_rct_IceTutorial, false, false, cineMsg)
-        call cine.AddMessage(null, GetEDWSpeakerMessage(PRIMARY_SPEAKER_NAME, "Darker ice makes for faster going."), DEFAULT_SHORT_TEXT_SPEED)
-        call cine.AddMessage(null, GetEDWSpeakerMessage(PRIMARY_SPEAKER_NAME, "Type '-track' or '-t' to keep the camera focused on your hero"), DEFAULT_SHORT_TEXT_SPEED)
+        call cine.AddMessage(null, GetEDWSpeakerMessage(PRIMARY_SPEAKER_NAME, "Darker ice makes for faster going.", DEFAULT_TEXT_COLOR), DEFAULT_SHORT_TEXT_SPEED)
+        call cine.AddMessage(null, GetEDWSpeakerMessage(PRIMARY_SPEAKER_NAME, "Type '-track' or '-t' to keep the camera focused on your hero", DEFAULT_TEXT_COLOR), DEFAULT_SHORT_TEXT_SPEED)
         
         call l.Cinematics.addEnd(cine)
         
@@ -421,6 +490,9 @@ library GameStart initializer Init requires Levels, EDWVisualVote, UnitGlobals, 
         set cpID = l.AddCheckpoint(gg_rct_PWCP_2_2, gg_rct_PWR_2_3)
         set l.CPDefaultGameModes[cpID] = Teams_GAMEMODE_PLATFORMING
         */
+        
+        //Justine's Four Seasons
+        //set l = Levels_Level.create(7, null, null, gg_rct_FSR_1_1, gg_rct_IW3_Vision, gg_rct_IW2_End, 0)
         
         //LANDWORLD / LUSTWORLD
         

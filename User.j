@@ -11,6 +11,8 @@ struct User extends array
     public integer GameMode //0: regular DH mazing, 1: wisp platforming, 9: mini-games?
     public integer PreviousGameMode //only standard or platforming
     public Teams_MazingTeam Team
+    public boolean CinematicPlaying
+    public SimpleList_List CinematicQueue //FiFo
     
     //TODO
     //public integer TotalScore
@@ -25,14 +27,45 @@ struct User extends array
         
         loop
         exitwhen i > count
-            call User(i).DisplayMessage(message)
+            call User(i).DisplayMessage(message, 0)
         set i = i + 1
         endloop
     endmethod
     
-    public method DisplayMessage takes string message returns nothing
-        if IsPlaying then
-            call DisplayTextToPlayer(Player(this), 0, 0, message)
+    private static method OnCinemaEndCB takes User user returns nothing
+        //call DisplayTextToForce(bj_FORCE_PLAYER[0], "Inside On Cinema End CB for user " + I2S(user))
+        set user.CinematicPlaying = false
+        call user.CheckCinematicQueue()
+    endmethod
+    public method AddCinematicToQueue takes Cinematic cine returns nothing
+        //call DisplayTextToForce(bj_FORCE_PLAYER[0], "Adding cinematic for user: " + I2S(this))
+        
+        call cine.PreviousViewers.add(this)
+        set cine.OnCinemaEnd = thistype.OnCinemaEndCB
+        
+        call .CinematicQueue.addEnd(cine)
+        
+        call .CheckCinematicQueue()
+    endmethod
+    public method CheckCinematicQueue takes nothing returns nothing
+        //call DisplayTextToForce(bj_FORCE_PLAYER[0], "Checking cinema queue for user:" + I2S(this))
+        //debug call .CinematicQueue.print(this)
+        
+        if not .CinematicPlaying and .CinematicQueue.count > 0 then
+            //call DisplayTextToForce(bj_FORCE_PLAYER[0], "popping next cinematic for user: " + I2S(this))
+            
+            set .CinematicPlaying = true
+            call Cinematic(.CinematicQueue.pop().value).Activate(this)
+        endif
+    endmethod
+    
+    public method DisplayMessage takes string message, real duration returns nothing
+        if .IsPlaying then
+            if duration == 0 then
+                call DisplayTextToPlayer(Player(this), 0, 0, message)
+            else
+                call DisplayTimedTextToPlayer(Player(this), 0, 0, duration, message)
+            endif
         endif
     endmethod
     
@@ -489,29 +522,26 @@ struct User extends array
     public static method create takes nothing returns thistype
         local thistype new 
         
-        //1 User profile per player slot, only 12 player slots in all
-        if User.count < 12 then
-            set new = thistype.allocate()
-            
-            debug call DisplayTextToPlayer(Player(0), 0, 0, "Creating User: " + I2S(new))
-            
-            set new.PlayerID = new
-            set new.Team = 0
-            set new.Deaths = 0
-            set new.IsPlaying = GetPlayerSlotState(Player(new))==PLAYER_SLOT_STATE_PLAYING
-            set new.IsAlive = true
-            
-            set new.GameMode = Teams_GAMEMODE_STANDARD //regular mazing
-            //FOR SOME REASON THIS IS RETURNING NULL, SO WE NEED TO SET ACTIVE UNIT AFTER MAP INIT
-            //set new.ActiveUnit = MazersArray[new]
-                        
-            set new.Platformer = Platformer.AllPlatformers[new]
-            
-            return new
-        else
-            debug call DisplayTextToPlayer(Player(0), 0, 0, "Trying to create a user that can't possibly exist!")
-            return -1
-        endif
+        set new = thistype.allocate()
+        
+        debug call DisplayTextToPlayer(Player(0), 0, 0, "Creating User: " + I2S(new))
+        
+        set new.PlayerID = new
+        set new.Team = 0
+        set new.Deaths = 0
+        set new.IsPlaying = GetPlayerSlotState(Player(new))==PLAYER_SLOT_STATE_PLAYING
+        set new.IsAlive = true
+        
+        set new.CinematicPlaying = false
+        set new.CinematicQueue = SimpleList_List.create()
+        
+        set new.GameMode = Teams_GAMEMODE_STANDARD //regular mazing
+        //FOR SOME REASON THIS IS RETURNING NULL, SO WE NEED TO SET ACTIVE UNIT AFTER MAP INIT
+        //set new.ActiveUnit = MazersArray[new]
+                    
+        set new.Platformer = Platformer.AllPlatformers[new]
+        
+        return new
     endmethod
 
     public static method onInit takes nothing returns nothing

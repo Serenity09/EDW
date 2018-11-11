@@ -50,6 +50,22 @@ library SimpleList requires Alloc
             set .count = .count + 1
         endmethod
         
+        //remove the first node and return it
+        public method pop takes nothing returns ListNode
+            //store the node that's being popped
+            local ListNode pop = .first
+            
+            //update the first node to the second node
+            set .first = .first.next
+            set .first.prev = 0
+            set .count = .count - 1
+            
+            if .count == 0 then
+                set .last = 0
+            endif
+            
+            return pop
+        endmethod
         public method remove takes integer value returns nothing
             local ListNode cur = .first
             

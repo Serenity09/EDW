@@ -312,6 +312,16 @@ public struct MazingTeam
         endif
     endmethod
     
+    public method AddTeamCinema takes Cinematic cinema, User activatingUser returns nothing
+        local SimpleList_ListNode u = .FirstUser
+                
+        loop
+        exitwhen u == 0
+            call User(u.value).AddCinematicToQueue(cinema)
+        set u = u.next
+        endloop
+    endmethod
+    
     public method PrintMessage takes string message returns nothing
         local SimpleList_ListNode fp = .FirstUser
         
