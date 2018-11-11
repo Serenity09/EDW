@@ -313,6 +313,14 @@ private function CollisionIter2 takes nothing returns nothing
                 set pu = null
                 set cu = null
                 return
+            elseif cuID == ICETROLL and dist < 58 then
+                call CollisionDeathEffect(pu)
+                
+                call p.KillPlatformer()
+                call GroupClear(pCollisionGroup)
+                set pu = null
+                set cu = null
+                return
             elseif cuID == RKEY and dist < 65  then
                 call RShieldEffect(pu)
                 set MazerColor[i] = KEY_RED
@@ -336,14 +344,6 @@ private function CollisionIter2 takes nothing returns nothing
                 set MazerColor[i] = KEY_GREEN
                 call SetUnitVertexColor(MazersArray[i], 0, 255, 0, 255)
                 
-                call GroupClear(pCollisionGroup)
-                set pu = null
-                set cu = null
-                return
-            elseif cuID == ICETROLL and dist < 68 then
-                call CollisionDeathEffect(pu)
-                
-                call p.KillPlatformer()
                 call GroupClear(pCollisionGroup)
                 set pu = null
                 set cu = null
