@@ -9,6 +9,8 @@ globals
     public constant integer GAMEMODE_REVIVED_BY_TEAM = 90
     public constant integer GAMEMODE_DYING = 100
     public constant integer GAMEMODE_DEAD = 101
+    
+    public constant real MULTIBOARD_HIDE_DELAY = 2.
 endglobals
 
 //ASSUMPTIONS: !!IMPORTANT!!
@@ -509,23 +511,27 @@ public struct MazingTeam
             if GetPlayerSlotState(Player(pID)) == PLAYER_SLOT_STATE_PLAYING then                
                 call MultiboardSetItemValue(MultiboardGetItem(.PlayerStats, pID + 1, 0), .GetStylizedPlayerName(pID))
                 call MultiboardSetItemValue(MultiboardGetItem(.PlayerStats, pID + 1, 1), Levels_Levels[.OnLevel].Name)
-                call MultiboardSetItemValue(MultiboardGetItem(.PlayerStats, pID + 1, 2), I2S(.ContinueCount))
-                call MultiboardSetItemValue(MultiboardGetItem(.PlayerStats, pID + 1, 3), I2S(u.Deaths))
+                call MultiboardSetItemValue(MultiboardGetItem(.PlayerStats, pID + 1, 2), I2S(.Score))
+                call MultiboardSetItemValue(MultiboardGetItem(.PlayerStats, pID + 1, 3), I2S(.ContinueCount))
+                call MultiboardSetItemValue(MultiboardGetItem(.PlayerStats, pID + 1, 4), I2S(u.Deaths))
                 
                 call MultiboardReleaseItem(MultiboardGetItem(.PlayerStats, pID + 1, 0))
                 call MultiboardReleaseItem(MultiboardGetItem(.PlayerStats, pID + 1, 1))
                 call MultiboardReleaseItem(MultiboardGetItem(.PlayerStats, pID + 1, 2))
                 call MultiboardReleaseItem(MultiboardGetItem(.PlayerStats, pID + 1, 3))
+                call MultiboardReleaseItem(MultiboardGetItem(.PlayerStats, pID + 1, 4))
             elseif GetPlayerSlotState(Player(pID)) == PLAYER_SLOT_STATE_LEFT then
                 call MultiboardSetItemValue(MultiboardGetItem(.PlayerStats, pID + 1, 0), "Left the game")
                 call MultiboardSetItemValue(MultiboardGetItem(.PlayerStats, pID + 1, 1), "Gone")
-                call MultiboardSetItemValue(MultiboardGetItem(.PlayerStats, pID + 1, 2), "None")
-                call MultiboardSetItemValue(MultiboardGetItem(.PlayerStats, pID + 1, 3), "Too many")
+                call MultiboardSetItemValue(MultiboardGetItem(.PlayerStats, pID + 1, 2), "Negative")
+                call MultiboardSetItemValue(MultiboardGetItem(.PlayerStats, pID + 1, 3), "Zilch")
+                call MultiboardSetItemValue(MultiboardGetItem(.PlayerStats, pID + 1, 4), "Too many")
                 
                 call MultiboardReleaseItem(MultiboardGetItem(.PlayerStats, pID + 1, 0))
                 call MultiboardReleaseItem(MultiboardGetItem(.PlayerStats, pID + 1, 1))
                 call MultiboardReleaseItem(MultiboardGetItem(.PlayerStats, pID + 1, 2))
                 call MultiboardReleaseItem(MultiboardGetItem(.PlayerStats, pID + 1, 3))
+                call MultiboardReleaseItem(MultiboardGetItem(.PlayerStats, pID + 1, 4))
             else
                 call MultiboardSetItemValue(MultiboardGetItem(.PlayerStats, pID + 1, 0), "Not playing")
                 call MultiboardReleaseItem(MultiboardGetItem(.PlayerStats, pID + 1, 0))
@@ -618,29 +624,32 @@ public struct MazingTeam
         set bj_lastCreatedMultiboard = .PlayerStats
         
         call MultiboardSetRowCount(.PlayerStats, NumberPlayers + 1)
-        call MultiboardSetColumnCount(.PlayerStats, 4)
+        call MultiboardSetColumnCount(.PlayerStats, 5)
         call MultiboardSetTitleText(.PlayerStats, "Player Stats")
         call MultiboardDisplay(.PlayerStats, true)
         call MultiboardSetItemsWidth(.PlayerStats, .1)
         
         
         //multiboard column titles
-        call MultiboardSetItemValue(MultiboardGetItem(.PlayerStats, 0, 0), "Player Name:")
-        call MultiboardSetItemValue(MultiboardGetItem(.PlayerStats, 0, 1), "On Level:")
-        call MultiboardSetItemValue(MultiboardGetItem(.PlayerStats, 0, 2), "Continues:")
-        call MultiboardSetItemValue(MultiboardGetItem(.PlayerStats, 0, 3), "Deaths:")
+        call MultiboardSetItemValue(MultiboardGetItem(.PlayerStats, 0, 0), "Player Name")
+        call MultiboardSetItemValue(MultiboardGetItem(.PlayerStats, 0, 1), "On Level")
+        call MultiboardSetItemValue(MultiboardGetItem(.PlayerStats, 0, 2), "Score")
+        call MultiboardSetItemValue(MultiboardGetItem(.PlayerStats, 0, 3), "Continues")
+        call MultiboardSetItemValue(MultiboardGetItem(.PlayerStats, 0, 4), "Deaths")
                 
         call MultiboardReleaseItem(MultiboardGetItem(.PlayerStats, 0, 0))
         call MultiboardReleaseItem(MultiboardGetItem(.PlayerStats, 0, 1))
         call MultiboardReleaseItem(MultiboardGetItem(.PlayerStats, 0, 2))
         call MultiboardReleaseItem(MultiboardGetItem(.PlayerStats, 0, 3))
+        call MultiboardReleaseItem(MultiboardGetItem(.PlayerStats, 0, 4))
         
         loop
         exitwhen i >= NumberPlayers
             call MultiboardSetItemIcon(MultiboardGetItem(.PlayerStats, i + 1, 0), "ReplaceableTextures\\CommandButtons\\BTNPeasant.blp")
             call MultiboardSetItemIcon(MultiboardGetItem(.PlayerStats, i + 1, 1), "ReplaceableTextures\\WorldEditUI\\Editor-MultipleUnits.blp")
-            call MultiboardSetItemIcon(MultiboardGetItem(.PlayerStats, i + 1, 2), "ReplaceableTextures\\CommandButtons\\BTNSkillz.tga")
-            call MultiboardSetItemIcon(MultiboardGetItem(.PlayerStats, i + 1, 3), "ReplaceableTextures\\CommandButtons\\BTNAcolyte.blp")
+            call MultiboardSetItemIcon(MultiboardGetItem(.PlayerStats, i + 1, 2), "ReplaceableTextures\\CommandButtons\\BTNGlyph.blp")
+            call MultiboardSetItemIcon(MultiboardGetItem(.PlayerStats, i + 1, 3), "ReplaceableTextures\\CommandButtons\\BTNSkillz.tga")
+            call MultiboardSetItemIcon(MultiboardGetItem(.PlayerStats, i + 1, 4), "ReplaceableTextures\\CommandButtons\\BTNAnkh.blp")
         
             if GetPlayerSlotState(Player(i)) == PLAYER_SLOT_STATE_PLAYING then
                 set u = User.GetUserFromPlayerID(i)
@@ -648,13 +657,15 @@ public struct MazingTeam
                 
                 call MultiboardSetItemValue(MultiboardGetItem(.PlayerStats, i + 1, 0), mt.GetStylizedPlayerName(i))
                 call MultiboardSetItemValue(MultiboardGetItem(.PlayerStats, i + 1, 1), Levels_Levels[mt.OnLevel].Name)
-                call MultiboardSetItemValue(MultiboardGetItem(.PlayerStats, i + 1, 2), I2S(mt.ContinueCount))
-                call MultiboardSetItemValue(MultiboardGetItem(.PlayerStats, i + 1, 3), I2S(u.Deaths))
+                call MultiboardSetItemValue(MultiboardGetItem(.PlayerStats, i + 1, 2), I2S(mt.Score))
+                call MultiboardSetItemValue(MultiboardGetItem(.PlayerStats, i + 1, 3), I2S(mt.ContinueCount))
+                call MultiboardSetItemValue(MultiboardGetItem(.PlayerStats, i + 1, 4), I2S(u.Deaths))
                 
                 call MultiboardReleaseItem(MultiboardGetItem(.PlayerStats, i + 1, 0))
                 call MultiboardReleaseItem(MultiboardGetItem(.PlayerStats, i + 1, 1))
                 call MultiboardReleaseItem(MultiboardGetItem(.PlayerStats, i + 1, 2))
                 call MultiboardReleaseItem(MultiboardGetItem(.PlayerStats, i + 1, 3))
+                call MultiboardReleaseItem(MultiboardGetItem(.PlayerStats, i + 1, 4))
             else
                 call MultiboardSetItemValue(MultiboardGetItem(.PlayerStats, i + 1, 0), "Not Playing")
                 call MultiboardReleaseItem(MultiboardGetItem(.PlayerStats, i + 1, 0))
@@ -667,7 +678,7 @@ public struct MazingTeam
         call MultiboardMinimize(.PlayerStats, true)
         call MultiboardMinimize(.PlayerStats, false)
         
-        call TimerStart(t, 3, false, function MazingTeam.MultiboardInitHideCallback)
+        call TimerStart(t, MULTIBOARD_HIDE_DELAY, false, function MazingTeam.MultiboardInitHideCallback)
         
         set t = null
     endmethod

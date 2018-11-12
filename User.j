@@ -258,19 +258,25 @@ struct User extends array
     
     public method PartialUpdateMultiboard takes nothing returns nothing
         if GetPlayerSlotState(Player(this)) == PLAYER_SLOT_STATE_PLAYING then                
-            call MultiboardSetItemValue(MultiboardGetItem(.Team.PlayerStats, this + 1, 3), I2S(.Deaths))
+            call MultiboardSetItemValue(MultiboardGetItem(.Team.PlayerStats, this + 1, 2), I2S(.Team.Score))
+            call MultiboardSetItemValue(MultiboardGetItem(.Team.PlayerStats, this + 1, 3), I2S(.Team.ContinueCount))
+            call MultiboardSetItemValue(MultiboardGetItem(.Team.PlayerStats, this + 1, 4), I2S(.Deaths))
             
+            call MultiboardReleaseItem(MultiboardGetItem(.Team.PlayerStats, this + 1, 2))
             call MultiboardReleaseItem(MultiboardGetItem(.Team.PlayerStats, this + 1, 3))
+            call MultiboardReleaseItem(MultiboardGetItem(.Team.PlayerStats, this + 1, 4))
         elseif GetPlayerSlotState(Player(this)) == PLAYER_SLOT_STATE_LEFT then
             call MultiboardSetItemValue(MultiboardGetItem(.Team.PlayerStats, this + 1, 0), "Left the game")
             call MultiboardSetItemValue(MultiboardGetItem(.Team.PlayerStats, this + 1, 1), "Gone")
-            call MultiboardSetItemValue(MultiboardGetItem(.Team.PlayerStats, this + 1, 2), "Too few")
-            call MultiboardSetItemValue(MultiboardGetItem(.Team.PlayerStats, this + 1, 3), "Too many")
+            call MultiboardSetItemValue(MultiboardGetItem(.Team.PlayerStats, this + 1, 2), "Negative")
+            call MultiboardSetItemValue(MultiboardGetItem(.Team.PlayerStats, this + 1, 3), "Zilch")
+            call MultiboardSetItemValue(MultiboardGetItem(.Team.PlayerStats, this + 1, 4), "Too many")
             
             call MultiboardReleaseItem(MultiboardGetItem(.Team.PlayerStats, this + 1, 0))
             call MultiboardReleaseItem(MultiboardGetItem(.Team.PlayerStats, this + 1, 1))
             call MultiboardReleaseItem(MultiboardGetItem(.Team.PlayerStats, this + 1, 2))
             call MultiboardReleaseItem(MultiboardGetItem(.Team.PlayerStats, this + 1, 3))
+            call MultiboardReleaseItem(MultiboardGetItem(.Team.PlayerStats, this + 1, 4))
         else
             call MultiboardSetItemValue(MultiboardGetItem(.Team.PlayerStats, this + 1, 0), "Not playing")
             call MultiboardReleaseItem(MultiboardGetItem(.Team.PlayerStats, this + 1, 0))
