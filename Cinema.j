@@ -1,4 +1,4 @@
-library Cinema requires User, SimpleList, Alloc, Event
+library Cinema requires SimpleList, Alloc, Event
 
 globals
     //amount of time before the message should start fading
@@ -69,8 +69,9 @@ struct Cinematic extends array
     //public CinemaCallback OnCinemaStart
     //public CinemaCallback OnCinemaEnd
     //public SimpleList_List OnCinemaEndCBs //list of integers representing a function interface -- can only recycle the list
-    public Event OnCinemaEnd
-    public Event OnDestroy
+    public static Event OnCinemaEnd
+    // public Event OnDestroy
+    public Levels_Level ParentLevel
     
     implement Alloc
     
@@ -109,7 +110,7 @@ struct Cinematic extends array
             
             set EventCinematic = cinemaCBModel.Cinematic
             set EventUser = cinemaCBModel.User
-            call cinemaCBModel.Cinematic.OnCinemaEnd.fire()
+            call thistype.OnCinemaEnd.fire()
             
             //reached last message in cinematic, recycle CB object and release viewers
             call cinemaCBModel.deallocate()
@@ -151,8 +152,14 @@ struct Cinematic extends array
     public method destroy takes nothing returns nothing
         local SimpleList_ListNode curCinemaMessage
         
-        set EventCinematic = this
-        call .OnDestroy.fire()
+        //alert any dependent functionality of the cinematic being destroyed
+        // set EventCinematic = this
+        // call .OnDestroy.fire()
+        //right now, this is just the level, so hard-coding that dependency may be enough
+        //call DisplayTextToForce(bj_FORCE_PLAYER[0], "Destroying cinematic " + I2S(this) + ", total count: " + I2S(.ParentLevel.Cinematics.count))
+        if .ParentLevel != 0 then
+            call .ParentLevel.Cinematics.remove(this)
+        endif
         
         loop
         set curCinemaMessage = .CinemaMessages.pop()
@@ -170,7 +177,7 @@ struct Cinematic extends array
     
     private static method CheckAllWatched takes nothing returns boolean
         local Cinematic cinema = EventCinematic
-        call DisplayTextToForce(bj_FORCE_PLAYER[0], "Cinema count " + I2S(cinema.PreviousViewers.count) + ", active player count " + I2S(User.ActivePlayers))
+        //call DisplayTextToForce(bj_FORCE_PLAYER[0], "Cinema count " + I2S(cinema.PreviousViewers.count) + ", active player count " + I2S(User.ActivePlayers))
         
         if cinema.PreviousViewers.count == User.ActivePlayers then
             //call DisplayTextToForce(bj_FORCE_PLAYER[0], "All players have watched, so destroying cinema " + I2S(cinema))
@@ -190,10 +197,12 @@ struct Cinematic extends array
         set new.ActivationCondition = 0
         //set new.OnCinemaStart = 0
         //set new.OnCinemaEnd = 0
-        set new.OnCinemaEnd = Event.create()
-        call new.OnCinemaEnd.register(Condition(function thistype.CheckAllWatched))
+        //set new.OnCinemaEnd = Event.create()
+        //call new.OnCinemaEnd.register(Condition(function thistype.CheckAllWatched))
         
-        set new.OnDestroy = Event.create()
+        set new.ParentLevel = 0
+        
+        //set new.OnDestroy = Event.create()
         //set new.OnCinemaEndCBs = SimpleList_List.create()
         //call new.OnCinemaEndCBs.add(CheckAllWatched)
         
@@ -204,6 +213,10 @@ struct Cinematic extends array
         
         return new
     endmethod
+    
+    public static method onInit takes nothing returns nothing
+        set thistype.OnCinemaEnd = Event.create()
+        call thistype.OnCinemaEnd.register(Condition(function thistype.CheckAllWatched))
+    endmethod
 endstruct
-
 endlibrary

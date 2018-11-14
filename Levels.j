@@ -511,7 +511,11 @@ library Levels initializer Init requires SimpleList, Teams, GameModesGlobals, Ci
         public method SetStartables takes SimpleList_List startables returns nothing
             set .Content.Startables = startables
         endmethod
-                
+        
+        public method AddCinematic takes Cinematic cinema returns nothing
+            call .Cinematics.addEnd(cinema)
+            set cinema.ParentLevel = this
+        endmethod
         public static method CheckCinematics takes nothing returns nothing
             local SimpleList_ListNode curLevel = thistype.ActiveLevels.first
             local SimpleList_ListNode curCinematic
@@ -526,7 +530,7 @@ library Levels initializer Init requires SimpleList, Teams, GameModesGlobals, Ci
                 
                 loop
                 exitwhen curCinematic == 0
-                    //call DisplayTextToForce(bj_FORCE_PLAYER[0], "Checking cinematic " + I2S(curCinematic.value))
+                    //call DisplayTextToForce(bj_FORCE_PLAYER[0], "Checking cinematic " + I2S(curCinematic.value) + ", total count: " + I2S(thistype(curLevel.value).Cinematics.count))
                     set curTeam = thistype(curLevel.value).ActiveTeams.first
                     
                     loop

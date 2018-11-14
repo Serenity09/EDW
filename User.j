@@ -1,4 +1,4 @@
-library User requires MazerGlobals, Platformer, TerrainHelpers
+library User requires MazerGlobals, Platformer, TerrainHelpers, Cinema
 
 struct User extends array
     public integer PlayerID
@@ -37,7 +37,7 @@ struct User extends array
     private static method OnCinemaEndCB takes nothing returns boolean
         local User user = EventUser
         
-        call DisplayTextToForce(bj_FORCE_PLAYER[0], "Inside On Cinema End CB for user " + I2S(user))
+        //call DisplayTextToForce(bj_FORCE_PLAYER[0], "Inside On Cinema End CB for user " + I2S(user))
         set user.CinematicPlaying = false
         call user.CheckCinematicQueue()
         
@@ -47,7 +47,6 @@ struct User extends array
         //call DisplayTextToForce(bj_FORCE_PLAYER[0], "Adding cinematic for user: " + I2S(this))
         
         call cine.PreviousViewers.add(this)
-        call cine.OnCinemaEnd.register(Condition(function thistype.OnCinemaEndCB))
         //call cine.OnCinemaEndCBs.add(thistype.OnCinemaEndCB)
         
         call .CinematicQueue.addEnd(cine)
@@ -576,7 +575,12 @@ struct User extends array
                 endif
             //endif
         set n=n+1
-        endloop        
+        endloop       
+        
+        //register user cinematic CB
+        //call DisplayTextToPlayer(Player(0), 0, 0, "Trying to register user cinematic CB")
+        call Cinematic.OnCinemaEnd.register(Condition(function thistype.OnCinemaEndCB))
+        //call DisplayTextToPlayer(Player(0), 0, 0, "Registered user cinematic CB")
     endmethod
 endstruct
 

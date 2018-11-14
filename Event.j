@@ -17,7 +17,7 @@ library Event /* v2.0.0.1
 *
 ************************************************************************************/
     globals
-        private real q=0        
+        private real q=0
     endglobals
     struct Event extends array
         private static integer w=0
