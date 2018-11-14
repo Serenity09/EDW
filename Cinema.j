@@ -1,4 +1,4 @@
-library Cinema requires User, SimpleList, Alloc
+library Cinema requires User, SimpleList, Alloc, Event
 
 globals
     //amount of time before the message should start fading
@@ -9,7 +9,9 @@ globals
 endglobals
 
 function interface CinemaUserConditional takes User user returns boolean
-function interface CinemaUserCallback takes User user returns nothing
+function interface CinemaCallback takes Cinematic cinema, User user returns nothing
+
+function interface OnDestroyCallback takes integer structHandle returns nothing
 
 //allows a single integer ID to lookup fields for the cinema's callback function (which only gives you a single int to work with)
 struct CinemaCallbackModel extends array
@@ -37,6 +39,13 @@ struct CinemaMessage extends array
         
     implement Alloc
     
+    public method destroy takes nothing returns nothing
+        set .Source = null
+        set .Text = null
+        
+        call .deallocate()
+    endmethod
+    
     public static method create takes unit source, string text, real time returns thistype
         local thistype new = thistype.allocate()
         
@@ -53,11 +62,15 @@ struct Cinematic extends array
     public CinemaUserConditional ActivationCondition
     public boolean Individual
     public boolean PauseViewers
-    public SimpleList_List PreviousViewers
-    public SimpleList_List CinemaMessages
+    public SimpleList_List PreviousViewers //list of Users (do not destroy User instances, just the list)
+    public SimpleList_List CinemaMessages //list of Cinema Messages (cascade destroy)
     
-    //public CinemaUserCallback OnCinemaStart
-    public CinemaUserCallback OnCinemaEnd
+    //TODO move into CinemaMessage for at least equal, but ideally greater control
+    //public CinemaCallback OnCinemaStart
+    //public CinemaCallback OnCinemaEnd
+    public SimpleList_List OnCinemaEndCBs //list of integers representing a function interface -- can only recycle the list
+    //public Event OnCinemaEnd
+    //public Event OnDestroy
     
     implement Alloc
     
@@ -83,9 +96,10 @@ struct Cinematic extends array
         local timer t = GetExpiredTimer()
         local CinemaCallbackModel cinemaCBModel = GetTimerData(t)
         local real messageTime
+        local SimpleList_ListNode curEndCB
         
         if cinemaCBModel.CurrentMessage == 0 then
-            call DisplayTextToForce(bj_FORCE_PLAYER[0], "No more messages for CB Model " + I2S(cinemaCBModel))
+            //call DisplayTextToForce(bj_FORCE_PLAYER[0], "No more messages for CB Model " + I2S(cinemaCBModel))
 
             if cinemaCBModel.Cinematic.PauseViewers then
                 call cinemaCBModel.User.Pause(false)
@@ -93,9 +107,17 @@ struct Cinematic extends array
             
             call ReleaseTimer(t)
             
-            if cinemaCBModel.Cinematic.OnCinemaEnd != 0 then
-                call DisplayTextToForce(bj_FORCE_PLAYER[0], "Calling on end CB for user " + I2S(cinemaCBModel.User))
-                call cinemaCBModel.Cinematic.OnCinemaEnd.evaluate(cinemaCBModel.User)
+            if cinemaCBModel.Cinematic.OnCinemaEndCBs.count != 0 then
+                //call DisplayTextToForce(bj_FORCE_PLAYER[0], "Calling on end CB for user " + I2S(cinemaCBModel.User))
+                set curEndCB = cinemaCBModel.Cinematic.OnCinemaEndCBs.first
+                
+                loop
+                exitwhen curEndCB == 0
+                    //call DisplayTextToForce(bj_FORCE_PLAYER[0], "Calling on end CB " + I2S(curEndCB.value) + " for user " + I2S(cinemaCBModel.User))
+                    
+                    call CinemaCallback(curEndCB.value).evaluate(cinemaCBModel.Cinematic, cinemaCBModel.User)
+                set curEndCB = curEndCB.next
+                endloop
             endif
             
             //reached last message in cinematic, recycle CB object and release viewers
@@ -141,6 +163,33 @@ struct Cinematic extends array
         set t = null
     endmethod
     
+    public method destroy takes nothing returns nothing
+        local SimpleList_ListNode curCinemaMessage
+        
+        loop
+        set curCinemaMessage = .CinemaMessages.pop()
+        exitwhen curCinemaMessage == 0
+            call CinemaMessage(curCinemaMessage.value).destroy()
+        endloop
+        
+        call .OnCinemaEndCBs.destroy()
+        call .PreviousViewers.destroy()
+        call .CinemaMessages.destroy()
+        
+        set .ActivationArea = null
+        
+        call .deallocate()
+    endmethod
+    
+    private static method CheckAllWatched takes Cinematic cinema, User user returns nothing
+        //call DisplayTextToForce(bj_FORCE_PLAYER[0], "Cinema count " + I2S(cinema.PreviousViewers.count) + ", active player count " + I2S(User.ActivePlayers))
+        
+        if cinema.PreviousViewers.count == User.ActivePlayers then
+            //call DisplayTextToForce(bj_FORCE_PLAYER[0], "All players have watched, so destroying cinema " + I2S(cinema))
+            call cinema.destroy()
+        endif
+    endmethod
+    
     public static method create takes rect activationArea, boolean individual, boolean pause, CinemaMessage firstMessage returns thistype
         local thistype new = thistype.allocate()
         
@@ -150,7 +199,11 @@ struct Cinematic extends array
         
         set new.ActivationCondition = 0
         //set new.OnCinemaStart = 0
-        set new.OnCinemaEnd = 0
+        //set new.OnCinemaEnd = 0
+        //set new.OnCinemaEnd = Event.create()
+        //set new.OnDestroy = Event.create()
+        set new.OnCinemaEndCBs = SimpleList_List.create()
+        call new.OnCinemaEndCBs.add(CheckAllWatched)
         
         set new.PreviousViewers = SimpleList_List.create()
         set new.CinemaMessages = SimpleList_List.create()

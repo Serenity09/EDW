@@ -7,7 +7,7 @@ library MazerGlobals initializer Init requires GameGlobalConstants, ContinueGlob
         //units that represents the revive circle
         unit array PlayerReviveCircles[NumberPlayers]
         //a player's score
-        integer array Score[NumberPlayers]
+        //integer array Score[NumberPlayers]
         //the current "color" the unit is, for passing through color gate purposes
         //0: none, 1: red, 2: blue, 3: green
         integer array MazerColor[NumberPlayers]
@@ -121,7 +121,7 @@ library MazerGlobals initializer Init requires GameGlobalConstants, ContinueGlob
             //only mazers who are not playing will be on level -1... level -1 does not exist
             set MazerOnLevel[i] = -1
             set MazerColor[i] = 0
-            set Score[i] = 0
+            //set Score[i] = 0
             set AbyssImmune[i] = false
             set isMoving[i] = false
             set UseTeleportMovement[i] = false

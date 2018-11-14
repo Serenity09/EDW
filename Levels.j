@@ -8,6 +8,13 @@ library Levels initializer Init requires SimpleList, Teams, GameModesGlobals, Ci
         
         public constant real CINEMATIC_TIMER_TIMEOUT = .5
         public constant real CHECKPOINT_TIMER_TIMEOUT = .1
+        
+        public constant real EASY_SCORE_MODIFIER = 1.
+        public constant real HARD_SCORE_MODIFIER = 1.25
+        public constant real EASY_CONTINUE_MODIFIER = 1.25
+        public constant integer EASY_MAX_CONTINUE_ROLLOVER = 2
+        public constant real HARD_CONTINUE_MODIFIER = .75
+        
     endglobals
     
     struct LevelContent //extends IStartable
@@ -91,8 +98,8 @@ library Levels initializer Init requires SimpleList, Teams, GameModesGlobals, Ci
     public struct Level //extends IStartable
         readonly integer     LevelID         //the number of a level -- the same as the index
         public string      Name            //a levels name, only used in the multiboard
-        public integer     ParContinues      //refers to the difficulty of a level
-        public integer     Difficulty
+        public integer     RawContinues      //refers to the difficulty of a level
+        public integer     RawScore
         public LevelContent Content          //all the stuff to fill a level with when turned on/off
         /*
         readonly trigger     Start           //this trigger turns a level "on"
@@ -348,6 +355,16 @@ library Levels initializer Init requires SimpleList, Teams, GameModesGlobals, Ci
             call nextLevel.Start() //only starts the next level if there is one -- also preloads the following level
             
             set mt.OnLevel = nextLevel.LevelID
+            if RewardMode == GameModesGlobals_EASY then
+                if mt.ContinueCount > EASY_MAX_CONTINUE_ROLLOVER then
+                    set mt.ContinueCount = EASY_MAX_CONTINUE_ROLLOVER
+                endif
+                
+                set mt.ContinueCount = mt.ContinueCount + R2I(nextLevel.RawContinues*EASY_CONTINUE_MODIFIER + .5)
+            elseif RewardMode == GameModesGlobals_HARD then
+                set mt.ContinueCount = R2I(nextLevel.RawContinues*HARD_CONTINUE_MODIFIER + .5)
+            endif
+            
             call nextLevel.ActiveTeams.add(mt)
             
             if this.TeamStopCB != null then
@@ -390,6 +407,12 @@ library Levels initializer Init requires SimpleList, Teams, GameModesGlobals, Ci
                 set mt.RecentlyTransferred = true
                 //set mt.LastTransferTime = elapsed
                 
+                if RewardMode == GameModesGlobals_EASY or RewardMode == GameModesGlobals_CHEAT then
+                    set mt.Score = mt.Score + R2I(curLevel.RawScore*EASY_SCORE_MODIFIER + .5)
+                elseif RewardMode == GameModesGlobals_HARD then
+                    set mt.Score = mt.Score + R2I(curLevel.RawScore*HARD_SCORE_MODIFIER + .5)
+                endif
+                
                 //determine what the next level is, based on what the current level is
                 if mt.OnLevel == DOORS_LEVEL_ID then
                     call mt.MoveReviveToDoors() //not pretty but it works
@@ -423,14 +446,10 @@ library Levels initializer Init requires SimpleList, Teams, GameModesGlobals, Ci
             local region r
             
             set new.LevelID = DOORS_LEVEL_ID
-            set new.Name = new.ToString()
-            /*
-            set new.Start = null
-            set new.Stop = null
-            set new.Preload = null
-            set new.Unload = null
-            set new.HasPreload = false
-            */
+            set new.Name = "Doors"
+            set new.RawContinues = 0
+            set new.RawScore = 0
+
             set new.Content = Content.create(startFunction, stopFunction)
             set new.CPCount = 0
             call new.AddCheckpoint(null, startspawn)
@@ -492,7 +511,7 @@ library Levels initializer Init requires SimpleList, Teams, GameModesGlobals, Ci
         public method SetStartables takes SimpleList_List startables returns nothing
             set .Content.Startables = startables
         endmethod
-        
+                
         public static method CheckCinematics takes nothing returns nothing
             local SimpleList_ListNode curLevel = thistype.ActiveLevels.first
             local SimpleList_ListNode curCinematic
@@ -523,10 +542,10 @@ library Levels initializer Init requires SimpleList, Teams, GameModesGlobals, Ci
                             if Cinematic(curCinematic.value).CanUserActivate(User(curUser.value)) then
                                 //call Cinematic(curCinematic.value).Activate(curUser.value)
                                 if Cinematic(curCinematic.value).Individual then
-                                    call DisplayTextToForce(bj_FORCE_PLAYER[0], "User " + I2S(user) + " activating cine " + I2S(curCinematic.value) + " for self")
+                                    //call DisplayTextToForce(bj_FORCE_PLAYER[0], "User " + I2S(user) + " activating cine " + I2S(curCinematic.value) + " for self")
                                     call user.AddCinematicToQueue(curCinematic.value)
                                 else
-                                    call DisplayTextToForce(bj_FORCE_PLAYER[0], "User " + I2S(user) + " activating cine " + I2S(curCinematic.value) + " for team")
+                                    //call DisplayTextToForce(bj_FORCE_PLAYER[0], "User " + I2S(user) + " activating cine " + I2S(curCinematic.value) + " for team")
                                     call Teams_MazingTeam(curTeam.value).AddTeamCinema(curCinematic.value, user)
                                 endif
                             endif
@@ -544,13 +563,16 @@ library Levels initializer Init requires SimpleList, Teams, GameModesGlobals, Ci
         endmethod
         
         //creates a level struct
-        static method create takes integer LevelID, /*string name, integer diff, */string startFunction, string stopFunction, rect startspawn, rect vision, rect tothislevel, Level previouslevel returns Level
+        static method create takes integer LevelID, string name, integer rawContinues, integer rawScore, string startFunction, string stopFunction, rect startspawn, rect vision, rect tothislevel, Level previouslevel returns Level
             local Level new = Level.allocate()
             local region r
             
             //infer this is a partial level
             set new.LevelID = LevelID
-            set new.Name = new.ToString()
+            //set new.Name = new.ToString()
+            set new.Name = name
+            set new.RawContinues = rawContinues
+            set new.RawScore = rawScore
             //set new.Difficulty = diff
             /*
             set new.Start = start

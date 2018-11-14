@@ -14,6 +14,8 @@ struct User extends array
     public boolean CinematicPlaying
     public SimpleList_List CinematicQueue //FiFo
     
+    public static integer ActivePlayers
+    
     //TODO
     //public integer TotalScore
     //public integer ResourceCount
@@ -32,7 +34,7 @@ struct User extends array
         endloop
     endmethod
     
-    private static method OnCinemaEndCB takes User user returns nothing
+    private static method OnCinemaEndCB takes Cinematic cinema, User user returns nothing
         //call DisplayTextToForce(bj_FORCE_PLAYER[0], "Inside On Cinema End CB for user " + I2S(user))
         set user.CinematicPlaying = false
         call user.CheckCinematicQueue()
@@ -41,7 +43,7 @@ struct User extends array
         //call DisplayTextToForce(bj_FORCE_PLAYER[0], "Adding cinematic for user: " + I2S(this))
         
         call cine.PreviousViewers.add(this)
-        set cine.OnCinemaEnd = thistype.OnCinemaEndCB
+        call cine.OnCinemaEndCBs.add(thistype.OnCinemaEndCB)
         
         call .CinematicQueue.addEnd(cine)
         
@@ -94,8 +96,9 @@ struct User extends array
         call thistype.DisplayMessageAll(this.GetStylizedPlayerName() + " has left the game!")
         
         set .Vision = null
-        
         set .ActiveUnit = null
+        
+        set User.ActivePlayers = User.ActivePlayers - 1
     endmethod
     
     
@@ -547,12 +550,17 @@ struct User extends array
                     
         set new.Platformer = Platformer.AllPlatformers[new]
         
+        if new.IsPlaying then
+            set User.ActivePlayers = User.ActivePlayers + 1
+        endif
+        
         return new
     endmethod
 
     public static method onInit takes nothing returns nothing
         local integer n = 0
-                
+        set User.ActivePlayers = 0
+        
         loop
         exitwhen n>=12
             //debug call DisplayTextToPlayer(Player(0), 0, 0, "Creating User: " + I2S(n))
