@@ -34,16 +34,21 @@ struct User extends array
         endloop
     endmethod
     
-    private static method OnCinemaEndCB takes Cinematic cinema, User user returns nothing
-        //call DisplayTextToForce(bj_FORCE_PLAYER[0], "Inside On Cinema End CB for user " + I2S(user))
+    private static method OnCinemaEndCB takes nothing returns boolean
+        local User user = EventUser
+        
+        call DisplayTextToForce(bj_FORCE_PLAYER[0], "Inside On Cinema End CB for user " + I2S(user))
         set user.CinematicPlaying = false
         call user.CheckCinematicQueue()
+        
+        return false
     endmethod
     public method AddCinematicToQueue takes Cinematic cine returns nothing
         //call DisplayTextToForce(bj_FORCE_PLAYER[0], "Adding cinematic for user: " + I2S(this))
         
         call cine.PreviousViewers.add(this)
-        call cine.OnCinemaEndCBs.add(thistype.OnCinemaEndCB)
+        call cine.OnCinemaEnd.register(Condition(function thistype.OnCinemaEndCB))
+        //call cine.OnCinemaEndCBs.add(thistype.OnCinemaEndCB)
         
         call .CinematicQueue.addEnd(cine)
         
