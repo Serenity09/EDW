@@ -47,8 +47,13 @@ library GroupUtils initializer init requires Table
     	
     function ReleaseGroup takes group g returns nothing
         call GroupClear(g)
-		call SetGroupData(g, 0)
-        set recycle[count] = g
-        set count = count + 1
+		
+		if count == MAX_RECYCLE_COUNT then
+			call DestroyGroup(g)
+		else
+			call SetGroupData(g, 0)
+			set recycle[count] = g
+			set count = count + 1
+		endif
     endfunction
 endlibrary
