@@ -4,6 +4,8 @@ globals
     private constant real TIMESTEP = .035
     private constant real ACCELERATION = 5.75*TIMESTEP
 	private constant real FALLOFF = 1.05
+	
+	public constant real MOVESPEED = 200
 endglobals
 
 function SandMove takes nothing returns nothing
