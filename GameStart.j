@@ -133,9 +133,12 @@ library GameStart initializer Init requires Levels, EDWVisualVote, UnitGlobals, 
     private function IsUserCinemaQueueBig takes User user returns boolean
         return user.CinematicQueue.count >= 3
     endfunction
-    private function IsUserCinemaQueueEmpty takes User user returns boolean
-        return user.CinematicQueue.count == 0
+    private function IsUserInCinema takes User user returns boolean
+		return user.CinematicPlaying != 0
     endfunction
+	private function IsUserNotInCinema takes User user returns boolean
+		return user.CinematicPlaying == 0
+	endfunction
     private function IsUserDying takes User user returns boolean
         return user.GameMode == Teams_GAMEMODE_DYING or user.GameMode == Teams_GAMEMODE_DEAD
     endfunction
@@ -226,7 +229,7 @@ library GameStart initializer Init requires Levels, EDWVisualVote, UnitGlobals, 
         
         set cineMsg = CinemaMessage.create(null, GetEDWSpeakerMessage(PRIMARY_SPEAKER_NAME, "Wow...", DEFAULT_TEXT_COLOR), DEFAULT_SHORT_TEXT_SPEED)
         set cine = Cinematic.create(gg_rct_SargeVines, true, false, cineMsg)
-        set cine.ActivationCondition = IsUserCinemaQueueEmpty
+        set cine.ActivationCondition = IsUserNotInCinema
         call cine.AddMessage(null, GetEDWSpeakerMessage(PRIMARY_SPEAKER_NAME, "It's like a Special Ed class took a field trip to a Catholic Church", DEFAULT_TEXT_COLOR), DEFAULT_MEDIUM_TEXT_SPEED)
         call l.AddCinematic(cine)
                         
@@ -243,7 +246,7 @@ library GameStart initializer Init requires Levels, EDWVisualVote, UnitGlobals, 
         call cine.AddMessage(null, GetEDWSpeakerMessage(PRIMARY_SPEAKER_NAME, "But are they the same friends, or are these just copies?", DEFAULT_TEXT_COLOR), DEFAULT_SHORT_TEXT_SPEED)
         call l.AddCinematic(cine)
         
-        set cineMsg = CinemaMessage.create(null, GetEDWSpeakerMessage(PRIMARY_SPEAKER_NAME, "Ahhh, I'd know that brick terrain anywhere", DEFAULT_TEXT_COLOR), DEFAULT_SHORT_TEXT_SPEED)
+        set cineMsg = CinemaMessage.create(null, GetEDWSpeakerMessage(PRIMARY_SPEAKER_NAME, "Ahh, I'd know that mossy brick tile anywhere", DEFAULT_TEXT_COLOR), DEFAULT_SHORT_TEXT_SPEED)
         set cine = Cinematic.create(gg_rct_SargePlatformingTile, true, false, cineMsg)
         call cine.AddMessage(null, GetEDWSpeakerMessage(PRIMARY_SPEAKER_NAME, "Brings me right back to my time in 'Nam", DEFAULT_TEXT_COLOR), DEFAULT_SHORT_TEXT_SPEED)
         call cine.AddMessage(null, GetEDWSpeakerMessage(PRIMARY_SPEAKER_NAME, "Touching it will change your world", DEFAULT_TEXT_COLOR), DEFAULT_SHORT_TEXT_SPEED)

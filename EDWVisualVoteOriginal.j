@@ -1,14 +1,13 @@
 library EDWVisualVote requires VisualVote, ContinueGlobals, Teams, PlayerUtils, MazerGlobals
     globals
-        //public VisualVote_voteMenu MyMenu
+        public VisualVote_voteMenu MyMenu
         
-        private constant real VOTE_TIME_ROUND_ONE = 10
-		private constant real VOTE_TIME_ROUND_TWO = 10
-		private constant boolean FORCE_MENU = false
+        private constant real VOTE_TIME = 15
+	private constant boolean DEBUG_OVERRIDE = true
     endglobals
     
     public function GetFirstLevel takes nothing returns Levels_Level
-        if DEBUG_MODE then
+        if DEBUG_MODE or DEBUG_OVERRIDE then
             //3 == first ice level
             //24/31 == last ice levels
             //9 == first platforming level
@@ -57,6 +56,8 @@ library EDWVisualVote requires VisualVote, ContinueGlobals, Teams, PlayerUtils, 
         set RewardMode = 2
     endfunction
     
+    
+    
     public function MinigamesOn takes nothing returns nothing
         //call DisplayTextToPlayer(Player(0), 0, 0, "minigames on (actually off)")
         
@@ -81,8 +82,8 @@ library EDWVisualVote requires VisualVote, ContinueGlobals, Teams, PlayerUtils, 
         set RespawnASAPMode = false
     endfunction
     
-	public function InitializeGameForGlobals takes nothing returns nothing
-		local SimpleList_ListNode fp = PlayerUtils_FirstPlayer
+    public function OnOptionFinishCallback takes nothing returns nothing
+        local SimpleList_ListNode fp = PlayerUtils_FirstPlayer
         
         local integer count = GetHumanPlayersCount()
         local Teams_MazingTeam array team
@@ -95,7 +96,7 @@ library EDWVisualVote requires VisualVote, ContinueGlobals, Teams, PlayerUtils, 
         local boolean flag
         local Levels_Level firstLevel
         
-        call DisplayTextToPlayer(Player(0), 0, 0, "Initializing Game For Globals")
+        //call DisplayTextToPlayer(Player(0), 0, 0, "On option finish callback")
         //call DisplayTextToPlayer(Player(0), 0, 0, "Human count: " + I2S(count))
         
         if GameMode == 0 then
@@ -113,6 +114,10 @@ library EDWVisualVote requires VisualVote, ContinueGlobals, Teams, PlayerUtils, 
             endloop
             
             set teamCount = i
+            
+            //force respawn asap settings manually for now
+            //should be used when teams always respawn on death
+            set RespawnASAPMode = true
         elseif GameMode == 1 then
             //one team for all players
             set team[0] = Teams_MazingTeam.create(0)
@@ -257,46 +262,15 @@ library EDWVisualVote requires VisualVote, ContinueGlobals, Teams, PlayerUtils, 
         call Teams_MazingTeam.MultiboardSetupInit()
         
         debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "On Option Finish finished!")
-	endfunction
-    
-	public function OnRoundOneFinishCB takes nothing returns nothing
-		local VisualVote_voteMenu MyMenu
-		local VisualVote_voteColumn col
-        local VisualVote_voteContainer con
-        local VisualVote_voteOption opt   
-		
-		if GameMode != 0 then
-			//start round 2 of voting!
-			set MyMenu = VisualVote_voteMenu.create(3060, 5800, VOTE_TIME_ROUND_TWO, "EDWVisualVote_InitializeGameForGlobals")
-			call MyMenu.addAllPlayersToMenu()
-			
-			set col = MyMenu.addColumn(512)
-            
-            set con = col.addContainer("Respawn Wait Style")
-            set con.required = true
-            
-            call con.addOption("Leeeeeroy Jenkinsss", "EDWVisualVote_InstantRespawnOn")
-            set opt = con.addOption("We Band of Brothers", "EDWVisualVote_InstantRespawnOff")
-            set con.defaultOption = opt
-			
-			call MyMenu.render()
-            call MyMenu.enforceVoteMode()
-		else
-			set RespawnASAPMode = true
-			set MinigamesMode = false
-			
-			call InitializeGameForGlobals()
-		endif
-	endfunction
+    endfunction
     
     //TODO add 2 stage menu, first choose team or solo -- then specify for final options
     public function CreateMenu takes nothing returns nothing
-		local VisualVote_voteMenu MyMenu
-		local VisualVote_voteColumn col
+	local VisualVote_voteColumn col
         local VisualVote_voteContainer con
         local VisualVote_voteOption opt        
 
-		if not FORCE_MENU and (GetHumanPlayersCount() == 1 or DEBUG_MODE) then
+	if DEBUG_MODE or DEBUG_OVERRIDE then
         //static if DEBUG_MODE and false then
             set GameMode = GameModesGlobals_TEAMALL
             //99 and none
@@ -306,10 +280,10 @@ library EDWVisualVote requires VisualVote, ContinueGlobals, Teams, PlayerUtils, 
             //currently unimplemented
             set MinigamesMode = false
             
-            call InitializeGameForGlobals()
+            call OnOptionFinishCallback()
         else
-            set MyMenu = VisualVote_voteMenu.create(3060, 5800, VOTE_TIME_ROUND_ONE, null)
-            set MyMenu.onDestroyFinish = "EDWVisualVote_OnRoundOneFinishCB"
+            set MyMenu = VisualVote_voteMenu.create(3060, 5800, VOTE_TIME, "EDWVisualVote_OnOptionFinishCallback")
+            
             call MyMenu.addAllPlayersToMenu()
             //set MyMenu = VisualVote_voteMenu.create(-1600, 7556)
             
@@ -319,30 +293,42 @@ library EDWVisualVote requires VisualVote, ContinueGlobals, Teams, PlayerUtils, 
             set con.required = true
             
             call con.addOption("Solo", "EDWVisualVote_GameModeSolo")
-            set opt = con.addOption("Teams - Mixer", "EDWVisualVote_GameModeRandom")
+            set opt = con.addOption("Teams - Random", "EDWVisualVote_GameModeRandom")
             set con.defaultOption = opt
             set opt = con.addOption("Teams - All is One", "EDWVisualVote_GameModeAllIsOne")
-            //debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "Default: " + con.defaultOption.text)
             
-			set con = col.addContainer("Difficulty")
+            debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "Default: " + con.defaultOption.text)
+            //
+            set con = col.addContainer("Reward System")
             set con.required = true
             
             call con.addOption("Vanilla", "EDWVisualVote_RewardStandard")
             call con.addOption("Chocolate", "EDWVisualVote_RewardChallenge")
             set opt = con.addOption("99 and None", "EDWVisualVote_Reward99AndNone")
             set con.defaultOption = opt
-            //debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "Default: " + con.defaultOption.text)
             
-            //debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "Default: " + con.defaultOption.text)
-			set col = MyMenu.addColumn(512)
-			
+            debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "Default: " + con.defaultOption.text)
+            
+            //
+            //
+            set col = MyMenu.addColumn(512)
+            
+            set con = col.addContainer("Respawn Wait Style")
+            set con.required = true
+            
+            call con.addOption("Leeeeeroy Jenkinsss", "EDWVisualVote_InstantRespawnOn")
+            set opt = con.addOption("We Band of Brothers", "EDWVisualVote_InstantRespawnOff")
+            set con.defaultOption = opt
+            
+            debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "Default: " + con.defaultOption.text)
+            //
             set con = col.addContainer("Contests")
             set con.required = false
             set con.enabled = false
             set opt = con.addOption("yea", "EDWVisualVote_MinigamesOn")
             set opt = con.addOption("nei", "EDWVisualVote_MinigamesOn")
             call opt.setDefault()
-
+            //
             set con = col.addContainer("RPG Mode")
             set con.required = false
             set con.enabled = false
@@ -356,3 +342,28 @@ library EDWVisualVote requires VisualVote, ContinueGlobals, Teams, PlayerUtils, 
         endif
     endfunction
 endlibrary
+
+
+/*
+        local integer i = 0
+        local integer j
+        local integer rand
+        local integer count = 0
+        local boolean flag
+        local integer teamCount
+        local integer array teamSize
+        local integer array teamSlotsRemaining
+        local Teams_MazingTeam array team
+        //Create teams for selected mode
+        //Solo
+        if (GameMode == 0) then
+            //Solo -- create a 1 man team for each mazer
+            call Teams_MazingTeam.MultiboardSetupInit()
+        elseif (GameMode == 1) then
+            //Teams -- random            
+            call Teams_MazingTeam.MultiboardSetupInit()
+        elseif (GameMode == 2) then
+            //Teams -- all on the same team
+        call Teams_MazingTeam.MultiboardSetupInit()
+*/
+
