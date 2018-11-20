@@ -253,6 +253,8 @@ function Trig_InGamePlatformingChanges_Actions takes nothing returns nothing
 	elseif cmd == "checkpoint" or cmd == "cp" then
 		if Levels_Levels[team.OnLevel].CPCount > intVal and intVal >= 0 then
 			call Levels_Levels[team.OnLevel].SetCheckpointForTeam(team, intVal)
+			
+			//call DisplayTextToForce(bj_FORCE_PLAYER[0], "Final -- check active x: " + R2S(GetUnitX(User(1).ActiveUnit)) + ", y: " + R2S(GetUnitY(User(1).ActiveUnit)))
 		endif
 	elseif cmd == "help" or cmd == "h" then
 		call PrintPlatformingVariables(p)

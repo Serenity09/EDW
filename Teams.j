@@ -202,6 +202,9 @@ public struct MazingTeam
         endif
     endmethod
     
+	public method ReviveTeam takes nothing returns nothing
+		call .RespawnTeamAtRect(.Revive, true)
+	endmethod
     public method RespawnTeamAtRect takes rect newlocation, boolean moveliving returns nothing
         local real x
         local real y
@@ -210,7 +213,7 @@ public struct MazingTeam
         local User u
         local timer t
         
-        //call DisplayTextToForce(bj_FORCE_PLAYER[0], "respawn start")
+        //call DisplayTextToForce(bj_FORCE_PLAYER[0], "Respawn start for team " + I2S(this))
         
         if .IsTeamPlaying then
             //debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "Team respawn")
@@ -223,49 +226,12 @@ public struct MazingTeam
                 //call DisplayTextToForce(bj_FORCE_PLAYER[0], "cur " + I2S(fp) + ", next " + I2S(fp.next))
                 
                 call u.RespawnAtRect(newlocation, moveliving)
-                
-                /*
-                if u.IsPlaying and (moveliving or u.GameMode == GAMEMODE_DEAD) then
-                    //call DisplayTextToForce(bj_FORCE_PLAYER[0], "need to respawn")
-                    
-                    loop
-                        set x = GetRandomReal(GetRectMinX(newlocation), GetRectMaxX(newlocation))
-                        set y = GetRandomReal(GetRectMinY(newlocation), GetRectMaxY(newlocation))
-                        //check these values to see if they're on abyss, redo if so
-                        set ttype = GetTerrainType(x, y)
-                        
-                        if .DefaultGameMode == GAMEMODE_STANDARD then
-                            exitwhen (ttype != ABYSS and ttype != LAVA and ttype != RUNEBRICKS)
-                        elseif .DefaultGameMode == GAMEMODE_PLATFORMING then
-                            exitwhen (ttype != LAVA and ttype != LRGBRICKS and ttype != RUNEBRICKS and TerrainGlobals_IsTerrainPathable(ttype))
-                        endif
-                    endloop
-                    
-                    call u.SwitchGameModes(.DefaultGameMode, x, y)
-                    //call u.ReviveActiveHero(x, y)
-                    
-                    set u.IsAlive = true
-                endif
-                */
             set fp = fp.next
             endloop
             
-            /*
-            call ApplyTeamDefaultCameras()
-            
-            set t = NewTimerEx(this)
-            if RespawnASAPMode then
-                call TimerStart(t, REVIVE_PAUSE_TIME_ASAP, false, function MazingTeam.UnpauseTeam)
-            else
-                call TimerStart(t, REVIVE_PAUSE_TIME_NONASAP, false, function MazingTeam.UnpauseTeam)
-            endif
-            
-            //call DisplayTextToForce(bj_FORCE_PLAYER[0], "respawn end")
-            */
+			//call DisplayTextToForce(bj_FORCE_PLAYER[0], "Respawn end for team " + I2S(this))
             set t = null
         endif
-        
-        //set .LastTransferTime = GameElapsedTime()
     endmethod
     
     public method SetPlatformerProfile takes PlatformerProfile profile returns nothing
@@ -508,8 +474,19 @@ public struct MazingTeam
             set u = User(fp.value)
             set pID = u.PlayerID
             
-            if GetPlayerSlotState(Player(pID)) == PLAYER_SLOT_STATE_PLAYING then                
-             elseif GetPlayerSlotState(Player(pID)) == PLAYER_SLOT_STATE_LEFT then
+            if GetPlayerSlotState(Player(pID)) == PLAYER_SLOT_STATE_PLAYING then          
+				call MultiboardSetItemValue(MultiboardGetItem(.PlayerStats, pID + 1, 0), .GetStylizedPlayerName(pID))
+                call MultiboardSetItemValue(MultiboardGetItem(.PlayerStats, pID + 1, 1), Levels_Levels[.OnLevel].Name)
+                call MultiboardSetItemValue(MultiboardGetItem(.PlayerStats, pID + 1, 2), I2S(.Score))
+                call MultiboardSetItemValue(MultiboardGetItem(.PlayerStats, pID + 1, 3), I2S(.ContinueCount))
+                call MultiboardSetItemValue(MultiboardGetItem(.PlayerStats, pID + 1, 4), I2S(u.Deaths))
+                
+                call MultiboardReleaseItem(MultiboardGetItem(.PlayerStats, pID + 1, 0))
+                call MultiboardReleaseItem(MultiboardGetItem(.PlayerStats, pID + 1, 1))
+                call MultiboardReleaseItem(MultiboardGetItem(.PlayerStats, pID + 1, 2))
+                call MultiboardReleaseItem(MultiboardGetItem(.PlayerStats, pID + 1, 3))
+                call MultiboardReleaseItem(MultiboardGetItem(.PlayerStats, pID + 1, 4))
+			elseif GetPlayerSlotState(Player(pID)) == PLAYER_SLOT_STATE_LEFT then
                 call MultiboardSetItemValue(MultiboardGetItem(.PlayerStats, pID + 1, 0), "Left the game")
                 call MultiboardSetItemValue(MultiboardGetItem(.PlayerStats, pID + 1, 1), "Gone")
                 call MultiboardSetItemValue(MultiboardGetItem(.PlayerStats, pID + 1, 2), "Negative")

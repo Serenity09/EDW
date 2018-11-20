@@ -254,7 +254,8 @@ library Levels initializer Init requires SimpleList, Teams, GameModesGlobals, Ci
         
         public method SetCheckpointForTeam takes Teams_MazingTeam mt, integer cpID returns nothing
             if cpID != -1 then
-                set mt.OnCheckpoint = cpID
+                //call DisplayTextToForce(bj_FORCE_PLAYER[0], "Started setting CP for team " + I2S(mt))
+				set mt.OnCheckpoint = cpID
                 
                 set mt.DefaultGameMode = this.CPDefaultGameModes[cpID]
                 //call mt.SwitchGameModeContinuous(mt.DefaultGameMode)
@@ -263,7 +264,9 @@ library Levels initializer Init requires SimpleList, Teams, GameModesGlobals, Ci
                 call mt.RespawnTeamAtRect(this.CPCenters[cpID], true)
                 call mt.ApplyKeyToTeam(this.CPColors[cpID])
                 
-                call mt.UpdateMultiboard()                
+                call mt.UpdateMultiboard()
+
+				//call DisplayTextToForce(bj_FORCE_PLAYER[0], "Finished setting CP for team " + I2S(mt))				
             endif
             
             //TODO add team wide CP effect instead of CP effect on first user in team

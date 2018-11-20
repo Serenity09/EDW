@@ -11,7 +11,7 @@ struct User extends array
     public integer GameMode //0: regular DH mazing, 1: wisp platforming, 9: mini-games?
     public integer PreviousGameMode //only standard or platforming
     public Teams_MazingTeam Team
-    public boolean CinematicPlaying
+    public Cinematic CinematicPlaying
     public SimpleList_List CinematicQueue //FiFo
     
     public static integer ActivePlayers
@@ -34,11 +34,11 @@ struct User extends array
         endloop
     endmethod
     
-    private static method OnCinemaEndCB takes nothing returns boolean
+    public static method OnCinemaEndCB takes nothing returns boolean
         local User user = EventUser
         
         //call DisplayTextToForce(bj_FORCE_PLAYER[0], "Inside On Cinema End CB for user " + I2S(user))
-        set user.CinematicPlaying = false
+        set user.CinematicPlaying = 0
         call user.CheckCinematicQueue()
         
         return false
@@ -46,7 +46,7 @@ struct User extends array
     public method AddCinematicToQueue takes Cinematic cine returns nothing
         //call DisplayTextToForce(bj_FORCE_PLAYER[0], "Adding cinematic for user: " + I2S(this))
         
-        call cine.PreviousViewers.add(this)
+        //call cine.PreviousViewers.add(this)
         //call cine.OnCinemaEndCBs.add(thistype.OnCinemaEndCB)
         
         call .CinematicQueue.addEnd(cine)
@@ -57,11 +57,11 @@ struct User extends array
         //call DisplayTextToForce(bj_FORCE_PLAYER[0], "Checking cinema queue for user:" + I2S(this))
         //debug call .CinematicQueue.print(this)
         
-        if not .CinematicPlaying and .CinematicQueue.count > 0 then
+        if .CinematicPlaying == 0 and .CinematicQueue.count > 0 then
             //call DisplayTextToForce(bj_FORCE_PLAYER[0], "popping next cinematic for user: " + I2S(this))
             
-            set .CinematicPlaying = true
-            call Cinematic(.CinematicQueue.pop().value).Activate(this)
+            set .CinematicPlaying = .CinematicQueue.pop().value
+            call .CinematicPlaying.Activate(this)
         endif
     endmethod
     
@@ -182,12 +182,16 @@ struct User extends array
     endmethod
     
     public method RespawnAtRect takes rect r, boolean moveliving returns nothing
-        local real x
-        local real y
+        local real x = GetRectMinX(r)
+        local real y = GetRectMinY(r)
         local integer ttype
-        
-        //debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "respawn start")
-        
+		
+		//call DisplayTextToForce(bj_FORCE_PLAYER[0], "respawn start for player " + I2S(this))
+		// if this == 1 then
+			// call DisplayTextToForce(bj_FORCE_PLAYER[0], "respawn start for player " + I2S(this))
+			// //call DisplayTextToForce(bj_FORCE_PLAYER[0], "Active Unit name before " + GetUnitName(.ActiveUnit))
+		// endif
+		
         if .IsPlaying and (moveliving or not .IsAlive) then
             loop
                 set x = GetRandomReal(GetRectMinX(r), GetRectMaxX(r))
@@ -198,10 +202,15 @@ struct User extends array
                     exitwhen (ttype != ABYSS and ttype != LAVA and ttype != RUNEBRICKS)
                 elseif .Team.DefaultGameMode == Teams_GAMEMODE_PLATFORMING then
                     exitwhen (ttype != LAVA and ttype != LRGBRICKS and ttype != RUNEBRICKS and TerrainGlobals_IsTerrainPathable(ttype))
-                endif
+                endif				
             endloop
-            
-            if .Team.DefaultGameMode == Teams_GAMEMODE_STANDARD then
+			
+			//call DisplayTextToForce(bj_FORCE_PLAYER[0], "reviving at x: " + R2S(x) + ", y: " + R2S(y))
+			// if this == 1 then
+				// call DisplayTextToForce(bj_FORCE_PLAYER[0], "reviving at x: " + R2S(x) + ", y: " + R2S(y))
+			// endif
+			
+            if .Team.DefaultGameMode == Teams_GAMEMODE_STANDARD or .Team.DefaultGameMode == Teams_GAMEMODE_STANDARD_PAUSED then
                 call this.SwitchGameModes(Teams_GAMEMODE_STANDARD_PAUSED, x, y)
                 
                 if RespawnASAPMode then
@@ -225,11 +234,14 @@ struct User extends array
         endif
         
         call this.ApplyDefaultCameras()
-        
-        
-        
-        //call DisplayTextToForce(bj_FORCE_PLAYER[0], "respawn end")
-        
+		
+		//call DisplayTextToForce(bj_FORCE_PLAYER[0], "respawn end for player " + I2S(this))
+		// if this == 1 then
+			// //call DisplayTextToForce(bj_FORCE_PLAYER[0], "Active Unit name after " + GetUnitName(.ActiveUnit))
+			// call DisplayTextToForce(bj_FORCE_PLAYER[0], "Respawn check active x: " + R2S(GetUnitX(.ActiveUnit)) + ", y: " + R2S(GetUnitY(.ActiveUnit)))
+			// call DisplayTextToForce(bj_FORCE_PLAYER[0], "respawn end for player " + I2S(this))
+		// endif
+		
         //set .LastTransferTime = GameElapsedTime()
     endmethod
     
@@ -366,6 +378,10 @@ struct User extends array
                     set facing = GetUnitFacing(.ActiveUnit)
                 endif
             endif
+			
+			// if this == 1 then
+				// call DisplayTextToForce(bj_FORCE_PLAYER[0], "Changing gamemode from: " + I2S(curGameMode) + ", to: " + R2S(newGameMode))
+			// endif
             
             //remove the old game mode
             if curGameMode == Teams_GAMEMODE_STANDARD then
@@ -379,7 +395,7 @@ struct User extends array
                 //updates the number of units platforming/regular mazing
                 set NumberMazing = NumberMazing - 1
                 
-                debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "Number mazing removing standard: " + I2S(NumberMazing))
+                //debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "Number mazing removing standard: " + I2S(NumberMazing))
                 //hides the DH
                 call ShowUnit(MazersArray[this], false)
             elseif curGameMode == Teams_GAMEMODE_PLATFORMING then
@@ -391,6 +407,7 @@ struct User extends array
                 //remove entangling roots on the paused mazer
                 call UnitRemoveBuffs(.ActiveUnit, true, true)
                 call DummyCaster['A004'].castTarget(Player(10), 1, OrderId("dispel"), .ActiveUnit)
+				call SetUnitPropWindow(.ActiveUnit, GetUnitDefaultPropWindow(.ActiveUnit))
                 
                 //if the new gamemode isnt to unpause the unit then we need to undo the pause effect
                 if newGameMode != Teams_GAMEMODE_STANDARD then
@@ -404,7 +421,7 @@ struct User extends array
                     call ShowUnit(.Platformer.Unit, false)
                 endif
             elseif curGameMode == Teams_GAMEMODE_DYING then
-                //debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "Invalid gamemode! stored Dying gamemode")
+				//no actions removing dying gamemode
             elseif curGameMode == Teams_GAMEMODE_DEAD then
                 //revive the mazing unit
                 call ReviveHero(MazersArray[this], MazerGlobals_SAFE_X, MazerGlobals_SAFE_Y, false)
@@ -419,20 +436,20 @@ struct User extends array
             endif
             
             //set the new game mode
-            //note this does not do anything (include store the gamemode) if new game mode is same as old OR new gamemode is dying
+            //note this does not do anything (include store the gamemode) if new game mode is same as old
             call this.SetCurrentGameMode(newGameMode)
             
             //apply the new game mode
             if newGameMode == Teams_GAMEMODE_STANDARD then
                 set PreviousTerrainTypedx[this] = PLATFORMING
                 //moves the mazing unit
-                call SetUnitPosition(MazersArray[this], x, y)
+				call SetUnitPosition(MazersArray[this], x, y)
                 //adds the reg unit from the reg game loop. thereby enabling regular terrain effects
                 call GroupAddUnit(MazersGroup, MazersArray[this])
                 //updates the number of units platforming/regular mazing
                 set NumberMazing = NumberMazing + 1
                 
-                debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "Number mazing applying standard: " + I2S(NumberMazing))
+                //debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "Number mazing applying standard: " + I2S(NumberMazing))
                 
                 //unhides the wisp and hides the DH
                 call ShowUnit(MazersArray[this], true)
@@ -446,13 +463,18 @@ struct User extends array
                 //set movespeed 0 instead of pausing unit so player can pivot to face a better direction
                 //call SetUnitMoveSpeed(MazersArray[this], 0)
                 call ShowUnit(MazersArray[this], true)
+				
                 //cast entangling roots on the paused mazer
                 //call DummyCaster['A003'].castTarget(Player(10), 1, 'AEer', .ActiveUnit)
                 //call DummyCaster['A003'].castTarget(Player(10), 1, OrderId("entanglingroots"), .ActiveUnit)
                 //call DummyCaster['A003'].castTarget(Player(this), 1, OrderId("entanglingroots"), .ActiveUnit)
-                call DummyCaster['A005'].castTarget(Player(this), 1, OrderId("web"), .ActiveUnit)
+                //call DummyCaster['A005'].castTarget(Player(this), 1, OrderId("web"), .ActiveUnit)
                 //call TimerStart(NewTimerEx(this), 0.00001, false, function thistype.ApplyRootsCB)
-                
+				//call DummyCaster['A007'].castTarget(Player(this), 1, OrderId("slow"), .ActiveUnit)
+				call DummyCaster['A007'].castTarget(Player(10), 1, OrderId("slow"), .ActiveUnit)
+				call SetUnitPropWindow(.ActiveUnit, 0)
+                //call UnitApplyTimedLife(.ActiveUnit, 'BEer', 10.)
+				
                 //resets the game camera and selects the mazing unit
                 //call SetDefaultCameraForPlayer(this, .5)
             elseif newGameMode == Teams_GAMEMODE_PLATFORMING_PAUSED then
@@ -465,7 +487,7 @@ struct User extends array
             elseif newGameMode == Teams_GAMEMODE_DYING then
                 //kill their standard mazer in front of their eyes
                 //DO THIS LAST SO IT HURTS MORE. jk, its BC IT IMMEDIATELY SETS OFF ON DEATH EVENT AND PRE-EMPTS THE REST OF THIS FUNC
-                call SetUnitPosition(MazersArray[this], x, y)
+				call SetUnitPosition(MazersArray[this], x, y)
                 call ShowUnit(MazersArray[this], true)
                 call KillUnit(MazersArray[this])
             elseif newGameMode == Teams_GAMEMODE_DEAD then
@@ -490,6 +512,11 @@ struct User extends array
                 */
             endif
         endif
+		
+		// if this == 1 then
+			// call DisplayTextToForce(bj_FORCE_PLAYER[0], "Moved to x: " + R2S(x) + ", y: " + R2S(y))
+			// call DisplayTextToForce(bj_FORCE_PLAYER[0], "Check active x: " + R2S(GetUnitX(.ActiveUnit)) + ", y: " + R2S(GetUnitY(.ActiveUnit)))
+		// endif
     endmethod
     
     private method SetCurrentGameMode takes integer newGameMode returns nothing
@@ -545,7 +572,7 @@ struct User extends array
         set new.IsPlaying = GetPlayerSlotState(Player(new))==PLAYER_SLOT_STATE_PLAYING
         set new.IsAlive = true
         
-        set new.CinematicPlaying = false
+        set new.CinematicPlaying = 0
         set new.CinematicQueue = SimpleList_List.create()
         
         set new.GameMode = Teams_GAMEMODE_STANDARD //regular mazing
@@ -579,7 +606,7 @@ struct User extends array
         
         //register user cinematic CB
         //call DisplayTextToPlayer(Player(0), 0, 0, "Trying to register user cinematic CB")
-        call Cinematic.OnCinemaEnd.register(Condition(function thistype.OnCinemaEndCB))
+        //call Cinematic.OnCinemaEnd.register(Condition(function thistype.OnCinemaEndCB))
         //call DisplayTextToPlayer(Player(0), 0, 0, "Registered user cinematic CB")
     endmethod
 endstruct

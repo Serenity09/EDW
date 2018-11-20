@@ -78,9 +78,25 @@ struct Cinematic extends array
     public method HasUserViewed takes User user returns boolean
         local SimpleList_ListNode cur = .PreviousViewers.first
         
+        //check the cinematic's previous viewers
         loop
         exitwhen cur == 0
             if cur.value == user then
+                return true
+            endif
+        set cur = cur.next
+        endloop
+        
+        //check the user's currently playing cinematic
+        if user.CinematicPlaying == this then
+            return true
+        endif
+        
+        //check the user's cinematic queue
+        set cur = user.CinematicQueue.first
+        loop
+        exitwhen cur == 0
+            if cur.value == this then
                 return true
             endif
         set cur = cur.next
@@ -101,7 +117,8 @@ struct Cinematic extends array
         
         if cinemaCBModel.CurrentMessage == 0 then
             //call DisplayTextToForce(bj_FORCE_PLAYER[0], "No more messages for CB Model " + I2S(cinemaCBModel))
-
+            call cinemaCBModel.Cinematic.PreviousViewers.add(cinemaCBModel.User)
+            
             if cinemaCBModel.Cinematic.PauseViewers then
                 call cinemaCBModel.User.Pause(false)
             endif
@@ -179,6 +196,9 @@ struct Cinematic extends array
         local Cinematic cinema = EventCinematic
         //call DisplayTextToForce(bj_FORCE_PLAYER[0], "Cinema count " + I2S(cinema.PreviousViewers.count) + ", active player count " + I2S(User.ActivePlayers))
         
+        //if all players start watching the same cinematic, the first player to finish it will destroy the cine for everyone (since previous viewers includes current viewers)
+        //could either move logic to check user cine queue + make prev viewers refer to those that have finished
+        //OR just assume no cinematic will take longer than X seconds, and have a callback to destroy this cinematic then
         if cinema.PreviousViewers.count == User.ActivePlayers then
             //call DisplayTextToForce(bj_FORCE_PLAYER[0], "All players have watched, so destroying cinema " + I2S(cinema))
             call cinema.destroy()
@@ -216,6 +236,7 @@ struct Cinematic extends array
     
     public static method onInit takes nothing returns nothing
         set thistype.OnCinemaEnd = Event.create()
+        call thistype.OnCinemaEnd.register(Condition(function User.OnCinemaEndCB))
         call thistype.OnCinemaEnd.register(Condition(function thistype.CheckAllWatched))
     endmethod
 endstruct
