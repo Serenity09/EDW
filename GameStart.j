@@ -198,7 +198,7 @@ library GameStart initializer Init requires Levels, EDWVisualVote, UnitGlobals, 
         call l.AddCinematic(cine)
                 
         set cineMsg = CinemaMessage.create(null, GetEDWSpeakerMessage(PRIMARY_SPEAKER_NAME, "Anyways, like I was saying, how'd we even get into this pit?", DEFAULT_TEXT_COLOR), DEFAULT_SHORT_TEXT_SPEED)
-        set cine = Cinematic.create(gg_rct_SargeIntro, false, false, cineMsg)
+        set cine = Cinematic.create(gg_rct_SargeIntro, true, false, cineMsg)
         call cine.AddMessage(null, GetEDWSpeakerMessage(PRIMARY_SPEAKER_NAME, "Well one things for clear", DEFAULT_TEXT_COLOR), DEFAULT_TINY_TEXT_SPEED)
         call cine.AddMessage(null, GetEDWSpeakerMessage(PRIMARY_SPEAKER_NAME, "I drank WAY too much last night", DEFAULT_TEXT_COLOR), DEFAULT_SHORT_TEXT_SPEED)
         call cine.AddMessage(null, GetEDWSpeakerMessage(PRIMARY_SPEAKER_NAME, "And you definitely shouldn't get near those colorful dragons", STERN_TEXT_COLOR), DEFAULT_MEDIUM_TEXT_SPEED)
