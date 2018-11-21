@@ -1,26 +1,8 @@
-library GameStart initializer Init requires Levels, EDWVisualVote, UnitGlobals, MazerGlobals
+library GameStart initializer Init requires Levels, EDWVisualVote, UnitGlobals, MazerGlobals, GameMessage
     globals
         constant real GAME_INIT_TIME_INITIAL = 0.01 //how long into the game before we start
         //constant real GAME_INIT_TIME_STEP = .5
-        public timer GameInitTimer
-        
-        constant string SPEAKER_COLOR = "FFFFBD33"
-        constant string DEFAULT_TEXT_COLOR = null
-        constant string HAPPY_TEXT_COLOR = null
-        constant string SAD_TEXT_COLOR = null
-        constant string ANGRY_TEXT_COLOR = null
-        constant string STERN_TEXT_COLOR = null
-        
-        constant string PRIMARY_SPEAKER_NAME = "SARGE"
-        constant string SECONDARY_SPEAKER_NAME = "Cupcake"
-        
-        constant string FINAL_BOSS_PRE_REVEAL = "???"
-        constant string FINAL_BOSS_NAME = "???" //??? no, seriously, what's the final boss?
-        
-        constant real DEFAULT_TINY_TEXT_SPEED = 1.0
-        constant real DEFAULT_SHORT_TEXT_SPEED = 3.0
-        constant real DEFAULT_MEDIUM_TEXT_SPEED = 5.0
-        constant real DEFAULT_LONG_TEXT_SPEED = 8.0
+        public timer GameInitTimer        
     endglobals
     
     private function PlayerInit takes nothing returns nothing
@@ -79,16 +61,7 @@ library GameStart initializer Init requires Levels, EDWVisualVote, UnitGlobals, 
             
         endif
     endfunction
-    
-    private function CreateTutorialTexttags takes nothing returns nothing
-        local texttag tt = CreateTextTag()
-        
-        
-        
-        set tt = null
-        //call TextTag
-    endfunction
-        
+            
     public function First takes nothing returns nothing
         //INITIALIZE MAP SETTINGS
         //time should be fixed at noon
@@ -108,14 +81,6 @@ library GameStart initializer Init requires Levels, EDWVisualVote, UnitGlobals, 
         call EDWVisualVote_CreateMenu()
         
         debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "Finished GameStart")
-    endfunction
-    
-    private function GetEDWSpeakerMessage takes string speaker, string message, string messageColor returns string
-        if messageColor == null then
-            return "|c" + SPEAKER_COLOR + speaker + "|r" + ": " + message
-        else
-            return "|c" + SPEAKER_COLOR + speaker + "|r" + ": " + "|c" + messageColor + message + "|r"
-        endif
     endfunction
     
     private function IsUserRed takes User user returns boolean
