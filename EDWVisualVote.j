@@ -80,6 +80,44 @@ library EDWVisualVote requires VisualVote, ContinueGlobals, Teams, PlayerUtils, 
         
         set RespawnASAPMode = false
     endfunction
+	
+	private function FadeCBTwo takes nothing returns nothing
+		local timer t = GetExpiredTimer()
+		
+		call DisplayCineFilter(false)
+		call EnableUserUI(true)
+		
+		call DestroyTimer(t)
+		set t = null
+	endfunction
+	private function FadeCBOne takes nothing returns nothing
+		local timer t = GetExpiredTimer()
+		local SimpleList_ListNode fp = PlayerUtils_FirstPlayer
+		
+		call DisplayCineFilter(false)
+		
+		call SetCineFilterTexture("ReplaceableTextures\\CameraMasks\\Black_mask.blp")
+		call SetCineFilterBlendMode(BLEND_MODE_BLEND)
+		call SetCineFilterTexMapFlags(TEXMAP_FLAG_NONE)
+		call SetCineFilterStartUV(0, 0, 1, 1)
+		call SetCineFilterEndUV(0, 0, 1, 1)
+		call SetCineFilterStartColor(PercentTo255(100), PercentTo255(100), PercentTo255(100), PercentTo255(100))
+		call SetCineFilterEndColor(PercentTo255(100), PercentTo255(100), PercentTo255(100), PercentTo255(0))
+		call SetCineFilterDuration(3)
+		call DisplayCineFilter(true)
+		
+		//call EnableUserUI(true)
+		
+		loop
+		exitwhen fp == 0
+			call PauseUnit(MazersArray[fp.value], false)
+			//call mt.ChangePlayerVision(Levels_Levels[0].Vision)
+		set fp = fp.next
+		endloop
+		
+		call TimerStart(t, 3, false, function FadeCBTwo)
+		set t = null
+	endfunction
     
 	public function InitializeGameForGlobals takes nothing returns nothing
 		local SimpleList_ListNode fp = PlayerUtils_FirstPlayer
@@ -94,8 +132,11 @@ library EDWVisualVote requires VisualVote, ContinueGlobals, Teams, PlayerUtils, 
         local integer rand
         local boolean flag
         local Levels_Level firstLevel
+		
+		local Cinematic cine
+        local CinemaMessage cineMsg
         
-        call DisplayTextToPlayer(Player(0), 0, 0, "Initializing Game For Globals")
+        //call DisplayTextToPlayer(Player(0), 0, 0, "Initializing Game For Globals")
         //call DisplayTextToPlayer(Player(0), 0, 0, "Human count: " + I2S(count))
         
         if GameMode == 0 then
@@ -105,7 +146,7 @@ library EDWVisualVote requires VisualVote, ContinueGlobals, Teams, PlayerUtils, 
             exitwhen fp == 0
                 set team[i] = Teams_MazingTeam.create(fp.value)
                 call team[i].AddPlayer(fp.value)
-                call PauseUnit(MazersArray[fp.value], false)
+                //call PauseUnit(MazersArray[fp.value], false)
                 //call mt.ChangePlayerVision(Levels_Levels[0].Vision)
                 set team[i].Weight = 1
             set fp = fp.next
@@ -119,7 +160,7 @@ library EDWVisualVote requires VisualVote, ContinueGlobals, Teams, PlayerUtils, 
             loop
             exitwhen fp == 0
                 call team[0].AddPlayer(fp.value)
-                call PauseUnit(MazersArray[fp.value], false)
+                //call PauseUnit(MazersArray[fp.value], false)
                 //call mt.ChangePlayerVision(Levels_Levels[0].Vision)
             set fp = fp.next
             endloop
@@ -202,7 +243,7 @@ library EDWVisualVote requires VisualVote, ContinueGlobals, Teams, PlayerUtils, 
                 loop
                     if teamSlotsRemaining[i] != 0 and teamSlotsRemaining[i] >= rand then
                         call team[i].AddPlayer(fp.value)
-                        call PauseUnit(MazersArray[fp.value], false)
+                        //call PauseUnit(MazersArray[fp.value], false)
                         //call DisplayTextToForce(bj_FORCE_PLAYER[0], "Added player: " + I2S(fp.value) + " to team: " + I2S(i))
                         
                         set count = count - 1
@@ -233,6 +274,11 @@ library EDWVisualVote requires VisualVote, ContinueGlobals, Teams, PlayerUtils, 
         
         //debug call DisplayTextToPlayer(Player(0), 0, 0, "Team count " + I2S(teamCount))
         
+		set cineMsg = CinemaMessage.create(null, GetEDWSpeakerMessage(FINAL_BOSS_PRE_REVEAL, "Welcome", DEFAULT_TEXT_COLOR), DEFAULT_SHORT_TEXT_SPEED)
+        set cine = Cinematic.create(gg_rct_WelcomeMessage, false, false, cineMsg)
+        call cine.AddMessage(null, GetEDWSpeakerMessage(FINAL_BOSS_PRE_REVEAL, "To", DEFAULT_TEXT_COLOR), DEFAULT_SHORT_TEXT_SPEED)
+        call cine.AddMessage(null, GetEDWSpeakerMessage(FINAL_BOSS_PRE_REVEAL, "Dream World", DEFAULT_TEXT_COLOR), DEFAULT_SHORT_TEXT_SPEED)
+		
         set i = 0
         loop
             set team[i].OnLevel = firstLevel.LevelID
@@ -243,20 +289,36 @@ library EDWVisualVote requires VisualVote, ContinueGlobals, Teams, PlayerUtils, 
             call team[i].SwitchTeamGameMode(team[i].DefaultGameMode, GetRandomReal(GetRectMinX(team[i].Revive), GetRectMaxX(team[i].Revive)), GetRandomReal(GetRectMinY(team[i].Revive), GetRectMaxY(team[i].Revive)))
                         
             call team[i].ApplyTeamDefaultCameras()
-            
+            call team[i].AddTeamVision(firstLevel.Vision)
+			
+			call team[i].AddTeamCinema(cine, team[i].FirstUser.value)
+			
             call firstLevel.ActiveTeams.add(team[i])
-            
+						
             debug call DisplayTextToPlayer(Player(0), 0, 0, "Team " + I2S(team[i]) + " on level: " + I2S(team[i].OnLevel))
         set i = i + 1
         exitwhen i >= teamCount
         endloop
-        
+		
+		call EnableUserUI(false)
+		call SetCineFilterTexture("ReplaceableTextures\\CameraMasks\\Black_mask.blp")
+		call SetCineFilterBlendMode(BLEND_MODE_BLEND)
+		call SetCineFilterTexMapFlags(TEXMAP_FLAG_NONE)
+		call SetCineFilterStartUV(0, 0, 1, 1)
+		call SetCineFilterEndUV(0, 0, 1, 1)
+		call SetCineFilterStartColor(PercentTo255(100), PercentTo255(100), PercentTo255(100), PercentTo255(100))
+		call SetCineFilterEndColor(PercentTo255(100), PercentTo255(100), PercentTo255(100), PercentTo255(100))
+		call SetCineFilterDuration(0)
+		call DisplayCineFilter(true)
+		
+		call TimerStart(CreateTimer(), 6, false, function FadeCBOne)
+		
         //apply the player's (custom) Default camerasetup and pan to their default mazer
         //call SelectAndPanAllDefaultUnits()
         
         call Teams_MazingTeam.MultiboardSetupInit()
         
-        debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "On Option Finish finished!")
+        //call DisplayTextToForce(bj_FORCE_PLAYER[0], "Finished Initializing Game For Globals!")
 	endfunction
     
 	public function OnRoundOneFinishCB takes nothing returns nothing
