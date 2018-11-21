@@ -137,11 +137,15 @@ public struct MazingTeam
             exitwhen fp == 0
                 set u = fp.value
                 if u.IsPlaying then
-                    if (u.Vision != null) then
+                    /*
+					if (u.Vision != null) then
                         call FogModifierStop(u.Vision)
                     endif
+					*/
                     set User(fp.value).Vision = CreateFogModifierRect(Player(u.PlayerID), FOG_OF_WAR_VISIBLE, newvision, false, true)
                     call FogModifierStart(u.Vision)
+					
+					//call DisplayTextToForce(bj_FORCE_PLAYER[0], "added vision for user " + I2S(u))
                 endif
                 
             set fp = fp.next

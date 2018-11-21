@@ -228,9 +228,11 @@ struct User extends array
                 call this.SwitchGameModes(.Team.DefaultGameMode, x, y)
             endif
             
+			/*
             if .Team.DefaultGameMode != Teams_GAMEMODE_DEAD and .Team.DefaultGameMode != Teams_GAMEMODE_DYING then
                 set .IsAlive = true
             endif
+			*/
         endif
         
         call this.ApplyDefaultCameras()
@@ -527,6 +529,10 @@ struct User extends array
             
             set .GameMode = newGameMode
             
+			if newGameMode != Teams_GAMEMODE_DEAD and newGameMode != Teams_GAMEMODE_DYING then
+				set .IsAlive = true
+			endif
+			
             if newGameMode == Teams_GAMEMODE_STANDARD or newGameMode == Teams_GAMEMODE_STANDARD_PAUSED then
                 set .ActiveUnit = MazersArray[this]
             elseif newGameMode == Teams_GAMEMODE_PLATFORMING or newGameMode == Teams_GAMEMODE_PLATFORMING_PAUSED then

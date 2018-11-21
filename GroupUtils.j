@@ -15,21 +15,19 @@ library GroupUtils initializer init requires Table
 		return ht[GetHandleId(g)]
 	endfunction
 	
-	private function init takes nothing returns nothing
-        set count = 0
+	private function initStack takes nothing returns nothing
+		set count = 0
         loop
         exitwhen count == PRELOAD_COUNT
             set recycle[count] = CreateGroup()
 			call SetGroupData(recycle[count], 0)
         set count = count + 1
         endloop
-		
-		set ht = Table.create()
     endfunction
 	
     function NewGroup takes nothing returns group
 		if count == 0 then
-			call init()
+			call initStack()
         endif
 		
 		set count = count - 1
@@ -37,7 +35,7 @@ library GroupUtils initializer init requires Table
     endfunction
 	function NewGroupEx takes integer data returns group
 		if count == 0 then
-			call init()
+			call initStack()
         endif
 		
 		set count = count - 1
@@ -56,4 +54,10 @@ library GroupUtils initializer init requires Table
 			set count = count + 1
 		endif
     endfunction
+	
+	private function init takes nothing returns nothing
+		set ht = Table.create()
+		
+		call initStack()
+	endfunction
 endlibrary
