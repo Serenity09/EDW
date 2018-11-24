@@ -25,6 +25,8 @@ globals
     private constant real   INSTANT_MS      = 1.25       //.MoveSpeed * INSTANT_MS = the amount offset immediately on left/right key press -- higher = more reactive
     
     private constant boolean DEBUG_GAMEMODE = false
+	
+	private constant boolean DEBUG_PHYSICS_LOOP = false
     
     private constant boolean DEBUG_VELOCITY = false
     private constant boolean DEBUG_VELOCITY_TERRAIN = false
@@ -936,8 +938,10 @@ endglobals
             
             debug local unit centerUnit
             
-            //debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "Applying physics ------")
-            
+			static if DEBUG_PHYSICS_LOOP then
+				call DisplayTextToForce(bj_FORCE_PLAYER[0], "Applying physics ---")
+            endif
+			
             //Handle forces that affect the x and/or y direction and need to be as accurate as possible
             //apply constant forces
             //apply horizontal key state
@@ -1060,8 +1064,7 @@ endglobals
 				endif
 			endif
 			
-			
-            
+
             //apply X velocity
             set newX = newX + .XVelocity
             
@@ -2250,15 +2253,16 @@ endglobals
                 
                 if .OnDiagonal then
                     //check if we escape the diagonal's stickyness
-                    
-                     debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "On diagonal with no movement!")
-                    
-                    //TODO get working
-                    //if DoesPointEscapeCurrentDiagonal(.DiagonalPathing, .PushedAgainstVector, newX, newY, DIAGONAL_ESCAPEDISTANCE) then
-                        set .OnDiagonal = false
+					//won't ever escape a diagonal by not moving
+					/*
+                    if DoesPointEscapeCurrentDiagonal(.DiagonalPathing, .PushedAgainstVector, newX, newY, DIAGONAL_ESCAPEDISTANCE) then
+						debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "Escaping diagonal by not moving!")
+						
+						set .OnDiagonal = false
                         call .DiagonalPathing.destroy()
                         set .DiagonalPathing = 0
-                    //endif
+                    endif
+					*/
                 else
                     //only diagonals need/support stickyness
                     set .YTerrainPushedAgainst = 0
@@ -2332,19 +2336,12 @@ endglobals
                 call DisplayTextToForce(bj_FORCE_PLAYER[0], "After Velocity: " + R2S(.XVelocity) + "," + R2S(.YVelocity))
             endif
             
-            //debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "---------------------")
-            //debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "Finished physics!")
+			static if DEBUG_PHYSICS_LOOP then
+				call DisplayTextToForce(bj_FORCE_PLAYER[0], "Finished physics ---")
+			endif
         endmethod
-        
-        //! textmacro ResetGravitationalAccel
-        if .GravitationalAccel >= 0 then
-            set .GravitationalAccel = -.BaseProfile.GravitationalAccel
-        else
-            set .GravitationalAccel = .BaseProfile.GravitationalAccel
-        endif
-        //! endtextmacro
-        
-        private method RemoveTerrainEffect takes nothing /* integer oldtype, integer newtype */ returns nothing
+                
+        private method RemoveTerrainEffect takes nothing returns nothing
             if .TerrainDX == OCEAN then
                 call .MSEquation.removeAdjustment(PlatformerPropertyEquation_MULTIPLY_ADJUSTMENT, OCEAN)
                 set .MoveSpeed = .MSEquation.calculateAdjustedValue(.BaseProfile.MoveSpeed)
@@ -2523,6 +2520,7 @@ endglobals
                         call .KillPlatformer()
                     endif
                     
+					call terrainCenter.destroy()
                     return
                 else
                     if terrainCenter.x <= -offsetZone then
@@ -2546,6 +2544,7 @@ endglobals
                                             call .KillPlatformer()
                                         endif
 
+										call terrainCenter.destroy()
                                         return
                                         //set ttype = DEATH
                                     endif
@@ -2567,6 +2566,7 @@ endglobals
                                             call .KillPlatformer()
                                         endif
                                         
+										call terrainCenter.destroy()
                                         return
                                         //set ttype = DEATH
                                     endif
@@ -2588,6 +2588,7 @@ endglobals
                                             call .KillPlatformer()
                                         endif
                                         
+										call terrainCenter.destroy()
                                         return
                                         //set ttype = DEATH
                                     endif
@@ -2615,6 +2616,7 @@ endglobals
                                             call .KillPlatformer()
                                         endif
                                         
+										call terrainCenter.destroy()
                                         return
                                         //set ttype = DEATH
                                     endif
@@ -2636,6 +2638,7 @@ endglobals
                                             call .KillPlatformer()
                                         endif
 
+										call terrainCenter.destroy()
                                         return
                                         //set ttype = DEATH
                                     endif
@@ -2657,6 +2660,7 @@ endglobals
                                             call .KillPlatformer()
                                         endif
 
+										call terrainCenter.destroy()
                                         return
                                         //set ttype = DEATH
                                     endif
@@ -2682,6 +2686,7 @@ endglobals
                                         call .KillPlatformer()
                                     endif
 
+									call terrainCenter.destroy()
                                     return
                                     //set ttype = DEATH
                                 endif
@@ -2706,6 +2711,7 @@ endglobals
                                         call .KillPlatformer()
                                     endif
 
+									call terrainCenter.destroy()
                                     return
                                     //set ttype = DEATH
                                 endif

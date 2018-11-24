@@ -69,12 +69,14 @@ library Vector2
             
             set v.x=x
             set v.y=y
+			//debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "Created vector2, current usage" + I2S(.calculateMemoryUsage()))
             return v
         endmethod
         
         public method destroy takes nothing returns nothing
             //add to recycle stack
             call this.deallocate()
+			//debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "Destroyed vector2, current usage" + I2S(.calculateMemoryUsage()))
         endmethod
         
         method getLength takes nothing returns real
