@@ -17,7 +17,7 @@ library EDWVisualVote requires VisualVote, ContinueGlobals, Teams, PlayerUtils, 
             return Levels_Levels[1]
             //return Levels_Levels[23]
         else
-            return Levels_Levels[1]
+            return Levels_Levels[67]
         endif
     endfunction
         
@@ -274,9 +274,9 @@ library EDWVisualVote requires VisualVote, ContinueGlobals, Teams, PlayerUtils, 
         
         //debug call DisplayTextToPlayer(Player(0), 0, 0, "Team count " + I2S(teamCount))
         
-		set cineMsg = CinemaMessage.create(null, GetEDWSpeakerMessage(FINAL_BOSS_PRE_REVEAL, "Welcome", DEFAULT_TEXT_COLOR), DEFAULT_SHORT_TEXT_SPEED)
+		set cineMsg = CinemaMessage.create(null, GetEDWSpeakerMessage(FINAL_BOSS_PRE_REVEAL, "Welcome", DEFAULT_TEXT_COLOR), DEFAULT_TINY_TEXT_SPEED)
         set cine = Cinematic.create(gg_rct_WelcomeMessage, false, false, cineMsg)
-        call cine.AddMessage(null, GetEDWSpeakerMessage(FINAL_BOSS_PRE_REVEAL, "To", DEFAULT_TEXT_COLOR), DEFAULT_SHORT_TEXT_SPEED)
+        call cine.AddMessage(null, GetEDWSpeakerMessage(FINAL_BOSS_PRE_REVEAL, "To", DEFAULT_TEXT_COLOR), DEFAULT_TINY_TEXT_SPEED)
         call cine.AddMessage(null, GetEDWSpeakerMessage(FINAL_BOSS_PRE_REVEAL, "Dream World", DEFAULT_TEXT_COLOR), DEFAULT_SHORT_TEXT_SPEED)
 		
         set i = 0
@@ -311,7 +311,7 @@ library EDWVisualVote requires VisualVote, ContinueGlobals, Teams, PlayerUtils, 
 		call SetCineFilterDuration(0)
 		call DisplayCineFilter(true)
 		
-		call TimerStart(CreateTimer(), 6, false, function FadeCBOne)
+		call TimerStart(CreateTimer(), 3, false, function FadeCBOne)
 		
         //apply the player's (custom) Default camerasetup and pan to their default mazer
         //call SelectAndPanAllDefaultUnits()
