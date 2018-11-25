@@ -17,15 +17,15 @@ library PlatformerTerrainEffectGlobals requires PlatformerGlobals, TerrainGlobal
         real JUMPHEIGHTINOCEAN = 440 * PlatformerGlobals_GAMELOOP_TIMESTEP
         constant real OCEAN_JUMP_COOLDOWN = .50
         
-        constant real DIAGONAL_MAXCHANGE = TERRAIN_QUADRANT_SIZE - 4
         
-        constant real DIAGONAL_ESCAPEDISTANCE = 10
-        constant real DIAGONAL_STICKYDISTANCE = 40
         //needs to be compatible with GetNextDiagonal assumptions -- namely won't change more than 1 quadrant per loop
-        
-        constant real PLATFORMING_MAXCHANGE = TERRAIN_QUADRANT_SIZE*.9
+        //constant real DIAGONAL_MAXCHANGE = TERRAIN_QUADRANT_SIZE - 4
+        constant real PLATFORMING_MAXCHANGE = TERRAIN_QUADRANT_SIZE*.75
         constant boolean PLATFORMING_CHECK_HALFWAY = true //should be true if PLATFORMING_MAXCHANGE > TERRAIN_QUADRANT_SIZE (64)
         
+		constant real DIAGONAL_ESCAPEDISTANCE = 10 //should allow the player to freely escape by pressing arrow keys or jumping
+        constant real DIAGONAL_STICKYDISTANCE = PLATFORMING_MAXCHANGE - 10 //amount of stickyness when transitioning between diagonals -- pretty sticky = fun
+
         //used to sample multiple points when the player is moving very fast
         constant real PATHING_SEGMENT_SIZE = 30
         //constant real DIAGONAL_NOMANUALESCAPEDISTANCE = 30

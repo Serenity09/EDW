@@ -36,6 +36,7 @@ globals
     private constant boolean DEBUG_DIAGONAL = false
     
     private constant boolean DEBUG_DIAGONAL_TRANSITION = false
+	private constant boolean DEBUG_DIAGONAL_ESCAPE = false
     private constant boolean DEBUG_DIAGONAL_START = false
     
     private constant boolean DEBUG_CREATE = false
@@ -508,7 +509,11 @@ endglobals
                             else
                                 //debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "Right 1")
                                 //right wall
-                                return ComplexTerrainPathingResult.CreateComplex(ComplexTerrainPathing_Right, currentDiagonal.TerrainMidpointX, currentDiagonal.TerrainMidpointY, ComplexTerrainPathing_SE, currentDiagonal.RelevantXTerrainTypeID, 0)
+                                if SquareRoot(newPosition.x*newPosition.x + newPosition.y*newPosition.y) >= DIAGONAL_STICKYDISTANCE then
+									return 0
+								else
+									return ComplexTerrainPathingResult.CreateComplex(ComplexTerrainPathing_Right, currentDiagonal.TerrainMidpointX, currentDiagonal.TerrainMidpointY, ComplexTerrainPathing_SE, currentDiagonal.RelevantXTerrainTypeID, 0)
+								endif
                             endif
                         else //SW quadrant
                             //bottom left
@@ -548,7 +553,11 @@ endglobals
                             else
                                 //top on same 128x128 tile
                                 //debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "Top 2")
-                                return ComplexTerrainPathingResult.CreateComplex(ComplexTerrainPathing_Top, currentDiagonal.TerrainMidpointX, currentDiagonal.TerrainMidpointY, ComplexTerrainPathing_NW, 0, currentDiagonal.RelevantYTerrainTypeID)                                    
+								if SquareRoot(newPosition.x*newPosition.x + newPosition.y*newPosition.y) >= DIAGONAL_STICKYDISTANCE then
+									return 0
+								else
+									return ComplexTerrainPathingResult.CreateComplex(ComplexTerrainPathing_Top, currentDiagonal.TerrainMidpointX, currentDiagonal.TerrainMidpointY, ComplexTerrainPathing_NW, 0, currentDiagonal.RelevantYTerrainTypeID)
+								endif
                             endif
                         else
                             //bottom left
@@ -596,7 +605,11 @@ endglobals
                             else
                                 //debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "Right 1")
                                 //right wall
-                                return ComplexTerrainPathingResult.CreateComplex(ComplexTerrainPathing_Right, currentDiagonal.TerrainMidpointX, currentDiagonal.TerrainMidpointY, ComplexTerrainPathing_NE, currentDiagonal.RelevantXTerrainTypeID, 0)
+								if SquareRoot(newPosition.x*newPosition.x + newPosition.y*newPosition.y) >= DIAGONAL_STICKYDISTANCE then
+									return 0
+								else
+									return ComplexTerrainPathingResult.CreateComplex(ComplexTerrainPathing_Right, currentDiagonal.TerrainMidpointX, currentDiagonal.TerrainMidpointY, ComplexTerrainPathing_NE, currentDiagonal.RelevantXTerrainTypeID, 0)
+								endif
                             endif
                         else //NW quadrant
                             //bottom left
@@ -636,7 +649,11 @@ endglobals
                             else
                                 //top on same 128x128 tile
                                 //debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "Top 2")
-                                return ComplexTerrainPathingResult.CreateComplex(ComplexTerrainPathing_Bottom, currentDiagonal.TerrainMidpointX, currentDiagonal.TerrainMidpointY, ComplexTerrainPathing_SW, 0, currentDiagonal.RelevantYTerrainTypeID)                                    
+								if SquareRoot(newPosition.x*newPosition.x + newPosition.y*newPosition.y) >= DIAGONAL_STICKYDISTANCE then
+									return 0
+								else
+									return ComplexTerrainPathingResult.CreateComplex(ComplexTerrainPathing_Bottom, currentDiagonal.TerrainMidpointX, currentDiagonal.TerrainMidpointY, ComplexTerrainPathing_SW, 0, currentDiagonal.RelevantYTerrainTypeID)
+								endif
                             endif
                         else
                             //top left
@@ -683,7 +700,11 @@ endglobals
                             else
                                 //debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "Right 1")
                                 //right wall
-                                return ComplexTerrainPathingResult.CreateComplex(ComplexTerrainPathing_Bottom, currentDiagonal.TerrainMidpointX, currentDiagonal.TerrainMidpointY, ComplexTerrainPathing_SE, 0, currentDiagonal.RelevantYTerrainTypeID)
+								if SquareRoot(newPosition.x*newPosition.x + newPosition.y*newPosition.y) >= DIAGONAL_STICKYDISTANCE then
+									return 0
+								else
+									return ComplexTerrainPathingResult.CreateComplex(ComplexTerrainPathing_Bottom, currentDiagonal.TerrainMidpointX, currentDiagonal.TerrainMidpointY, ComplexTerrainPathing_SE, 0, currentDiagonal.RelevantYTerrainTypeID)
+								endif
                             endif
 
                         else //NW quadrant
@@ -714,7 +735,6 @@ endglobals
                         //debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "Moved left from quadrant: " + I2S(currentDiagonal.QuadrantForPoint))
                         //moved left a quadrant                        
                         if currentDiagonal.QuadrantForPoint == ComplexTerrainPathing_SW then
-
                             //top right
                             //only 3 possibilites: continues, ends, or flat 
                             if TerrainGlobals_IsTerrainDiagonal(GetTerrainType(currentX - TERRAIN_TILE_SIZE, currentY + TERRAIN_TILE_SIZE)) then
@@ -725,10 +745,13 @@ endglobals
                             else
                                 //top on same 128x128 tile
                                 //debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "Top 2")
-                                return ComplexTerrainPathingResult.CreateComplex(ComplexTerrainPathing_Left, currentDiagonal.TerrainMidpointX, currentDiagonal.TerrainMidpointY, ComplexTerrainPathing_NW, currentDiagonal.RelevantXTerrainTypeID, 0)                                    
+								if SquareRoot(newPosition.x*newPosition.x + newPosition.y*newPosition.y) >= DIAGONAL_STICKYDISTANCE then
+									return 0
+								else
+									return ComplexTerrainPathingResult.CreateComplex(ComplexTerrainPathing_Left, currentDiagonal.TerrainMidpointX, currentDiagonal.TerrainMidpointY, ComplexTerrainPathing_NW, currentDiagonal.RelevantXTerrainTypeID, 0)
+								endif
                             endif
                         else
-
                             //bottom left
                            //2 possibilites: diagonal continues or turns to left
                             if TerrainGlobals_IsTerrainPathable(GetTerrainType(currentX - TERRAIN_TILE_SIZE, currentY)) then
@@ -773,7 +796,11 @@ endglobals
                             else
                                 //debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "Top 1")
                                 //top
-                                return ComplexTerrainPathingResult.CreateComplex(ComplexTerrainPathing_Top, currentDiagonal.TerrainMidpointX, currentDiagonal.TerrainMidpointY, ComplexTerrainPathing_NE, 0, currentDiagonal.RelevantYTerrainTypeID)
+								if SquareRoot(newPosition.x*newPosition.x + newPosition.y*newPosition.y) >= DIAGONAL_STICKYDISTANCE then
+									return 0
+								else
+									return ComplexTerrainPathingResult.CreateComplex(ComplexTerrainPathing_Top, currentDiagonal.TerrainMidpointX, currentDiagonal.TerrainMidpointY, ComplexTerrainPathing_NE, 0, currentDiagonal.RelevantYTerrainTypeID)
+								endif
                             endif
                         else //SE quadrant
                            //2 possibilites: diagonal continues or turns to left
@@ -812,7 +839,11 @@ endglobals
                             else
                                 //left on same 128x128 tile
                                 //debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "Left 2")
-                                return ComplexTerrainPathingResult.CreateComplex(ComplexTerrainPathing_Left, currentDiagonal.TerrainMidpointX, currentDiagonal.TerrainMidpointY, ComplexTerrainPathing_SW, currentDiagonal.RelevantXTerrainTypeID, 0)
+								if SquareRoot(newPosition.x*newPosition.x + newPosition.y*newPosition.y) >= DIAGONAL_STICKYDISTANCE then
+									return 0
+								else
+									return ComplexTerrainPathingResult.CreateComplex(ComplexTerrainPathing_Left, currentDiagonal.TerrainMidpointX, currentDiagonal.TerrainMidpointY, ComplexTerrainPathing_SW, currentDiagonal.RelevantXTerrainTypeID, 0)
+								endif
                             endif
                         else
                             //bottom right
@@ -901,7 +932,11 @@ endglobals
             //then see if the length of the projected vector is bigger than the supplied minimum escape distance
             //finally, check that the length of the original position change is less than the max distance before we can't manually escape the diagonal
             set ret = ((diagonalType == ComplexTerrainPathing_Top and proj.y >= 0) or (diagonalType == ComplexTerrainPathing_Bottom and proj.y < 0) or (diagonalType == ComplexTerrainPathing_Right and proj.x >= 0) or (diagonalType == ComplexTerrainPathing_Left and proj.x < 0) or (diagonalType == ComplexTerrainPathing_NE and proj.x >= 0 and proj.y >= 0) or (diagonalType == ComplexTerrainPathing_SE and proj.x >= 0 and proj.y < 0) or (diagonalType == ComplexTerrainPathing_SW and proj.x < 0 and proj.y < 0) or (diagonalType == ComplexTerrainPathing_NW and proj.x < 0 and proj.y >= 0)) and SquareRoot(proj.x * proj.x + proj.y * proj.y) >= escapeDistance
-                            
+            
+			static if DEBUG_DIAGONAL_ESCAPE then
+				call DisplayTextToForce(bj_FORCE_PLAYER[0], "Checking escape from diagonal type " + I2S(diagonalType) + ", x " + R2S(x) + ", y " + R2S(y) + ", with proj" + proj.toString())
+			endif
+			
             call proj.destroy()
             
             return ret
@@ -998,7 +1033,7 @@ endglobals
             //update Y velocity for gravity and wall pathing
 			if .GravitationalAccel != 0 then
 				if .OnDiagonal then					
-					//if not .DoesPointEscapeDiagonal(.DiagonalPathing.TerrainPathingForPoint, .XVelocity, .YVelocity, DIAGONAL_ESCAPEDISTANCE) then
+					//check that gravity is in direction of current surface
                     if not .DoesPointEscapeDiagonal(.DiagonalPathing.TerrainPathingForPoint, 0, .GravitationalAccel, 0.01) then
 						//reuse newposition vector and project function for velocity
 						//set newPosition = vector2.create(.XVelocity, .YVelocity)
@@ -1106,7 +1141,7 @@ endglobals
                         //would a CheckAndApplyNewDiagonal(.DiagonalPathing, .XPosition, .YPosition, newX, newY) function make sense?
                         //set pathingResult = ComplexTerrainPathing_GetPathingForPoint(.XPosition + newX, .YPosition + newY)
                         //debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "Escaping diagonal manually!")
-                        static if DEBUG_DIAGONAL_TRANSITION then
+                        static if DEBUG_DIAGONAL_ESCAPE then
                             call DisplayTextToForce(bj_FORCE_PLAYER[0], "Escaping diagonal manually! " + R2S(.XPosition) + "," + R2S(.YPosition) + "; " + R2S(newX) + "," + R2S(newY))
                         endif
                         
@@ -1125,7 +1160,7 @@ endglobals
                         
                         //check if hitting empty space or somehow somewhere on the same tile
                         if pathingResult == 0 or (pathingResult.TerrainMidpointX == .DiagonalPathing.TerrainMidpointX and pathingResult.TerrainMidpointY == .DiagonalPathing.TerrainMidpointY) then
-                            static if DEBUG_TRANSITION then
+                            static if DEBUG_DIAGONAL_ESCAPE then
                                 call DisplayTextToForce(bj_FORCE_PLAYER[0], "Escaping diagonal into empty space")
                             endif
                             
@@ -1195,7 +1230,8 @@ endglobals
                         //TODO temporary fix until I've implemented raycasting
                         //limit projected position to have a maximum length
                         
-                        //re-use newX as not used again in this branch of the if's
+						//TODO does this need to be done a 2nd time?
+						/*
                         set distance = SquareRoot(newPosition.x * newPosition.x + newPosition.y * newPosition.y)
                         if distance > DIAGONAL_MAXCHANGE then
                             //distancePercent = DIAGONAL_MAXCHANGE / distance
@@ -1203,7 +1239,8 @@ endglobals
                             set newPosition.x = newPosition.x * DIAGONAL_MAXCHANGE / distance
                             set newPosition.y = newPosition.y * DIAGONAL_MAXCHANGE / distance
                         endif
-                        
+                        */
+						
                         //debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "Here 2") 
                         
                         //need to make sure projected vector still shows movement
@@ -1419,7 +1456,7 @@ endglobals
                                         call .DiagonalPathing.destroy()
                                         set .DiagonalPathing = 0
                                         
-                                        static if DEBUG_DIAGONAL_TRANSITION then
+                                        static if DEBUG_DIAGONAL_ESCAPE then
                                             call DisplayTextToForce(bj_FORCE_PLAYER[0], "Left diagonal via square transfer")
                                         endif
                                     endif
@@ -2285,12 +2322,14 @@ endglobals
                 //set 0 if approx 0
                 
                 if .XVelocity > 0 then //velocity going right
-                    if .XVelocity < xMINVELOCITY * .XFalloff then //going super slow
+                    if .XVelocity < xMINVELOCITY then //going super slow
                         set .XVelocity = 0
                     //TODO replace with 3rd power easing
-                    elseif .XVelocity > .TerminalVelocityX then //going very fast
+                    /*
+					elseif .XVelocity > .TerminalVelocityX then //going very fast
                         //debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "Exceeding terminal velocity")
                         set .XVelocity = .XVelocity - .XFalloff * .XFalloff
+					*/
                     //TODO replace with 2nd power easing
                     else //anywhere inbetween
                         set .XVelocity = .XVelocity - .XFalloff
@@ -2301,11 +2340,13 @@ endglobals
                         set .XVelocity = .XVelocity - .MoveSpeed * .MoveSpeedVelOffset
                     endif
                 else //velocity going left
-                    if .XVelocity > -xMINVELOCITY * .XFalloff then
+                    if .XVelocity > -xMINVELOCITY then
                         set .XVelocity = 0
-                    elseif .XVelocity < -.TerminalVelocityX then
+                    /*
+					elseif .XVelocity < -.TerminalVelocityX then
                         //debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "Exceeding terminal velocity")
                         set .XVelocity = .XVelocity + .XFalloff * XFalloff
+					*/
                     else
                         set .XVelocity = .XVelocity + .XFalloff
                     endif
@@ -3250,7 +3291,7 @@ endglobals
             local real l
             
             static if DEBUG_JUMPING then
-                call DisplayTextToForce(bj_FORCE_PLAYER[0], "Pressed up")
+                //call DisplayTextToForce(bj_FORCE_PLAYER[0], "Pressed up")
             endif
             
             //only apply logic if player is platforming
@@ -3324,6 +3365,10 @@ endglobals
                         set p.FX = AddSpecialEffect("Abilities\\Spells\\Human\\Polymorph\\PolyMorphTarget.mdl", p.XPosition, p.YPosition)
                         call DestroyEffect(p.FX)
                         set p.FX = null
+						
+						static if DEBUG_VELOCITY then
+                            call DisplayTextToForce(bj_FORCE_PLAYER[0], "X Velocity: " + R2S(p.XVelocity) + ", Y Velocity: " + R2S(p.YVelocity))
+                        endif
                         
                         return false
                     elseif p.PushedAgainstVector == ComplexTerrainPathing_Left_UnitVector or p.PushedAgainstVector == ComplexTerrainPathing_Right_UnitVector and TerrainGlobals_IsTerrainWallJumpable(p.XTerrainPushedAgainst) then
