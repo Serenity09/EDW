@@ -99,6 +99,8 @@ library RelayGenerator requires GameGlobalConstants, SimpleList, Table, Vector2,
         public static integer array UnitIDToRelayUnitID //links unit ID to RelayUnit struct ID (UnitIDToRelayUnitID[UnitID] = RelayUnit struct ID)
         private real UnitTimeout
         private timer UnitTimer
+		
+		private group Units
         
         public SimpleList_List Turns
         
@@ -355,6 +357,7 @@ library RelayGenerator requires GameGlobalConstants, SimpleList, Table, Vector2,
             endif
             
             call IndexUnit(u)
+			call GroupAddUnit(generator.Units, u)
             set UnitIDToRelayUnitID[GetUnitId(u)] = RelayUnit.create(lane, generator.Turns.first)
             
             //send unit to first destination
@@ -366,76 +369,53 @@ library RelayGenerator requires GameGlobalConstants, SimpleList, Table, Vector2,
             set u = null
             call destination.deallocate()
         endmethod
+		
+		private method ReleaseUnit takes unit u returns nothing
+			call RelayUnit(UnitIDToRelayUnitID[GetUnitId(u)]).deallocate()
+			call GroupRemoveUnit(.Units, u)
+			
+			call DeindexUnit(u)
+			call Recycle_ReleaseUnit(u)
+		endmethod
         
         private method CheckRelay takes nothing returns nothing
-            local SimpleList_ListNode turn = this.Turns.first
+            //local SimpleList_ListNode turn = this.Turns.first
             local unit turnUnit
+			local group tempGroup = NewGroup()
             local RelayUnit turnUnitInfo
             
             local vector2 destination
             
-            loop
-            exitwhen turn == 0
-                //enum all units in turn region
-                call GroupEnumUnitsInRect(TempGroup, RelayTurn(turn.value).Area, null)
-                
-                //first of group loop through units
-                set turnUnit = FirstOfGroup(TempGroup)
-                loop
-                exitwhen turnUnit == null
-                    //1st pass, check unit type id and player owner
-                    if GetUnitTypeId(turnUnit) == this.UnitTypeID and GetPlayerId(GetOwningPlayer(turnUnit)) == RELAY_PLAYER then
-                        //debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "Unit passed 1st check")
-                        //see if unit is being watched, returns 0 if unwatched / not part of a relay
-                        set turnUnitInfo = UnitIDToRelayUnitID[GetUnitId(turnUnit)]
-                        
-                        static if DEBUG_MODE then
-                            //call DisplayTextToForce(bj_FORCE_PLAYER[0], "Turn unit info " + I2S(turnUnitInfo))
-                            //call DisplayTextToForce(bj_FORCE_PLAYER[0], "On turn " + I2S(turnUnitInfo.CurrentTurn) + " checking turn " + I2S(turn))
-                            
-                            /*
-                            if IsUnitAtNextDestination(turnUnit, turnUnitInfo) then
-                                call DisplayTextToForce(bj_FORCE_PLAYER[0], "At destination true")
-                            else
-                                call DisplayTextToForce(bj_FORCE_PLAYER[0], "At destination false")
-                            endif
-                            */
-                            
-                            //unit arrived to move target but is not at destination
-                            if turnUnitInfo != 0 and turnUnitInfo.CurrentTurn == turn and (GetUnitCurrentOrder(turnUnit) == OrderId("none") or GetUnitCurrentOrder(turnUnit) == OrderId("stop")) and not IsUnitAtNextDestination(turnUnit, turnUnitInfo) then
-                                call DisplayTextToForce(bj_FORCE_PLAYER[0], "Not moving but not at destination " + I2S(GetUnitId(turnUnit)))
-                            endif
-                        endif
-                        
-                        //check if unit is part of this relay, and on the turn we're enumerating the rect for, and if they've made it past where they need to go (for their lane) --- turns can only belong to 1 relay, so if the turn matches then so does the relay
-                        if turnUnitInfo != 0 and turnUnitInfo.CurrentTurn == turn and IsUnitAtNextDestination(turnUnit, turnUnitInfo) then
-                            //send unit a bit past their next destination
-                            set destination = GetNextTurnDestination(turnUnitInfo)
-                            call IssuePointOrder(turnUnit, "move", destination.x, destination.y)
-                            call destination.deallocate()
-                            
-                            if turn.next != 0 then
-                                set turnUnitInfo.CurrentTurn = turn.next
-                            else //finished all turns
-                                call turnUnitInfo.deallocate()
-                                call DeindexUnit(turnUnit)
-                                call Recycle_ReleaseUnit(turnUnit)
-                                //call RemoveUnit(turnUnit)
-                            endif
-                        endif
-                    endif
-                call GroupRemoveUnit(TempGroup, turnUnit)
-                set turnUnit = FirstOfGroup(TempGroup)
-                endloop
-                
-                //debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "---")
-                
-                //always should clear TempGroup after using it
-                call GroupClear(TempGroup)
-            set turn = turn.next
-            endloop
-            
-            set turnUnit = null
+			//first of group loop, with group swap at the end to restore original state
+			loop
+			set turnUnit = FirstOfGroup(.Units)
+			exitwhen turnUnit == null
+				//see if unit is being watched, returns 0 if unwatched / not part of a relay
+				set turnUnitInfo = UnitIDToRelayUnitID[GetUnitId(turnUnit)]
+				
+				//check if unit is part of this relay, and on the turn we're enumerating the rect for, and if they've made it past where they need to go (for their lane) --- turns can only belong to 1 relay, so if the turn matches then so does the relay
+				if IsUnitAtNextDestination(turnUnit, turnUnitInfo) then
+					if turnUnitInfo.CurrentTurn.next != 0 then
+						//send unit a bit past their next destination
+						set destination = GetNextTurnDestination(turnUnitInfo)
+						call IssuePointOrder(turnUnit, "move", destination.x, destination.y)
+						call destination.deallocate()
+						
+						set turnUnitInfo.CurrentTurn = turnUnitInfo.CurrentTurn.next
+						
+						call GroupAddUnit(tempGroup, turnUnit)
+						call GroupRemoveUnit(.Units, turnUnit)
+					else //finished all turns
+						call .ReleaseUnit(turnUnit)
+					endif
+				else
+					call GroupAddUnit(tempGroup, turnUnit)
+					call GroupRemoveUnit(.Units, turnUnit)
+				endif
+			endloop
+			
+			call ReleaseGroup(.Units)
+			set .Units = tempGroup
         endmethod
         
         private static method CheckRelayInit takes nothing returns nothing
@@ -453,6 +433,8 @@ library RelayGenerator requires GameGlobalConstants, SimpleList, Table, Vector2,
             if not ActiveRelays.contains(this) then
                 call ActiveRelays.add(this)
                 
+				set this.Units = NewGroup()
+				
                 set this.UnitTimer = NewTimerEx(this)
                 call TimerStart(this.UnitTimer, this.UnitTimeout, true, function RelayGenerator.CreateUnitCB)
                 
@@ -466,9 +448,21 @@ library RelayGenerator requires GameGlobalConstants, SimpleList, Table, Vector2,
         endmethod
         
         public method Stop takes nothing returns nothing
-            if ActiveRelays.contains(this) then
+            local unit u
+			
+			if ActiveRelays.contains(this) then
                 call ActiveRelays.remove(this)
                 
+				//recycle all units in a way that's proper for this struct
+				loop
+				set u = FirstOfGroup(.Units)
+				exitwhen u == null
+					call .ReleaseUnit(u)
+					//call GroupRemoveUnit(.Units, u)
+				endloop
+				
+				call ReleaseGroup(.Units)
+				
                 //pauses and recycles timer while relay is off
                 call ReleaseTimer(this.UnitTimer)
                 
