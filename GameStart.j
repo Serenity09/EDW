@@ -387,7 +387,7 @@ library GameStart initializer Init requires Levels, EDWVisualVote, UnitGlobals, 
         call startables.add(DrunkWalker_DrunkWalkerSpawn.create(gg_rct_PW2_Drunks_3, 5, 2.5, LGUARD, 14))
         call startables.add(DrunkWalker_DrunkWalkerSpawn.create(gg_rct_PW2_Drunks_4, 4, 6, LGUARD, 10))
         
-        set rg = RelayGenerator.create(8186, -3191, 3, 5, 0, 0, ICETROLL, 2.)
+        set rg = RelayGenerator.create(8186, -3191, 3, 3, 0, 0, ICETROLL, 2.)
         call rg.AddTurnSimple(90, 4)
         call rg.AddTurnSimple(180, 1)
         call rg.AddTurnSimple(270, 0)
@@ -406,8 +406,8 @@ library GameStart initializer Init requires Levels, EDWVisualVote, UnitGlobals, 
         call rg.AddTurnSimple(0, 12)
         call rg.EndTurns(0)
         
-        //call DisplayTextToForce(bj_FORCE_PLAYER[0], "PW2 RG: " + rg.ToString())
-        debug call rg.DrawTurns()
+        //debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "PW2 RG: " + rg.ToString())
+        //debug call rg.DrawTurns()
         
         call startables.add(rg)
         

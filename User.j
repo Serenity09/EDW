@@ -570,7 +570,7 @@ struct User extends array
         
         set new = thistype.allocate()
         
-        debug call DisplayTextToPlayer(Player(0), 0, 0, "Creating User: " + I2S(new))
+        //debug call DisplayTextToPlayer(Player(0), 0, 0, "Creating User: " + I2S(new))
         
         set new.PlayerID = new
         set new.Team = 0

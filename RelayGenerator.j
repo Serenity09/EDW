@@ -15,7 +15,7 @@ library RelayGenerator requires GameGlobalConstants, SimpleList, Table, Vector2,
         private constant integer UNIT_SIDE_BUFFER = 0
         
         //has to be around 64 or the bot left corner of rect won't register units
-        private constant real TURN_RECT_BUFFER = TERRAIN_QUADRANT_SIZE
+        private constant real TURN_RECT_BUFFER = TERRAIN_TILE_SIZE
     endglobals
     
     struct RelayUnit extends array
@@ -91,7 +91,8 @@ library RelayGenerator requires GameGlobalConstants, SimpleList, Table, Vector2,
     
     struct RelayGenerator extends IStartable
         public vector2 SpawnCenter
-        public real Radius //in whole tile units
+		public integer Diameter
+        //public real Radius //in whole tile units
         
         public integer UnitTypeID
         public real UnitLaneSize
@@ -104,7 +105,6 @@ library RelayGenerator requires GameGlobalConstants, SimpleList, Table, Vector2,
         public static SimpleList_List ActiveRelays
         
         private static timer TurnTimer
-        private static Table TurnTable
         
         //implement Alloc
         
@@ -126,7 +126,7 @@ library RelayGenerator requires GameGlobalConstants, SimpleList, Table, Vector2,
         endif
         
         public method ToString takes nothing returns string
-            return "Unit Lane Size: " + R2S(.UnitLaneSize)
+            return "Unit Lane Size: " + R2S(.UnitLaneSize) + ", radius: " + R2S(.GetRadius()) + ", number lanes: " + I2S(.GetNumberLanes())
         endmethod
         
         //register the rect that matches the final turn's destination under a remove unit timer event
@@ -148,64 +148,64 @@ library RelayGenerator requires GameGlobalConstants, SimpleList, Table, Vector2,
                     if lastTurn.Direction == 0 then
                         //right -> up
                         if lastTurn.FirstLaneY == UP then
-                            set turn = RelayTurn.create(area, center, this.Radius, this.UnitLaneSize, newDirection, newDistance, LEFT, UP)
+                            set turn = RelayTurn.create(area, center, this.GetRadius(), this.UnitLaneSize, newDirection, newDistance, LEFT, UP)
                         else //lastTurn.FirstLaneY == BOTTOM
-                            set turn = RelayTurn.create(area, center, this.Radius, this.UnitLaneSize, newDirection, newDistance, RIGHT, DOWN)
+                            set turn = RelayTurn.create(area, center, this.GetRadius(), this.UnitLaneSize, newDirection, newDistance, RIGHT, DOWN)
                         endif
                     else //lastTurn.Direction == 180
                         //left -> up
                         if lastTurn.FirstLaneY == UP then
-                            set turn = RelayTurn.create(area, center, this.Radius, this.UnitLaneSize, newDirection, newDistance, RIGHT, UP)
+                            set turn = RelayTurn.create(area, center, this.GetRadius(), this.UnitLaneSize, newDirection, newDistance, RIGHT, UP)
                         else //lastTurn.FirstLaneY == BOTTOM
-                            set turn = RelayTurn.create(area, center, this.Radius, this.UnitLaneSize, newDirection, newDistance, LEFT, DOWN)
+                            set turn = RelayTurn.create(area, center, this.GetRadius(), this.UnitLaneSize, newDirection, newDistance, LEFT, DOWN)
                         endif
                     endif
                 elseif newDirection == 270 then
                     if lastTurn.Direction == 0 then
                         //right -> down
                         if lastTurn.FirstLaneY == UP then
-                            set turn = RelayTurn.create(area, center, this.Radius, this.UnitLaneSize, newDirection, newDistance, RIGHT, UP)
+                            set turn = RelayTurn.create(area, center, this.GetRadius(), this.UnitLaneSize, newDirection, newDistance, RIGHT, UP)
                         else //lastTurn.FirstLaneY == BOTTOM
-                            set turn = RelayTurn.create(area, center, this.Radius, this.UnitLaneSize, newDirection, newDistance, LEFT, DOWN)
+                            set turn = RelayTurn.create(area, center, this.GetRadius(), this.UnitLaneSize, newDirection, newDistance, LEFT, DOWN)
                         endif
                     else //lastTurn.Direction == 180
                         //left -> down
                         if lastTurn.FirstLaneY == UP then
-                            set turn = RelayTurn.create(area, center, this.Radius, this.UnitLaneSize, newDirection, newDistance, LEFT, UP)
+                            set turn = RelayTurn.create(area, center, this.GetRadius(), this.UnitLaneSize, newDirection, newDistance, LEFT, UP)
                         else //lastTurn.FirstLaneY == BOTTOM
-                            set turn = RelayTurn.create(area, center, this.Radius, this.UnitLaneSize, newDirection, newDistance, RIGHT, DOWN)
+                            set turn = RelayTurn.create(area, center, this.GetRadius(), this.UnitLaneSize, newDirection, newDistance, RIGHT, DOWN)
                         endif
                     endif
                 elseif newDirection == 0 then
                     if lastTurn.Direction == 90 then
                         //up -> right
                         if lastTurn.FirstLaneX == LEFT then
-                            set turn = RelayTurn.create(area, center, this.Radius, this.UnitLaneSize, newDirection, newDistance, LEFT, UP)
+                            set turn = RelayTurn.create(area, center, this.GetRadius(), this.UnitLaneSize, newDirection, newDistance, LEFT, UP)
                         else //lastTurn.FirstLaneX == RIGHT
-                            set turn = RelayTurn.create(area, center, this.Radius, this.UnitLaneSize, newDirection, newDistance, RIGHT, DOWN)
+                            set turn = RelayTurn.create(area, center, this.GetRadius(), this.UnitLaneSize, newDirection, newDistance, RIGHT, DOWN)
                         endif
                     else //lastTurn.Direction == 270
                         //down -> right
                         if lastTurn.FirstLaneX == LEFT then
-                            set turn = RelayTurn.create(area, center, this.Radius, this.UnitLaneSize, newDirection, newDistance, LEFT, DOWN)
+                            set turn = RelayTurn.create(area, center, this.GetRadius(), this.UnitLaneSize, newDirection, newDistance, LEFT, DOWN)
                         else //lastTurn.FirstLaneX == RIGHT
-                            set turn = RelayTurn.create(area, center, this.Radius, this.UnitLaneSize, newDirection, newDistance, RIGHT, UP)
+                            set turn = RelayTurn.create(area, center, this.GetRadius(), this.UnitLaneSize, newDirection, newDistance, RIGHT, UP)
                         endif
                     endif
                 else //newDirection == 180
                     if lastTurn.Direction == 90 then
                         //up -> left
                         if lastTurn.FirstLaneX == LEFT then
-                            set turn = RelayTurn.create(area, center, this.Radius, this.UnitLaneSize, newDirection, newDistance, LEFT, DOWN)
+                            set turn = RelayTurn.create(area, center, this.GetRadius(), this.UnitLaneSize, newDirection, newDistance, LEFT, DOWN)
                         else //lastTurn.FirstLaneX == RIGHT
-                            set turn = RelayTurn.create(area, center, this.Radius, this.UnitLaneSize, newDirection, newDistance, RIGHT, UP)
+                            set turn = RelayTurn.create(area, center, this.GetRadius(), this.UnitLaneSize, newDirection, newDistance, RIGHT, UP)
                         endif
                     else //lastTurn.Direction == 270
                         //down -> left
                         if lastTurn.FirstLaneX == LEFT then
-                            set turn = RelayTurn.create(area, center, this.Radius, this.UnitLaneSize, newDirection, newDistance, LEFT, UP)
+                            set turn = RelayTurn.create(area, center, this.GetRadius(), this.UnitLaneSize, newDirection, newDistance, LEFT, UP)
                         else //lastTurn.FirstLaneX == RIGHT
-                            set turn = RelayTurn.create(area, center, this.Radius, this.UnitLaneSize, newDirection, newDistance, RIGHT, DOWN)
+                            set turn = RelayTurn.create(area, center, this.GetRadius(), this.UnitLaneSize, newDirection, newDistance, RIGHT, DOWN)
                         endif
                     endif
                 endif
@@ -213,13 +213,13 @@ library RelayGenerator requires GameGlobalConstants, SimpleList, Table, Vector2,
             else
                 //either continuing straight or doubling back -- either way, persist the unchanged part of the first lane position
                 if newDirection == 0 then
-                    set turn = RelayTurn.create(area, center, this.Radius, this.UnitLaneSize, newDirection, newDistance, RIGHT, lastTurn.FirstLaneY)
+                    set turn = RelayTurn.create(area, center, this.GetRadius(), this.UnitLaneSize, newDirection, newDistance, RIGHT, lastTurn.FirstLaneY)
                 elseif newDirection == 180 then
-                    set turn = RelayTurn.create(area, center, this.Radius, this.UnitLaneSize, newDirection, newDistance, LEFT, lastTurn.FirstLaneY)
+                    set turn = RelayTurn.create(area, center, this.GetRadius(), this.UnitLaneSize, newDirection, newDistance, LEFT, lastTurn.FirstLaneY)
                 elseif newDirection == 90 then
-                    set turn = RelayTurn.create(area, center, this.Radius, this.UnitLaneSize, newDirection, newDistance, lastTurn.FirstLaneX, UP)
+                    set turn = RelayTurn.create(area, center, this.GetRadius(), this.UnitLaneSize, newDirection, newDistance, lastTurn.FirstLaneX, UP)
                 else
-                    set turn = RelayTurn.create(area, center, this.Radius, this.UnitLaneSize, newDirection, newDistance, lastTurn.FirstLaneX, DOWN)
+                    set turn = RelayTurn.create(area, center, this.GetRadius(), this.UnitLaneSize, newDirection, newDistance, lastTurn.FirstLaneX, DOWN)
                 endif
             endif
             
@@ -235,8 +235,8 @@ library RelayGenerator requires GameGlobalConstants, SimpleList, Table, Vector2,
             local RelayTurn lastTurn = RelayTurn(Turns.last.value)
             
             //relay diameter = (LaneCount + 2) / 2
-            local real radius = this.Radius * TERRAIN_TILE_SIZE
-            local real totalDistance = radius*2 + tilesToTravel*TERRAIN_TILE_SIZE
+            local real radius = this.GetRadius()*TERRAIN_TILE_SIZE
+            local real totalDistance = this.Diameter*TERRAIN_TILE_SIZE + tilesToTravel*TERRAIN_TILE_SIZE
             
             local real turnCenterX
             local real turnCenterY
@@ -305,14 +305,36 @@ library RelayGenerator requires GameGlobalConstants, SimpleList, Table, Vector2,
         endmethod
         
         public method GetNextTurnDestination takes RelayUnit turnUnit returns vector2
-            return GetTurnDestination(turnUnit.CurrentTurn, turnUnit.LaneNumber)
+            /*
+			local vector2 destination = GetTurnDestination(turnUnit.CurrentTurn, turnUnit.LaneNumber)
+			local RelayTurn turn = turnUnit.CurrentTurn.value
+			
+			//call DisplayTextToForce(bj_FORCE_PLAYER[0], "Cur destination " + destination.toString())
+			if turn.Direction == 0 then 
+				set destination.x = destination.x + UNIT_DESTINATION_BUFFER
+			elseif turn.Direction == 90 then
+				set destination.y = destination.y + UNIT_DESTINATION_BUFFER
+			elseif turn.Direction == 180 then
+				set destination.x = destination.x - UNIT_DESTINATION_BUFFER
+			elseif turn.Direction == 270 then
+				set destination.y = destination.y - UNIT_DESTINATION_BUFFER
+			endif
+			//call DisplayTextToForce(bj_FORCE_PLAYER[0], "Buffered destination " + destination.toString())
+			
+			return destination
+			*/
+			
+			return GetTurnDestination(turnUnit.CurrentTurn, turnUnit.LaneNumber)
         endmethod
         
         public method GetNumberLanes takes nothing returns integer
             //number lanes in a single tile = tile-size / lane-offset
             //number lanes total = lanes-single * spawn-diameter
-            return R2I(this.Radius*2.*TERRAIN_TILE_SIZE/.UnitLaneSize) - UNIT_SIDE_BUFFER*2
+            return R2I(this.Diameter*TERRAIN_TILE_SIZE/.UnitLaneSize) - UNIT_SIDE_BUFFER*2
         endmethod
+		public method GetRadius takes nothing returns integer
+			return R2I(this.Diameter / 2. - .5000)
+		endmethod
         
         private static method CreateUnitCB takes nothing returns nothing
             local RelayGenerator generator = GetTimerData(GetExpiredTimer())
@@ -459,7 +481,7 @@ library RelayGenerator requires GameGlobalConstants, SimpleList, Table, Vector2,
         //takes:
         //real centerX -- center coord for relay generator's first turn (and spawn)
         //real centerY
-        //integer spawnDiameter -- # of full tiles this spawn is. all spawns are squares
+        //integer spawnDiameter -- # of full tiles this spawn is in both length and width directions. all spawns are squares
         //integer laneCount -- # of lanes in relay
         public static method create takes real centerX, real centerY, integer spawnDiameter, integer laneCount, integer direction, integer tilesToTravel, integer unitTypeID, real unitSpawnTimeout returns thistype
             local thistype new
@@ -475,7 +497,8 @@ library RelayGenerator requires GameGlobalConstants, SimpleList, Table, Vector2,
                 set new.UnitTimeout = unitSpawnTimeout
                 
                 set spawnCenter = GetTerrainCenterpoint(centerX, centerY)
-                set new.Radius = spawnDiameter / 2.                
+				set new.Diameter = spawnDiameter
+                // set new.Radius = R2I(spawnDiameter / 2. - .5000)
                 set new.UnitLaneSize = spawnDiameter * TERRAIN_TILE_SIZE / (1.*laneCount)
                 
                 //debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "Spawn radius: " + R2S(spawnRadius) + ", Lane count: " + R2S(new.LaneCount))
@@ -485,16 +508,16 @@ library RelayGenerator requires GameGlobalConstants, SimpleList, Table, Vector2,
                 set new.Turns = SimpleList_List.create()
                 if direction == 0 then
                     //sending right
-                    call new.Turns.add(RelayTurn.create(Rect(spawnCenter.x - spawnRadius - new.UnitLaneSize, spawnCenter.y - spawnRadius - new.UnitLaneSize, spawnCenter.x - spawnRadius + TERRAIN_TILE_SIZE + new.UnitLaneSize, spawnCenter.y + spawnRadius + new.UnitLaneSize), spawnCenter, new.Radius, new.UnitLaneSize, direction, spawnDiameter*TERRAIN_TILE_SIZE + tilesToTravel*TERRAIN_TILE_SIZE, LEFT, DOWN))
+                    call new.Turns.add(RelayTurn.create(Rect(spawnCenter.x - spawnRadius - new.UnitLaneSize, spawnCenter.y - spawnRadius - new.UnitLaneSize, spawnCenter.x - spawnRadius + TERRAIN_TILE_SIZE + new.UnitLaneSize, spawnCenter.y + spawnRadius + new.UnitLaneSize), spawnCenter, new.GetRadius(), new.UnitLaneSize, direction, spawnDiameter*TERRAIN_TILE_SIZE + tilesToTravel*TERRAIN_TILE_SIZE, LEFT, DOWN))
                 elseif direction == 180 then
                     //sending left
-                    call new.Turns.add(RelayTurn.create(Rect(spawnCenter.x + spawnRadius - TERRAIN_TILE_SIZE - new.UnitLaneSize, spawnCenter.y - spawnRadius - new.UnitLaneSize, spawnCenter.x + spawnRadius + new.UnitLaneSize, spawnCenter.y + spawnRadius + new.UnitLaneSize), spawnCenter, new.Radius, new.UnitLaneSize, direction, spawnDiameter*TERRAIN_TILE_SIZE + tilesToTravel*TERRAIN_TILE_SIZE, RIGHT, DOWN))
+                    call new.Turns.add(RelayTurn.create(Rect(spawnCenter.x + spawnRadius - TERRAIN_TILE_SIZE - new.UnitLaneSize, spawnCenter.y - spawnRadius - new.UnitLaneSize, spawnCenter.x + spawnRadius + new.UnitLaneSize, spawnCenter.y + spawnRadius + new.UnitLaneSize), spawnCenter, new.GetRadius(), new.UnitLaneSize, direction, spawnDiameter*TERRAIN_TILE_SIZE + tilesToTravel*TERRAIN_TILE_SIZE, RIGHT, DOWN))
                 elseif direction == 90 then
                     //sending up
-                    call new.Turns.add(RelayTurn.create(Rect(spawnCenter.x - spawnRadius - new.UnitLaneSize, spawnCenter.y - spawnRadius - new.UnitLaneSize, spawnCenter.x + spawnRadius + new.UnitLaneSize, spawnCenter.y - spawnRadius + TERRAIN_TILE_SIZE + new.UnitLaneSize), spawnCenter, new.Radius, new.UnitLaneSize, direction, spawnDiameter*TERRAIN_TILE_SIZE + tilesToTravel*TERRAIN_TILE_SIZE, LEFT, DOWN))
+                    call new.Turns.add(RelayTurn.create(Rect(spawnCenter.x - spawnRadius - new.UnitLaneSize, spawnCenter.y - spawnRadius - new.UnitLaneSize, spawnCenter.x + spawnRadius + new.UnitLaneSize, spawnCenter.y - spawnRadius + TERRAIN_TILE_SIZE + new.UnitLaneSize), spawnCenter, new.GetRadius(), new.UnitLaneSize, direction, spawnDiameter*TERRAIN_TILE_SIZE + tilesToTravel*TERRAIN_TILE_SIZE, LEFT, DOWN))
                 else //direction == 270
                     //sending down
-                    call new.Turns.add(RelayTurn.create(Rect(spawnCenter.x - spawnRadius - new.UnitLaneSize, spawnCenter.y + spawnRadius - TERRAIN_TILE_SIZE - new.UnitLaneSize, spawnCenter.x + spawnRadius + new.UnitLaneSize, spawnCenter.y + spawnRadius + new.UnitLaneSize), spawnCenter, new.Radius, new.UnitLaneSize, direction, spawnDiameter*TERRAIN_TILE_SIZE + tilesToTravel*TERRAIN_TILE_SIZE, LEFT, UP))
+                    call new.Turns.add(RelayTurn.create(Rect(spawnCenter.x - spawnRadius - new.UnitLaneSize, spawnCenter.y + spawnRadius - TERRAIN_TILE_SIZE - new.UnitLaneSize, spawnCenter.x + spawnRadius + new.UnitLaneSize, spawnCenter.y + spawnRadius + new.UnitLaneSize), spawnCenter, new.GetRadius(), new.UnitLaneSize, direction, spawnDiameter*TERRAIN_TILE_SIZE + tilesToTravel*TERRAIN_TILE_SIZE, LEFT, UP))
                 endif
                 
                 //don't deallocate spawn center, it's re-used by the generator
@@ -512,7 +535,6 @@ library RelayGenerator requires GameGlobalConstants, SimpleList, Table, Vector2,
         public static method onInit takes nothing returns nothing
             set ActiveRelays = SimpleList_List.create()
             set TurnTimer = CreateTimer()
-            set TurnTable = Table.create()            
             set UnitIDToRelayUnitID[0] = 0
             //set UnitTable = Table.create()
         endmethod
