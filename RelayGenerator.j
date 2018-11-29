@@ -420,13 +420,16 @@ library RelayGenerator requires GameGlobalConstants, SimpleList, Table, Vector2,
         
         private static method CheckRelayInit takes nothing returns nothing
             local SimpleList_ListNode activeRelay = ActiveRelays.first
-            
+            //local integer stopwatch = StopWatchCreate()
+			
             loop
             exitwhen activeRelay == 0
                 //call DisplayTextToForce(bj_FORCE_PLAYER[0], "Checking turns for generator " + I2S(activeRelay.value))
                 call RelayGenerator(activeRelay.value).CheckRelay()
             set activeRelay = activeRelay.next
             endloop
+			
+			//call DisplayTextToForce(bj_FORCE_PLAYER[0], "Stop watch ticks: " + I2S(StopWatchMark(stopwatch)))
         endmethod
         
         public method Start takes nothing returns nothing

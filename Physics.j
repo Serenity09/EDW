@@ -46,7 +46,7 @@ globals
     private constant boolean DEBUG_TERRAIN_CHANGE = false
     private constant boolean DEBUG_JUMPING = false
     private constant string TERRAIN_KILL_FX = "Abilities\\Spells\\Other\\Incinerate\\FireLordDeathExplode.mdl"
-    debug constant string DEBUG_TERRAIN_KILL_FX = "Abilities\\Spells\\Other\\Incinerate\\FireLordDeathExplode.mdl"
+    private constant string DEBUG_TERRAIN_KILL_FX = "Abilities\\Spells\\Other\\Incinerate\\FireLordDeathExplode.mdl"
 endglobals
 
     struct Platformer
@@ -2978,6 +2978,7 @@ endglobals
                     set .FX = null
                     //debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "On vines, grav is: " + R2S(.GravitationalAccel))
                 elseif ttype == BOOST then
+					//this is too inconsistent inside this loop, will need to move it out to its own timer after all...
                     if .GravitationalAccel > 0 then
                         set .YVelocity = -BOOST_SPEED
                     elseif .GravitationalAccel < 0 then
@@ -2986,7 +2987,7 @@ endglobals
                     
                     return
                 elseif ttype == SLIPSTREAM then
-                    call .GravityEquation.addAdjustment(PlatformerPropertyEquation_MULTIPLY_ADJUSTMENT, SLIPSTREAM, .01)
+                    call .GravityEquation.addAdjustment(PlatformerPropertyEquation_MULTIPLY_ADJUSTMENT, SLIPSTREAM, 0)
                     set .GravitationalAccel = .GravityEquation.calculateAdjustedValue(.BaseProfile.GravitationalAccel)
                     
                     //call .TVYEquation.addAdjustment(PlatformerPropertyEquation_MULTIPLY_ADJUSTMENT, SLIPSTREAM, 10)
