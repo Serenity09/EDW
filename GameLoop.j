@@ -216,7 +216,7 @@ function GameLoopRemoveTerrainAction takes unit u, integer i, integer oldterrain
     
     if (oldterrain == FASTICE) then
         set CanSteer[i] = false
-        call IceMovement_Remove(i)
+        call IceMovement_Remove(MazersArray[i])
         
         if curterrain == SNOW or curterrain == SAND or curterrain == RSNOW then
         
@@ -237,7 +237,7 @@ function GameLoopRemoveTerrainAction takes unit u, integer i, integer oldterrain
     
     if (oldterrain == MEDIUMICE) then
         set CanSteer[i] = false
-        call IceMovement_Remove(i)
+        call IceMovement_Remove(MazersArray[i])
                 
         if (curterrain == SNOW or curterrain == SAND or curterrain == RSNOW) then
             //velocity carries over to sand, so do nothing
@@ -262,7 +262,7 @@ function GameLoopRemoveTerrainAction takes unit u, integer i, integer oldterrain
     
     if(oldterrain == SLOWICE) then
         set CanSteer[i] = false
-        call IceMovement_Remove(i)
+        call IceMovement_Remove(MazersArray[i])
              
         if (curterrain == SNOW or curterrain == SAND or curterrain == RSNOW or curterrain == MEDIUMICE or curterrain == FASTICE) then
             //velocity carries over to sand, so do nothing
@@ -533,7 +533,7 @@ function GameLoopNewTerrainAction takes nothing returns nothing
         set CanSteer[i] = true
         set SkateSpeed[i] = FastIceSpeed
         
-        call IceMovement_Add(i)
+        call IceMovement_Add(MazersArray[i])
         //call DisplayTextToForce(bj_FORCE_PLAYER[i], "On Fast Ice")
         set TerrainOffset[i] = FASTICEOFFSET
         set PreviousTerrainTypedx[i] = basicterrain
@@ -544,7 +544,7 @@ function GameLoopNewTerrainAction takes nothing returns nothing
         set CanSteer[i] = true
         set SkateSpeed[i] = MediumIceSpeed
         
-        call IceMovement_Add(i)
+        call IceMovement_Add(MazersArray[i])
         
         set TerrainOffset[i] = MEDIUMICEOFFSET
         set PreviousTerrainTypedx[i] = basicterrain
@@ -555,7 +555,7 @@ function GameLoopNewTerrainAction takes nothing returns nothing
         set CanSteer[i] = true
         set SkateSpeed[i] = SlowIceSpeed
         
-        call IceMovement_Add(i)
+        call IceMovement_Add(MazersArray[i])
         
         set TerrainOffset[i] = SLOWICEOFFSET
         set PreviousTerrainTypedx[i] = basicterrain
