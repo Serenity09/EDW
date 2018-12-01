@@ -1,11 +1,8 @@
-library IceSteering
-globals
-	private trigger t = CreateTrigger()
-endglobals
+library IceSteering initializer Init requires SkatingGlobals
 
-function ControlledSteering takes nothing returns boolean
+private function ControlledSteering takes nothing returns boolean
     local integer i = GetPlayerId(GetTriggerPlayer())
-        
+    	
     if CanSteer[i] then        
         call SetUnitFacingTimed(MazersArray[i], (bj_RADTODEG * Atan2(GetOrderPointY() - GetUnitY(MazersArray[i]), GetOrderPointX() - GetUnitX(MazersArray[i]))), 0)
     endif
@@ -14,15 +11,18 @@ function ControlledSteering takes nothing returns boolean
 endfunction
 
 //===========================================================================
-function InitTrig_Steering takes nothing returns nothing
-    local integer i = 0
-    //set gg_trg_Steering = CreateTrigger()
+private function Init takes nothing returns nothing
+    local trigger t = CreateTrigger()
+	local integer i = 0
+	
     loop
     exitwhen i >= NumberPlayers
-        call TriggerRegisterPlayerUnitEvent(t, Player(i), EVENT_PLAYER_UNIT_ISSUED_POINT_ORDER, Filter(function ControlledSteering))
+        call TriggerRegisterPlayerUnitEvent(t, Player(i), EVENT_PLAYER_UNIT_ISSUED_POINT_ORDER, null)
         set i = i + 1
     endloop
-    //call TriggerAddCondition(t, function ControlledSteering)
+    call TriggerAddCondition(t, Condition(function ControlledSteering))
+	
+	set t = null
 endfunction
 
 endlibrary

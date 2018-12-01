@@ -123,7 +123,6 @@ library Vector2
 		endmethod
 		
 // ================================================================
-
         method projectVector takes vector2 direction returns nothing
             local real l = direction.x*direction.x+direction.y*direction.y
             if l == 0.0 then
@@ -141,7 +140,10 @@ library Vector2
             set this.x = unitDirection.x*l
             set this.y = unitDirection.y*l
         endmethod
-
+		
+		static method unitInDirection takes real direction returns thistype
+			return thistype.create(Cos(direction), Sin(direction))
+		endmethod
         static method getAngle takes vector2 a, vector2 b returns real
             local real l = SquareRoot(a.x*a.x + a.y*a.y)*SquareRoot(b.x*b.x + b.y*b.y)
             if l == 0 then

@@ -14,10 +14,10 @@ library EDWVisualVote requires VisualVote, ContinueGlobals, Teams, PlayerUtils, 
             //9 == first platforming level
             
             //66 == debug platform testing
-            return Levels_Levels[1]
+            return Levels_Levels[67]
             //return Levels_Levels[23]
         else
-            return Levels_Levels[67]
+            return Levels_Levels[1]
         endif
     endfunction
         
@@ -83,16 +83,24 @@ library EDWVisualVote requires VisualVote, ContinueGlobals, Teams, PlayerUtils, 
 	
 	private function FadeCBTwo takes nothing returns nothing
 		local timer t = GetExpiredTimer()
+		local SimpleList_ListNode fp = PlayerUtils_FirstPlayer
 		
 		call DisplayCineFilter(false)
 		call EnableUserUI(true)
+		
+		loop
+		exitwhen fp == 0
+			call PauseUnit(MazersArray[fp.value], false)
+			//call mt.ChangePlayerVision(Levels_Levels[0].Vision)
+		set fp = fp.next
+		endloop
 		
 		call DestroyTimer(t)
 		set t = null
 	endfunction
 	private function FadeCBOne takes nothing returns nothing
 		local timer t = GetExpiredTimer()
-		local SimpleList_ListNode fp = PlayerUtils_FirstPlayer
+		
 		
 		call DisplayCineFilter(false)
 		
@@ -107,13 +115,6 @@ library EDWVisualVote requires VisualVote, ContinueGlobals, Teams, PlayerUtils, 
 		call DisplayCineFilter(true)
 		
 		//call EnableUserUI(true)
-		
-		loop
-		exitwhen fp == 0
-			call PauseUnit(MazersArray[fp.value], false)
-			//call mt.ChangePlayerVision(Levels_Levels[0].Vision)
-		set fp = fp.next
-		endloop
 		
 		call TimerStart(t, 3, false, function FadeCBTwo)
 		set t = null
@@ -291,7 +292,9 @@ library EDWVisualVote requires VisualVote, ContinueGlobals, Teams, PlayerUtils, 
             call team[i].ApplyTeamDefaultCameras()
             call team[i].AddTeamVision(firstLevel.Vision)
 			
-			call team[i].AddTeamCinema(cine, team[i].FirstUser.value)
+			static if not DEBUG_MODE then
+				call team[i].AddTeamCinema(cine, team[i].FirstUser.value)
+			endif
 			
             call firstLevel.ActiveTeams.add(team[i])
 						
@@ -300,18 +303,28 @@ library EDWVisualVote requires VisualVote, ContinueGlobals, Teams, PlayerUtils, 
         exitwhen i >= teamCount
         endloop
 		
-		call EnableUserUI(false)
-		call SetCineFilterTexture("ReplaceableTextures\\CameraMasks\\Black_mask.blp")
-		call SetCineFilterBlendMode(BLEND_MODE_BLEND)
-		call SetCineFilterTexMapFlags(TEXMAP_FLAG_NONE)
-		call SetCineFilterStartUV(0, 0, 1, 1)
-		call SetCineFilterEndUV(0, 0, 1, 1)
-		call SetCineFilterStartColor(PercentTo255(100), PercentTo255(100), PercentTo255(100), PercentTo255(100))
-		call SetCineFilterEndColor(PercentTo255(100), PercentTo255(100), PercentTo255(100), PercentTo255(100))
-		call SetCineFilterDuration(0)
-		call DisplayCineFilter(true)
-		
-		call TimerStart(CreateTimer(), 3, false, function FadeCBOne)
+		static if not DEBUG_MODE then
+			call EnableUserUI(false)
+			call SetCineFilterTexture("ReplaceableTextures\\CameraMasks\\Black_mask.blp")
+			call SetCineFilterBlendMode(BLEND_MODE_BLEND)
+			call SetCineFilterTexMapFlags(TEXMAP_FLAG_NONE)
+			call SetCineFilterStartUV(0, 0, 1, 1)
+			call SetCineFilterEndUV(0, 0, 1, 1)
+			call SetCineFilterStartColor(PercentTo255(100), PercentTo255(100), PercentTo255(100), PercentTo255(100))
+			call SetCineFilterEndColor(PercentTo255(100), PercentTo255(100), PercentTo255(100), PercentTo255(100))
+			call SetCineFilterDuration(0)
+			call DisplayCineFilter(true)
+			
+			call TimerStart(CreateTimer(), 3, false, function FadeCBOne)
+		else
+			set fp = PlayerUtils_FirstPlayer
+			loop
+			exitwhen fp == 0
+				call PauseUnit(MazersArray[fp.value], false)
+				//call mt.ChangePlayerVision(Levels_Levels[0].Vision)
+			set fp = fp.next
+			endloop
+		endif
 		
         //apply the player's (custom) Default camerasetup and pan to their default mazer
         //call SelectAndPanAllDefaultUnits()
@@ -360,7 +373,9 @@ library EDWVisualVote requires VisualVote, ContinueGlobals, Teams, PlayerUtils, 
 
 		if not FORCE_MENU and (GetHumanPlayersCount() == 1 or DEBUG_MODE) then
         //static if DEBUG_MODE and false then
-            set GameMode = GameModesGlobals_TEAMALL
+            call CreateFogModifierRectBJ(true, Player(0), FOG_OF_WAR_VISIBLE, GetPlayableMapRect())
+			
+			set GameMode = GameModesGlobals_TEAMALL
             //99 and none
             set RewardMode = 2
             //respawn as soon as you die

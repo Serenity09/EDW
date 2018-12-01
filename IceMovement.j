@@ -1,4 +1,4 @@
-library IceMovement initializer Init requires MazerGlobals, GroupUtils
+library IceMovement initializer Init requires MazerGlobals, SkatingGlobals, GroupUtils
 
 globals
     constant real DEGREE_TO_RADIANS = 0.01745
@@ -64,9 +64,9 @@ function AdvancedIceMovement takes nothing returns nothing
 			call IssueImmediateOrder(u, "stop")
 		else
 			//handle non-player units
-			
+			//call DisplayTextToForce(bj_FORCE_PLAYER[0], "Skating NPC in direction: " + R2S(GetUnitFacing(u)))
 			call SetUnitX(u, GetUnitX(u) + NPC_SKATE_SPEED * Cos(GetUnitFacing(u) * DEGREE_TO_RADIANS))
-			call SetUnitY(u, GetUnitX(u) + NPC_SKATE_SPEED * Sin(GetUnitFacing(u) * DEGREE_TO_RADIANS))
+			call SetUnitY(u, GetUnitY(u) + NPC_SKATE_SPEED * Sin(GetUnitFacing(u) * DEGREE_TO_RADIANS))
 			call IssueImmediateOrder(u, "stop")
 		endif
 		
