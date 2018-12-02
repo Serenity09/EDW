@@ -8,7 +8,7 @@ globals
     private constant real VELOCITY_FALLOFF = 1
     private constant real VELOCITY_CUTOFF = VELOCITY_FALLOFF + .5
 	
-	private constant real NPC_SKATE_SPEED = 12.5
+	private constant real NPC_SKATE_SPEED = 9
 	
 	private timer t
 	private group g

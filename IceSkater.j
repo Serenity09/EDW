@@ -1,6 +1,7 @@
 library IceSkater requires SimpleList, Vector2, IceMovement
 	globals
-		private constant real TIMESTEP = .5
+		private constant real TIMESTEP = .1
+		private constant real TURN_SMOOTH_DURATION = TIMESTEP
 		private constant player NPC_SKATE_PLAYER = Player(10)
 		private constant real ORDER_DISTANCE_OFFSET = 4*128.
 		
@@ -23,25 +24,38 @@ library IceSkater requires SimpleList, Vector2, IceMovement
 			call DisplayTextToForce(bj_FORCE_PLAYER[0], "Position: " + .Position.toString())
 			call DisplayTextToForce(bj_FORCE_PLAYER[0], "Quadrant From Previous: " + .QuadrantDirection.toString())
 			call DisplayTextToForce(bj_FORCE_PLAYER[0], "Angle From Previous: " + R2S(.AngleFromPrevious))
+			call DisplayTextToForce(bj_FORCE_PLAYER[0], "Angle To Next: " + R2S(.AngleToNext))
 		endmethod
 		
-		public static method create takes vector2 position, vector2 previousPosition returns thistype
+		public method destroy takes nothing returns nothing
+			call .Position.destroy()
+			call .QuadrantDirection.destroy()
+		endmethod
+		
+		public static method create takes vector2 position, Destination previousDestination returns thistype
 			local thistype new = thistype.allocate()
+			local vector2 rel
 			
 			set new.Position = position
 			
 			//create metadata for later use
-			if previousPosition != 0 then
-				set new.AngleFromPrevious = vector2.getAngle(previousPosition, position) * bj_RADTODEG
+			if previousDestination != 0 then
+				set rel = vector2.create(position.x, position.y)
+				call rel.subtract(previousDestination.Position)
+				
+				set previousDestination.AngleToNext = rel.getAngleHorizontal() * bj_RADTODEG
+				set new.AngleFromPrevious = previousDestination.AngleToNext
+				call rel.destroy()
+				//set previousDestination.AngleToNext = vector2.getAngle(previousDestination.Position, position) * bj_RADTODEG
 			
-				if position.x >= previousPosition.x then
-					if position.y >= previousPosition.y then
+				if position.x >= previousDestination.Position.x then
+					if position.y >= previousDestination.Position.y then
 						set new.QuadrantDirection = vector2.create(1, 1)
 					else
 						set new.QuadrantDirection = vector2.create(1, -1)
 					endif
 				else
-					if position.y >= previousPosition.y then
+					if position.y >= previousDestination.Position.y then
 						set new.QuadrantDirection = vector2.create(-1, 1)
 					else
 						set new.QuadrantDirection = vector2.create(-1, -1)
@@ -49,8 +63,8 @@ library IceSkater requires SimpleList, Vector2, IceMovement
 				endif
 			endif
 			
-			call DisplayTextToForce(bj_FORCE_PLAYER[0], "Creating destination " + I2S(new))
-			call new.print()
+			//call DisplayTextToForce(bj_FORCE_PLAYER[0], "Creating destination " + I2S(new))
+			//call new.print()
 			
 			return new
 		endmethod
@@ -68,9 +82,27 @@ library IceSkater requires SimpleList, Vector2, IceMovement
 		
 		private static SimpleList_List ActiveSkaters
 		
+		public method print takes nothing returns nothing
+			local SimpleList_ListNode curDestination = .Destinations.first
+			
+			call DisplayTextToForce(bj_FORCE_PLAYER[0], "Printing Skater: " + I2S(this))
+			
+			//circular loop safe
+			if curDestination != 0 then
+				call Destination(curDestination.value).print()
+				set curDestination = curDestination.next
+			endif
+			
+			loop
+			exitwhen curDestination == 0 or curDestination == .Destinations.first
+				call Destination(curDestination.value).print()
+			set curDestination = curDestination.next
+			endloop
+		endmethod
+		
 		public method AddDestination takes vector2 destination returns nothing
 			if .Destinations.count > 0 then
-				call .Destinations.addEnd(Destination.create(destination, Destination(.Destinations.last.value).Position))
+				call .Destinations.addEnd(Destination.create(destination, Destination(.Destinations.last.value)))
 			else
 				call .Destinations.addEnd(Destination.create(destination, 0))
 			endif
@@ -79,7 +111,15 @@ library IceSkater requires SimpleList, Vector2, IceMovement
 			local Destination start = Destinations.first.value
 			local Destination end = Destinations.last.value
 			
-			set start.AngleFromPrevious = vector2.getAngle(end, start) * bj_RADTODEG
+			local vector2 rel = vector2.create(Destination(.Destinations.first.value).Position.x, Destination(.Destinations.first.value).Position.y)
+			call rel.subtract(Destination(.Destinations.last.value).Position)
+			
+			set end.AngleToNext = rel.getAngleHorizontal() * bj_RADTODEG
+			set start.AngleFromPrevious = end.AngleToNext
+			
+			call rel.destroy()
+			
+			//set start.AngleFromPrevious = vector2.getAngle(end, start) * bj_RADTODEG
 			
 			if start.Position.x >= end.Position.x then
 				if start.Position.y >= end.Position.y then
@@ -99,6 +139,15 @@ library IceSkater requires SimpleList, Vector2, IceMovement
 			set .Destinations.first.prev = .Destinations.last
 		endmethod
 		
+		private method SetDefaults takes nothing returns nothing
+			set .CurrentDestination = .Destinations.first.next
+			call SetUnitPosition(.SkateUnit, Destination(.Destinations.first.value).Position.x, Destination(.Destinations.first.value).Position.y)
+			call SetUnitFacing(.SkateUnit, Destination(.CurrentDestination.value).AngleFromPrevious)
+			
+			set .CurrentAngleDelta = 0
+			set .CurrentAngleDirection = -1
+		endmethod
+		
 		private static method UpdateSkaters takes nothing returns nothing
 			local SimpleList_ListNode currentSkaterNode = .ActiveSkaters.first
 			local IceSkater currentSkater
@@ -114,6 +163,45 @@ library IceSkater requires SimpleList, Vector2, IceMovement
 				set currentDestination = Destination(currentSkater.CurrentDestination.value)
 				
 				//TODO check if skater has passed their current destination
+				if currentDestination.QuadrantDirection.x >= 0 then
+					if currentDestination.QuadrantDirection.y >= 0 then
+						if GetUnitX(currentSkater.SkateUnit) >= currentDestination.Position.x and GetUnitY(currentSkater.SkateUnit) >= currentDestination.Position.y then
+							set currentSkater.CurrentDestination = currentSkater.CurrentDestination.next
+							if currentSkater.CurrentDestination == 0 then
+								//instantly reset to starting state -- only occurs if the ends of the destination chain are NOT connected
+								call currentSkater.SetDefaults()
+							endif
+						endif
+					else
+						if GetUnitX(currentSkater.SkateUnit) >= currentDestination.Position.x and GetUnitY(currentSkater.SkateUnit) < currentDestination.Position.y then
+							set currentSkater.CurrentDestination = currentSkater.CurrentDestination.next
+							if currentSkater.CurrentDestination == 0 then
+								//instantly reset to starting state -- only occurs if the ends of the destination chain are NOT connected
+								call currentSkater.SetDefaults()
+							endif
+						endif
+					endif
+				else
+					if currentDestination.QuadrantDirection.y >= 0 then
+						if GetUnitX(currentSkater.SkateUnit) < currentDestination.Position.x and GetUnitY(currentSkater.SkateUnit) >= currentDestination.Position.y then
+							set currentSkater.CurrentDestination = currentSkater.CurrentDestination.next
+							if currentSkater.CurrentDestination == 0 then
+								//instantly reset to starting state -- only occurs if the ends of the destination chain are NOT connected
+								call currentSkater.SetDefaults()
+							endif
+						endif
+					else
+						if GetUnitX(currentSkater.SkateUnit) < currentDestination.Position.x and GetUnitY(currentSkater.SkateUnit) < currentDestination.Position.y then
+							set currentSkater.CurrentDestination = currentSkater.CurrentDestination.next
+							if currentSkater.CurrentDestination == 0 then
+								//instantly reset to starting state -- only occurs if the ends of the destination chain are NOT connected
+								call currentSkater.SetDefaults()
+							endif
+						endif
+					endif
+				endif
+				
+				/*
 				if currentDestination.QuadrantDirection.x * GetUnitX(currentSkater.SkateUnit) >= currentDestination.Position.x and currentDestination.QuadrantDirection.y * GetUnitY(currentSkater.SkateUnit) >= currentDestination.Position.y then
 					call DisplayTextToForce(bj_FORCE_PLAYER[0], "Skater " + I2S(currentSkater) + " reached destination " + I2S(currentDestination))
 					
@@ -129,8 +217,7 @@ library IceSkater requires SimpleList, Vector2, IceMovement
 					call DisplayTextToForce(bj_FORCE_PLAYER[0], "Next destination is " + I2S(currentSkater.CurrentDestination.value))
 					call Destination(currentSkater.CurrentDestination.value).print()
 				endif
-				
-				//set facing = GetUnitFacing(currentSkater.SkateUnit)//*DEGREE_TO_RADIANS
+				*/
 				
 				//check if exceeding max delta
 				if currentSkater.CurrentAngleDelta + currentSkater.CurrentAngleDirection*currentSkater.AngleChangeRate > currentSkater.MaxAngleDelta or currentSkater.CurrentAngleDelta + currentSkater.CurrentAngleDirection*currentSkater.AngleChangeRate < -currentSkater.MaxAngleDelta then
@@ -141,13 +228,18 @@ library IceSkater requires SimpleList, Vector2, IceMovement
 				//set facing = facing + .CurrentAngleDelta
 				//set unitDirection = vector2.create(Cos(facing + .CurrentAngleDelta), Sin(facing + .CurrentAngleDelta))
 				
-				call SetUnitFacingTimed(currentSkater.SkateUnit, Destination(currentSkater.CurrentDestination.value).AngleFromPrevious + currentSkater.CurrentAngleDelta, 0)
+				call SetUnitFacingTimed(currentSkater.SkateUnit, Destination(currentSkater.CurrentDestination.value).AngleFromPrevious + currentSkater.CurrentAngleDelta, TURN_SMOOTH_DURATION)
 			set currentSkaterNode = currentSkaterNode.next
 			endloop
 		endmethod
 		
 		public method Start takes nothing returns nothing
 			if not thistype.ActiveSkaters.contains(this) then
+				//set .CurrentDestination = .Destinations.first.next
+				//call SetUnitPosition(.SkateUnit, Destination(.Destinations.first.value).Position.x, Destination(.Destinations.first.value).Position.y)
+				//call SetUnitFacing(.SkateUnit, Destination(.CurrentDestination.value).AngleFromPrevious)
+				call .SetDefaults()
+				
 				call ShowUnit(.SkateUnit, true)
 				
 				call thistype.ActiveSkaters.add(this)
@@ -164,16 +256,32 @@ library IceSkater requires SimpleList, Vector2, IceMovement
 				call thistype.ActiveSkaters.remove(this)
 				call IceMovement_Remove(.SkateUnit)
 				
-				//call ShowUnit(.SkateUnit, false)
-				set .CurrentDestination = .Destinations.first.next
-				call SetUnitPosition(.SkateUnit, Destination(.Destinations.first.value).Position.x, Destination(.Destinations.first.value).Position.y)
-				call SetUnitFacing(.SkateUnit, Destination(.CurrentDestination.value).AngleFromPrevious)
+				call ShowUnit(.SkateUnit, false)
 				
 				if thistype.ActiveSkaters.count == 0 then
                     call PauseTimer(t)
                     call DisplayTextToForce(bj_FORCE_PLAYER[0], "Paused NPC skater timer")
                 endif
 			endif
+		endmethod
+		
+		public method destroy takes nothing returns nothing
+			local SimpleList_ListNode curDestination = .Destinations.first
+			
+			//calling .Stop only does anything if currently active
+			call .Stop()
+			
+			loop
+			exitwhen curDestination == 0
+				call Destination(curDestination.value).destroy()
+			set curDestination = curDestination.next
+			endloop
+			
+			call .Destinations.destroy()
+			set .CurrentDestination = 0
+			
+			call RemoveUnit(.SkateUnit)
+			set .SkateUnit = null
 		endmethod
 		
 		//all angles are input in degrees and then converted to rads if necessary
@@ -183,16 +291,17 @@ library IceSkater requires SimpleList, Vector2, IceMovement
 			set new.Destinations = SimpleList_List.create()
 			call new.AddDestination(start)
 			call new.AddDestination(next)
-			set new.CurrentDestination = new.Destinations.last
+			set new.CurrentDestination = new.Destinations.first.next
 			
-			set new.SkateUnit = CreateUnit(NPC_SKATE_PLAYER, unitID, start.x, start.y, Destination(new.Destinations.last.value).AngleFromPrevious)
+			set new.SkateUnit = CreateUnit(NPC_SKATE_PLAYER, unitID, start.x, start.y, Destination(new.CurrentDestination.value).AngleFromPrevious)
 			//call ShowUnit(new.SkateUnit, false)
 			
 			set new.MaxAngleDelta = maxAngle
 			set new.AngleChangeRate = rawAngleChangeRate*TIMESTEP
 			
-			set new.CurrentAngleDelta = 0
-			set new.CurrentAngleDirection = -1
+			//set new.CurrentAngleDelta = 0
+			//set new.CurrentAngleDirection = -1
+			call new.SetDefaults()
 			
 			return new
 		endmethod

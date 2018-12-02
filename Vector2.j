@@ -100,10 +100,12 @@ library Vector2
         
         method setLength takes real length returns nothing
             local real l = SquareRoot(.x*.x + .y*.y)
-            if l == 0.0 then
-                debug call BJDebugMsg("vector.setLength error: The length of the vector is 0.0!")
-                return
-            endif
+            static if DEBUG_MODE then
+				if l == 0.0 then
+					debug call BJDebugMsg("vector.setLength error: The length of the vector is 0.0!")
+					return
+				endif
+			endif
             set l = length/l
             set this.x = this.x*l
             set this.y = this.y*l
@@ -118,17 +120,18 @@ library Vector2
         endmethod
 		
 		method getAngleHorizontal takes nothing returns real
-			local real l = SquareRoot(.x*.x + .y*.y)
-            return Acos(.x/l) //angle is returned in radians
+			return Atan2(.y, .x)
 		endmethod
 		
 // ================================================================
         method projectVector takes vector2 direction returns nothing
             local real l = direction.x*direction.x+direction.y*direction.y
-            if l == 0.0 then
-                debug call BJDebugMsg("vector.projectVector error: The length of the direction vector is 0.0!")
-                return
-            endif
+            static if DEBUG_MODE then
+				if l == 0.0 then
+					debug call BJDebugMsg("vector.projectVector error: The length of the direction vector is 0.0!")
+					return
+				endif
+			endif
             set l = (this.x*direction.x+this.y*direction.y) / l
             set this.x = direction.x*l
             set this.y = direction.y*l
@@ -146,10 +149,12 @@ library Vector2
 		endmethod
         static method getAngle takes vector2 a, vector2 b returns real
             local real l = SquareRoot(a.x*a.x + a.y*a.y)*SquareRoot(b.x*b.x + b.y*b.y)
-            if l == 0 then
-                debug call BJDebugMsg("vector.getAngle error: The length of at least one of the vectors is 0.0!")
-                return 0.0
-            endif
+            static if DEBUG_MODE then
+				if l == 0 then
+					debug call BJDebugMsg("vector.getAngle error: The length of at least one of the vectors is 0.0!")
+					return 0.0
+				endif
+			endif
             return Acos((a.x*b.x+a.y*b.y)/l) //angle is returned in radians
         endmethod		
     endstruct
