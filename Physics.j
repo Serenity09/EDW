@@ -65,7 +65,6 @@ endglobals
         //public effect         FX                   //any visual effect needed for the platformer -- this shit was useless
         
         //all properties that support physics
-        
         public PlatformerProfile    BaseProfile     //the set of default physics variables that describes what the world looks like without any additional effects
         
         public real         XPosition               //the actual physical position of the platformer unit. usually consistent with GetUnitX
@@ -85,7 +84,6 @@ endglobals
         public real          MoveSpeedVelOffset   //how much moving in the opposite direction as your velocity decrements it. newXVeloc = oldXVeloc - .MoveSpeedVelOffset * .MoveSpeed
         public real          GravitationalAccel   //how strong the effect of gravity is
         public PlatformerPropertyEquation GravityEquation
-        public integer       GravityDirection     //y direction of gravity. 1: +y, -1: -y
         public real          vJumpSpeed           //how fast a wall jump is vertically
         public real          v2hJumpRatio         //0-1 how much of vJumpSpeed is still applied (vertically) during a wall jump
         public real          hJumpSpeed           //how fast a wall jump is horizontally
@@ -104,7 +102,6 @@ endglobals
         
         //static properties shared among all platformers/players (1:1 platformer per player)
         //static integer ActivePlatformers //same as List's .count, with how it's used
-        static Platformer array AllPlatformers[8]
         static timer            GameloopTimer
         static timer            TerrainloopTimer
         //TODO add a unit group of platformer units to enum through to bypass the WC3 operations limit OR give each platformer their own timer and stagger them
@@ -3143,7 +3140,7 @@ endglobals
         //! textmacro horizontal_toggles takes PRESSED
         private static method Left_$PRESSED$ takes nothing returns boolean
             local integer pID = GetPlayerId(GetTriggerPlayer())
-            local Platformer p = .AllPlatformers[pID]
+            local Platformer p = User(pID).Platformer
             local integer ttype
             local real newX
             
@@ -3207,7 +3204,7 @@ endglobals
         
         private static method Right_$PRESSED$ takes nothing returns boolean
             local integer pID = GetPlayerId(GetTriggerPlayer())
-            local Platformer p = .AllPlatformers[pID]
+            local Platformer p = User(pID).Platformer
             local integer ttype
             local real newX
             
@@ -3281,7 +3278,7 @@ endglobals
         
         private static method Up_PRESSED takes nothing returns boolean
             local integer pID = GetPlayerId(GetTriggerPlayer())
-            local Platformer p = .AllPlatformers[pID]
+            local Platformer p = User(pID).Platformer
             local real l
             
             static if DEBUG_JUMPING then
@@ -3522,9 +3519,7 @@ endglobals
             static if DEBUG_CREATE then
                 call DisplayTextToForce(bj_FORCE_PLAYER[0], "Finished creating platformer")
             endif
-            
-            set .AllPlatformers[pID] = new
-            
+                        
             return new
         endmethod
         
@@ -3534,14 +3529,6 @@ endglobals
             
             set .GameloopTimer = CreateTimer()
             set .TerrainloopTimer = CreateTimer()
-            
-            loop
-                if (GetPlayerSlotState(Player(i)) == PLAYER_SLOT_STATE_PLAYING) then
-                    set p = Platformer.create(i)
-                endif
-            set i = i + 1
-            exitwhen i >= 8
-            endloop
         endmethod
     endstruct
 endlibrary

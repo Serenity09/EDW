@@ -1,7 +1,7 @@
 library User requires MazerGlobals, Platformer, TerrainHelpers, Cinema
 
 struct User extends array
-    public integer PlayerID
+    //public integer PlayerID
     public boolean IsPlaying
     public boolean IsAlive
     public integer Deaths
@@ -572,7 +572,7 @@ struct User extends array
         
         //debug call DisplayTextToPlayer(Player(0), 0, 0, "Creating User: " + I2S(new))
         
-        set new.PlayerID = new
+        //set new.PlayerID = new
         set new.Team = 0
         set new.Deaths = 0
         set new.IsPlaying = GetPlayerSlotState(Player(new))==PLAYER_SLOT_STATE_PLAYING
@@ -585,8 +585,9 @@ struct User extends array
         //FOR SOME REASON THIS IS RETURNING NULL, SO WE NEED TO SET ACTIVE UNIT AFTER MAP INIT
         //set new.ActiveUnit = MazersArray[new]
                     
-        set new.Platformer = Platformer.AllPlatformers[new]
-        
+        //set new.Platformer = Platformer.AllPlatformers[new]
+        set new.Platformer = Platformer.create(new)
+		
         if new.IsPlaying then
             set User.ActivePlayers = User.ActivePlayers + 1
         endif

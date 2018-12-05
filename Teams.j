@@ -142,7 +142,7 @@ public struct MazingTeam
                         call FogModifierStop(u.Vision)
                     endif
 					*/
-                    set User(fp.value).Vision = CreateFogModifierRect(Player(u.PlayerID), FOG_OF_WAR_VISIBLE, newvision, false, true)
+                    set User(fp.value).Vision = CreateFogModifierRect(Player(u), FOG_OF_WAR_VISIBLE, newvision, false, true)
                     call FogModifierStart(u.Vision)
 					
 					//call DisplayTextToForce(bj_FORCE_PLAYER[0], "added vision for user " + I2S(u))
@@ -265,17 +265,17 @@ public struct MazingTeam
             exitwhen fp == 0
                 set u = fp.value
                 if u.IsPlaying then
-                    set MazerColor[u.PlayerID] = keyID
+                    set MazerColor[u] = keyID
                     
                     if keyID == 0 then
                         //call DisplayTextToForce(bj_FORCE_PLAYER[0], "setting 0 for pID " + I2S(PlayerIDs[i]))
-                        call SetUnitVertexColor(MazersArray[u.PlayerID], 255, 255, 255, 255)
+                        call SetUnitVertexColor(MazersArray[u], 255, 255, 255, 255)
                     elseif keyID == 1 then
-                        call SetUnitVertexColor(MazersArray[u.PlayerID], 255, 0, 0, 255)
+                        call SetUnitVertexColor(MazersArray[u], 255, 0, 0, 255)
                     elseif keyID == 2 then
-                        call SetUnitVertexColor(MazersArray[u.PlayerID], 0, 0, 255, 255)
+                        call SetUnitVertexColor(MazersArray[u], 0, 0, 255, 255)
                     elseif keyID == 3 then
-                        call SetUnitVertexColor(MazersArray[u.PlayerID], 0, 255, 0, 255)
+                        call SetUnitVertexColor(MazersArray[u], 0, 255, 0, 255)
                     endif
                 endif
                 
@@ -313,7 +313,7 @@ public struct MazingTeam
         if .IsTeamPlaying then
             loop
             exitwhen fp == 0
-                if User(fp.value).PlayerID == pID then
+                if User(fp.value) == pID then
                     return fp.value
                 endif
                 
@@ -438,7 +438,7 @@ public struct MazingTeam
                 
                 loop
                 exitwhen user == 0
-                    if User(user.value).PlayerID == pID then
+                    if User(user.value) == pID then
                         debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "WARNING: CURRENTLY ADDING PLAYER ID " + I2S(pID) + " TO TEAM " + I2S(.TeamID) + ", BUT THEY ARE ALREADY A MEMBER OF TEAM: " + I2S(mt.TeamID))
                     endif
                     
@@ -476,7 +476,7 @@ public struct MazingTeam
         loop
         exitwhen fp == 0
             set u = User(fp.value)
-            set pID = u.PlayerID
+            set pID = u
             
             if GetPlayerSlotState(Player(pID)) == PLAYER_SLOT_STATE_PLAYING then          
 				call MultiboardSetItemValue(MultiboardGetItem(.PlayerStats, pID + 1, 0), .GetStylizedPlayerName(pID))

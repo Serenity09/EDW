@@ -24,7 +24,7 @@ struct PlayerSaveLocation extends array
             set new.LocationY = GetUnitY(u.ActiveUnit)
         endif
         
-        set new.PlayerID = u.PlayerID
+        set new.PlayerID = u
         set new.GameMode = u.GameMode
         set new.KeyColor = MazerColor[u]
         
