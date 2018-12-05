@@ -72,8 +72,6 @@ endglobals
         public real         YPosition               //the actual physical position of the platformer unit. usually consistent with GetUnitY
         public real           YVelocity            //this does not include left movement from key press (which is constant)
         public real           XVelocity            //this does not include right movement from key press (which is constant)
-        public real          TerminalVelocityX    //this caps how fast a unit can go due to gravity, going faster in this will cause you to slow down to this over time
-        public PlatformerPropertyEquation TVXEquation
         public real          TerminalVelocityY    //this caps how fast a unit can go due to gravity, going faster in this will cause you to slow down to this over time
         public PlatformerPropertyEquation TVYEquation
         //TODO replace X and Y falloff with references to easing functions
@@ -2395,10 +2393,7 @@ endglobals
                 
                 call .YFalloffEquation.removeAdjustment(PlatformerPropertyEquation_MULTIPLY_ADJUSTMENT, OCEAN)
                 set .YFalloff = .YFalloffEquation.calculateAdjustedValue(.BaseProfile.YFalloff)
-                
-                call .TVXEquation.removeAdjustment(PlatformerPropertyEquation_MULTIPLY_ADJUSTMENT, OCEAN)
-                set .TerminalVelocityX = .TVXEquation.calculateAdjustedValue(.BaseProfile.TerminalVelocityX)
-                
+                                
                 call .TVYEquation.removeAdjustment(PlatformerPropertyEquation_MULTIPLY_ADJUSTMENT, OCEAN)
                 set .TerminalVelocityY = .TVYEquation.calculateAdjustedValue(.BaseProfile.TerminalVelocityY)
                 
@@ -2943,10 +2938,7 @@ endglobals
                     
                     call .YFalloffEquation.addAdjustment(PlatformerPropertyEquation_MULTIPLY_ADJUSTMENT, OCEAN, PlatformerOcean_YFALLOFF)
                     set .YFalloff = .YFalloffEquation.calculateAdjustedValue(.BaseProfile.YFalloff)
-                    
-                    call .TVXEquation.addAdjustment(PlatformerPropertyEquation_MULTIPLY_ADJUSTMENT, OCEAN, PlatformerOcean_TVX)
-                    set .TerminalVelocityX = .TVXEquation.calculateAdjustedValue(.BaseProfile.TerminalVelocityX)
-                    
+                                        
                     call .TVYEquation.addAdjustment(PlatformerPropertyEquation_MULTIPLY_ADJUSTMENT, OCEAN, PlatformerOcean_TVY)
                     set .TerminalVelocityY = .TVYEquation.calculateAdjustedValue(.BaseProfile.TerminalVelocityY)
                     
@@ -3042,7 +3034,6 @@ endglobals
             set .MoveSpeed = .MSEquation.calculateAdjustedValue(.BaseProfile.MoveSpeed)            
             set .XFalloff = .XFalloffEquation.calculateAdjustedValue(.BaseProfile.XFalloff)
             set .YFalloff = .YFalloffEquation.calculateAdjustedValue(.BaseProfile.YFalloff)
-            set .TerminalVelocityX = .TVXEquation.calculateAdjustedValue(.BaseProfile.TerminalVelocityX)
             set .TerminalVelocityY = .TVYEquation.calculateAdjustedValue(.BaseProfile.TerminalVelocityY)
             
             //set .GravitationalAccel = .BaseProfile.GravitationalAccel
@@ -3125,7 +3116,6 @@ endglobals
                 call .GravityEquation.clearAdjustments()
                 call .XFalloffEquation.clearAdjustments()
                 call .YFalloffEquation.clearAdjustments()
-                call .TVXEquation.clearAdjustments()
                 call .TVYEquation.clearAdjustments()
                 //debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "End clearing adjustments")
                 
@@ -3494,7 +3484,6 @@ endglobals
             set new.GravityEquation = PlatformerPropertyEquation.create()
             set new.XFalloffEquation = PlatformerPropertyEquation.create()
             set new.YFalloffEquation = PlatformerPropertyEquation.create()
-            set new.TVXEquation = PlatformerPropertyEquation.create()
             set new.TVYEquation = PlatformerPropertyEquation.create()
             
             set new.Unit = CreateUnit(Player(pID), PlatformerGlobals_UID, PlatformerGlobals_SAFE_X, PlatformerGlobals_SAFE_Y, 0)

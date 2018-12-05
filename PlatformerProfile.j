@@ -9,7 +9,7 @@ library PlatformerProfile initializer Init requires PlatformerGlobals
         private constant real   v2hJUMPSPEED       = .8500       //vWALLJUMP * vJUMPSPEED = vTOTALJUMPHEIGHT for wall jumps
         private constant integer   xFALLOFF        = 50       //linear rate horizontal speed falls off
         private constant integer   yFALLOFF        = 30       //linear rate vertical speed falls off
-        private constant integer   XTERMINAL       = 350      //default cap before x velocity starts falling off much faster
+        //private constant integer   XTERMINAL       = 350      //default cap before x velocity starts falling off much faster
         private constant integer   YTERMINAL       = 515      //default cap before x velocity starts falling off much faster
         private constant integer   GRAVITYACCEL    = -35      //default acceleration due to gravity
         private constant integer   MOVESPEED       = 370      //default movespeed
@@ -20,7 +20,7 @@ library PlatformerProfile initializer Init requires PlatformerGlobals
         private static integer instanceCount = 0
         
         //all properties that support physics
-        public real          TerminalVelocityX    //this caps how fast a unit can go due to gravity, going faster in this will cause you to slow down to this over time
+        //public real          TerminalVelocityX    //this caps how fast a unit can go due to gravity, going faster in this will cause you to slow down to this over time
         public real          TerminalVelocityY    //this caps how fast a unit can go due to gravity, going faster in this will cause you to slow down to this over time
         //TODO replace X and Y falloff with references to easing functions
         public real          XFalloff             //how much to reduce XVelocity by when != 0
@@ -32,7 +32,7 @@ library PlatformerProfile initializer Init requires PlatformerGlobals
         public real          v2hJumpRatio         //0-1 how much of vJumpSpeed is still applied (vertically) during a wall jump
         public real          hJumpSpeed           //how fast a wall jump is horizontally
         
-        public static method create takes integer tvx, integer tvy, integer xf, integer yf, integer ms, real msoff, integer ga, integer vj, real v2h, integer hj returns PlatformerProfile
+        public static method create takes integer tvy, integer xf, integer yf, integer ms, real msoff, integer ga, integer vj, real v2h, integer hj returns PlatformerProfile
             local thistype new
             
             //first check to see if there are any structs waiting to be recycled
@@ -40,7 +40,7 @@ library PlatformerProfile initializer Init requires PlatformerGlobals
             set new = instanceCount
             
             //calculate the base * TIMESTEP once, when created
-            set new.TerminalVelocityX = tvx * PlatformerGlobals_GAMELOOP_TIMESTEP
+            //set new.TerminalVelocityX = tvx * PlatformerGlobals_GAMELOOP_TIMESTEP
             set new.TerminalVelocityY = tvy * PlatformerGlobals_GAMELOOP_TIMESTEP
             set new.XFalloff = xf * PlatformerGlobals_GAMELOOP_TIMESTEP
             set new.YFalloff = yf * PlatformerGlobals_GAMELOOP_TIMESTEP
@@ -60,7 +60,7 @@ library PlatformerProfile initializer Init requires PlatformerGlobals
     
     private function Init takes nothing returns nothing
         //create default profile
-        local PlatformerProfile profile = PlatformerProfile.create(XTERMINAL, YTERMINAL, xFALLOFF, yFALLOFF, MOVESPEED, MOVESPEEDOFFSET, GRAVITYACCEL, vJUMPSPEED, v2hJUMPSPEED, hJUMPSPEED)
+        local PlatformerProfile profile = PlatformerProfile.create(YTERMINAL, xFALLOFF, yFALLOFF, MOVESPEED, MOVESPEEDOFFSET, GRAVITYACCEL, vJUMPSPEED, v2hJUMPSPEED, hJUMPSPEED)
         if profile != DefaultProfileID then
             call DisplayTextToForce(bj_FORCE_PLAYER[0], "Warning, another profile was created before the default profile! Platforming is going to crash and burn horribly!")
         endif
@@ -68,11 +68,11 @@ library PlatformerProfile initializer Init requires PlatformerGlobals
         
         //ice profile... god do i really want to keep going down this route
         //local PlatformerProfile profile = PlatformerProfile.create(XTERMINAL, YTERMINAL, xFALLOFF, yFALLOFF, MOVESPEED, MOVESPEEDOFFSET, GRAVITYACCEL, vJUMPSPEED, v2hJUMPSPEED, hJUMPSPEED)
-        set profile = PlatformerProfile.create(XTERMINAL*2, YTERMINAL*2, 0, 0, MOVESPEED, MOVESPEEDOFFSET, GRAVITYACCEL, vJUMPSPEED, v2hJUMPSPEED, hJUMPSPEED)
+        set profile = PlatformerProfile.create(YTERMINAL*2, 0, 0, MOVESPEED, MOVESPEEDOFFSET, GRAVITYACCEL, vJUMPSPEED, v2hJUMPSPEED, hJUMPSPEED)
         if profile != CrazyIceProfileID then
             call DisplayTextToForce(bj_FORCE_PLAYER[0], "Warning, another profile was created before the ice profile! Some ice worlds are going to crash and burn horribly!")
         endif
 	
-        set profile = PlatformerProfile.create(XTERMINAL*5, YTERMINAL*5, R2I(xFALLOFF * 0.1), R2I(yFALLOFF * 0.1), R2I(MOVESPEED * .75), MOVESPEEDOFFSET, R2I(GRAVITYACCEL * .2), vJUMPSPEED, v2hJUMPSPEED, hJUMPSPEED)
+        set profile = PlatformerProfile.create(YTERMINAL*5, R2I(xFALLOFF * 0.1), R2I(yFALLOFF * 0.1), R2I(MOVESPEED * .75), MOVESPEEDOFFSET, R2I(GRAVITYACCEL * .2), vJUMPSPEED, v2hJUMPSPEED, hJUMPSPEED)
     endfunction
 endlibrary

@@ -1,7 +1,7 @@
 library InGameCommands requires MazerGlobals, Platformer
 function ExportPlatformingVariables takes Platformer p returns nothing
     //display all variables on screen
-    call DisplayTextToForce(bj_FORCE_PLAYER[p.PID], "[tvx] Terminal Velocity X: " + R2S(p.TerminalVelocityX / PlatformerGlobals_GAMELOOP_TIMESTEP))
+    //call DisplayTextToForce(bj_FORCE_PLAYER[p.PID], "[tvx] Terminal Velocity X: " + R2S(p.TerminalVelocityX / PlatformerGlobals_GAMELOOP_TIMESTEP))
     call DisplayTextToForce(bj_FORCE_PLAYER[p.PID], "[tvy] Terminal Velocity Y: " + R2S(p.TerminalVelocityY / PlatformerGlobals_GAMELOOP_TIMESTEP))
     //call DisplayTextToForce(bj_FORCE_PLAYER[p.PID], "[tvf] Terminal Velocity Falloff: " + R2S(p.TerminalFalloff))
     call DisplayTextToForce(bj_FORCE_PLAYER[p.PID], "[xf] Horizontal Falloff: " + R2S(p.XFalloff / PlatformerGlobals_GAMELOOP_TIMESTEP))
@@ -21,7 +21,7 @@ endfunction
 
 function PrintPlatformingVariables takes Platformer p returns nothing
     //display all variables on screen
-    call DisplayTextToForce(bj_FORCE_PLAYER[p.PID], "[tvx] Terminal Velocity X: " + R2S(p.TerminalVelocityX))
+    //call DisplayTextToForce(bj_FORCE_PLAYER[p.PID], "[tvx] Terminal Velocity X: " + R2S(p.TerminalVelocityX))
     call DisplayTextToForce(bj_FORCE_PLAYER[p.PID], "[tvy] Terminal Velocity Y: " + R2S(p.TerminalVelocityY))
     //call DisplayTextToForce(bj_FORCE_PLAYER[p.PID], "[tvf] Terminal Velocity Falloff: " + R2S(p.TerminalFalloff))
     call DisplayTextToForce(bj_FORCE_PLAYER[p.PID], "[xf] Horizontal Falloff: " + R2S(p.XFalloff))
@@ -53,7 +53,7 @@ endfunction
 
 function PrintPlatformingProfileVariables takes Platformer p returns nothing    
     //display all variables on screen
-    call DisplayTextToForce(bj_FORCE_PLAYER[p.PID], "[tvx] Terminal Velocity X: " + R2S(p.BaseProfile.TerminalVelocityX))
+    //call DisplayTextToForce(bj_FORCE_PLAYER[p.PID], "[tvx] Terminal Velocity X: " + R2S(p.BaseProfile.TerminalVelocityX))
     call DisplayTextToForce(bj_FORCE_PLAYER[p.PID], "[tvy] Terminal Velocity Y: " + R2S(p.BaseProfile.TerminalVelocityY))
     //call DisplayTextToForce(bj_FORCE_PLAYER[p.PID], "[tvf] Terminal Velocity Falloff: " + R2S(p.TerminalFalloff))
     call DisplayTextToForce(bj_FORCE_PLAYER[p.PID], "[xf] Horizontal Falloff: " + R2S(p.BaseProfile.XFalloff))
@@ -125,9 +125,7 @@ function ProfileChange takes nothing returns nothing
     endif
     
     //debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "msg: " + msg + " cmd: " + cmd + " val: " + R2S(val))
-    if cmd == "tvx" then
-        set pp.TerminalVelocityX = val
-    elseif cmd == "tvy" then
+    if cmd == "tvy" then
         set pp.TerminalVelocityY = val
     //elseif cmd == "tvf" then
         //set p.TerminalFalloff = val
@@ -204,9 +202,7 @@ function Trig_InGamePlatformingChanges_Actions takes nothing returns nothing
 	endif
         
 	//debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "msg: " + msg + " cmd: " + cmd + " val: " + R2S(val))
-	if cmd == "tvx" then
-		set p.TerminalVelocityX = val
-	elseif cmd == "tvy" then
+	if cmd == "tvy" then
 		set p.TerminalVelocityY = val
 	//elseif cmd == "tvf" then
 		//set p.TerminalFalloff = val
