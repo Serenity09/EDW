@@ -1,8 +1,8 @@
 library PlatformerProfile initializer Init requires PlatformerGlobals
     globals        
         public constant integer             DefaultProfileID = 1
-        public constant integer             CrazyIceProfileID = 2
-        public constant integer		    MoonProfileID = 3
+        //public constant integer             CrazyIceProfileID = 2
+        public constant integer		    MoonProfileID = 2
         
         private constant integer   vJUMPSPEED      = 715      //default vertical jump speed
         private constant integer   hJUMPSPEED      = 785      //default horizontal jump speed
@@ -66,13 +66,14 @@ library PlatformerProfile initializer Init requires PlatformerGlobals
         endif
         
         
-        //ice profile... god do i really want to keep going down this route
-        //local PlatformerProfile profile = PlatformerProfile.create(XTERMINAL, YTERMINAL, xFALLOFF, yFALLOFF, MOVESPEED, MOVESPEEDOFFSET, GRAVITYACCEL, vJUMPSPEED, v2hJUMPSPEED, hJUMPSPEED)
-        set profile = PlatformerProfile.create(YTERMINAL*2, 0, 0, MOVESPEED, MOVESPEEDOFFSET, GRAVITYACCEL, vJUMPSPEED, v2hJUMPSPEED, hJUMPSPEED)
+        //old profile to make ice feel better -- this caused everything to feel just a bit off from what you'd just gotten used to
+        /*
+		set profile = PlatformerProfile.create(YTERMINAL*2, 0, 0, MOVESPEED, MOVESPEEDOFFSET, GRAVITYACCEL, vJUMPSPEED, v2hJUMPSPEED, hJUMPSPEED)
         if profile != CrazyIceProfileID then
             call DisplayTextToForce(bj_FORCE_PLAYER[0], "Warning, another profile was created before the ice profile! Some ice worlds are going to crash and burn horribly!")
         endif
-	
+		*/
+		
         set profile = PlatformerProfile.create(YTERMINAL*5, R2I(xFALLOFF * 0.1), R2I(yFALLOFF * 0.1), R2I(MOVESPEED * .75), MOVESPEEDOFFSET, R2I(GRAVITYACCEL * .2), vJUMPSPEED, v2hJUMPSPEED, hJUMPSPEED)
     endfunction
 endlibrary
