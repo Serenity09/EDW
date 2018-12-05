@@ -1,12 +1,10 @@
 library IceSkater requires SimpleList, Vector2, IceMovement
 	globals
 		private constant real TIMESTEP = .1
-		private constant real TURN_SMOOTH_DURATION = TIMESTEP
+		private constant real TURN_SMOOTH_DURATION = 0.0
 		private constant player NPC_SKATE_PLAYER = Player(10)
-		private constant real ORDER_DISTANCE_OFFSET = 4*128.
-		
-		private constant real BUFFER_DISTANCE = 2*128. //amount of 
-		
+		private constant real AXIS_BUFFER = 2.*TERRAIN_TILE_SIZE //amount of buffer to use to infer destination buffer from, specifically applied to checking if a destination is along a vertical or horizontal axis
+				
 		private timer t = CreateTimer()
 	endglobals
 	
@@ -43,12 +41,32 @@ library IceSkater requires SimpleList, Vector2, IceMovement
 				set rel = vector2.create(position.x, position.y)
 				call rel.subtract(previousDestination.Position)
 				
+				static if DEBUG_MODE then
+					//check that destination is at least minimum distance away
+					if SquareRoot(rel.x*rel.x + rel.y*rel.y) <= AXIS_BUFFER then
+						call DisplayTextToForce(bj_FORCE_PLAYER[0], "Warning, adding a problematic ice skater turn going from: " + position.toString() + ", to: " + previousDestination.Position.toString())
+						call DisplayTextToForce(bj_FORCE_PLAYER[0], "Each destination should be at least " + I2S(R2I(AXIS_BUFFER / 128. + .5)) + " tiles away")
+					endif
+				endif
+				
 				set previousDestination.AngleToNext = rel.getAngleHorizontal() * bj_RADTODEG
 				set new.AngleFromPrevious = previousDestination.AngleToNext
 				call rel.destroy()
 				//set previousDestination.AngleToNext = vector2.getAngle(previousDestination.Position, position) * bj_RADTODEG
 			
-				if position.x >= previousDestination.Position.x then
+				if position.x >= previousDestination.Position.x - AXIS_BUFFER and position.x <= previousDestination.Position.x + AXIS_BUFFER then
+					if position.y >= previousDestination.Position.y then
+						set new.QuadrantDirection = vector2.create(0, 1)
+					else
+						set new.QuadrantDirection = vector2.create(0, -1)
+					endif
+				elseif position.y >= previousDestination.Position.y - AXIS_BUFFER and position.y <= previousDestination.Position.y + AXIS_BUFFER then
+					if position.x >= previousDestination.Position.x then
+						set new.QuadrantDirection = vector2.create(1, 0)
+					else
+						set new.QuadrantDirection = vector2.create(-1, 0)
+					endif
+				elseif position.x >= previousDestination.Position.x then
 					if position.y >= previousDestination.Position.y then
 						set new.QuadrantDirection = vector2.create(1, 1)
 					else
@@ -162,9 +180,9 @@ library IceSkater requires SimpleList, Vector2, IceMovement
 				set currentSkater = IceSkater(currentSkaterNode.value)
 				set currentDestination = Destination(currentSkater.CurrentDestination.value)
 				
-				//TODO check if skater has passed their current destination
-				if currentDestination.QuadrantDirection.x >= 0 then
-					if currentDestination.QuadrantDirection.y >= 0 then
+				//check if skater has passed their current destination
+				if currentDestination.QuadrantDirection.x > 0 then
+					if currentDestination.QuadrantDirection.y > 0 then
 						if GetUnitX(currentSkater.SkateUnit) >= currentDestination.Position.x and GetUnitY(currentSkater.SkateUnit) >= currentDestination.Position.y then
 							set currentSkater.CurrentDestination = currentSkater.CurrentDestination.next
 							if currentSkater.CurrentDestination == 0 then
@@ -172,8 +190,42 @@ library IceSkater requires SimpleList, Vector2, IceMovement
 								call currentSkater.SetDefaults()
 							endif
 						endif
-					else
+					elseif currentDestination.QuadrantDirection.y < 0 then
 						if GetUnitX(currentSkater.SkateUnit) >= currentDestination.Position.x and GetUnitY(currentSkater.SkateUnit) < currentDestination.Position.y then
+							set currentSkater.CurrentDestination = currentSkater.CurrentDestination.next
+							if currentSkater.CurrentDestination == 0 then
+								//instantly reset to starting state -- only occurs if the ends of the destination chain are NOT connected
+								call currentSkater.SetDefaults()
+							endif
+						endif
+					else
+						if GetUnitX(currentSkater.SkateUnit) >= currentDestination.Position.x then
+							set currentSkater.CurrentDestination = currentSkater.CurrentDestination.next
+							if currentSkater.CurrentDestination == 0 then
+								//instantly reset to starting state -- only occurs if the ends of the destination chain are NOT connected
+								call currentSkater.SetDefaults()
+							endif
+						endif
+					endif
+				elseif currentDestination.QuadrantDirection.x < 0 then
+					if currentDestination.QuadrantDirection.y > 0 then
+						if GetUnitX(currentSkater.SkateUnit) < currentDestination.Position.x and GetUnitY(currentSkater.SkateUnit) >= currentDestination.Position.y then
+							set currentSkater.CurrentDestination = currentSkater.CurrentDestination.next
+							if currentSkater.CurrentDestination == 0 then
+								//instantly reset to starting state -- only occurs if the ends of the destination chain are NOT connected
+								call currentSkater.SetDefaults()
+							endif
+						endif
+					elseif currentDestination.QuadrantDirection.y < 0 then
+						if GetUnitX(currentSkater.SkateUnit) < currentDestination.Position.x and GetUnitY(currentSkater.SkateUnit) < currentDestination.Position.y then
+							set currentSkater.CurrentDestination = currentSkater.CurrentDestination.next
+							if currentSkater.CurrentDestination == 0 then
+								//instantly reset to starting state -- only occurs if the ends of the destination chain are NOT connected
+								call currentSkater.SetDefaults()
+							endif
+						endif
+					else
+						if GetUnitX(currentSkater.SkateUnit) < currentDestination.Position.x then
 							set currentSkater.CurrentDestination = currentSkater.CurrentDestination.next
 							if currentSkater.CurrentDestination == 0 then
 								//instantly reset to starting state -- only occurs if the ends of the destination chain are NOT connected
@@ -183,7 +235,7 @@ library IceSkater requires SimpleList, Vector2, IceMovement
 					endif
 				else
 					if currentDestination.QuadrantDirection.y >= 0 then
-						if GetUnitX(currentSkater.SkateUnit) < currentDestination.Position.x and GetUnitY(currentSkater.SkateUnit) >= currentDestination.Position.y then
+						if GetUnitY(currentSkater.SkateUnit) >= currentDestination.Position.y then
 							set currentSkater.CurrentDestination = currentSkater.CurrentDestination.next
 							if currentSkater.CurrentDestination == 0 then
 								//instantly reset to starting state -- only occurs if the ends of the destination chain are NOT connected
@@ -191,7 +243,7 @@ library IceSkater requires SimpleList, Vector2, IceMovement
 							endif
 						endif
 					else
-						if GetUnitX(currentSkater.SkateUnit) < currentDestination.Position.x and GetUnitY(currentSkater.SkateUnit) < currentDestination.Position.y then
+						if GetUnitY(currentSkater.SkateUnit) < currentDestination.Position.y then
 							set currentSkater.CurrentDestination = currentSkater.CurrentDestination.next
 							if currentSkater.CurrentDestination == 0 then
 								//instantly reset to starting state -- only occurs if the ends of the destination chain are NOT connected
