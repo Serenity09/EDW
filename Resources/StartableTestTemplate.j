@@ -32,13 +32,16 @@ library StartableTest initializer Init
 		set startable = test
 		call startable.Start()
 		
-		set test = IceSkater.create(vector2.create(-7200, -1500), vector2.create(-8200, -3000), ICETROLL, 30, 15)
+		set test = IceSkater.create(vector2.create(-7200, -1500), vector2.create(-8200, -3000), ICETROLL, 30, 10)
 		call test.AddDestination(vector2.create(-7600, -3500))
 		call test.AddDestination(vector2.create(-7000, -4000))
 		call test.AddDestination(vector2.create(-7500, -4900))
+		call test.AddDestination(vector2.create(-7520, -5600))
 		call test.Start()
 		
-		//call TimerStart(GetExpiredTimer(), 0, false, function CBLoop)
+		//call test.print()
+		
+		call TimerStart(GetExpiredTimer(), 0, false, function CBLoop)
 		
 		//call TimerStart(CreateTimer(), 3, false, function CB2)
 	endfunction
