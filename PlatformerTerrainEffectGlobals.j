@@ -21,17 +21,17 @@ library PlatformerTerrainEffectGlobals requires PlatformerGlobals, TerrainGlobal
         //needs to be compatible with GetNextDiagonal assumptions -- namely won't change more than 1 quadrant per loop
         //constant real DIAGONAL_MAXCHANGE = TERRAIN_QUADRANT_SIZE - 4
         constant real PLATFORMING_MAXCHANGE = TERRAIN_QUADRANT_SIZE*.75
-        constant boolean PLATFORMING_CHECK_HALFWAY = true //should be true if PLATFORMING_MAXCHANGE > TERRAIN_QUADRANT_SIZE (64)
+        constant boolean PLATFORMING_CHECK_HALFWAY = false //should be true if PLATFORMING_MAXCHANGE > TERRAIN_QUADRANT_SIZE (64)
         
 		constant real DIAGONAL_ESCAPEDISTANCE = 10 //should allow the player to freely escape by pressing arrow keys or jumping
         constant real DIAGONAL_STICKYDISTANCE = PLATFORMING_MAXCHANGE - 10 //amount of stickyness when transitioning between diagonals -- pretty sticky = fun
 
         //used to sample multiple points when the player is moving very fast
-        constant real PATHING_SEGMENT_SIZE = 30
+        //constant real PATHING_SEGMENT_SIZE = 30
         //constant real DIAGONAL_NOMANUALESCAPEDISTANCE = 30
         
         constant real   IN_DIAGONAL_OFFSET=64.00000      //distance platformer is kept from the centerpoint, also used for generating the b component of y = mx + b
-        constant real   LEAVE_DIAGONAL_OFFSET=.51
+        constant real   LEAVE_DIAGONAL_OFFSET=1.5		//0 to disable
         constant real   DIAGONAL_TERRAIN_CHECK_OFFSET = TERRAIN_QUADRANT_SIZE / 4
         //constant real   TERRAIN_DEADZONE_OFFSET=.51
     endglobals

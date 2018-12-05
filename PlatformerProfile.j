@@ -66,7 +66,7 @@ library PlatformerProfile initializer Init requires PlatformerGlobals
         endif
         
         
-        //old profile to make ice feel better -- this caused everything to feel just a bit off from what you'd just gotten used to
+        //old profile to make ice feel better -- this caused everything to feel a bit off from what you'd just gotten used to
         /*
 		set profile = PlatformerProfile.create(YTERMINAL*2, 0, 0, MOVESPEED, MOVESPEEDOFFSET, GRAVITYACCEL, vJUMPSPEED, v2hJUMPSPEED, hJUMPSPEED)
         if profile != CrazyIceProfileID then

@@ -18,7 +18,7 @@ globals
     private constant integer hjBUFFER       = 40
     
     private constant real   tOFFSET         = 30.0      //how much offset to use when determining terrain type for terrain kill
-    private constant real   wOFFSET         = 1.5      //how much offset to use when determining if you're touching a wall, also used for wall jumps
+    private constant real   wOFFSET         = 1.5       //how much offset to use when determining if you're touching a wall, also used for wall jumps
     
     private constant integer xMINVELOCITY   = 1         //a velocity less than this will turn to 0
     private constant real   hJUMPCUTOFF     = 1.0       //if less than this value, set to 0
@@ -27,6 +27,8 @@ globals
     private constant boolean DEBUG_GAMEMODE = false
 	
 	private constant boolean DEBUG_PHYSICS_LOOP = false
+	
+	private constant boolean DEBUG_POSITION = false
     
     private constant boolean DEBUG_VELOCITY = false
     private constant boolean DEBUG_VELOCITY_TERRAIN = false
@@ -36,8 +38,11 @@ globals
     private constant boolean DEBUG_DIAGONAL = false
     
     private constant boolean DEBUG_DIAGONAL_TRANSITION = false
+	private constant boolean DEBUG_DIAGONAL_ESCAPE_CHECK = false
 	private constant boolean DEBUG_DIAGONAL_ESCAPE = false
     private constant boolean DEBUG_DIAGONAL_START = false
+	
+	private constant boolean BUFFER_STICKY_TRANSITION_ESCAPE = LEAVE_DIAGONAL_OFFSET > 0 //enable/disable: when leaving a diagonal into empty space due to exceeding the sticky limit for diagonal transitions, position is offset away from diagonal surface when enabled / left as-is when disabled
     
     private constant boolean DEBUG_CREATE = false
     
@@ -928,8 +933,8 @@ endglobals
             //finally, check that the length of the original position change is less than the max distance before we can't manually escape the diagonal
             set ret = ((diagonalType == ComplexTerrainPathing_Top and proj.y >= 0) or (diagonalType == ComplexTerrainPathing_Bottom and proj.y < 0) or (diagonalType == ComplexTerrainPathing_Right and proj.x >= 0) or (diagonalType == ComplexTerrainPathing_Left and proj.x < 0) or (diagonalType == ComplexTerrainPathing_NE and proj.x >= 0 and proj.y >= 0) or (diagonalType == ComplexTerrainPathing_SE and proj.x >= 0 and proj.y < 0) or (diagonalType == ComplexTerrainPathing_SW and proj.x < 0 and proj.y < 0) or (diagonalType == ComplexTerrainPathing_NW and proj.x < 0 and proj.y >= 0)) and SquareRoot(proj.x * proj.x + proj.y * proj.y) >= escapeDistance
             
-			static if DEBUG_DIAGONAL_ESCAPE then
-				call DisplayTextToForce(bj_FORCE_PLAYER[0], "Checking escape from diagonal type " + I2S(diagonalType) + ", x " + R2S(x) + ", y " + R2S(y) + ", with proj" + proj.toString())
+			static if DEBUG_DIAGONAL_ESCAPE_CHECK then
+				call DisplayTextToForce(bj_FORCE_PLAYER[0], "Checking escape from diagonal type " + I2S(diagonalType) + ", x " + R2S(newX) + ", y " + R2S(newY) + ", with proj" + proj.toString())
 			endif
 			
             call proj.destroy()
@@ -971,6 +976,9 @@ endglobals
 			static if DEBUG_PHYSICS_LOOP then
 				call DisplayTextToForce(bj_FORCE_PLAYER[0], "Applying physics ---")
             endif
+			static if DEBUG_POSITION then
+				call DisplayTextToForce(bj_FORCE_PLAYER[0], "Before Position: " + R2S(.XPosition) + "," + R2S(.YPosition))
+			endif
 			
             //Handle forces that affect the x and/or y direction and need to be as accurate as possible
             //apply constant forces
@@ -1299,26 +1307,35 @@ endglobals
                                 endif
                             //check if no next diagonal or if escaped the transition between two different diagonals
                             //elseif pathingResult == 0 then //does not allow platformer to escape between diagonal transitions
-                            elseif pathingResult == 0 or DoesPointEscapeDiagonal(pathingResult.TerrainPathingForPoint, newPosition.x, newPosition.y, DIAGONAL_STICKYDISTANCE) then
+                            elseif pathingResult == 0 then
                                 //diagonal ends
-                                static if DEBUG_DIAGONAL_TRANSITION then
-                                    call DisplayTextToForce(bj_FORCE_PLAYER[0], "Diagonal ends with outside corner or exceeds sticky distance during a transition")
+                                static if DEBUG_DIAGONAL_ESCAPE then
+                                    call DisplayTextToForce(bj_FORCE_PLAYER[0], "Diagonal ends from getting next diagonal")
+									call DisplayTextToForce(bj_FORCE_PLAYER[0], "Unbuffered new position: " + newPosition.toString())
+									call DisplayTextToForce(bj_FORCE_PLAYER[0], "Buffered new x: " + R2S(newPosition.x + .PushedAgainstVector.x*LEAVE_DIAGONAL_OFFSET) + ", buffered y: " + R2S(newPosition.y + .PushedAgainstVector.y*LEAVE_DIAGONAL_OFFSET))
                                 endif
-                                
-                                set .OnDiagonal = false
-                                call .DiagonalPathing.destroy()
-                                set .DiagonalPathing = 0
-                                
-                                set .PushedAgainstVector = 0
                                 
                                 //update unit position
                                 set .XTerrainPushedAgainst = 0
-                                set .XPosition = .XPosition + newPosition.x
+								static if BUFFER_STICKY_TRANSITION_ESCAPE then
+									set .XPosition = .XPosition + newPosition.x + .PushedAgainstVector.x*LEAVE_DIAGONAL_OFFSET
+								else
+									set .XPosition = .XPosition + newPosition.x
+								endif
                                 call SetUnitX(.Unit, .XPosition)
                                 
                                 set .YTerrainPushedAgainst = 0
-                                set .YPosition = .YPosition + newPosition.y
+								static if BUFFER_STICKY_TRANSITION_ESCAPE then
+									set .YPosition = .YPosition + newPosition.y + .PushedAgainstVector.y*LEAVE_DIAGONAL_OFFSET
+								else
+									set .YPosition = .YPosition + newPosition.y
+								endif
                                 call SetUnitY(.Unit, YPosition)
+								
+								set .PushedAgainstVector = 0
+								set .OnDiagonal = false
+                                call .DiagonalPathing.destroy()
+                                set .DiagonalPathing = 0
                             else
                                 //diagonal changed from previous position to new position
                                 static if DEBUG_DIAGONAL_TRANSITION then
@@ -2304,6 +2321,10 @@ endglobals
             
             //debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "Finished pathing!") 
             
+			static if DEBUG_POSITION then
+				call DisplayTextToForce(bj_FORCE_PLAYER[0], "After Position: " + R2S(.XPosition) + "," + R2S(.YPosition))
+			endif
+			
             static if DEBUG_VELOCITY_FALLOFF then
                 call DisplayTextToForce(bj_FORCE_PLAYER[0], "Before Velocity: " + R2S(.XVelocity) + "," + R2S(.YVelocity))
             endif
