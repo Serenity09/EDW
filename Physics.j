@@ -62,7 +62,7 @@ endglobals
         public boolean        RightKey
         public integer        HorizontalAxisState  //-1: left, 0: still, 1: right
         public camerasetup    PlatformingCamera    //camera setup to apply periodically during platforming movement
-        public effect         FX                   //any visual effect needed for the platformer
+        //public effect         FX                   //any visual effect needed for the platformer -- this shit was useless
         
         //all properties that support physics
         
@@ -2952,9 +2952,10 @@ endglobals
                     
                     //debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "Ocean base gravity: " + R2S(.BaseProfile.GravitationalAccel) + ", new gravity: " + R2S(.GravitationalAccel))
                     
-                    set .FX = AddSpecialEffect("Abilities\\Spells\\Other\\CrushingWave\\CrushingWaveDamage.mdl", x, y)
-                    call DestroyEffect(.FX)
-                    set .FX = null
+                    //set .FX = AddSpecialEffect("Abilities\\Spells\\Other\\CrushingWave\\CrushingWaveDamage.mdl", x, y)
+                    //call DestroyEffect(.FX)
+					//set .FX = null
+					call DestroyEffect(AddSpecialEffect("Abilities\\Spells\\Other\\CrushingWave\\CrushingWaveDamage.mdl", x, y))
                     
                     call PlatformerOcean_Add(this)
                 elseif ttype == VINES then
@@ -2973,9 +2974,11 @@ endglobals
                     call .TVYEquation.addAdjustment(PlatformerPropertyEquation_MULTIPLY_ADJUSTMENT, VINES, VINES_SLOWDOWNPERCENT)
                     set .TerminalVelocityY = .TVYEquation.calculateAdjustedValue(.BaseProfile.TerminalVelocityY)
                     
-                    set .FX = AddSpecialEffect("Abilities\\Spells\\NightElf\\EntanglingRoots\\EntanglingRootsTarget.mdl", x, y)
-                    call DestroyEffect(.FX)
-                    set .FX = null
+                    //set .FX = AddSpecialEffect("Abilities\\Spells\\NightElf\\EntanglingRoots\\EntanglingRootsTarget.mdl", x, y)
+                    //call DestroyEffect(.FX)
+                    //set .FX = null
+					call DestroyEffect(AddSpecialEffect("Abilities\\Spells\\NightElf\\EntanglingRoots\\EntanglingRootsTarget.mdl", x, y))
+					
                     //debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "On vines, grav is: " + R2S(.GravitationalAccel))
                 elseif ttype == BOOST then
 					//this is too inconsistent inside this loop, will need to move it out to its own timer after all...
@@ -3314,12 +3317,7 @@ endglobals
                         set p.YVelocity = p.YVelocity + l * p.PushedAgainstVector.y
                         
                         
-                        set p.FX = AddSpecialEffect("Abilities\\Spells\\Orc\\FeralSpirit\\feralspirittarget.mdl", p.XPosition, p.YPosition)
-                        //set p.FX = AddSpecialEffect("Abilities\\Spells\\Human\\DispelMagic\\DispelMagicTarget.mdl", p.XPosition, p.YPosition)
-                        //set p.FX = AddSpecialEffect("Abilities\\Spells\\Other\\Doom\\DoomDeath.mdl", p.XPosition, p.YPosition)
-                        //set p.FX = AddSpecialEffect("Abilities\\Spells\\Other\\Incinerate\\FireLordDeathExplode.mdl", p.XPosition, p.YPosition)
-                        call DestroyEffect(p.FX)
-                        set p.FX = null
+                        call DestroyEffect(AddSpecialEffect("Abilities\\Spells\\Orc\\FeralSpirit\\feralspirittarget.mdl", p.XPosition, p.YPosition))
                         
                         return false
                     elseif p.PushedAgainstVector == ComplexTerrainPathing_SW_UnitVector then
@@ -3328,18 +3326,16 @@ endglobals
                         set p.XVelocity = p.XVelocity + l * p.PushedAgainstVector.x
                         set p.YVelocity = p.YVelocity + l * p.PushedAgainstVector.y
                         
-                        set p.FX = AddSpecialEffect("Abilities\\Spells\\Orc\\FeralSpirit\\feralspirittarget.mdl", p.XPosition, p.YPosition)
-                        call DestroyEffect(p.FX)
-                        set p.FX = null
+                        call DestroyEffect(AddSpecialEffect("Abilities\\Spells\\Orc\\FeralSpirit\\feralspirittarget.mdl", p.XPosition, p.YPosition))
+						
+						return false
                     elseif p.PushedAgainstVector == ComplexTerrainPathing_SE_UnitVector then
                         set l = p.hJumpSpeed * p.PushedAgainstVector.x + -p.vJumpSpeed * p.PushedAgainstVector.y
                         
                         set p.XVelocity = p.XVelocity + l * p.PushedAgainstVector.x
                         set p.YVelocity = p.YVelocity + l * p.PushedAgainstVector.y
                         
-                        set p.FX = AddSpecialEffect("Abilities\\Spells\\Orc\\FeralSpirit\\feralspirittarget.mdl", p.XPosition, p.YPosition)
-                        call DestroyEffect(p.FX)
-                        set p.FX = null
+                        call DestroyEffect(AddSpecialEffect("Abilities\\Spells\\Orc\\FeralSpirit\\feralspirittarget.mdl", p.XPosition, p.YPosition))
                         
                         return false
                     elseif p.PushedAgainstVector == ComplexTerrainPathing_NW_UnitVector then
@@ -3348,9 +3344,7 @@ endglobals
                         set p.XVelocity = p.XVelocity + l * p.PushedAgainstVector.x
                         set p.YVelocity = p.YVelocity + l * p.PushedAgainstVector.y
                         
-                        set p.FX = AddSpecialEffect("Abilities\\Spells\\Orc\\FeralSpirit\\feralspirittarget.mdl", p.XPosition, p.YPosition)
-                        call DestroyEffect(p.FX)
-                        set p.FX = null
+                        call DestroyEffect(AddSpecialEffect("Abilities\\Spells\\Orc\\FeralSpirit\\feralspirittarget.mdl", p.XPosition, p.YPosition))
                         
                         static if DEBUG_VELOCITY then
                             call DisplayTextToForce(bj_FORCE_PLAYER[0], "X Velocity: " + R2S(p.XVelocity) + ", Y Velocity: " + R2S(p.YVelocity) + ", L: " + R2S(l))
@@ -3363,9 +3357,7 @@ endglobals
                         //experimental
                         //set p.XVelocity = 0
                         
-                        set p.FX = AddSpecialEffect("Abilities\\Spells\\Human\\Polymorph\\PolyMorphTarget.mdl", p.XPosition, p.YPosition)
-                        call DestroyEffect(p.FX)
-                        set p.FX = null
+                        call DestroyEffect(AddSpecialEffect("Abilities\\Spells\\Human\\Polymorph\\PolyMorphTarget.mdl", p.XPosition, p.YPosition))
 						
 						static if DEBUG_VELOCITY then
                             call DisplayTextToForce(bj_FORCE_PLAYER[0], "X Velocity: " + R2S(p.XVelocity) + ", Y Velocity: " + R2S(p.YVelocity))
@@ -3381,9 +3373,7 @@ endglobals
                             set p.YVelocity = -p.vJumpSpeed * p.v2hJumpRatio
                         endif
                         
-                        set p.FX = AddSpecialEffect("Abilities\\Spells\\Orc\\FeralSpirit\\feralspirittarget.mdl", p.XPosition, p.YPosition)
-                        call DestroyEffect(p.FX)
-                        set p.FX = null
+                        call DestroyEffect(AddSpecialEffect("Abilities\\Spells\\Orc\\FeralSpirit\\feralspirittarget.mdl", p.XPosition, p.YPosition))
                         
                         return false
                     endif
@@ -3400,9 +3390,7 @@ endglobals
                             set p.YVelocity = -p.vJumpSpeed
                             
                             //Objects\Spawnmodels\Other\ToonBoom\ToonBoom.mdl
-                            set p.FX = AddSpecialEffect("Abilities\\Spells\\Human\\Polymorph\\PolyMorphTarget.mdl", p.XPosition, p.YPosition)
-                            call DestroyEffect(p.FX)
-                            set p.FX = null
+                            call DestroyEffect(AddSpecialEffect("Abilities\\Spells\\Human\\Polymorph\\PolyMorphTarget.mdl", p.XPosition, p.YPosition))
                             //debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "Vert jump " + R2S(p.YVelocity))
                             
                             return false
@@ -3411,9 +3399,7 @@ endglobals
                         if TerrainGlobals_IsTerrainJumpable(GetTerrainType(p.XPosition, p.YPosition - vjBUFFER)) then                    
                             set p.YVelocity = p.vJumpSpeed
                         
-                            set p.FX = AddSpecialEffect("Abilities\\Spells\\Human\\Polymorph\\PolyMorphTarget.mdl", p.XPosition, p.YPosition)
-                            call DestroyEffect(p.FX)
-                            set p.FX = null
+                            call DestroyEffect(AddSpecialEffect("Abilities\\Spells\\Human\\Polymorph\\PolyMorphTarget.mdl", p.XPosition, p.YPosition))
                             //debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "Vert jump " + R2S(p.YVelocity))
                             
                             return false
@@ -3434,9 +3420,7 @@ endglobals
                         //apply full horizontal jump speed (this is the only use for it)
                         set p.XVelocity = p.hJumpSpeed
                         
-                        set p.FX = AddSpecialEffect("Abilities\\Spells\\Orc\\FeralSpirit\\feralspirittarget.mdl", p.XPosition, p.YPosition)
-                        call DestroyEffect(p.FX)
-                        set p.FX = null
+                        call DestroyEffect(AddSpecialEffect("Abilities\\Spells\\Orc\\FeralSpirit\\feralspirittarget.mdl", p.XPosition, p.YPosition))
                         //debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "Left wall jump " + R2S(p.YVelocity) + ", " + R2S(p.XVelocity))
                         
                         return false
@@ -3454,9 +3438,7 @@ endglobals
                         //apply full horizontal jump speed (this is the only use for it)
                         set p.XVelocity = -p.hJumpSpeed
                         
-                        set p.FX = AddSpecialEffect("Abilities\\Spells\\Orc\\FeralSpirit\\feralspirittarget.mdl", p.XPosition, p.YPosition)
-                        call DestroyEffect(p.FX)
-                        set p.FX = null
+                        call DestroyEffect(AddSpecialEffect("Abilities\\Spells\\Orc\\FeralSpirit\\feralspirittarget.mdl", p.XPosition, p.YPosition))
                         //debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "Right wall jump " + R2S(p.YVelocity) + ", " + R2S(p.XVelocity))
                         
                         return false
@@ -3477,10 +3459,8 @@ endglobals
                     //remove some of the x velocity
                     set p.XVelocity = p.XVelocity * PlatformerOcean_XVELOCITYONJUMP
                     
-                    set p.FX = AddSpecialEffect("Abilities\\Spells\\Other\\CrushingWave\\CrushingWaveDamage.mdl", p.XPosition, p.YPosition)
-                    //set p.FX = AddSpecialEffect("Doodads\\Icecrown\\Water\\BubbleGeyserSteam\\BubbleGeyserSteam.mdl", x, y)
-                    call DestroyEffect(p.FX)
-                    set p.FX = null
+                    //set e = AddSpecialEffect("Doodads\\Icecrown\\Water\\BubbleGeyserSteam\\BubbleGeyserSteam.mdl", x, y)
+                    call DestroyEffect(AddSpecialEffect("Abilities\\Spells\\Other\\CrushingWave\\CrushingWaveDamage.mdl", p.XPosition, p.YPosition))
                     //debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "Vert jump " + R2S(p.YVelocity))
                     
                     return false

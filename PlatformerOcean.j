@@ -41,9 +41,7 @@ library PlatformerOcean initializer Init requires Stack, TerrainGlobals
                 //debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "(opp) before: " + R2S(p.XVelocity) + " after: " + R2S(p.XVelocity + p.MoveSpeed * .5))
                 set p.XVelocity = p.XVelocity + p.MoveSpeed * OCEAN_MOTION * OPPOSITIONDIFFERENCE
                     
-                set p.FX = AddSpecialEffect("Doodads\\Icecrown\\Water\\BubbleGeyserSteam\\BubbleGeyserSteam.mdl", GetUnitX(p.Unit), GetUnitY(p.Unit))
-                call DestroyEffect(p.FX)
-                set p.FX = null
+				call DestroyEffect(AddSpecialEffect("Doodads\\Icecrown\\Water\\BubbleGeyserSteam\\BubbleGeyserSteam.mdl", GetUnitX(p.Unit), GetUnitY(p.Unit)))
             elseif p.XVelocity == MAX_VELOCITY then
                 //no change, still maxed
             elseif p.XVelocity + p.MoveSpeed*OCEAN_MOTION >= MAX_VELOCITY then
@@ -57,9 +55,7 @@ library PlatformerOcean initializer Init requires Stack, TerrainGlobals
                 //debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "(opp) before: " + R2S(p.XVelocity) + " after: " + R2S(p.XVelocity - p.MoveSpeed * .5))
                 set p.XVelocity = p.XVelocity - p.MoveSpeed * OCEAN_MOTION * OPPOSITIONDIFFERENCE
                 
-                set p.FX = AddSpecialEffect("Doodads\\Icecrown\\Water\\BubbleGeyserSteam\\BubbleGeyserSteam.mdl", GetUnitX(p.Unit), GetUnitY(p.Unit))
-                call DestroyEffect(p.FX)
-                set p.FX = null
+                call DestroyEffect(AddSpecialEffect("Doodads\\Icecrown\\Water\\BubbleGeyserSteam\\BubbleGeyserSteam.mdl", GetUnitX(p.Unit), GetUnitY(p.Unit)))
             elseif p.XVelocity == -MAX_VELOCITY then
                 //no change, still maxed
             elseif p.XVelocity - p.MoveSpeed*OCEAN_MOTION <= -MAX_VELOCITY then

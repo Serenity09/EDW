@@ -6,14 +6,14 @@ library PlatformerProfile initializer Init requires PlatformerGlobals
         
         private constant integer   vJUMPSPEED      = 715      //default vertical jump speed
         private constant integer   hJUMPSPEED      = 785      //default horizontal jump speed
-        private constant real   v2hJUMPSPEED       = .8000       //vWALLJUMP * vJUMPSPEED = vTOTALJUMPHEIGHT for wall jumps
-        private constant integer   xFALLOFF        = 45       //linear rate horizontal speed falls off
+        private constant real   v2hJUMPSPEED       = .8500       //vWALLJUMP * vJUMPSPEED = vTOTALJUMPHEIGHT for wall jumps
+        private constant integer   xFALLOFF        = 50       //linear rate horizontal speed falls off
         private constant integer   yFALLOFF        = 30       //linear rate vertical speed falls off
         private constant integer   XTERMINAL       = 350      //default cap before x velocity starts falling off much faster
         private constant integer   YTERMINAL       = 515      //default cap before x velocity starts falling off much faster
         private constant integer   GRAVITYACCEL    = -35      //default acceleration due to gravity
         private constant integer   MOVESPEED       = 370      //default movespeed
-        private constant real   MOVESPEEDOFFSET    = .05000   //default movespeed effect on x velocity when opposed
+        private constant real   MOVESPEEDOFFSET    = .07500   //default movespeed effect on x velocity when opposed
     endglobals
         
     struct PlatformerProfile extends array
