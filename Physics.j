@@ -38,6 +38,7 @@ globals
     private constant boolean DEBUG_DIAGONAL = false
     
     private constant boolean DEBUG_DIAGONAL_TRANSITION = false
+	private constant boolean DEBUG_DIAGONAL_TRANSITION_TERRAIN_METADATA = false
 	private constant boolean DEBUG_DIAGONAL_ESCAPE_CHECK = false
 	private constant boolean DEBUG_DIAGONAL_ESCAPE = false
     private constant boolean DEBUG_DIAGONAL_START = false
@@ -1262,7 +1263,7 @@ endglobals
                             //debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "Here 3") 
                             if pathingResult.TerrainPathingForPoint == .DiagonalPathing.TerrainPathingForPoint then
                                 //if the diagonal remains the same, then its fine to use the projected position as-is
-                                static if DEBUG_DIAGONAL_TRANSITION then
+                                static if DEBUG_DIAGONAL_TRANSITION_TERRAIN_METADATA then
                                     if pathingResult.QuadrantForPoint != .DiagonalPathing.QuadrantForPoint then
                                         call DisplayTextToForce(bj_FORCE_PLAYER[0], "Quadrant changes from: " + I2S(.DiagonalPathing.QuadrantForPoint) + " to: " + I2S(pathingResult.QuadrantForPoint))
                                     else

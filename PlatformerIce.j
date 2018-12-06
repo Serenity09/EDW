@@ -8,7 +8,7 @@ library PlatformerIce initializer Init requires SimpleList, PlatformerGlobals
         public constant real SLOW_YFALLOFF = .1
         public constant real SLOW_OPPOSITIONDIFFERENCE = .1
         
-        public real SLOW_VELOCITY = 15 * TIMESTEP
+        public real SLOW_VELOCITY = 20 * TIMESTEP
         public real SLOW_MAX_VELOCITY = PLATFORMING_MAXCHANGE / 1.25
         
         //properties applied in this timer loop should be relative to it's timestep
@@ -19,8 +19,8 @@ library PlatformerIce initializer Init requires SimpleList, PlatformerGlobals
         public constant real FAST_YFALLOFF = .01
         public constant real FAST_OPPOSITIONDIFFERENCE = 0
         
-        public real FAST_VELOCITY = 30 * TIMESTEP
-        public real FAST_MAX_VELOCITY = PLATFORMING_MAXCHANGE * 2.
+        public real FAST_VELOCITY = 40 * TIMESTEP
+        public real FAST_MAX_VELOCITY = PLATFORMING_MAXCHANGE * 4.
         
         public real HYBRID_VELOCITY = (SLOW_VELOCITY * SIN_45 + FAST_VELOCITY * SIN_45) / 2
         public real HYBRID_OPP_VELOCITY = (SLOW_VELOCITY * SLOW_OPPOSITIONDIFFERENCE * SIN_45 + FAST_VELOCITY * FAST_OPPOSITIONDIFFERENCE * SIN_45) / 2

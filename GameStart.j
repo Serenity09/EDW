@@ -159,17 +159,17 @@ library GameStart initializer Init requires Levels, EDWVisualVote, UnitGlobals, 
         */
         
         set cineMsg = CinemaMessage.create(null, GetEDWSpeakerMessage(PRIMARY_SPEAKER_NAME, "Hey you!", STERN_TEXT_COLOR), DEFAULT_SHORT_TEXT_SPEED)
-        set cine = Cinematic.create(gg_rct_WelcomeMessage, false, false, cineMsg)
+        set cine = Cinematic.create(gg_rct_SargeIntro1, false, false, cineMsg)
         call cine.AddMessage(null, GetEDWSpeakerMessage(PRIMARY_SPEAKER_NAME, "Yeah, you", DEFAULT_TEXT_COLOR), DEFAULT_SHORT_TEXT_SPEED)
         call cine.AddMessage(null, GetEDWSpeakerMessage(PRIMARY_SPEAKER_NAME, "...Maggot", ANGRY_TEXT_COLOR), DEFAULT_SHORT_TEXT_SPEED)
         call cine.AddMessage(null, GetEDWSpeakerMessage(PRIMARY_SPEAKER_NAME, "Sorry, but that just felt right", DEFAULT_TEXT_COLOR), DEFAULT_SHORT_TEXT_SPEED)
         call l.AddCinematic(cine)
                 
         set cineMsg = CinemaMessage.create(null, GetEDWSpeakerMessage(PRIMARY_SPEAKER_NAME, "Anyways, like I was saying, how'd we even get into this pit?", DEFAULT_TEXT_COLOR), DEFAULT_SHORT_TEXT_SPEED)
-        set cine = Cinematic.create(gg_rct_SargeIntro, true, false, cineMsg)
+        set cine = Cinematic.create(gg_rct_SargeIntro2, true, false, cineMsg)
         call cine.AddMessage(null, GetEDWSpeakerMessage(PRIMARY_SPEAKER_NAME, "Well one things for clear", DEFAULT_TEXT_COLOR), DEFAULT_TINY_TEXT_SPEED)
         call cine.AddMessage(null, GetEDWSpeakerMessage(PRIMARY_SPEAKER_NAME, "I drank WAY too much last night", DEFAULT_TEXT_COLOR), DEFAULT_SHORT_TEXT_SPEED)
-        call cine.AddMessage(null, GetEDWSpeakerMessage(PRIMARY_SPEAKER_NAME, "And you definitely shouldn't get near those colorful dragons", STERN_TEXT_COLOR), DEFAULT_MEDIUM_TEXT_SPEED)
+        call cine.AddMessage(null, GetEDWSpeakerMessage(PRIMARY_SPEAKER_NAME, "And you probably shouldn't get near those colorful dragons", STERN_TEXT_COLOR), DEFAULT_SHORT_TEXT_SPEED)
         call cine.AddMessage(null, GetEDWSpeakerMessage(PRIMARY_SPEAKER_NAME, "...I think they might be pedophiles", DEFAULT_TEXT_COLOR), DEFAULT_TINY_TEXT_SPEED)
         call l.AddCinematic(cine)
         
@@ -424,7 +424,7 @@ library GameStart initializer Init requires Levels, EDWVisualVote, UnitGlobals, 
         set startables = SimpleList_List.create()
         set l.Content.Startables = startables
         
-        call startables.add(SimpleGenerator.create(gg_rct_PW3_MassCreate, 'e00K', 1.5, 180, 16, 100))
+        call startables.add(SimpleGenerator.create(gg_rct_PW3_MassCreate, 'e00K', 1.5, 180, 17, 100))
         
         /*
         set wheel = Wheel.create(-2904, -6765)
@@ -508,8 +508,15 @@ library GameStart initializer Init requires Levels, EDWVisualVote, UnitGlobals, 
         */
         
         //Justine's Four Seasons
-        //set l = Levels_Level.create(7, null, null, gg_rct_FSR_1_1, gg_rct_IW3_Vision, gg_rct_IW2_End, 0)
-        
+		set l = Levels_Level.create(7, "Spring", 3, 2, "FourSeason1Start", "FourSeason1Stop", gg_rct_FSR_1_1, gg_rct_FS1_Vision, gg_rct_FS1_End, 0)
+		
+		set cpID = l.AddCheckpoint(gg_rct_FSCP_1_1, gg_rct_FSR_1_2)
+		
+		set startables = SimpleList_List.create()
+		set l.Content.Startables = startables
+
+		call startables.add(DrunkWalker_DrunkWalkerSpawn.create(gg_rct_FS_1_Drunks, 3, 4, LGUARD, 16))
+	
         //LANDWORLD / LUSTWORLD
         
         //Testing world / secret world

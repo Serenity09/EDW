@@ -14,7 +14,7 @@ library EDWVisualVote requires VisualVote, ContinueGlobals, Teams, PlayerUtils, 
             //9 == first platforming level
             
             //66 == debug platform testing
-            return Levels_Levels[67]
+            return Levels_Levels[7]
             //return Levels_Levels[23]
         else
             return Levels_Levels[1]
@@ -276,7 +276,7 @@ library EDWVisualVote requires VisualVote, ContinueGlobals, Teams, PlayerUtils, 
         //debug call DisplayTextToPlayer(Player(0), 0, 0, "Team count " + I2S(teamCount))
         
 		set cineMsg = CinemaMessage.create(null, GetEDWSpeakerMessage(FINAL_BOSS_PRE_REVEAL, "Welcome", DEFAULT_TEXT_COLOR), DEFAULT_TINY_TEXT_SPEED)
-        set cine = Cinematic.create(gg_rct_WelcomeMessage, false, false, cineMsg)
+        set cine = Cinematic.create(null, false, false, cineMsg)
         call cine.AddMessage(null, GetEDWSpeakerMessage(FINAL_BOSS_PRE_REVEAL, "To", DEFAULT_TEXT_COLOR), DEFAULT_TINY_TEXT_SPEED)
         call cine.AddMessage(null, GetEDWSpeakerMessage(FINAL_BOSS_PRE_REVEAL, "Dream World", DEFAULT_TEXT_COLOR), DEFAULT_SHORT_TEXT_SPEED)
 		
