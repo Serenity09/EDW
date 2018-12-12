@@ -1,0 +1,9 @@
+library KnownProblemUnitTests initializer init requires TerrainAlgorithmTests, TerrainTileSizeUnitTest
+	private function cb takes nothing returns nothing
+		call CheckAlgorithms(TerrainTileSizeUnitTest.create(-128, 128))
+		call CheckAlgorithms(TerrainTileSizeUnitTest.create(-1024, 128))
+	endfunction
+	private function init takes nothing returns nothing
+		call TimerStart(CreateTimer(), 0.5, false, function cb)
+	endfunction
+endlibrary
