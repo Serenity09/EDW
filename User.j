@@ -13,6 +13,7 @@ struct User extends array
     public Teams_MazingTeam Team
     public Cinematic CinematicPlaying
     public SimpleList_List CinematicQueue //FiFo
+	public effect ActiveEffect
     
     public static integer ActivePlayers
     
@@ -24,6 +25,20 @@ struct User extends array
     //also no need to recycle users, let's just keep a basic count
     private static integer count = -1
     
+	public method SetActiveEffect takes string strEffect, string attachPoint returns nothing
+		if .ActiveEffect != null then
+			call DestroyEffect(.ActiveEffect)
+			set .ActiveEffect = null
+		endif
+		
+		if strEffect != null then
+			set .ActiveEffect = AddSpecialEffectTarget(strEffect, .ActiveUnit, attachPoint)
+		endif
+	endmethod
+	public method ClearActiveEffect takes nothing returns nothing
+		call .SetActiveEffect(null, null)
+	endmethod
+	
     public static method DisplayMessageAll takes string message returns nothing
         local integer i = 0
         
@@ -407,7 +422,15 @@ struct User extends array
                 call SetUnitMoveSpeed(MazersArray[this], DefaultMoveSpeed)
                 
                 //remove entangling roots on the paused mazer
-                call UnitRemoveBuffs(.ActiveUnit, true, true)
+				/*
+				if .ActiveEffect != null then
+					call DestroyEffect(.ActiveEffect)
+					set .ActiveEffect = null
+				endif
+				*/
+				call .ClearActiveEffect()
+				
+                //call UnitRemoveBuffs(.ActiveUnit, true, true)
                 call DummyCaster['A004'].castTarget(Player(10), 1, OrderId("dispel"), .ActiveUnit)
 				call SetUnitPropWindow(.ActiveUnit, GetUnitDefaultPropWindow(.ActiveUnit))
                 
@@ -473,7 +496,18 @@ struct User extends array
                 //call DummyCaster['A005'].castTarget(Player(this), 1, OrderId("web"), .ActiveUnit)
                 //call TimerStart(NewTimerEx(this), 0.00001, false, function thistype.ApplyRootsCB)
 				//call DummyCaster['A007'].castTarget(Player(this), 1, OrderId("slow"), .ActiveUnit)
-				call DummyCaster['A007'].castTarget(Player(10), 1, OrderId("slow"), .ActiveUnit)
+				
+				//TODO this is very inconsistent with whether or not it shows at all (though at least it does show...) ...maybe just manually create and destroy a special effect
+				//call DummyCaster['A007'].castTarget(Player(10), 1, OrderId("slow"), .ActiveUnit)
+				/*
+				if .ActiveEffect != null then
+					call DestroyEffect(.ActiveEffect)
+					set .ActiveEffect = null
+				endif
+				set .ActiveEffect = AddSpecialEffectTarget("Abilities\\Spells\\NightElf\\EntanglingRoots\\EntanglingRootsTarget.mdl", .ActiveUnit, "origin")
+				*/
+				call .SetActiveEffect("Abilities\\Spells\\NightElf\\EntanglingRoots\\EntanglingRootsTarget.mdl", "origin")
+				
 				call SetUnitPropWindow(.ActiveUnit, 0)
                 //call UnitApplyTimedLife(.ActiveUnit, 'BEer', 10.)
 				
