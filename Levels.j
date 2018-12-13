@@ -15,6 +15,8 @@ library Levels initializer Init requires SimpleList, Teams, GameModesGlobals, Ci
         public constant integer EASY_MAX_CONTINUE_ROLLOVER = 2
         public constant real HARD_CONTINUE_MODIFIER = .75
         
+		private constant boolean DEBUG_START_STOP = false
+		private constant boolean DEBUG_LEVEL_CHANGE = false
     endglobals
     
     struct LevelContent //extends IStartable
@@ -133,8 +135,10 @@ library Levels initializer Init requires SimpleList, Teams, GameModesGlobals, Ci
         public static SimpleList_List ActiveLevels
                         
         public method Start takes nothing returns nothing
-            debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "Trying to start level " + I2S(this.LevelID) + ", count: " + I2S(Teams_MazingTeam.GetCountOnLevel(.LevelID)))
-            
+            static if DEBUG_START_STOP then
+				call DisplayTextToForce(bj_FORCE_PLAYER[0], "Trying to start level " + I2S(this.LevelID) + ", count: " + I2S(Teams_MazingTeam.GetCountOnLevel(.LevelID)))
+            endif
+			
             if Teams_MazingTeam.GetCountOnLevel(.LevelID) == 0 then
                 call .ActiveLevels.add(this)
                 
@@ -154,8 +158,10 @@ library Levels initializer Init requires SimpleList, Teams, GameModesGlobals, Ci
         public method Stop takes nothing returns nothing
             local integer countprev = Teams_MazingTeam.GetCountOnLevel(.LevelID)
             
-            debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "Trying to stop level " + I2S(this.LevelID) + ", count: " + I2S(countprev))
-            
+			static if DEBUG_START_STOP then
+				call DisplayTextToForce(bj_FORCE_PLAYER[0], "Trying to stop level " + I2S(this.LevelID) + ", count: " + I2S(countprev))
+            endif
+			
             if countprev == 0 then
                 call .ActiveLevels.remove(this)
                 
@@ -346,9 +352,11 @@ library Levels initializer Init requires SimpleList, Teams, GameModesGlobals, Ci
                 
         //update level continuously or discontinuously from one to the next. IE lvl 1 -> 2 -> 3 -> 4 OR 1 -> 4 -> 2 etc
         public method SwitchLevels takes Teams_MazingTeam mt, Level nextLevel returns nothing
-            debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "From (static) " + I2S(this.LevelID) + " To " + I2S(nextLevel.LevelID))
-            debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "From " + I2S(this) + " To " + I2S(nextLevel))
-            
+            static if DEBUG_LEVEL_CHANGE then
+				call DisplayTextToForce(bj_FORCE_PLAYER[0], "From (static) " + I2S(this.LevelID) + " To " + I2S(nextLevel.LevelID))
+				call DisplayTextToForce(bj_FORCE_PLAYER[0], "From " + I2S(this) + " To " + I2S(nextLevel))
+            endif
+			
             set this.CBTeam = mt
             call this.ActiveTeams.remove(mt)
             
@@ -403,8 +411,10 @@ library Levels initializer Init requires SimpleList, Teams, GameModesGlobals, Ci
             local Level curLevel = Levels[mt.OnLevel]
             local Level nextLevel
             
-            //call DisplayTextToForce(bj_FORCE_PLAYER[0], "From " + I2S(curLevel.LevelID))
-            
+			static if DEBUG_LEVEL_CHANGE then
+				call DisplayTextToForce(bj_FORCE_PLAYER[0], "Entered level transfer region on level " + I2S(curLevel.LevelID))
+            endif
+			
             //call KillUnit(u)
             if mt != 0 and not mt.RecentlyTransferred then //levels 0, 1 have special hardcoded level transfers -- esp for hub                
                 set mt.RecentlyTransferred = true

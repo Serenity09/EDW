@@ -1,6 +1,6 @@
 library DrunkWalker requires Recycle, TimerUtils, IStartable
     globals
-        public constant integer MAXIMUM_VALID_LOCATION_ATTEMPTS = 400
+        public constant integer MAXIMUM_VALID_LOCATION_ATTEMPTS = 200
     endglobals
     
 	public keyword DrunkWalkerSpawn

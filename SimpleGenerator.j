@@ -22,29 +22,6 @@ struct SimpleGenerator extends IStartable
     private static timer MoveTimer
     private static SimpleList_List ActiveWidgets
     
-    public method Start takes nothing returns nothing
-        if thistype.ActiveWidgets.count == 0 then
-            call TimerStart(thistype.MoveTimer, MOVEMENT_UPDATE_TIMESTEP, true, function thistype.PeriodicMove)
-        endif
-        
-        call thistype.ActiveWidgets.addEnd(this)
-        set this.SpawnTimer = NewTimerEx(this)
-        set this.SpawnedUnits = NewGroup()
-        call TimerStart(this.SpawnTimer, this.SpawnTimeStep, true, function thistype.PeriodicSpawn)
-    endmethod
-    
-    public method Stop takes nothing returns nothing
-        call thistype.ActiveWidgets.remove(this)
-        call PauseTimer(this.SpawnTimer)
-        call ReleaseTimer(this.SpawnTimer)
-        call ReleaseGroup(this.SpawnedUnits)
-        set this.SpawnTimer = null
-        
-        if thistype.ActiveWidgets.count == 0 then
-            call PauseTimer(thistype.MoveTimer)
-        endif
-    endmethod
-    
     public static method PeriodicSpawn takes nothing returns nothing
         local thistype generator = GetTimerData(GetExpiredTimer())
         local real x = GetRandomReal(GetRectMinX(generator.SpawnArea), GetRectMaxX(generator.SpawnArea))
@@ -60,6 +37,7 @@ struct SimpleGenerator extends IStartable
         call GroupAddUnit(generator.SpawnedUnits, u)
     endmethod
     
+	//TODO could support any angle by using sin/cos
     public static method PeriodicMove takes nothing returns nothing
         local SimpleList_ListNode curActiveWidgetNode = thistype.ActiveWidgets.first
         local group swapGroup = NewGroup()
@@ -125,6 +103,29 @@ struct SimpleGenerator extends IStartable
                         
         set curActiveWidgetNode = curActiveWidgetNode.next
         endloop
+    endmethod
+	
+	public method Start takes nothing returns nothing
+        if thistype.ActiveWidgets.count == 0 then
+            call TimerStart(thistype.MoveTimer, MOVEMENT_UPDATE_TIMESTEP, true, function thistype.PeriodicMove)
+        endif
+        
+        call thistype.ActiveWidgets.addEnd(this)
+        set this.SpawnTimer = NewTimerEx(this)
+        set this.SpawnedUnits = NewGroup()
+        call TimerStart(this.SpawnTimer, this.SpawnTimeStep, true, function thistype.PeriodicSpawn)
+    endmethod
+    
+    public method Stop takes nothing returns nothing
+        call thistype.ActiveWidgets.remove(this)
+        //call PauseTimer(this.SpawnTimer)
+        call ReleaseTimer(this.SpawnTimer)
+        call ReleaseGroup(this.SpawnedUnits)
+        set this.SpawnTimer = null
+        
+        if thistype.ActiveWidgets.count == 0 then
+            call PauseTimer(thistype.MoveTimer)
+        endif
     endmethod
         
     public static method create takes rect spawn, integer spawnUnitID, real spawnTimestep, real spawnDirection, integer spawnLength, real movespeed returns thistype
