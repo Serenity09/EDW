@@ -35,6 +35,8 @@ globals
     private constant boolean DEBUG_VELOCITY_FALLOFF = false
     private constant boolean DEBUG_VELOCITY_DIAGONAL = false
     
+	private constant boolean DEBUG_SQUARE = false
+	
     private constant boolean DEBUG_DIAGONAL = false
     
     private constant boolean DEBUG_DIAGONAL_TRANSITION = false
@@ -42,6 +44,7 @@ globals
 	private constant boolean DEBUG_DIAGONAL_ESCAPE_CHECK = false
 	private constant boolean DEBUG_DIAGONAL_ESCAPE = false
     private constant boolean DEBUG_DIAGONAL_START = false
+	private constant boolean DEBUG_DIAGONAL_START_CHECK = false
 	
 	private constant boolean BUFFER_STICKY_TRANSITION_ESCAPE = LEAVE_DIAGONAL_OFFSET > 0 //enable/disable: when leaving a diagonal into empty space due to exceeding the sticky limit for diagonal transitions, position is offset away from diagonal surface when enabled / left as-is when disabled
     
@@ -1814,15 +1817,19 @@ endglobals
                     //TODO implement raycasting to get the first non pathable complex terrain pathing result for newX newY pairs that are big enough to need it to be accurate
                     set newPosition = vector2.create(newX, newY)
                     
-                    if newX >= 0 then
+                    if newX > 0 then
                         set directionX = 1
-                    else
+                    elseif newX < 0 then
                         set directionX = -1
+					else
+						set directionX = 0
                     endif
-                    if newY >= 0 then
+                    if newY > 0 then
                         set directionY = 1
-                    else
+                    elseif newY < 0 then
                         set directionY = -1
+					else
+						set directionY = 0
                     endif
                     
                     /*
@@ -1869,10 +1876,12 @@ endglobals
                         endif
                     else
                         set pathingResult = ComplexTerrainPathing_GetPathingForPoint(.XPosition + newPosition.x + directionX * wOFFSET, .YPosition + newPosition.y + directionY * wOFFSET)
-                    endif
-                    
-                    
-                    
+						
+						static if DEBUG_DIAGONAL_START_CHECK then
+							call DisplayTextToForce(bj_FORCE_PLAYER[0], "Checking pathing at x:" + R2SW(.XPosition + newPosition.x + directionX * wOFFSET, 4, 10) + ", y: " + R2SW(.YPosition + newPosition.y + directionY * wOFFSET, 4, 10))
+						endif
+					endif
+                                        
                     if pathingResult == 0 then
                         //check if we are currently pushed against any surfaces, because if we are, we need to check that we're not pathing across an open diagonal between square blocks
                         if .XTerrainPushedAgainst != 0 or .YTerrainPushedAgainst != 0 then
@@ -1955,7 +1964,7 @@ endglobals
                         //debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "Open Space")
                         //debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "Moved to open space x, y: " + R2S(.XPosition) + ", " + R2S(.YPosition) + "; new x: " + R2S(newX) + ", new Y: " + R2S(newY))
                     elseif pathingResult.TerrainPathingForPoint == ComplexTerrainPathing_Inside then
-                        //--T-O-D-O-- consider raycasting when we hit an inside point -- haha, optimistic, that's not how these diagonals work...
+                        //--T-O-D-O-- consider iterating when we hit an inside point
                         //debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "Warning, going too fast for pathing and hit inside area of diagonal tiles")
                         call pathingResult.destroy()
                     elseif pathingResult.TerrainPathingForPoint == ComplexTerrainPathing_Square then
@@ -1968,6 +1977,7 @@ endglobals
                         //call pathingResult.Release()
                         //set pathingResult = GetPathingForPoint(newX, .CurrentY)
                         if newPosition.x != 0 then
+							//TODO does this all really need to happen or can i just check TerrainGlobals_IsTerrainPathable(GetTerrainType(.XPosition + newPosition.x + directionX*wOFFSET, .YPosition))
                             call pathingResult.destroy()
                             set pathingResult = ComplexTerrainPathing_GetPathingForPoint(.XPosition + newPosition.x + directionX*wOFFSET, .YPosition)
                             
@@ -1988,6 +1998,10 @@ endglobals
                                         set .XPosition = GetTerrainRight(pathingResult.TerrainMidpointX) + wOFFSET
                                     endif
                                     
+									static if DEBUG_SQUARE then
+										call DisplayTextToForce(bj_FORCE_PLAYER[0], "X Position blocked by square tile: " + R2SW(.XPosition, 5, 10))
+									endif
+									
                                     call SetUnitX(.Unit, .XPosition)
                                 endif
                                 
@@ -2031,7 +2045,10 @@ endglobals
                             call pathingResult.destroy()
                             set pathingResult = ComplexTerrainPathing_GetPathingForPoint(.XPosition, .YPosition + newPosition.y + directionY*wOFFSET)
                             
-
+							static if DEBUG_SQUARE then
+								call DisplayTextToForce(bj_FORCE_PLAYER[0], "Getting exact Y pathing at: " + R2SW(.YPosition + newPosition.y + directionY*wOFFSET, 5, 10))
+							endif
+							
                             if pathingResult == 0 then
                                 set .YTerrainPushedAgainst = 0
                                 set .YPosition = .YPosition + newPosition.y
@@ -2040,16 +2057,20 @@ endglobals
                                 set .YTerrainPushedAgainst = GetTerrainType(pathingResult.TerrainMidpointX, pathingResult.TerrainMidpointY)
                                 
                                 //needs a more accurate GetTerrainCenter
-                                if newPosition.y >= 0 then
-                                    set .YPosition = GetTerrainBottom(pathingResult.TerrainMidpointY) - wOFFSET
-                                else
-                                    set .YPosition = GetTerrainTop(pathingResult.TerrainMidpointY) + wOFFSET
+								if pathingResult.TerrainPathingForPoint == ComplexTerrainPathing_Square or pathingResult.TerrainPathingForPoint == ComplexTerrainPathing_Bottom or pathingResult.TerrainPathingForPoint == ComplexTerrainPathing_Top then
+									if newPosition.y >= 0 then
+										set .YPosition = GetTerrainBottom(pathingResult.TerrainMidpointY) - wOFFSET
+									else
+										set .YPosition = GetTerrainTop(pathingResult.TerrainMidpointY) + wOFFSET
+									endif
+									
+									static if DEBUG_SQUARE then
+										call DisplayTextToForce(bj_FORCE_PLAYER[0], "Y Position blocked by square tile: " + R2SW(.YPosition, 5, 10))
+									endif
+									
+									call SetUnitY(.Unit, .YPosition)
                                 endif
-                                
-                                //debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "Y Position blocked: " + R2SW(.YPosition, 50, 50) + ", " + R2SW(newPosition.y, 50, 50))                                
-                                call SetUnitY(.Unit, .YPosition)
-                                //debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "After: " + R2SW(.YPosition, 50, 50) + ", " + R2SW(newPosition.y, 50, 50))
-                                
+								
                                 if not TerrainGlobals_IsTerrainSoft(.YTerrainPushedAgainst) then
                                     //debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "Square Setting y velocity to 0")
                                     set .YVelocity = 0
@@ -2378,16 +2399,18 @@ endglobals
             //YVelocity going up
             if .YVelocity > 0 then
                 //decrement YVelocity if over terminal velocity
-                if .YVelocity > .TerminalVelocityY then
+				if .YVelocity > .TerminalVelocityY then
                     //todo replace with a smoothing function
                     set .YVelocity = .YVelocity - .YFalloff
                 endif
+				//set .YVelocity = .YVelocity - .YFalloff
             elseif .YVelocity < 0 then
                 //decrement YVelocity if over terminal velocity
-                if .YVelocity < -.TerminalVelocityY then
+				if .YVelocity < -.TerminalVelocityY then
                     //todo replace with a easing function
                     set .YVelocity = .YVelocity + .YFalloff
                 endif
+				//set .YVelocity = .YVelocity + .YFalloff
             endif
             
             static if DEBUG_VELOCITY_FALLOFF then

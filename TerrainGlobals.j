@@ -64,7 +64,7 @@ library TerrainGlobals initializer initTerrainGlobals requires GameGlobalConstan
         constant integer TERRAIN_QUADRANT_SIZE  = 64
         constant integer TERRAIN_TILE_SIZE      = 128
         
-        constant real TERRAIN_QUADRANT_ROUND = .50001
+        constant real TERRAIN_QUADRANT_ROUND = .5
     endglobals
     
     public function IsTerrainPathable takes integer ttype returns boolean
@@ -133,19 +133,19 @@ library TerrainGlobals initializer initTerrainGlobals requires GameGlobalConstan
     */
     
     function GetTerrainLeft takes real centerX returns real
-        return centerX - TERRAIN_QUADRANT_SIZE + TERRAIN_QUADRANT_ROUND
+        return centerX - TERRAIN_QUADRANT_SIZE - TERRAIN_QUADRANT_ROUND
     endfunction
     
     function GetTerrainRight takes real centerX returns real
-        return centerX + TERRAIN_QUADRANT_SIZE + TERRAIN_QUADRANT_ROUND
+        return centerX + TERRAIN_QUADRANT_SIZE - TERRAIN_QUADRANT_ROUND
     endfunction
     
     function GetTerrainBottom takes real centerY returns real
-        return centerY - TERRAIN_QUADRANT_SIZE + TERRAIN_QUADRANT_ROUND
+        return centerY - TERRAIN_QUADRANT_SIZE - TERRAIN_QUADRANT_ROUND
     endfunction
     
     function GetTerrainTop takes real centerY returns real
-        return centerY + TERRAIN_QUADRANT_SIZE + TERRAIN_QUADRANT_ROUND
+        return centerY + TERRAIN_QUADRANT_SIZE - TERRAIN_QUADRANT_ROUND
     endfunction
     
     function initTerrainGlobals takes nothing returns nothing
