@@ -352,10 +352,16 @@ library Levels initializer Init requires SimpleList, Teams, GameModesGlobals, Ci
                 
         //update level continuously or discontinuously from one to the next. IE lvl 1 -> 2 -> 3 -> 4 OR 1 -> 4 -> 2 etc
         public method SwitchLevels takes Teams_MazingTeam mt, Level nextLevel returns nothing
-            static if DEBUG_LEVEL_CHANGE then
+            local integer originalContinues
+			local integer rolloverContinues
+			local integer nextLevelContinues
+			
+			static if DEBUG_LEVEL_CHANGE then
 				call DisplayTextToForce(bj_FORCE_PLAYER[0], "From (static) " + I2S(this.LevelID) + " To " + I2S(nextLevel.LevelID))
 				call DisplayTextToForce(bj_FORCE_PLAYER[0], "From " + I2S(this) + " To " + I2S(nextLevel))
             endif
+			
+			call mt.ClearCinematicQueue()
 			
             set this.CBTeam = mt
             call this.ActiveTeams.remove(mt)
@@ -366,15 +372,28 @@ library Levels initializer Init requires SimpleList, Teams, GameModesGlobals, Ci
             call nextLevel.Start() //only starts the next level if there is one -- also preloads the following level
             
             set mt.OnLevel = nextLevel.LevelID
-            if RewardMode == GameModesGlobals_EASY then
-                if mt.ContinueCount > EASY_MAX_CONTINUE_ROLLOVER then
-                    set mt.ContinueCount = EASY_MAX_CONTINUE_ROLLOVER
-                endif
-                
-                set mt.ContinueCount = mt.ContinueCount + R2I(nextLevel.RawContinues*EASY_CONTINUE_MODIFIER + .5)
-            elseif RewardMode == GameModesGlobals_HARD then
-                set mt.ContinueCount = R2I(nextLevel.RawContinues*HARD_CONTINUE_MODIFIER + .5)
-            endif
+			
+			if RewardMode == GameModesGlobals_EASY or RewardMode == GameModesGlobals_HARD then
+				set originalContinues = mt.ContinueCount
+				
+				if RewardMode == GameModesGlobals_EASY then
+					if mt.ContinueCount > EASY_MAX_CONTINUE_ROLLOVER then
+						set rolloverContinues = EASY_MAX_CONTINUE_ROLLOVER
+					else
+						set rolloverContinues = mt.ContinueCount
+					endif
+					
+					set nextLevelContinues = R2I(nextLevel.RawContinues*EASY_CONTINUE_MODIFIER + .5)
+				elseif RewardMode == GameModesGlobals_HARD then
+					set rolloverContinues = 0
+					set nextLevelContinues = R2I(nextLevel.RawContinues*HARD_CONTINUE_MODIFIER + .5)
+				endif
+				
+				set mt.ContinueCount = rolloverContinues + nextLevelContinues
+				
+				//call mt.PrintMessage("Starting level " + ColorMessage(nextLevel.Name, SPEAKER_COLOR) + "!")
+				call mt.PrintMessage("You kept " + ColorMessage(I2S(rolloverContinues), SPEAKER_COLOR) + " of your " + ColorMessage(I2S(originalContinues), SPEAKER_COLOR) + " continues, and gained " + ColorMessage(I2S(nextLevelContinues), HAPPY_TEXT_COLOR) + " extra continues to boot")
+			endif
             
             call nextLevel.ActiveTeams.add(mt)
             
@@ -410,6 +429,8 @@ library Levels initializer Init requires SimpleList, Teams, GameModesGlobals, Ci
             
             local Level curLevel = Levels[mt.OnLevel]
             local Level nextLevel
+			
+			local integer score
             
 			static if DEBUG_LEVEL_CHANGE then
 				call DisplayTextToForce(bj_FORCE_PLAYER[0], "Entered level transfer region on level " + I2S(curLevel.LevelID))
@@ -419,12 +440,17 @@ library Levels initializer Init requires SimpleList, Teams, GameModesGlobals, Ci
             if mt != 0 and not mt.RecentlyTransferred then //levels 0, 1 have special hardcoded level transfers -- esp for hub                
                 set mt.RecentlyTransferred = true
                 //set mt.LastTransferTime = elapsed
-                
+                				
                 if RewardMode == GameModesGlobals_EASY or RewardMode == GameModesGlobals_CHEAT then
-                    set mt.Score = mt.Score + R2I(curLevel.RawScore*EASY_SCORE_MODIFIER + .5)
+                    set score = R2I(curLevel.RawScore*EASY_SCORE_MODIFIER + .5)
                 elseif RewardMode == GameModesGlobals_HARD then
-                    set mt.Score = mt.Score + R2I(curLevel.RawScore*HARD_SCORE_MODIFIER + .5)
+                    set score = R2I(curLevel.RawScore*HARD_SCORE_MODIFIER + .5)
                 endif
+				
+				//call mt.PrintMessage("Cleared level " + ColorMessage(curLevel.Name, SPEAKER_COLOR) + "!")
+				call mt.PrintMessage("Your score has increased by " + ColorMessage(I2S(score), HAPPY_TEXT_COLOR))
+				
+				set mt.Score = mt.Score + score
                 
                 //determine what the next level is, based on what the current level is
                 if mt.OnLevel == DOORS_LEVEL_ID then

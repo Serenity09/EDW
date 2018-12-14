@@ -634,7 +634,7 @@ struct User extends array
         set User.ActivePlayers = 0
         
         loop
-        exitwhen n>=12
+        exitwhen n>=8
             //debug call DisplayTextToPlayer(Player(0), 0, 0, "Creating User: " + I2S(n))
             
             //if GetPlayerSlotState(Player(n))==PLAYER_SLOT_STATE_PLAYING then

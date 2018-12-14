@@ -47,6 +47,9 @@ library MazerGlobals initializer Init requires GameGlobalConstants, ContinueGlob
         
         public constant real REVIVE_CIRCLE_SAFE_X  = -15755
         public constant real REVIVE_CIRCLE_SAFE_Y  = 15505
+		
+		private constant boolean FORCE_DEBUG_TELE = false
+		private constant integer DEBUG_TELE_ITEM_ID = 'I001'
     endglobals
     
     function SetDefaultCameraForPlayer takes integer pID, real panTime returns nothing
@@ -130,7 +133,11 @@ library MazerGlobals initializer Init requires GameGlobalConstants, ContinueGlob
             set MobImmune[i] = false
             
             if GetPlayerSlotState(Player(i)) == PLAYER_SLOT_STATE_PLAYING then
-                set PlayerReviveCircles[i] = CreateUnit(Player(i), TEAM_REVIVE_UNIT_ID, MazerGlobals_REVIVE_CIRCLE_SAFE_X, MazerGlobals_REVIVE_CIRCLE_SAFE_Y, 0)
+                if FORCE_DEBUG_TELE or DEBUG_MODE or CONFIGURATION_PROFILE != RELEASE then
+					call UnitAddItemById(MazersArray[i], DEBUG_TELE_ITEM_ID)
+				endif
+				
+				set PlayerReviveCircles[i] = CreateUnit(Player(i), TEAM_REVIVE_UNIT_ID, MazerGlobals_REVIVE_CIRCLE_SAFE_X, MazerGlobals_REVIVE_CIRCLE_SAFE_Y, 0)
                 call AddUnitLocust(PlayerReviveCircles[i])
                 
                 //call AddUnitLocust(MazersArray[i])

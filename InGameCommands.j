@@ -1,4 +1,8 @@
-library InGameCommands requires MazerGlobals, Platformer
+library InGameCommands initializer init requires MazerGlobals, Platformer
+globals
+	trigger tInGameCommands
+endglobals
+
 function ExportPlatformingVariables takes Platformer p returns nothing
     //display all variables on screen
     //call DisplayTextToForce(bj_FORCE_PLAYER[p.PID], "[tvx] Terminal Velocity X: " + R2S(p.TerminalVelocityX / PlatformerGlobals_GAMELOOP_TIMESTEP))
@@ -103,73 +107,7 @@ function DistanceCallback takes nothing returns nothing
     set playerUnit = null
 endfunction
 
-/*
-function ProfileChange takes nothing returns nothing
-    local string msg = GetEventPlayerChatString()
-    local integer pID = GetPlayerId(GetTriggerPlayer())
-    local integer i = 0
-    local string cmd
-    local real val
-    local Platformer p = Platformer.AllPlatformers[pID]
-    local PlatformerProfile pp = p.BaseProfile
-    
-    loop
-    exitwhen i >= StringLength(msg) - 1 or SubString(msg, i, i + 1) == " "
-    set i = i + 1
-    endloop
-    
-    set cmd = SubString(msg, 1, i)
-    
-    if StringLength(msg) >= i + 1 then
-        set val = S2R(SubString(msg, i + 1, StringLength(msg)))
-    endif
-    
-    //debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "msg: " + msg + " cmd: " + cmd + " val: " + R2S(val))
-    if cmd == "tvy" then
-        set pp.TerminalVelocityY = val
-    //elseif cmd == "tvf" then
-        //set p.TerminalFalloff = val
-    elseif cmd == "xf" then
-        set pp.XFalloff = val
-    elseif cmd == "yf" then
-        set pp.YFalloff = val
-    elseif cmd == "ms" then
-        set pp.MoveSpeed = val
-    elseif cmd == "msoff" then
-        set pp.MoveSpeedVelOffset = val
-    elseif cmd == "ga" then
-        set pp.GravitationalAccel = val
-    elseif cmd == "vj" then
-        set pp.vJumpSpeed = val
-    elseif cmd == "hj" then
-        set pp.hJumpSpeed = val
-    elseif cmd == "v2h" then
-        set pp.v2hJumpRatio = val
-    elseif cmd == "om" then
-        set PlatformerOcean_OCEAN_MOTION = val
-    elseif cmd == "ovj" then
-        set JUMPHEIGHTINOCEAN = val
-    elseif cmd == "iss" then
-        set PlatformerIce_SLOW_VELOCITY = val
-    elseif cmd == "ifs" then
-        set PlatformerIce_FAST_VELOCITY = val
-    elseif cmd == "help" or cmd == "h" then
-        call PrintPlatformingVariables(p)
-    elseif cmd == "prof" then
-        call PrintPlatformingProfileVariables(p)
-    elseif cmd == "export" then
-        call ExportPlatformingVariables(p)
-   elseif cmd == "mem" then
-        call PrintMemoryAnalysis(p.PID)
-        
-    elseif cmd == "track" or cmd == "t" or cmd == "follow" or cmd == "f" then
-        call ToggleDefaultTracking(p.PID)
-    endif
-    
-    call p.SetPhysicsToProfile()
-endfunction
-*/
-function Trig_InGamePlatformingChanges_Actions takes nothing returns nothing
+function ParseCommand takes nothing returns nothing
     local string msg = GetEventPlayerChatString()
     local integer pID = GetPlayerId(GetTriggerPlayer())
     local integer i = 0
@@ -289,21 +227,18 @@ endfunction
 
 
 //===========================================================================
-function InitTrig_In_Game_Commands takes nothing returns nothing
+private function init takes nothing returns nothing
     local integer i = 0
     //local trigger t = CreateTrigger()
-    local trigger t = CreateTrigger()
+    set tInGameCommands = CreateTrigger()
     
     loop
-        call TriggerRegisterPlayerChatEvent( t, Player(i), "-", false )
+        call TriggerRegisterPlayerChatEvent(tInGameCommands, Player(i), "-", false )
         //call TriggerRegisterPlayerChatEvent( t, Player(i), "!", false )
     set i = i + 1
     exitwhen i >= 8
     endloop
     
-    call TriggerAddAction( t, function Trig_InGamePlatformingChanges_Actions )
-    
-    set t = null
-    //call TriggerAddAction(t, function ProfileChange)
+    call TriggerAddAction(tInGameCommands, function ParseCommand)
 endfunction
 endlibrary

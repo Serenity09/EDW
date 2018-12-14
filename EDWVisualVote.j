@@ -371,7 +371,7 @@ library EDWVisualVote requires VisualVote, ContinueGlobals, Teams, PlayerUtils, 
         local VisualVote_voteContainer con
         local VisualVote_voteOption opt        
 
-		if not FORCE_MENU and (GetHumanPlayersCount() == 1 or DEBUG_MODE) then
+		if not FORCE_MENU and DEBUG_MODE then
         //static if DEBUG_MODE and false then
             call CreateFogModifierRectBJ(true, Player(0), FOG_OF_WAR_VISIBLE, GetPlayableMapRect())
 			
@@ -384,6 +384,26 @@ library EDWVisualVote requires VisualVote, ContinueGlobals, Teams, PlayerUtils, 
             set MinigamesMode = false
             
             call InitializeGameForGlobals()
+		elseif GetHumanPlayersCount() == 1 then
+			set GameMode = GameModesGlobals_SOLO
+			set RespawnASAPMode = true
+			set MinigamesMode = false
+			
+			set MyMenu = VisualVote_voteMenu.create(3060, 5800, VOTE_TIME_ROUND_ONE, null)
+            set MyMenu.onDestroyFinish = "EDWVisualVote_InitializeGameForGlobals"
+            call MyMenu.addAllPlayersToMenu()
+			
+			set col = MyMenu.addColumn(512)
+			
+			set con = col.addContainer("Difficulty")
+            set con.required = true
+			call con.addOption("Vanilla", "EDWVisualVote_RewardStandard")
+            call con.addOption("Chocolate", "EDWVisualVote_RewardChallenge")
+            set opt = con.addOption("99 and None", "EDWVisualVote_Reward99AndNone")
+            set con.defaultOption = opt
+			
+			call MyMenu.render()
+            call MyMenu.enforceVoteMode()
         else
             set MyMenu = VisualVote_voteMenu.create(3060, 5800, VOTE_TIME_ROUND_ONE, null)
             set MyMenu.onDestroyFinish = "EDWVisualVote_OnRoundOneFinishCB"

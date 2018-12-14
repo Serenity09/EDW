@@ -1,11 +1,11 @@
 library GameMessage
 	globals
-        constant string SPEAKER_COLOR = "FFFFBD33"
-        constant string DEFAULT_TEXT_COLOR = null
-        constant string HAPPY_TEXT_COLOR = null
-        constant string SAD_TEXT_COLOR = null
-        constant string ANGRY_TEXT_COLOR = null
-        constant string STERN_TEXT_COLOR = null
+        constant string SPEAKER_COLOR = "FFBD33"
+        constant string DEFAULT_TEXT_COLOR = "fcf0e5"
+		constant string STERN_TEXT_COLOR = "4f4f4f"
+        constant string HAPPY_TEXT_COLOR = "dcefd5"
+        constant string SAD_TEXT_COLOR = "c1c9ff"
+        constant string ANGRY_TEXT_COLOR = "772929"
         
         constant string PRIMARY_SPEAKER_NAME = "SARGE"
         constant string SECONDARY_SPEAKER_NAME = "Cupcake"
@@ -19,11 +19,15 @@ library GameMessage
         constant real DEFAULT_LONG_TEXT_SPEED = 8.0
     endglobals
 	
+	function ColorMessage takes string message, string hexColor returns string
+		return "|cFF" + hexColor + message + "|r"
+	endfunction
+	
 	function GetEDWSpeakerMessage takes string speaker, string message, string messageColor returns string
         if messageColor == null then
-            return "|c" + SPEAKER_COLOR + speaker + "|r" + ": " + message
+            return "|cFF" + SPEAKER_COLOR + speaker + "|r" + ": " + message
         else
-            return "|c" + SPEAKER_COLOR + speaker + "|r" + ": " + "|c" + messageColor + message + "|r"
+            return "|cFF" + SPEAKER_COLOR + speaker + "|r" + ": " + "|cFF" + messageColor + message + "|r"
         endif
     endfunction
 endlibrary

@@ -158,7 +158,7 @@ library GameStart initializer Init requires Levels, EDWVisualVote, UnitGlobals, 
         call l.AddCinematic(cine)
         */
         
-        set cineMsg = CinemaMessage.create(null, GetEDWSpeakerMessage(PRIMARY_SPEAKER_NAME, "Hey you!", STERN_TEXT_COLOR), DEFAULT_SHORT_TEXT_SPEED)
+        set cineMsg = CinemaMessage.create(null, GetEDWSpeakerMessage(PRIMARY_SPEAKER_NAME, "Hey you!", DEFAULT_TEXT_COLOR), DEFAULT_SHORT_TEXT_SPEED)
         set cine = Cinematic.create(gg_rct_SargeIntro1, false, false, cineMsg)
         call cine.AddMessage(null, GetEDWSpeakerMessage(PRIMARY_SPEAKER_NAME, "Yeah, you", DEFAULT_TEXT_COLOR), DEFAULT_SHORT_TEXT_SPEED)
         call cine.AddMessage(null, GetEDWSpeakerMessage(PRIMARY_SPEAKER_NAME, "...Maggot", ANGRY_TEXT_COLOR), DEFAULT_SHORT_TEXT_SPEED)
@@ -167,16 +167,17 @@ library GameStart initializer Init requires Levels, EDWVisualVote, UnitGlobals, 
                 
         set cineMsg = CinemaMessage.create(null, GetEDWSpeakerMessage(PRIMARY_SPEAKER_NAME, "Anyways, like I was saying, how'd we even get into this pit?", DEFAULT_TEXT_COLOR), DEFAULT_SHORT_TEXT_SPEED)
         set cine = Cinematic.create(gg_rct_SargeIntro2, true, false, cineMsg)
-        call cine.AddMessage(null, GetEDWSpeakerMessage(PRIMARY_SPEAKER_NAME, "Well one things for clear", DEFAULT_TEXT_COLOR), DEFAULT_TINY_TEXT_SPEED)
-        call cine.AddMessage(null, GetEDWSpeakerMessage(PRIMARY_SPEAKER_NAME, "I drank WAY too much last night", DEFAULT_TEXT_COLOR), DEFAULT_SHORT_TEXT_SPEED)
-        call cine.AddMessage(null, GetEDWSpeakerMessage(PRIMARY_SPEAKER_NAME, "And you probably shouldn't get near those colorful dragons", STERN_TEXT_COLOR), DEFAULT_SHORT_TEXT_SPEED)
-        call cine.AddMessage(null, GetEDWSpeakerMessage(PRIMARY_SPEAKER_NAME, "...I think they might be pedophiles", DEFAULT_TEXT_COLOR), DEFAULT_TINY_TEXT_SPEED)
+        call cine.AddMessage(null, GetEDWSpeakerMessage(PRIMARY_SPEAKER_NAME, "Oh man, I think I mighta had one too many last night", DEFAULT_TEXT_COLOR), DEFAULT_SHORT_TEXT_SPEED)
+		call cine.AddMessage(null, GetEDWSpeakerMessage(PRIMARY_SPEAKER_NAME, "Wait...", DEFAULT_TEXT_COLOR), DEFAULT_TINY_TEXT_SPEED)
+		call cine.AddMessage(null, GetEDWSpeakerMessage(PRIMARY_SPEAKER_NAME, "I'm remembering something...", DEFAULT_TEXT_COLOR), DEFAULT_TINY_TEXT_SPEED)
+        call cine.AddMessage(null, GetEDWSpeakerMessage(PRIMARY_SPEAKER_NAME, "Yeah, okay. You probably shouldn't get near those colorful dragons", DEFAULT_TEXT_COLOR), DEFAULT_SHORT_TEXT_SPEED)
+        //call cine.AddMessage(null, GetEDWSpeakerMessage(PRIMARY_SPEAKER_NAME, "...I don't want to talk about it", SAD_TEXT_COLOR), DEFAULT_TINY_TEXT_SPEED)
         call l.AddCinematic(cine)
         
-        set cineMsg = CinemaMessage.create(null, GetEDWSpeakerMessage(PRIMARY_SPEAKER_NAME, "Whoa!", STERN_TEXT_COLOR), DEFAULT_TINY_TEXT_SPEED)
+        set cineMsg = CinemaMessage.create(null, GetEDWSpeakerMessage(PRIMARY_SPEAKER_NAME, "Whoa!", ANGRY_TEXT_COLOR), DEFAULT_TINY_TEXT_SPEED)
         set cine = Cinematic.create(gg_rct_SargeFireWarning, true, false, cineMsg)
         set cine.ActivationCondition = IsUserNotRed
-        call cine.AddMessage(null, GetEDWSpeakerMessage(PRIMARY_SPEAKER_NAME, "Better stay clear of that fire, I don't think it likes the look of you", STERN_TEXT_COLOR), DEFAULT_MEDIUM_TEXT_SPEED)
+        call cine.AddMessage(null, GetEDWSpeakerMessage(PRIMARY_SPEAKER_NAME, "Better stay clear of that fire, I don't think it likes the look of you", DEFAULT_TEXT_COLOR), DEFAULT_MEDIUM_TEXT_SPEED)
         call l.AddCinematic(cine)
                 
         set cineMsg = CinemaMessage.create(null, GetEDWSpeakerMessage(PRIMARY_SPEAKER_NAME, "Nice!", HAPPY_TEXT_COLOR), DEFAULT_TINY_TEXT_SPEED)
@@ -263,7 +264,7 @@ library GameStart initializer Init requires Levels, EDWVisualVote, UnitGlobals, 
         //call l.SetStartables(startables)
         
         //LEVEL 2
-        set l = Levels_Level.create(10, "Jesus on the Wheel", 6, 4, "IW2Start", "IW2Stop", gg_rct_IWR_2_1, gg_rct_IW2_Vision, gg_rct_IW1_End, l)
+        set l = Levels_Level.create(10, "Jesus on Wheel", 6, 4, "IW2Start", "IW2Stop", gg_rct_IWR_2_1, gg_rct_IW2_Vision, gg_rct_IW1_End, l)
         call l.AddCheckpoint(gg_rct_IWCP_2_1, gg_rct_IWR_2_2)
         call l.AddCheckpoint(gg_rct_IWCP_2_2, gg_rct_IWR_2_3)
         
@@ -281,7 +282,7 @@ library GameStart initializer Init requires Levels, EDWVisualVote, UnitGlobals, 
         set l.Content.Startables = startables
         
         //LEVEL 3
-        set l = Levels_Level.create(17, "Illidan Goes Skiing", 6, 8, "IW3Start", "IW3Stop", gg_rct_IWR_3_1, gg_rct_IW3_Vision, gg_rct_IW2_End, l)
+        set l = Levels_Level.create(17, "Illidan Goes Skiing", 8, 8, "IW3Start", "IW3Stop", gg_rct_IWR_3_1, gg_rct_IW3_Vision, gg_rct_IW2_End, l)
         call l.AddCheckpoint(gg_rct_IWCP_3_1, gg_rct_IWR_3_2)
         call l.AddCheckpoint(gg_rct_IWCP_3_2, gg_rct_IWR_3_3)
         call l.AddCheckpoint(gg_rct_IWCP_3_3, gg_rct_IWR_3_4)
@@ -292,7 +293,7 @@ library GameStart initializer Init requires Levels, EDWVisualVote, UnitGlobals, 
         set l.Content.Startables = startables
         
         //LEVEL 4
-        set l = Levels_Level.create(24, "Hard Angles", 4, 6, "IW4Start", "IW4Stop", gg_rct_IWR_4_1, gg_rct_IW4_Vision, gg_rct_IW3_End, l)
+        set l = Levels_Level.create(24, "Hard Angles", 6, 6, "IW4Start", "IW4Stop", gg_rct_IWR_4_1, gg_rct_IW4_Vision, gg_rct_IW3_End, l)
         set cpID = l.AddCheckpoint(gg_rct_IWCP_4_1, gg_rct_IWR_4_2)
         set l.CPColors[cpID] = KEY_RED
         call l.AddCheckpoint(gg_rct_IWCP_4_2, gg_rct_IWR_4_3)
@@ -333,7 +334,7 @@ library GameStart initializer Init requires Levels, EDWVisualVote, UnitGlobals, 
         set l.Content.Startables = startables
         
         //LEVEL 5
-        set l = Levels_Level.create(31, "This Levels a Mess", 4, 4, "IW5Start", "IW5Stop", gg_rct_IWR_5_1, gg_rct_IW5_Vision, gg_rct_IW4_End, l)
+        set l = Levels_Level.create(31, "TODO SHIIIIT", 4, 4, "IW5Start", "IW5Stop", gg_rct_IWR_5_1, gg_rct_IW5_Vision, gg_rct_IW4_End, l)
         call l.AddCheckpoint(gg_rct_IWCP_5_1, gg_rct_IWR_5_2)
         
         set startables = SimpleList_List.create()
