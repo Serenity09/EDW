@@ -1,6 +1,6 @@
 library InGameCommands initializer init requires MazerGlobals, Platformer
 globals
-	trigger tInGameCommands
+
 endglobals
 
 function ExportPlatformingVariables takes Platformer p returns nothing
@@ -138,88 +138,84 @@ function ParseCommand takes nothing returns nothing
         set val = S2R(SubString(msg, i + 1, strLength))
         set intVal = R2I(val)
 	endif
-        
-	//debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "msg: " + msg + " cmd: " + cmd + " val: " + R2S(val))
-	if cmd == "tvy" then
-		set p.TerminalVelocityY = val
-	//elseif cmd == "tvf" then
-		//set p.TerminalFalloff = val
-	elseif cmd == "xf" then
-		set p.XFalloff = val
-	elseif cmd == "yf" then
-		set p.YFalloff = val
-	elseif cmd == "ms" then
-		set p.MoveSpeed = val
-	elseif cmd == "msoff" then
-		set p.MoveSpeedVelOffset = val
-	elseif cmd == "ga" then
-		set p.GravitationalAccel = val
-	elseif cmd == "vj" then
-		set p.vJumpSpeed = val
-	elseif cmd == "hj" then
-		set p.hJumpSpeed = val
-	elseif cmd == "v2h" then
-		set p.v2hJumpRatio = val
-	elseif cmd == "om" then
-		set PlatformerOcean_OCEAN_MOTION = val
-	elseif cmd == "ovj" then
-		set JUMPHEIGHTINOCEAN = val
-	elseif cmd == "iss" then
-		set PlatformerIce_SLOW_VELOCITY = val
-	elseif cmd == "ifs" then
-		set PlatformerIce_FAST_VELOCITY = val
-    elseif cmd == "distance" or cmd == "dist" then
-        set unitgroup = CreateGroup()
-        call GroupEnumUnitsSelected(unitgroup, Player(pID), null)
-        call ForGroup(unitgroup, function DistanceCallback)
-        call DestroyGroup(unitgroup)
-        set unitgroup = null
-    elseif cmd == "debugrelay" or cmd == "dbgrelay" then
-        set unitgroup = CreateGroup()
-        call GroupEnumUnitsSelected(unitgroup, Player(pID), null)
-        call ForGroup(unitgroup, function RelayCallback)
-        call DestroyGroup(unitgroup)
-        set unitgroup = null
-	elseif cmd == "level" or cmd == "lvl" then
-		if Levels_Levels[intVal] != null then
-			call Levels_Levels[team.OnLevel].SwitchLevels(team, Levels_Levels[intVal])
-		endif
-	elseif cmd == "checkpoint" or cmd == "cp" then
-		if Levels_Levels[team.OnLevel].CPCount > intVal and intVal >= 0 then
-			call Levels_Levels[team.OnLevel].SetCheckpointForTeam(team, intVal)
-			
-			//call DisplayTextToForce(bj_FORCE_PLAYER[0], "Final -- check active x: " + R2S(GetUnitX(User(1).ActiveUnit)) + ", y: " + R2S(GetUnitY(User(1).ActiveUnit)))
-		endif
-	elseif cmd == "help" or cmd == "h" then
-		call PrintPlatformingVariables(p)
-	elseif cmd == "status" or cmd == "s" then
-		call PrintPlatformingCurrentValues(p)
-	elseif msg == "-prof" or  cmd == "prof" then
-		call PrintPlatformingProfileVariables(p)
-	elseif msg == "-export" or  cmd == "export" then
-		call ExportPlatformingVariables(p)
-	elseif msg == "-mem" or cmd == "mem" then
-		call PrintMemoryAnalysis(p.PID)
-	elseif cmd == "testpocean" or cmd == "tpo" then
-		call team.MoveRevive(gg_rct_Region_380)
-		set team.DefaultGameMode = Teams_GAMEMODE_PLATFORMING
-		call team.RespawnTeamAtRect(gg_rct_Region_380, true)
-		
-		debug call DisplayTextToForce(bj_FORCE_PLAYER[pID], "Finished setting up plat test")
-	elseif cmd == "testpice" or cmd == "tpi" then
-		call team.MoveRevive(gg_rct_SboxIceR)
-		set team.DefaultGameMode = Teams_GAMEMODE_PLATFORMING
-		call team.RespawnTeamAtRect(gg_rct_SboxIceR, true)
-		
-		debug call DisplayTextToForce(bj_FORCE_PLAYER[pID], "Finished setting up plat test")
-	elseif cmd == "pause" or cmd == "p" then
-		if u.GameMode == Teams_GAMEMODE_STANDARD or u.GameMode == Teams_GAMEMODE_PLATFORMING then
-			call u.Pause(true)
-		elseif u.GameMode == Teams_GAMEMODE_STANDARD_PAUSED or u.GameMode == Teams_GAMEMODE_PLATFORMING_PAUSED then
-			call u.Pause(false)
-		endif
-	endif
     
+	if CONFIGURATION_PROFILE != RELEASE then
+		//debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "msg: " + msg + " cmd: " + cmd + " val: " + R2S(val))
+		if cmd == "tvy" then
+			set p.TerminalVelocityY = val
+		//elseif cmd == "tvf" then
+			//set p.TerminalFalloff = val
+		elseif cmd == "xf" then
+			set p.XFalloff = val
+		elseif cmd == "yf" then
+			set p.YFalloff = val
+		elseif cmd == "ms" then
+			set p.MoveSpeed = val
+		elseif cmd == "msoff" then
+			set p.MoveSpeedVelOffset = val
+		elseif cmd == "ga" then
+			set p.GravitationalAccel = val
+		elseif cmd == "vj" then
+			set p.vJumpSpeed = val
+		elseif cmd == "hj" then
+			set p.hJumpSpeed = val
+		elseif cmd == "v2h" then
+			set p.v2hJumpRatio = val
+		elseif cmd == "om" then
+			set PlatformerOcean_OCEAN_MOTION = val
+		elseif cmd == "ovj" then
+			set JUMPHEIGHTINOCEAN = val
+		elseif cmd == "iss" then
+			set PlatformerIce_SLOW_VELOCITY = val
+		elseif cmd == "ifs" then
+			set PlatformerIce_FAST_VELOCITY = val
+		elseif cmd == "distance" or cmd == "dist" then
+			set unitgroup = CreateGroup()
+			call GroupEnumUnitsSelected(unitgroup, Player(pID), null)
+			call ForGroup(unitgroup, function DistanceCallback)
+			call DestroyGroup(unitgroup)
+			set unitgroup = null
+		elseif cmd == "level" or cmd == "lvl" then
+			if Levels_Levels[intVal] != null then
+				call Levels_Levels[team.OnLevel].SwitchLevels(team, Levels_Levels[intVal])
+			endif
+		elseif cmd == "checkpoint" or cmd == "cp" then
+			if Levels_Levels[team.OnLevel].CPCount > intVal and intVal >= 0 then
+				call Levels_Levels[team.OnLevel].SetCheckpointForTeam(team, intVal)
+				
+				//call DisplayTextToForce(bj_FORCE_PLAYER[0], "Final -- check active x: " + R2S(GetUnitX(User(1).ActiveUnit)) + ", y: " + R2S(GetUnitY(User(1).ActiveUnit)))
+			endif
+		elseif cmd == "help" or cmd == "h" then
+			call PrintPlatformingVariables(p)
+		elseif cmd == "status" or cmd == "s" then
+			call PrintPlatformingCurrentValues(p)
+		elseif msg == "-prof" or  cmd == "prof" then
+			call PrintPlatformingProfileVariables(p)
+		elseif msg == "-export" or  cmd == "export" then
+			call ExportPlatformingVariables(p)
+		elseif msg == "-mem" or cmd == "mem" then
+			call PrintMemoryAnalysis(p.PID)
+		elseif cmd == "testpocean" or cmd == "tpo" then
+			call team.MoveRevive(gg_rct_Region_380)
+			set team.DefaultGameMode = Teams_GAMEMODE_PLATFORMING
+			call team.RespawnTeamAtRect(gg_rct_Region_380, true)
+			
+			debug call DisplayTextToForce(bj_FORCE_PLAYER[pID], "Finished setting up plat test")
+		elseif cmd == "testpice" or cmd == "tpi" then
+			call team.MoveRevive(gg_rct_SboxIceR)
+			set team.DefaultGameMode = Teams_GAMEMODE_PLATFORMING
+			call team.RespawnTeamAtRect(gg_rct_SboxIceR, true)
+			
+			debug call DisplayTextToForce(bj_FORCE_PLAYER[pID], "Finished setting up plat test")
+		elseif cmd == "pause" or cmd == "p" then
+			if u.GameMode == Teams_GAMEMODE_STANDARD or u.GameMode == Teams_GAMEMODE_PLATFORMING then
+				call u.Pause(true)
+			elseif u.GameMode == Teams_GAMEMODE_STANDARD_PAUSED or u.GameMode == Teams_GAMEMODE_PLATFORMING_PAUSED then
+				call u.Pause(false)
+			endif
+		endif
+    endif
+	
     if cmd == "track" or cmd == "t" or cmd == "follow" or cmd == "f" then
         call ToggleDefaultTracking(p.PID)
     endif
@@ -230,15 +226,17 @@ endfunction
 private function init takes nothing returns nothing
     local integer i = 0
     //local trigger t = CreateTrigger()
-    set tInGameCommands = CreateTrigger()
+    local trigger t = CreateTrigger()
     
     loop
-        call TriggerRegisterPlayerChatEvent(tInGameCommands, Player(i), "-", false )
+        call TriggerRegisterPlayerChatEvent(t, Player(i), "-", false )
         //call TriggerRegisterPlayerChatEvent( t, Player(i), "!", false )
     set i = i + 1
     exitwhen i >= 8
     endloop
     
-    call TriggerAddAction(tInGameCommands, function ParseCommand)
+    call TriggerAddAction(t, function ParseCommand)
+	
+	set t = null
 endfunction
 endlibrary

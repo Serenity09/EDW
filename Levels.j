@@ -392,7 +392,7 @@ library Levels initializer Init requires SimpleList, Teams, GameModesGlobals, Ci
 				set mt.ContinueCount = rolloverContinues + nextLevelContinues
 				
 				//call mt.PrintMessage("Starting level " + ColorMessage(nextLevel.Name, SPEAKER_COLOR) + "!")
-				call mt.PrintMessage("You kept " + ColorMessage(I2S(rolloverContinues), SPEAKER_COLOR) + " of your " + ColorMessage(I2S(originalContinues), SPEAKER_COLOR) + " continues, and gained " + ColorMessage(I2S(nextLevelContinues), HAPPY_TEXT_COLOR) + " extra continues to boot")
+				call mt.PrintMessage("You kept " + ColorMessage(I2S(rolloverContinues), SPEAKER_COLOR) + " of your " + ColorMessage(I2S(originalContinues), SPEAKER_COLOR) + " continues, and gained " + ColorMessage(I2S(nextLevelContinues), SPEAKER_COLOR) + " extra continues to boot")
 			endif
             
             call nextLevel.ActiveTeams.add(mt)
@@ -448,7 +448,9 @@ library Levels initializer Init requires SimpleList, Teams, GameModesGlobals, Ci
                 endif
 				
 				//call mt.PrintMessage("Cleared level " + ColorMessage(curLevel.Name, SPEAKER_COLOR) + "!")
-				call mt.PrintMessage("Your score has increased by " + ColorMessage(I2S(score), HAPPY_TEXT_COLOR))
+				if score > 0 then
+					call mt.PrintMessage("Your score has increased by " + ColorMessage(I2S(score), SPEAKER_COLOR))
+				endif
 				
 				set mt.Score = mt.Score + score
                 

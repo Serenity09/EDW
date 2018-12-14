@@ -139,6 +139,7 @@ library MazerGlobals initializer Init requires GameGlobalConstants, ContinueGlob
 				
 				set PlayerReviveCircles[i] = CreateUnit(Player(i), TEAM_REVIVE_UNIT_ID, MazerGlobals_REVIVE_CIRCLE_SAFE_X, MazerGlobals_REVIVE_CIRCLE_SAFE_Y, 0)
                 call AddUnitLocust(PlayerReviveCircles[i])
+				call ShowUnit(PlayerReviveCircles[i], false)
                 
                 //call AddUnitLocust(MazersArray[i])
                 call SetUnitInvulnerable(MazersArray[i], false)

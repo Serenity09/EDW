@@ -10,7 +10,8 @@ endlibrary
 library ConfigurationModeInitializer initializer init requires ConfigurationMode, InGameCommands	
 	private function init takes nothing returns nothing
 		if CONFIGURATION_PROFILE == RELEASE then
-			call DisableTrigger(tInGameCommands)
+			//call DisableTrigger(tInGameCommands)
 		endif
+		
 	endfunction
 endlibrary

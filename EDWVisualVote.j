@@ -8,7 +8,7 @@ library EDWVisualVote requires VisualVote, ContinueGlobals, Teams, PlayerUtils, 
     endglobals
     
     public function GetFirstLevel takes nothing returns Levels_Level
-        if DEBUG_MODE then
+        if DEBUG_MODE or CONFIGURATION_PROFILE != RELEASE then
             //3 == first ice level
             //24/31 == last ice levels
             //9 == first platforming level
