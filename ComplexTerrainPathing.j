@@ -30,7 +30,9 @@ globals
     public vector2 NE_UnitVector
     public vector2 SE_UnitVector
     public vector2 SW_UnitVector
-    public vector2 NW_UnitVector    
+    public vector2 NW_UnitVector
+	
+	private constant boolean DEBUG_UNNATURAL_NE = true
 endglobals
 
 //returns a vector that represents the orthogonal to a pathing map
@@ -163,6 +165,10 @@ struct ComplexTerrainPathingResult extends array
     //public real OriginPointY
     //public real DestinationPointX
     //public real DestinationPointY
+	
+	public method Print takes nothing returns nothing
+		call DisplayTextToForce(bj_FORCE_PLAYER[0], "Pathing: " + I2S(.TerrainPathingForPoint) + ", Quadrant " + I2S(.QuadrantForPoint))
+	endmethod
     
     public static method CreateSimple takes integer pathingType, real terrainMidX, real terrainMidY returns thistype
         local thistype new 
@@ -389,7 +395,11 @@ public function GetPathingForPoint takes real x, real y returns ComplexTerrainPa
                                 //call CreateUnit(Player(2), 'etst', x, y, 6)
                                 //returns invalid combination, so project to the nearest valid side of same tile
                                 //return ComplexTerrainPathingResult.CreateComplex(ComplexTerrainPathing_NE, terrainCenterX, terrainCenterY, ComplexTerrainPathing_SE, ttype, ttype)
-                                return ComplexTerrainPathingResult.CreateComplex(ComplexTerrainPathing_NE, terrainCenterX, terrainCenterY, ComplexTerrainPathing_NE, ttype, ttype) //extends from NE corner
+                                static if DEBUG_UNNATURAL_NE then
+									call DisplayTextToForce(bj_FORCE_PLAYER[0], "Entered unnatural diagonal 1")
+								endif
+								
+								return ComplexTerrainPathingResult.CreateComplex(ComplexTerrainPathing_NE, terrainCenterX, terrainCenterY, ComplexTerrainPathing_NE, ttype, ttype) //extends from NE corner
                             else
                                 return ComplexTerrainPathingResult.CreateComplex(ComplexTerrainPathing_SW, terrainCenterX, terrainCenterY, ComplexTerrainPathing_SW, ttype, ttype) //extends from SW corner
                             endif
@@ -404,7 +414,11 @@ public function GetPathingForPoint takes real x, real y returns ComplexTerrainPa
                             //debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "y: " + R2S(y - terrainCenterY + 64) + " x: " + R2S(x - terrainCenterX)) 
                             if y - terrainCenterY >= -x + terrainCenterX then
                                 //call CreateUnit(Player(3), 'etst', x, y, 6)
-                                return ComplexTerrainPathingResult.CreateComplex(ComplexTerrainPathing_NE, terrainCenterX, terrainCenterY, ComplexTerrainPathing_NE, ttype, ttype) //extends from NE corner
+								static if DEBUG_UNNATURAL_NE then
+									call DisplayTextToForce(bj_FORCE_PLAYER[0], "Entered unnatural diagonal 2")
+								endif
+								
+                                return ComplexTerrainPathingResult.CreateComplex(ComplexTerrainPathing_NE, terrainCenterX + TERRAIN_TILE_SIZE, terrainCenterY, ComplexTerrainPathing_SW, ttype, ttype) //extends from NE corner
                             else
                                 return ComplexTerrainPathingResult.CreateSimple(ComplexTerrainPathing_Inside, terrainCenterX, terrainCenterY) //inside triangle piece
                             endif
@@ -463,7 +477,11 @@ public function GetPathingForPoint takes real x, real y returns ComplexTerrainPa
                             //debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "between, y: " + R2S(y - terrainCenterY) + " x: " + R2S(x - terrainCenterX))
                             if y - terrainCenterY >= -1 * (x - terrainCenterX) then //which side of the diagonal the point is on simplifies to this when diagonal passes through terrainCenter
                                 //call CreateUnit(Player(4), 'etst', x, y, 6)
-                                return ComplexTerrainPathingResult.CreateComplex(ComplexTerrainPathing_NE, terrainCenterX, terrainCenterY, ComplexTerrainPathing_NE, ttype, ttype) //extends from NE corner
+								static if DEBUG_UNNATURAL_NE then
+									call DisplayTextToForce(bj_FORCE_PLAYER[0], "Entered unnatural diagonal 3")
+								endif
+								
+                                return ComplexTerrainPathingResult.CreateComplex(ComplexTerrainPathing_NE, terrainCenterX, terrainCenterY + TERRAIN_TILE_SIZE, ComplexTerrainPathing_SW, ttype, ttype) //extends from NE corner
                             else
                                 return ComplexTerrainPathingResult.CreateComplex(ComplexTerrainPathing_SW, terrainCenterX, terrainCenterY, ComplexTerrainPathing_SW, ttype, ttype) //extends from SW corner
                             endif
@@ -522,7 +540,10 @@ public function GetPathingForPoint takes real x, real y returns ComplexTerrainPa
                             //debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "y: " + R2S(y - terrainCenterY) + " x: " + R2S(x - terrainCenterX)) 
                             if y - terrainCenterY >= -x + terrainCenterX then
                                 //call CreateUnit(Player(5), 'etst', x, y, 6)
-                                return ComplexTerrainPathingResult.CreateComplex(ComplexTerrainPathing_NE, terrainCenterX, terrainCenterY, ComplexTerrainPathing_NE, ttype, ttype) //extends from NE corner
+								static if DEBUG_UNNATURAL_NE then
+									call DisplayTextToForce(bj_FORCE_PLAYER[0], "Entered unnatural diagonal 4")
+								endif
+                                return ComplexTerrainPathingResult.CreateComplex(ComplexTerrainPathing_NE, terrainCenterX, terrainCenterY + TERRAIN_TILE_SIZE, ComplexTerrainPathing_SW, ttype, ttype) //extends from NE corner
                             else
                                 return ComplexTerrainPathingResult.CreateSimple(ComplexTerrainPathing_Inside, terrainCenterX, terrainCenterY) //inside triangle piece
                             endif

@@ -14,7 +14,7 @@ library EDWVisualVote requires VisualVote, ContinueGlobals, Teams, PlayerUtils, 
             //9 == first platforming level
             
             //66 == debug platform testing
-            return Levels_Levels[7]
+            return Levels_Levels[23]
             //return Levels_Levels[23]
         else
             return Levels_Levels[1]
