@@ -425,7 +425,7 @@ library GameStart initializer Init requires Levels, EDWVisualVote, UnitGlobals, 
         set startables = SimpleList_List.create()
         set l.Content.Startables = startables
         
-        call startables.add(SimpleGenerator.create(gg_rct_PW3_MassCreate, 'e00K', 1.5, 180, 17, 100))
+        call startables.add(SimpleGenerator.create(gg_rct_PW3_MassCreate, 'e00K', 1.25, 180, 17, 100))
         
         /*
         set wheel = Wheel.create(-2904, -6765)

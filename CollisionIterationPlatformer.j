@@ -313,7 +313,7 @@ private function CollisionIter2 takes nothing returns nothing
                 set pu = null
                 set cu = null
                 return
-            elseif cuID == ICETROLL and dist < 58 then
+            elseif cuID == ICETROLL and dist < 56 then
                 call CollisionDeathEffect(pu)
                 
                 call p.KillPlatformer()

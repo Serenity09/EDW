@@ -155,7 +155,7 @@ private function CollisionMediumIter takes nothing returns nothing
                 set mu = null
                 set cu = null
                 return
-            elseif cuTypeID == ICETROLL and dist < 58 then
+            elseif cuTypeID == ICETROLL and dist < 60 and not MobImmune[pID] then  //TERRAIN_QUADRANT_SIZE - 4
                 call CollisionDeathEffect(mu)
                 
                 call User(pID).SwitchGameModesDefaultLocation(Teams_GAMEMODE_DYING)
