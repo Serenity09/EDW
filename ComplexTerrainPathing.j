@@ -32,7 +32,12 @@ globals
     public vector2 SW_UnitVector
     public vector2 NW_UnitVector
 	
-	private constant boolean DEBUG_UNNATURAL_NE = true
+	private constant boolean DEBUG_NATURAL = false
+	
+	private constant boolean DEBUG_UNNATURAL_NE = false
+	private constant boolean DEBUG_UNNATURAL_NW = false
+	private constant boolean DEBUG_UNNATURAL_SW = false
+	private constant boolean DEBUG_UNNATURAL_SE = false
 endglobals
 
 //returns a vector that represents the orthogonal to a pathing map
@@ -263,6 +268,9 @@ public function GetPathingForPoint takes real x, real y returns ComplexTerrainPa
     local integer ttype
     local integer ttypeX
     local integer ttypeY
+	
+	local real relX
+	local real relY
 
     //get the center coordinates for the tile containing (x,y)
     /*
@@ -289,7 +297,9 @@ public function GetPathingForPoint takes real x, real y returns ComplexTerrainPa
         set terrainCenterY = R2I((y - 63.499) / 128.) * 128.
     endif
     
-    
+    set relX = x - terrainCenterX
+	set relY = y - terrainCenterY
+	
     //the order terrain is checked in is to optimize for the following assumptions:
     //majority of the usable map will be open space
     //followed by square blocks
@@ -299,7 +309,7 @@ public function GetPathingForPoint takes real x, real y returns ComplexTerrainPa
     
     //this is a very expensive function and its called every physics loop per player, so evaluation order should be kept relevent to the map contents
     
-    set ttype = GetTerrainType(x, y)
+    set ttype = GetTerrainType(terrainCenterX, terrainCenterY)
     
     if TerrainGlobals_IsTerrainPathable(ttype) then
         //step 1: figure out which diagonal we need to check
@@ -309,16 +319,16 @@ public function GetPathingForPoint takes real x, real y returns ComplexTerrainPa
         if x >= terrainCenterX and y >= terrainCenterY then
             //debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "3, y: " + R2S(y - terrainCenterY - 64) + " x: " + R2S(x - terrainCenterX)) 
             //checking for diagonal ID 3
-            set ttypeX = GetTerrainType(x + TERRAIN_QUADRANT_SIZE, y)
-            set ttypeY = GetTerrainType(x, y + TERRAIN_QUADRANT_SIZE)
+            set ttypeX = GetTerrainType(terrainCenterX + TERRAIN_TILE_SIZE, terrainCenterY)
+            set ttypeY = GetTerrainType(terrainCenterX, terrainCenterY + TERRAIN_TILE_SIZE)
             if TerrainGlobals_IsTerrainDiagonal(ttypeX) and TerrainGlobals_IsTerrainDiagonal(ttypeY) and (y - terrainCenterY - 64 >= -x + terrainCenterX) then
                 return ComplexTerrainPathingResult.CreateComplex(ComplexTerrainPathing_SW, terrainCenterX, terrainCenterY, ComplexTerrainPathing_NE, ttypeX, ttypeY)
             endif
         elseif x < terrainCenterX and y < terrainCenterY then
             //checking for diagonal ID 1
             //debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "1, y: " + R2S(y - terrainCenterY) + " x: " + R2S(x - terrainCenterX + 64)) 
-            set ttypeX = GetTerrainType(x - TERRAIN_QUADRANT_SIZE, y)
-            set ttypeY = GetTerrainType(x, y - TERRAIN_QUADRANT_SIZE)
+            set ttypeX = GetTerrainType(terrainCenterX - TERRAIN_TILE_SIZE, terrainCenterY)
+            set ttypeY = GetTerrainType(terrainCenterX, terrainCenterY - TERRAIN_TILE_SIZE)
             if TerrainGlobals_IsTerrainDiagonal(ttypeX) and TerrainGlobals_IsTerrainDiagonal(ttypeY) and (y - terrainCenterY <= -x + terrainCenterX - 64) then
                 //call CreateUnit(Player(0), 'etst', x, y, 6)
                 return ComplexTerrainPathingResult.CreateComplex(ComplexTerrainPathing_NE, terrainCenterX, terrainCenterY, ComplexTerrainPathing_SW, ttypeX, ttypeY)
@@ -326,16 +336,16 @@ public function GetPathingForPoint takes real x, real y returns ComplexTerrainPa
         elseif x >= terrainCenterX then //y < terrainCenterY
             //checking for diagonal ID 4
             //debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "4, y: " + R2S(y - terrainCenterY + 64) + " x: " + R2S(x - terrainCenterX)) 
-            set ttypeX = GetTerrainType(x + TERRAIN_QUADRANT_SIZE, y)
-            set ttypeY = GetTerrainType(x, y - TERRAIN_QUADRANT_SIZE)
+            set ttypeX = GetTerrainType(terrainCenterX + TERRAIN_TILE_SIZE, terrainCenterY)
+            set ttypeY = GetTerrainType(terrainCenterX, terrainCenterY - TERRAIN_TILE_SIZE)
             if TerrainGlobals_IsTerrainDiagonal(ttypeX) and TerrainGlobals_IsTerrainDiagonal(ttypeY) and ((y - terrainCenterY + 64) <= (x - terrainCenterX)) then
                 return ComplexTerrainPathingResult.CreateComplex(ComplexTerrainPathing_NW, terrainCenterX, terrainCenterY, ComplexTerrainPathing_SE, ttypeX, ttypeY)
             endif
         else //x < terrainCenterX and y >= terrainCenterY
             //checking for diagonal ID 2
             //debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "4, y: " + R2S(y - terrainCenterY) + " x: " + R2S(x - terrainCenterX + 64)) 
-            set ttypeX = GetTerrainType(x - TERRAIN_QUADRANT_SIZE, y)
-            set ttypeY = GetTerrainType(x, y + TERRAIN_QUADRANT_SIZE)
+            set ttypeX = GetTerrainType(terrainCenterX - TERRAIN_TILE_SIZE, terrainCenterY)
+            set ttypeY = GetTerrainType(terrainCenterX, terrainCenterY + TERRAIN_TILE_SIZE)
             if TerrainGlobals_IsTerrainDiagonal(ttypeX) and TerrainGlobals_IsTerrainDiagonal(ttypeY) and ((y - terrainCenterY) >= (x - terrainCenterX + 64)) then
                 return ComplexTerrainPathingResult.CreateComplex(ComplexTerrainPathing_SE, terrainCenterX, terrainCenterY, ComplexTerrainPathing_NW, ttypeX, ttypeY)
             endif
@@ -353,247 +363,130 @@ public function GetPathingForPoint takes real x, real y returns ComplexTerrainPa
         //step 3: see if (x,y) is within any of those diagonals
         //step 4: return the diagonal ID (x,y) is within (0 for none)
         
-        if x >= terrainCenterX then
-            //either way we are going to check the terrain directly right to see if it's pathable
-            set ttypeX = GetTerrainType(x + TERRAIN_QUADRANT_SIZE, y)
-            if TerrainGlobals_IsTerrainPathable(ttypeX) then
-                if y >= terrainCenterY then
-                    set ttypeY = GetTerrainType(x, y + TERRAIN_QUADRANT_SIZE)
-                    if TerrainGlobals_IsTerrainPathable(ttypeY) then
-                        if TerrainGlobals_IsTerrainDiagonal(GetTerrainType(x + TERRAIN_QUADRANT_SIZE, y + TERRAIN_QUADRANT_SIZE)) then
-                            //debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "between, y: " + R2S(y - terrainCenterY) + " x: " + R2S(x - terrainCenterX))
-                            if y - terrainCenterY >= x - terrainCenterX then //which side of the diagonal the point is on simplifies to this when diagonal passes through terrainCenter
-                                return ComplexTerrainPathingResult.CreateComplex(ComplexTerrainPathing_NW, terrainCenterX, terrainCenterY, ComplexTerrainPathing_NW, ttype, ttype) //extends from NW corner
-                            else
-                                return ComplexTerrainPathingResult.CreateComplex(ComplexTerrainPathing_SE, terrainCenterX, terrainCenterY, ComplexTerrainPathing_SE, ttype, ttype) //extends from SE corner
-                            endif
-                        else //type for (right, below) irrelevant
-                            //debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "y: " + R2S(y - terrainCenterY - 64) + " x: " + R2S(x - terrainCenterX)) 
-                            if y - terrainCenterY - TERRAIN_QUADRANT_SIZE <= -1 * (x - terrainCenterX)  then //check if within NE corner
-                                //call CreateUnit(Player(1), 'etst', x, y, 6)
-                                return ComplexTerrainPathingResult.CreateComplex(ComplexTerrainPathing_NE, terrainCenterX, terrainCenterY, ComplexTerrainPathing_NE, ttype, ttype) //point is in/extends from NE corner
-                            endif
-                        endif
-                    else //x >= terrainCenterX, y >= terrainCenterY, right pathable, above unpathable
-                        if TerrainGlobals_IsTerrainDiagonal(GetTerrainType(x + TERRAIN_QUADRANT_SIZE, y + TERRAIN_QUADRANT_SIZE)) then
-                            if y - terrainCenterY < x - terrainCenterX then
-                                return ComplexTerrainPathingResult.CreateComplex(ComplexTerrainPathing_SE, terrainCenterX, terrainCenterY, ComplexTerrainPathing_SE, ttype, ttype) //extends from NE corner
-                            else
-                                return ComplexTerrainPathingResult.CreateSimple(ComplexTerrainPathing_Inside, terrainCenterX, terrainCenterY) //inside triangle piece
-                            endif
-                        else
-                            return ComplexTerrainPathingResult.CreateComplex(ComplexTerrainPathing_Right, terrainCenterX, terrainCenterY, ComplexTerrainPathing_NE, ttype, 0) //vertical diagonal
-                        endif
-                    endif
-                else //x>= terrainCenterX, y < terrainCenterY
-                    //debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "south east")
-                    set ttypeY = GetTerrainType(x, y - TERRAIN_QUADRANT_SIZE)
-                    if TerrainGlobals_IsTerrainPathable(ttypeY) then
-                        if TerrainGlobals_IsTerrainDiagonal(GetTerrainType(x + TERRAIN_QUADRANT_SIZE, y - TERRAIN_QUADRANT_SIZE)) then
-                            //debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "between, y: " + R2S(y - terrainCenterY) + " x: " + R2S(-x + terrainCenterX))
-                            if y - terrainCenterY >= -x + terrainCenterX then //which side of the diagonal the point is on simplifies to this when diagonal passes through terrainCenter
-                                //call CreateUnit(Player(2), 'etst', x, y, 6)
-                                //returns invalid combination, so project to the nearest valid side of same tile
-                                //return ComplexTerrainPathingResult.CreateComplex(ComplexTerrainPathing_NE, terrainCenterX, terrainCenterY, ComplexTerrainPathing_SE, ttype, ttype)
-                                static if DEBUG_UNNATURAL_NE then
-									call DisplayTextToForce(bj_FORCE_PLAYER[0], "Entered unnatural diagonal 1")
-								endif
-								
-								return ComplexTerrainPathingResult.CreateComplex(ComplexTerrainPathing_NE, terrainCenterX, terrainCenterY, ComplexTerrainPathing_NE, ttype, ttype) //extends from NE corner
-                            else
-                                return ComplexTerrainPathingResult.CreateComplex(ComplexTerrainPathing_SW, terrainCenterX, terrainCenterY, ComplexTerrainPathing_SW, ttype, ttype) //extends from SW corner
-                            endif
-                        else //type for (right, below) irrelevant
-                            //debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "y: " + R2S(y - terrainCenterY + 64) + " x: " + R2S(x - terrainCenterX)) 
-                            if y - terrainCenterY + TERRAIN_QUADRANT_SIZE >= x - terrainCenterX  then //check if within NE corner
-                                return ComplexTerrainPathingResult.CreateComplex(ComplexTerrainPathing_SE, terrainCenterX, terrainCenterY, ComplexTerrainPathing_SE, ttype, ttype) //point is in/extends from NE corner
-                            endif
-                        endif
-                    else //x >= terrainCenterX, y < terrainCenterY, right pathable, below unpathable
-                        if TerrainGlobals_IsTerrainDiagonal(GetTerrainType(x + TERRAIN_QUADRANT_SIZE, y - TERRAIN_QUADRANT_SIZE)) then
-                            //debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "y: " + R2S(y - terrainCenterY + 64) + " x: " + R2S(x - terrainCenterX)) 
-                            if y - terrainCenterY >= -x + terrainCenterX then
-                                //call CreateUnit(Player(3), 'etst', x, y, 6)
-								static if DEBUG_UNNATURAL_NE then
-									call DisplayTextToForce(bj_FORCE_PLAYER[0], "Entered unnatural diagonal 2")
-								endif
-								
-                                return ComplexTerrainPathingResult.CreateComplex(ComplexTerrainPathing_NE, terrainCenterX + TERRAIN_TILE_SIZE, terrainCenterY, ComplexTerrainPathing_SW, ttype, ttype) //extends from NE corner
-                            else
-                                return ComplexTerrainPathingResult.CreateSimple(ComplexTerrainPathing_Inside, terrainCenterX, terrainCenterY) //inside triangle piece
-                            endif
-                        else
-                            return ComplexTerrainPathingResult.CreateComplex(ComplexTerrainPathing_Right, terrainCenterX, terrainCenterY, ComplexTerrainPathing_SE, ttype, 0) //vertical diagonal
-                        endif
-                    endif
-                endif
-            else //x >= terrainCenterX, right not pathable
-                if y >= terrainCenterY then //x >= terrainCenterX, y >= terrainCenterY, right not pathable
-                    set ttypeY = GetTerrainType(x, y + TERRAIN_QUADRANT_SIZE)
-                    if TerrainGlobals_IsTerrainPathable(ttypeY) then
-                        //check if this is a horizontal or diagonal                    
-                        if TerrainGlobals_IsTerrainDiagonal(GetTerrainType(x + TERRAIN_QUADRANT_SIZE, y + TERRAIN_QUADRANT_SIZE)) then
-                            //see which side of diagonal point falls on
-                            //debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "y: " + R2S(y - terrainCenterY) + " x: " + R2S(x - terrainCenterX)) 
-                            if y - terrainCenterY >= x - terrainCenterX then
-                                return ComplexTerrainPathingResult.CreateComplex(ComplexTerrainPathing_NW, terrainCenterX, terrainCenterY, ComplexTerrainPathing_NW, ttype, ttype) //extends from NE corner
-                            else
-                                return ComplexTerrainPathingResult.CreateSimple(ComplexTerrainPathing_Inside, terrainCenterX, terrainCenterY) //inside triangle piece
-                            endif
-                        else
-                            return ComplexTerrainPathingResult.CreateComplex(ComplexTerrainPathing_Top, terrainCenterX, terrainCenterY, ComplexTerrainPathing_NE, 0, ttype)
-                        endif
-                    else //x >= terrainCenterX, y >= terrainCenterY, right not pathable, above not pathable
-                        return ComplexTerrainPathingResult.CreateSimple(ComplexTerrainPathing_Inside, terrainCenterX, terrainCenterY) //inside triangle piece
-                    endif
-                else //x >= terrainCenterX, y < terrainCenterY, right not pathable
-                    set ttypeY = GetTerrainType(x, y - TERRAIN_QUADRANT_SIZE)
-                    if TerrainGlobals_IsTerrainPathable(ttypeY) then
-                        //check if this is a horizontal or diagonal                    
-                        if TerrainGlobals_IsTerrainDiagonal(GetTerrainType(x + TERRAIN_QUADRANT_SIZE, y - TERRAIN_QUADRANT_SIZE)) then
-                            //see which side of diagonal point falls on
-                            //debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "y: " + R2S(y - terrainCenterY) + " x: " + R2S(x - terrainCenterX)) 
-                            if y - terrainCenterY <= -x + terrainCenterX then
-                                return ComplexTerrainPathingResult.CreateComplex(ComplexTerrainPathing_SW, terrainCenterX, terrainCenterY, ComplexTerrainPathing_SW, ttype, ttype) //extends from NE corner
-                            else
-                                return ComplexTerrainPathingResult.CreateSimple(ComplexTerrainPathing_Inside, terrainCenterX, terrainCenterY) //inside triangle piece
-                            endif
-                        else
-                            return ComplexTerrainPathingResult.CreateComplex(ComplexTerrainPathing_Bottom, terrainCenterX, terrainCenterY, ComplexTerrainPathing_SE, 0, ttype)
-                        endif
-                    else //x >= terrainCenterX, y < terrainCenterY, right not pathable, below not pathable
-                        return ComplexTerrainPathingResult.CreateSimple(ComplexTerrainPathing_Inside, terrainCenterX, terrainCenterY) //inside triangle piece
-                    endif
-                endif
-            endif
-        else //x < terrainCenterX                    
-            //either way we are going to check the terrain directly left to see if it's pathable
-            set ttypeX = GetTerrainType(x - TERRAIN_QUADRANT_SIZE, y)
-            if TerrainGlobals_IsTerrainPathable(ttypeX) then
-                if y >= terrainCenterY then
-                    set ttypeY = GetTerrainType(x, y + TERRAIN_QUADRANT_SIZE)
-                    if TerrainGlobals_IsTerrainPathable(ttypeY) then
-                        if TerrainGlobals_IsTerrainDiagonal(GetTerrainType(x - TERRAIN_QUADRANT_SIZE, y + TERRAIN_QUADRANT_SIZE)) then
-                            //debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "between, y: " + R2S(y - terrainCenterY) + " x: " + R2S(x - terrainCenterX))
-                            if y - terrainCenterY >= -1 * (x - terrainCenterX) then //which side of the diagonal the point is on simplifies to this when diagonal passes through terrainCenter
-                                //call CreateUnit(Player(4), 'etst', x, y, 6)
-								static if DEBUG_UNNATURAL_NE then
-									call DisplayTextToForce(bj_FORCE_PLAYER[0], "Entered unnatural diagonal 3")
-								endif
-								
-                                return ComplexTerrainPathingResult.CreateComplex(ComplexTerrainPathing_NE, terrainCenterX, terrainCenterY + TERRAIN_TILE_SIZE, ComplexTerrainPathing_SW, ttype, ttype) //extends from NE corner
-                            else
-                                return ComplexTerrainPathingResult.CreateComplex(ComplexTerrainPathing_SW, terrainCenterX, terrainCenterY, ComplexTerrainPathing_SW, ttype, ttype) //extends from SW corner
-                            endif
-                        else //type for (left, below) irrelevant
-                            //debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "y: " + R2S(y - terrainCenterY) + " x: " + R2S(x - terrainCenterX + 64)) 
-                            if y - terrainCenterY <= x - terrainCenterX + TERRAIN_QUADRANT_SIZE  then //check if within NE corner
-                                return ComplexTerrainPathingResult.CreateComplex(ComplexTerrainPathing_NW, terrainCenterX, terrainCenterY, ComplexTerrainPathing_NW, ttype, ttype) //point is in/extends from NW corner
-                            endif
-                        endif
-                    else //x < terrainCenterX, y >= terrainCenterY, left is pathable, above is unpathable
-                        if TerrainGlobals_IsTerrainDiagonal(GetTerrainType(x - TERRAIN_QUADRANT_SIZE, y + TERRAIN_QUADRANT_SIZE)) then
-                            if y - terrainCenterY < -x + terrainCenterX then
-                                return ComplexTerrainPathingResult.CreateComplex(ComplexTerrainPathing_SW, terrainCenterX, terrainCenterY, ComplexTerrainPathing_SW, ttype, ttype) //extends from SW corner
-                            else
-                                return ComplexTerrainPathingResult.CreateSimple(ComplexTerrainPathing_Inside, terrainCenterX, terrainCenterY) //inside triangle piece
-                            endif
-                        else
-                            return ComplexTerrainPathingResult.CreateComplex(ComplexTerrainPathing_Left, terrainCenterX, terrainCenterY, ComplexTerrainPathing_NW, ttype, 0) //vertical diagonal
-                        endif
-                    endif
-                else //y < terrainCenterY
-                    set ttypeY = GetTerrainType(x, y - TERRAIN_QUADRANT_SIZE)
-                    if TerrainGlobals_IsTerrainPathable(ttypeY) then
-                        if TerrainGlobals_IsTerrainDiagonal(GetTerrainType(x - TERRAIN_QUADRANT_SIZE, y - TERRAIN_QUADRANT_SIZE)) then
-                            //debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "between, y: " + R2S(y - terrainCenterY) + " x: " + R2S(x - terrainCenterX))
-                            if y - terrainCenterY >= x - terrainCenterX then //which side of the diagonal the point is on simplifies to this when diagonal passes through terrainCenter
-                                return ComplexTerrainPathingResult.CreateComplex(ComplexTerrainPathing_NW, terrainCenterX, terrainCenterY, ComplexTerrainPathing_NW, ttype, ttype) //extends from NW corner
-                            else
-                                return ComplexTerrainPathingResult.CreateComplex(ComplexTerrainPathing_SE, terrainCenterX, terrainCenterY, ComplexTerrainPathing_SE, ttype, ttype) //extends from SE corner
-                            endif
-                        else //type for (right, below) irrelevant
-                            //debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "y: " + R2S(y - terrainCenterY) + " x: " + R2S(x - terrainCenterX + 64)) 
-                            if y - terrainCenterY >= -1 * (x - terrainCenterX + TERRAIN_QUADRANT_SIZE)  then //check if within NE corner
-                                return ComplexTerrainPathingResult.CreateComplex(ComplexTerrainPathing_SW, terrainCenterX, terrainCenterY, ComplexTerrainPathing_SW, ttype, ttype) //point is in/extends from SW corner
-                            endif
-                        endif
-                    else //x < terrainCenterX, y < terrainCenterY, left is pathable, below is unpathable
-                        if TerrainGlobals_IsTerrainDiagonal(GetTerrainType(x - TERRAIN_QUADRANT_SIZE, y - TERRAIN_QUADRANT_SIZE)) then
-                            if y - terrainCenterY >= x - terrainCenterX then
-                                return ComplexTerrainPathingResult.CreateComplex(ComplexTerrainPathing_NW, terrainCenterX, terrainCenterY, ComplexTerrainPathing_NW, ttype, ttype) //extends from SW corner
-                            else
-                                return ComplexTerrainPathingResult.CreateSimple(ComplexTerrainPathing_Inside, terrainCenterX, terrainCenterY) //inside triangle piece
-                            endif
-                        else
-                            return ComplexTerrainPathingResult.CreateComplex(ComplexTerrainPathing_Left, terrainCenterX, terrainCenterY, ComplexTerrainPathing_SW, ttype, 0) //vertical diagonal
-                        endif
-                    endif
-                endif
-            else //x < terrainCenterX, left not pathable
-                if y >= terrainCenterY then //x < terrainCenterX, y >= terrainCenterY, left not pathable
-                    set ttypeY = GetTerrainType(x, y + TERRAIN_QUADRANT_SIZE)
-                    if TerrainGlobals_IsTerrainPathable(ttypeY) then
-                        //check if this is a horizontal or diagonal                    
-                        if TerrainGlobals_IsTerrainDiagonal(GetTerrainType(x - TERRAIN_QUADRANT_SIZE, y + TERRAIN_QUADRANT_SIZE)) then
-                            //see which side of diagonal point falls on
-                            //debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "y: " + R2S(y - terrainCenterY) + " x: " + R2S(x - terrainCenterX)) 
-                            if y - terrainCenterY >= -x + terrainCenterX then
-                                //call CreateUnit(Player(5), 'etst', x, y, 6)
-								static if DEBUG_UNNATURAL_NE then
-									call DisplayTextToForce(bj_FORCE_PLAYER[0], "Entered unnatural diagonal 4")
-								endif
-                                return ComplexTerrainPathingResult.CreateComplex(ComplexTerrainPathing_NE, terrainCenterX, terrainCenterY + TERRAIN_TILE_SIZE, ComplexTerrainPathing_SW, ttype, ttype) //extends from NE corner
-                            else
-                                return ComplexTerrainPathingResult.CreateSimple(ComplexTerrainPathing_Inside, terrainCenterX, terrainCenterY) //inside triangle piece
-                            endif
-                        else
-                            return ComplexTerrainPathingResult.CreateComplex(ComplexTerrainPathing_Top, terrainCenterX, terrainCenterY, ComplexTerrainPathing_NW, 0, ttype)
-                        endif
-                    else //x < terrainCenterX, y >= terrainCenterY, left not pathable, above not pathable
-                        //if TerrainGlobals_IsTerrainDiagonal(ttypeY) then
-                        //    if y - terrainCenterY >= 64 + x - terrainCenterX then
-                        //        return ComplexTerrainPathingResult.CreateComplex(ComplexTerrainPathing_NW, terrainCenterX, terrainCenterY, ComplexTerrainPathing_SW, ttype, ttype) //extends from SW corner
-                        //    else
-                        //        return ComplexTerrainPathingResult.CreateSimple(ComplexTerrainPathing_Inside, terrainCenterX, terrainCenterY) //inside triangle piece
-                        //    endif
-                        //else
-                            return ComplexTerrainPathingResult.CreateSimple(ComplexTerrainPathing_Inside, terrainCenterX, terrainCenterY) //inside triangle piece
-                        //endif
-                    endif
-                else //x < terrainCenterX, y < terrainCenterY, left not pathable
-                    set ttypeY = GetTerrainType(x, y - TERRAIN_QUADRANT_SIZE)
-                    if TerrainGlobals_IsTerrainPathable(ttypeY) then
-                        //check if this is a horizontal or diagonal                    
-                        if TerrainGlobals_IsTerrainDiagonal(GetTerrainType(x - TERRAIN_QUADRANT_SIZE, y - TERRAIN_QUADRANT_SIZE)) then
-                            //see which side of diagonal point falls on
-                            //debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "y: " + R2S(y - terrainCenterY) + " x: " + R2S(x - terrainCenterX)) 
-                            if y - terrainCenterY <= x - terrainCenterX then
-                                //call CreateUnit(Player(11), 'etst', x, y, 6)
-                                return ComplexTerrainPathingResult.CreateComplex(ComplexTerrainPathing_SE, terrainCenterX, terrainCenterY, ComplexTerrainPathing_SE, ttype, ttype) //extends from NE corner
-                            else
-                                return ComplexTerrainPathingResult.CreateSimple(ComplexTerrainPathing_Inside, terrainCenterX, terrainCenterY) //inside triangle piece
-                            endif
-                        else
-                            return ComplexTerrainPathingResult.CreateComplex(ComplexTerrainPathing_Bottom, terrainCenterX, terrainCenterY, ComplexTerrainPathing_NW, 0, ttype)
-                        endif
-                    else //x < terrainCenterX, y < terrainCenterY, left not pathable, below not pathable
-                        //if TerrainGlobals_IsTerrainDiagonal(ttypeY) then
-                        //    if y - terrainCenterY >= 64 + x - terrainCenterX then
-                        //        return ComplexTerrainPathingResult.CreateComplex(ComplexTerrainPathing_SW, terrainCenterX, terrainCenterY, ComplexTerrainPathing_SW, ttype, ttype) //extends from SW corner
-                        //    else
-                        //        return ComplexTerrainPathingResult.CreateSimple(ComplexTerrainPathing_Inside, terrainCenterX, terrainCenterY) //inside triangle piece
-                        //    endif
-                        //else
-                            return ComplexTerrainPathingResult.CreateSimple(ComplexTerrainPathing_Inside, terrainCenterX, terrainCenterY) //inside triangle piece
-                        //endif
-                    endif
-                endif
-            endif
+		//**********
+		//Quadrant 1
+        if x >= terrainCenterX and y >= terrainCenterY then //quadrant 1
+			if TerrainGlobals_IsTerrainDiagonal(GetTerrainType(terrainCenterX + TERRAIN_TILE_SIZE, terrainCenterY + TERRAIN_TILE_SIZE)) then
+				if relY >= relX then
+					static if DEBUG_UNNATURAL_NW then
+						call DisplayTextToForce(bj_FORCE_PLAYER[0], "Entered unnatural diagonal NW 1")
+					endif
+					//nearest natural diagonal above
+					return ComplexTerrainPathingResult.CreateComplex(ComplexTerrainPathing_NW, terrainCenterX, terrainCenterY + TERRAIN_TILE_SIZE, ComplexTerrainPathing_SE, ttype, ttype)
+				else
+					static if DEBUG_UNNATURAL_SE then
+						call DisplayTextToForce(bj_FORCE_PLAYER[0], "Entered unnatural diagonal SE 1")
+					endif
+					//nearest natural diagonal in same tile
+					return ComplexTerrainPathingResult.CreateComplex(ComplexTerrainPathing_SE, terrainCenterX, terrainCenterY, ComplexTerrainPathing_SE, ttype, ttype)
+				endif
+			elseif not TerrainGlobals_IsTerrainPathable(GetTerrainType(terrainCenterX, terrainCenterY + TERRAIN_TILE_SIZE)) then
+				return ComplexTerrainPathingResult.CreateComplex(ComplexTerrainPathing_Right, terrainCenterX, terrainCenterY, ComplexTerrainPathing_NE, ttype, 0)
+			elseif not TerrainGlobals_IsTerrainPathable(GetTerrainType(terrainCenterX + TERRAIN_TILE_SIZE, terrainCenterY)) then
+				return ComplexTerrainPathingResult.CreateComplex(ComplexTerrainPathing_Top, terrainCenterX, terrainCenterY, ComplexTerrainPathing_NE, 0, ttype)
+			else
+				if relY <= TERRAIN_QUADRANT_SIZE - relX then
+					static if DEBUG_NATURAL then
+						call DisplayTextToForce(bj_FORCE_PLAYER[0], "Entered natural diagonal NE 2")
+					endif
+					return ComplexTerrainPathingResult.CreateComplex(ComplexTerrainPathing_NE, terrainCenterX, terrainCenterY, ComplexTerrainPathing_NE, ttype, ttype)
+				endif
+			endif
+			
+		//**********
+		//Quadrant 2
+		elseif x < terrainCenterX and y >= terrainCenterY then //quadrant 2
+			if TerrainGlobals_IsTerrainDiagonal(GetTerrainType(terrainCenterX - TERRAIN_TILE_SIZE, terrainCenterY + TERRAIN_TILE_SIZE)) then
+				if relY >= -relX then
+					static if DEBUG_UNNATURAL_NE then
+						call DisplayTextToForce(bj_FORCE_PLAYER[0], "Entered unnatural diagonal NE 1")
+					endif
+					//nearest natural diagonal above
+					return ComplexTerrainPathingResult.CreateComplex(ComplexTerrainPathing_NE, terrainCenterX, terrainCenterY + TERRAIN_TILE_SIZE, ComplexTerrainPathing_SW, ttype, ttype)
+				else
+					static if DEBUG_UNNATURAL_SW then
+						call DisplayTextToForce(bj_FORCE_PLAYER[0], "Entered unnatural diagonal SW 1")
+					endif
+					//nearest natural diagonal in same tile
+					return ComplexTerrainPathingResult.CreateComplex(ComplexTerrainPathing_SW, terrainCenterX, terrainCenterY, ComplexTerrainPathing_SW, ttype, ttype)
+				endif
+			elseif not TerrainGlobals_IsTerrainPathable(GetTerrainType(terrainCenterX, terrainCenterY + TERRAIN_TILE_SIZE)) then
+				return ComplexTerrainPathingResult.CreateComplex(ComplexTerrainPathing_Left, terrainCenterX, terrainCenterY, ComplexTerrainPathing_NW, ttype, 0)
+			elseif not TerrainGlobals_IsTerrainPathable(GetTerrainType(terrainCenterX - TERRAIN_TILE_SIZE, terrainCenterY)) then
+				return ComplexTerrainPathingResult.CreateComplex(ComplexTerrainPathing_Top, terrainCenterX, terrainCenterY, ComplexTerrainPathing_NW, 0, ttype)
+			else
+				if relY <= TERRAIN_QUADRANT_SIZE + relX then
+					static if DEBUG_NATURAL then
+						call DisplayTextToForce(bj_FORCE_PLAYER[0], "Entered natural diagonal NW 2")
+					endif
+					return ComplexTerrainPathingResult.CreateComplex(ComplexTerrainPathing_NW, terrainCenterX, terrainCenterY, ComplexTerrainPathing_NW, ttype, ttype)
+				endif
+			endif
+			
+		//**********
+		//Quadrant 3
+		elseif x < terrainCenterX then //and y < terrainCenterY    quadrant 3
+			if TerrainGlobals_IsTerrainDiagonal(GetTerrainType(terrainCenterX - TERRAIN_TILE_SIZE, terrainCenterY - TERRAIN_TILE_SIZE)) then
+				if relY >= relX then
+					static if DEBUG_UNNATURAL_NW then
+						call DisplayTextToForce(bj_FORCE_PLAYER[0], "Entered unnatural diagonal NW 2")
+					endif
+					//nearest natural diagonal in same tile
+					return ComplexTerrainPathingResult.CreateComplex(ComplexTerrainPathing_NW, terrainCenterX, terrainCenterY, ComplexTerrainPathing_NW, ttype, ttype)
+				else
+					static if DEBUG_UNNATURAL_SE then
+						call DisplayTextToForce(bj_FORCE_PLAYER[0], "Entered unnatural diagonal SE 2")
+					endif
+					//nearest natural diagonal below
+					return ComplexTerrainPathingResult.CreateComplex(ComplexTerrainPathing_SE, terrainCenterX, terrainCenterY - TERRAIN_TILE_SIZE, ComplexTerrainPathing_NW, ttype, ttype)
+				endif
+			elseif not TerrainGlobals_IsTerrainPathable(GetTerrainType(terrainCenterX, terrainCenterY - TERRAIN_TILE_SIZE)) then
+				return ComplexTerrainPathingResult.CreateComplex(ComplexTerrainPathing_Left, terrainCenterX, terrainCenterY, ComplexTerrainPathing_SW, ttype, 0)
+			elseif not TerrainGlobals_IsTerrainPathable(GetTerrainType(terrainCenterX - TERRAIN_TILE_SIZE, terrainCenterY)) then
+				return ComplexTerrainPathingResult.CreateComplex(ComplexTerrainPathing_Bottom, terrainCenterX, terrainCenterY, ComplexTerrainPathing_SW, 0, ttype)
+			else
+				if relY >= -relX - TERRAIN_QUADRANT_SIZE then
+					static if DEBUG_NATURAL then
+						call DisplayTextToForce(bj_FORCE_PLAYER[0], "Entered natural diagonal SW 2")
+					endif
+					return ComplexTerrainPathingResult.CreateComplex(ComplexTerrainPathing_SW, terrainCenterX, terrainCenterY, ComplexTerrainPathing_SW, ttype, ttype)
+				endif
+			endif
+			
+		//**********
+		//Quadrant 4
+		else //x >= terrainCenterY and y < terrainCenterX    //quadrant 4
+			if TerrainGlobals_IsTerrainDiagonal(GetTerrainType(terrainCenterX + TERRAIN_TILE_SIZE, terrainCenterY - TERRAIN_TILE_SIZE)) then
+				if relY >= -relX then
+					static if DEBUG_UNNATURAL_NE then
+						call DisplayTextToForce(bj_FORCE_PLAYER[0], "Entered unnatural diagonal NE 2")
+					endif
+					//nearest natural diagonal in same tile
+					return ComplexTerrainPathingResult.CreateComplex(ComplexTerrainPathing_NE, terrainCenterX, terrainCenterY, ComplexTerrainPathing_NE, ttype, ttype)
+				else
+					static if DEBUG_UNNATURAL_SW then
+						call DisplayTextToForce(bj_FORCE_PLAYER[0], "Entered unnatural diagonal SW 2")
+					endif
+					//nearest natural diagonal below
+					return ComplexTerrainPathingResult.CreateComplex(ComplexTerrainPathing_SW, terrainCenterX, terrainCenterY - TERRAIN_TILE_SIZE, ComplexTerrainPathing_NE, ttype, ttype)
+				endif
+			elseif not TerrainGlobals_IsTerrainPathable(GetTerrainType(terrainCenterX, terrainCenterY - TERRAIN_TILE_SIZE)) then
+				return ComplexTerrainPathingResult.CreateComplex(ComplexTerrainPathing_Right, terrainCenterX, terrainCenterY, ComplexTerrainPathing_SE, ttype, 0)
+			elseif not TerrainGlobals_IsTerrainPathable(GetTerrainType(terrainCenterX + TERRAIN_TILE_SIZE, terrainCenterY)) then
+				return ComplexTerrainPathingResult.CreateComplex(ComplexTerrainPathing_Bottom, terrainCenterX, terrainCenterY, ComplexTerrainPathing_SE, 0, ttype)
+			else
+				if relY >= relX - TERRAIN_QUADRANT_SIZE then
+					static if DEBUG_NATURAL then
+						call DisplayTextToForce(bj_FORCE_PLAYER[0], "Entered natural diagonal SE 2")
+					endif
+					return ComplexTerrainPathingResult.CreateComplex(ComplexTerrainPathing_SE, terrainCenterX, terrainCenterY, ComplexTerrainPathing_SE, ttype, ttype)
+				endif
+			endif
+			
         endif
     endif
     
-    //null represents no diagonal
+    //0 represents null -- ie, a pathable result for the x,y location
     return 0
 endfunction
     

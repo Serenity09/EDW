@@ -20,7 +20,7 @@ library PlatformerTerrainEffectGlobals requires PlatformerGlobals, TerrainGlobal
         
         //needs to be compatible with GetNextDiagonal assumptions -- namely won't change more than 1 quadrant per loop
         //constant real DIAGONAL_MAXCHANGE = TERRAIN_QUADRANT_SIZE - 4
-        constant real PLATFORMING_MAXCHANGE = TERRAIN_QUADRANT_SIZE*.75
+        constant real PLATFORMING_MAXCHANGE = 45 //point in diagonal assumes that the test point is within sqrt(32*32 + 32*32) = 45.2548...
         constant boolean PLATFORMING_CHECK_HALFWAY = false //should be true if PLATFORMING_MAXCHANGE > TERRAIN_QUADRANT_SIZE (64)
         
 		constant real DIAGONAL_ESCAPEDISTANCE = 10 //should allow the player to freely escape by pressing arrow keys or jumping
