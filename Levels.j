@@ -19,7 +19,8 @@ library Levels initializer Init requires SimpleList, Teams, GameModesGlobals, Ci
 		private constant boolean DEBUG_LEVEL_CHANGE = false
     endglobals
     
-    struct LevelContent //extends IStartable
+	//TODO this struct turned into just an extension of Level -- refactor back into level
+    struct LevelContent extends array //extends IStartable
         private string StartFunction
         private string StopFunction
         
@@ -27,7 +28,9 @@ library Levels initializer Init requires SimpleList, Teams, GameModesGlobals, Ci
         public string UnloadFunction
         
         public SimpleList_List Startables
-                
+        
+		implement Alloc
+		
         public method Start takes nothing returns nothing
             local SimpleList_ListNode startableNode
             

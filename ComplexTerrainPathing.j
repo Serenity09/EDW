@@ -266,8 +266,6 @@ public function GetPathingForPoint takes real x, real y returns ComplexTerrainPa
     local real terrainCenterY
     
     local integer ttype
-    local integer ttypeX
-    local integer ttypeY
 	
 	local real relX
 	local real relY
@@ -319,35 +317,27 @@ public function GetPathingForPoint takes real x, real y returns ComplexTerrainPa
         if x >= terrainCenterX and y >= terrainCenterY then
             //debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "3, y: " + R2S(y - terrainCenterY - 64) + " x: " + R2S(x - terrainCenterX)) 
             //checking for diagonal ID 3
-            set ttypeX = GetTerrainType(terrainCenterX + TERRAIN_TILE_SIZE, terrainCenterY)
-            set ttypeY = GetTerrainType(terrainCenterX, terrainCenterY + TERRAIN_TILE_SIZE)
-            if TerrainGlobals_IsTerrainDiagonal(ttypeX) and TerrainGlobals_IsTerrainDiagonal(ttypeY) and (y - terrainCenterY - 64 >= -x + terrainCenterX) then
-                return ComplexTerrainPathingResult.CreateComplex(ComplexTerrainPathing_SW, terrainCenterX, terrainCenterY, ComplexTerrainPathing_NE, ttypeX, ttypeY)
+            if TerrainGlobals_IsTerrainDiagonal(GetTerrainType(terrainCenterX + TERRAIN_TILE_SIZE, terrainCenterY)) and TerrainGlobals_IsTerrainDiagonal(GetTerrainType(terrainCenterX, terrainCenterY + TERRAIN_TILE_SIZE)) and (y - terrainCenterY - 64 >= -x + terrainCenterX) then
+                return ComplexTerrainPathingResult.CreateComplex(ComplexTerrainPathing_SW, terrainCenterX, terrainCenterY, ComplexTerrainPathing_NE, GetTerrainType(terrainCenterX + TERRAIN_TILE_SIZE, terrainCenterY), GetTerrainType(terrainCenterX, terrainCenterY + TERRAIN_TILE_SIZE))
             endif
         elseif x < terrainCenterX and y < terrainCenterY then
             //checking for diagonal ID 1
             //debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "1, y: " + R2S(y - terrainCenterY) + " x: " + R2S(x - terrainCenterX + 64)) 
-            set ttypeX = GetTerrainType(terrainCenterX - TERRAIN_TILE_SIZE, terrainCenterY)
-            set ttypeY = GetTerrainType(terrainCenterX, terrainCenterY - TERRAIN_TILE_SIZE)
-            if TerrainGlobals_IsTerrainDiagonal(ttypeX) and TerrainGlobals_IsTerrainDiagonal(ttypeY) and (y - terrainCenterY <= -x + terrainCenterX - 64) then
+            if TerrainGlobals_IsTerrainDiagonal(GetTerrainType(terrainCenterX - TERRAIN_TILE_SIZE, terrainCenterY)) and TerrainGlobals_IsTerrainDiagonal(GetTerrainType(terrainCenterX, terrainCenterY - TERRAIN_TILE_SIZE)) and (y - terrainCenterY <= -x + terrainCenterX - 64) then
                 //call CreateUnit(Player(0), 'etst', x, y, 6)
-                return ComplexTerrainPathingResult.CreateComplex(ComplexTerrainPathing_NE, terrainCenterX, terrainCenterY, ComplexTerrainPathing_SW, ttypeX, ttypeY)
+                return ComplexTerrainPathingResult.CreateComplex(ComplexTerrainPathing_NE, terrainCenterX, terrainCenterY, ComplexTerrainPathing_SW, GetTerrainType(terrainCenterX - TERRAIN_TILE_SIZE, terrainCenterY), GetTerrainType(terrainCenterX, terrainCenterY - TERRAIN_TILE_SIZE))
             endif
         elseif x >= terrainCenterX then //y < terrainCenterY
             //checking for diagonal ID 4
             //debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "4, y: " + R2S(y - terrainCenterY + 64) + " x: " + R2S(x - terrainCenterX)) 
-            set ttypeX = GetTerrainType(terrainCenterX + TERRAIN_TILE_SIZE, terrainCenterY)
-            set ttypeY = GetTerrainType(terrainCenterX, terrainCenterY - TERRAIN_TILE_SIZE)
-            if TerrainGlobals_IsTerrainDiagonal(ttypeX) and TerrainGlobals_IsTerrainDiagonal(ttypeY) and ((y - terrainCenterY + 64) <= (x - terrainCenterX)) then
-                return ComplexTerrainPathingResult.CreateComplex(ComplexTerrainPathing_NW, terrainCenterX, terrainCenterY, ComplexTerrainPathing_SE, ttypeX, ttypeY)
+            if TerrainGlobals_IsTerrainDiagonal(GetTerrainType(terrainCenterX + TERRAIN_TILE_SIZE, terrainCenterY)) and TerrainGlobals_IsTerrainDiagonal(GetTerrainType(terrainCenterX, terrainCenterY - TERRAIN_TILE_SIZE)) and ((y - terrainCenterY + 64) <= (x - terrainCenterX)) then
+                return ComplexTerrainPathingResult.CreateComplex(ComplexTerrainPathing_NW, terrainCenterX, terrainCenterY, ComplexTerrainPathing_SE, GetTerrainType(terrainCenterX + TERRAIN_TILE_SIZE, terrainCenterY), GetTerrainType(terrainCenterX, terrainCenterY - TERRAIN_TILE_SIZE))
             endif
         else //x < terrainCenterX and y >= terrainCenterY
             //checking for diagonal ID 2
             //debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "4, y: " + R2S(y - terrainCenterY) + " x: " + R2S(x - terrainCenterX + 64)) 
-            set ttypeX = GetTerrainType(terrainCenterX - TERRAIN_TILE_SIZE, terrainCenterY)
-            set ttypeY = GetTerrainType(terrainCenterX, terrainCenterY + TERRAIN_TILE_SIZE)
-            if TerrainGlobals_IsTerrainDiagonal(ttypeX) and TerrainGlobals_IsTerrainDiagonal(ttypeY) and ((y - terrainCenterY) >= (x - terrainCenterX + 64)) then
-                return ComplexTerrainPathingResult.CreateComplex(ComplexTerrainPathing_SE, terrainCenterX, terrainCenterY, ComplexTerrainPathing_NW, ttypeX, ttypeY)
+            if TerrainGlobals_IsTerrainDiagonal(GetTerrainType(terrainCenterX - TERRAIN_TILE_SIZE, terrainCenterY)) and TerrainGlobals_IsTerrainDiagonal(GetTerrainType(terrainCenterX, terrainCenterY + TERRAIN_TILE_SIZE)) and ((y - terrainCenterY) >= (x - terrainCenterX + 64)) then
+                return ComplexTerrainPathingResult.CreateComplex(ComplexTerrainPathing_SE, terrainCenterX, terrainCenterY, ComplexTerrainPathing_NW, GetTerrainType(terrainCenterX - TERRAIN_TILE_SIZE, terrainCenterY), GetTerrainType(terrainCenterX, terrainCenterY + TERRAIN_TILE_SIZE))
             endif
         endif
         
