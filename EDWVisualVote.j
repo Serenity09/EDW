@@ -134,7 +134,7 @@ library EDWVisualVote requires VisualVote, ContinueGlobals, Teams, PlayerUtils, 
         local boolean flag
         local Levels_Level firstLevel
 		
-		local Cinematic cine
+		local Cinematic welcomeCine
         local CinemaMessage cineMsg
         
         //call DisplayTextToPlayer(Player(0), 0, 0, "Initializing Game For Globals")
@@ -276,28 +276,30 @@ library EDWVisualVote requires VisualVote, ContinueGlobals, Teams, PlayerUtils, 
         //debug call DisplayTextToPlayer(Player(0), 0, 0, "Team count " + I2S(teamCount))
         
 		set cineMsg = CinemaMessage.create(null, GetEDWSpeakerMessage(FINAL_BOSS_PRE_REVEAL, "Welcome", DEFAULT_TEXT_COLOR), DEFAULT_TINY_TEXT_SPEED)
-        set cine = Cinematic.create(null, false, false, cineMsg)
-        call cine.AddMessage(null, GetEDWSpeakerMessage(FINAL_BOSS_PRE_REVEAL, "To", DEFAULT_TEXT_COLOR), DEFAULT_TINY_TEXT_SPEED)
-        call cine.AddMessage(null, GetEDWSpeakerMessage(FINAL_BOSS_PRE_REVEAL, "Dream World", DEFAULT_TEXT_COLOR), DEFAULT_SHORT_TEXT_SPEED)
+        set welcomeCine = Cinematic.create(null, false, false, cineMsg)
+        call welcomeCine.AddMessage(null, GetEDWSpeakerMessage(FINAL_BOSS_PRE_REVEAL, "To", DEFAULT_TEXT_COLOR), DEFAULT_TINY_TEXT_SPEED)
+        call welcomeCine.AddMessage(null, GetEDWSpeakerMessage(FINAL_BOSS_PRE_REVEAL, "Dream World", DEFAULT_TEXT_COLOR), DEFAULT_SHORT_TEXT_SPEED)
 		
         set i = 0
         loop
             set team[i].OnLevel = firstLevel.LevelID
             set team[i].ContinueCount = team[i].GetInitialContinues()
             
-            call team[i].MoveRevive(firstLevel.CPCenters[0])
-            set team[i].DefaultGameMode = firstLevel.CPDefaultGameModes[0]
-            call team[i].SwitchTeamGameMode(team[i].DefaultGameMode, GetRandomReal(GetRectMinX(team[i].Revive), GetRectMaxX(team[i].Revive)), GetRandomReal(GetRectMinY(team[i].Revive), GetRectMaxY(team[i].Revive)))
-                        
+            //call team[i].MoveRevive(firstLevel.CPCenters[0])
+            //set team[i].DefaultGameMode = firstLevel.CPDefaultGameModes[0]
+            //call team[i].SwitchTeamGameMode(team[i].DefaultGameMode, GetRandomReal(GetRectMinX(team[i].Revive), GetRectMaxX(team[i].Revive)), GetRandomReal(GetRectMinY(team[i].Revive), GetRectMaxY(team[i].Revive)))
+            
             call team[i].ApplyTeamDefaultCameras()
             call team[i].AddTeamVision(firstLevel.Vision)
 			
 			static if not DEBUG_MODE then
-				call team[i].AddTeamCinema(cine, team[i].FirstUser.value)
+				call team[i].AddTeamCinema(welcomeCine, team[i].FirstUser.value)
 			endif
 			
             call firstLevel.ActiveTeams.add(team[i])
-						
+			
+			call firstLevel.SetCheckpointForTeam(team[i], 0)
+			
             debug call DisplayTextToPlayer(Player(0), 0, 0, "Team " + I2S(team[i]) + " on level: " + I2S(team[i].OnLevel))
         set i = i + 1
         exitwhen i >= teamCount

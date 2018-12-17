@@ -44,6 +44,8 @@ private function testRevive takes nothing returns nothing
     set reviveUnit = CreateUnit(Player(10), TEAM_REVIVE_UNIT_ID, safeLocation.x, safeLocation.y, 0)
     set wrappedUnit = unitWrapper.allocate()
     set wrappedUnit.u = reviveUnit
+	
+	call safeLocation.deallocate()
     
     set t = NewTimerEx(wrappedUnit)
     call TimerStart(t, 2, false, function testReviveCleanup)

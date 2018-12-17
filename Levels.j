@@ -24,16 +24,17 @@ library Levels initializer Init requires SimpleList, Teams, GameModesGlobals, Ci
     
 	//TODO this struct turned into just an extension of Level -- refactor back into level
     struct LevelContent extends array //extends IStartable
-        private string StartFunction
+        //struct does not support recycling
+		private static integer c = 0
+		
+		private string StartFunction
         private string StopFunction
         
         public string PreloadFunction
         public string UnloadFunction
         
         public SimpleList_List Startables
-        
-		implement Alloc
-		
+        		
         public method Start takes nothing returns nothing
             local SimpleList_ListNode startableNode
             
@@ -77,7 +78,8 @@ library Levels initializer Init requires SimpleList, Teams, GameModesGlobals, Ci
         endmethod
         
         public static method create takes string startFunction, string stopFunction returns thistype
-            local thistype new = thistype.allocate()
+            local thistype new = c + 1
+			set c = new
             
             set new.StartFunction = startFunction
             set new.StopFunction = stopFunction
@@ -89,54 +91,55 @@ library Levels initializer Init requires SimpleList, Teams, GameModesGlobals, Ci
         endmethod
     endstruct
     
-    /*
-    public struct Checkpoint extends array
-        public rect ReviveCenter
+    struct Checkpoint extends array
+        //struct does not support recycling
+		private static integer c = 0
+		
+		public rect Gate
+		public rect ReviveCenter
         public integer DefaultColor
         public integer DefaultGameMode
-        public string TeamCB
+		public boolean RequiresSameGameMode
         
-        private static Teams_MazingTeam LastCheckpointTeam
-        
-        implement alloc
+		public static method create takes rect gate, rect center returns thistype
+			local thistype new = c + 1
+			set c = new
+			
+			set new.Gate = gate
+			set new.ReviveCenter = center
+			
+			//defaults
+			set new.DefaultColor = KEY_NONE
+			set new.DefaultGameMode = Teams_GAMEMODE_STANDARD
+			set new.RequiresSameGameMode = false
+			
+			return new
+		endmethod
     endstruct
-    */
     
-    public struct Level //extends IStartable
+    public struct Level extends array //extends IStartable
         readonly integer     LevelID         //the number of a level -- the same as the index
         public string      Name            //a levels name, only used in the multiboard
         public integer     RawContinues      //refers to the difficulty of a level
         public integer     RawScore
-        public LevelContent Content          //all the stuff to fill a level with when turned on/off
-        /*
-        readonly trigger     Start           //this trigger turns a level "on"
-        readonly trigger     Stop            //this turns a level "off"
-        readonly trigger     Preload         //if the next level requires time to be setup, use this to do it
-        readonly trigger     Unload          //if the team dies without continues or leaves before reaching the next level, use this to unload it
-        readonly boolean     HasPreload      //some levels have preloads, some don't. this is more for safety than anything else.
-        */
-        readonly boolean     IsPreloaded     //is this level currently preloaded
-        //readonly rect        StartRect       //marks the position to move the revive rect
+        
+		public LevelContent Content          //all the stuff to fill a level with when turned on/off
+		readonly boolean     IsPreloaded     //is this level currently preloaded
+        
         public rect        Vision          //the bounds placed on a player's vision
-        //readonly rect        CPToHere        //the checkpoint that triggers this level
         public rect LevelEnd				//rect that marks the end of this level
-        readonly rect array  CPGates[8]     //entering this region triggers the CP update action
-        readonly rect array  CPCenters[8]    //where to refocus the revive rect to
-        public integer array CPColors[8]   //what color key should be applied (if any) after transfering
-        public integer array CPDefaultGameModes[8]  //
-        public boolean array CPRequiresLastCP[8] //can the unit activate this checkpoint at any moment, allowing skill skips, or is it too abusable for this cp and it's easiest to require that they've gotten the last CP already
-        public boolean array CPRequiresSameGameMode[8]
+		readonly SimpleList_List Checkpoints
+		
 		private string  TeamStartCB
         private string  TeamStopCB
         readonly static Teams_MazingTeam CBTeam
-        readonly integer     CPCount         //how many checkpoints there are registered for the level
+		
         public Level         NextLevel       //pointer to the next Level struct
         public Level         PrevLevel       //pointer to the prev Level struct
-        //public integer       DefaultGameMode
+		
         public SimpleList_List Cinematics //any cinematics that might be on the level
         
         public SimpleList_List ActiveTeams
-        
         public static SimpleList_List ActiveLevels
                         
         public method Start takes nothing returns nothing
@@ -262,18 +265,20 @@ library Levels initializer Init requires SimpleList, Teams, GameModesGlobals, Ci
                 
             set u = null
         endmethod
-        
+		
         public method SetCheckpointForTeam takes Teams_MazingTeam mt, integer cpID returns nothing
-            if cpID != -1 then
-                //call DisplayTextToForce(bj_FORCE_PLAYER[0], "Started setting CP for team " + I2S(mt))
+            local Checkpoint cp = Checkpoint(.Checkpoints.get(cpID).value)
+			
+			if cp != 0 then
+                //call DisplayTextToForce(bj_FORCE_PLAYER[0], "Started setting CP for team " + I2S(mt) + ", index " + I2S(cpID) + ", cp " + I2S(cp))
 				set mt.OnCheckpoint = cpID
                 
-                set mt.DefaultGameMode = this.CPDefaultGameModes[cpID]
+                set mt.DefaultGameMode = cp.DefaultGameMode
                 //call mt.SwitchGameModeContinuous(mt.DefaultGameMode)
                 
-                call mt.MoveRevive(this.CPCenters[cpID])
-                call mt.RespawnTeamAtRect(this.CPCenters[cpID], true)
-                call mt.ApplyKeyToTeam(this.CPColors[cpID])
+                call mt.MoveRevive(cp.ReviveCenter)
+                call mt.RespawnTeamAtRect(cp.ReviveCenter, true)
+                call mt.ApplyKeyToTeam(cp.DefaultColor)
                 
                 call mt.UpdateMultiboard()
 
@@ -284,21 +289,11 @@ library Levels initializer Init requires SimpleList, Teams, GameModesGlobals, Ci
             //call CPEffect(mt.FirstUser.value)
         endmethod
                         
-        public method AddCheckpoint takes rect gate, rect center returns integer
-            local integer cpID = .CPCount
-            set .CPCenters[cpID] = center
-            
-            set .CPGates[cpID] = gate
-            
-            //set defaults
-            set .CPColors[cpID] = KEY_NONE //by default no color
-            set .CPDefaultGameModes[cpID] = Teams_GAMEMODE_STANDARD
-            set .CPRequiresLastCP[cpID] = false
-			set .CPRequiresSameGameMode[cpID] = false
-            
-            set .CPCount = .CPCount + 1
-            
-            return cpID
+        public method AddCheckpoint takes rect gate, rect center returns Checkpoint
+            local Checkpoint cp = Checkpoint.create(gate, center)
+			call .Checkpoints.addEnd(cp)
+			
+			return cp
         endmethod
         
         public method AddTeamCB takes string startCB, string stopCB returns nothing
@@ -409,13 +404,15 @@ library Levels initializer Init requires SimpleList, Teams, GameModesGlobals, Ci
             local SimpleList_ListNode curLevel = thistype.ActiveLevels.first
             local SimpleList_ListNode curTeam
             local SimpleList_ListNode curUser
+			
+			local SimpleList_ListNode curCheckpoint
             
 			local integer i
 			local real x
 			local real y
 			
             local Level nextLevel
-			local integer nextCheckpoint
+			local integer nextCheckpointID
 			
             loop
             exitwhen curLevel == 0
@@ -425,7 +422,7 @@ library Levels initializer Init requires SimpleList, Teams, GameModesGlobals, Ci
 				exitwhen curTeam == 0
 					//call DisplayTextToForce(bj_FORCE_PLAYER[0], "Checking team " + I2S(curTeam.value))
 					set nextLevel = 0
-					set nextCheckpoint = -1
+					set nextCheckpointID = -1
 					set curUser = Teams_MazingTeam(curTeam.value).Users.first
 											
 					loop
@@ -447,19 +444,27 @@ library Levels initializer Init requires SimpleList, Teams, GameModesGlobals, Ci
 							endloop
 						else
 							if RectContainsCoords(Level(curLevel.value).LevelEnd, x, y) then
-								set nextLevel = Level(curLevel.value).NextLevel
+								//check if there's a sequential level after the current one
+								if Level(curLevel.value).NextLevel != 0 then
+									set nextLevel = Level(curLevel.value).NextLevel
+								else
+									//finished all available levels in world, returning to Doors
+									set nextLevel = Levels[DOORS_LEVEL_ID]
+								endif
 							endif
 						endif
 						
 						///check for any checkpoints if nothing has been found yet
-						if nextLevel == 0 and nextCheckpoint == -1 then
+						if nextLevel == 0 and nextCheckpointID == -1 then
 							set i = 0
+							set curCheckpoint = Level(curLevel.value).Checkpoints.first
 							loop
-							exitwhen i == Level(curLevel.value).CPCount or nextCheckpoint >= 0
-								if i > Teams_MazingTeam(curTeam.value).OnCheckpoint and (not Level(curLevel.value).CPRequiresSameGameMode[i] or User(curUser.value).GameMode == Level(curLevel.value).CPDefaultGameModes[i]) and RectContainsCoords(Level(curLevel.value).CPGates[i], x, y) then
-									set nextCheckpoint = i
+							exitwhen curCheckpoint == 0 or nextCheckpointID >= 0
+								if i > Teams_MazingTeam(curTeam.value).OnCheckpoint and (not Checkpoint(curCheckpoint.value).RequiresSameGameMode or User(curUser.value).GameMode == Checkpoint(curCheckpoint.value).DefaultGameMode) and Checkpoint(curCheckpoint.value).Gate != null and RectContainsCoords(Checkpoint(curCheckpoint.value).Gate, x, y) then
+									set nextCheckpointID = i
 								endif
 							set i = i + 1
+							set curCheckpoint = curCheckpoint.next
 							endloop
 						endif
 					set curUser = curUser.next
@@ -469,8 +474,8 @@ library Levels initializer Init requires SimpleList, Teams, GameModesGlobals, Ci
 					if nextLevel != 0 then
 						call Level(curLevel.value).ApplyLevelRewards(User(curUser.value), Teams_MazingTeam(curTeam.value), nextLevel)
 						call Level(curLevel.value).SwitchLevels(Teams_MazingTeam(curTeam.value), nextLevel)
-					elseif nextCheckpoint >= 0 then
-						call Level(curLevel.value).SetCheckpointForTeam(Teams_MazingTeam(curTeam.value), nextCheckpoint)
+					elseif nextCheckpointID >= 0 then
+						call Level(curLevel.value).SetCheckpointForTeam(Teams_MazingTeam(curTeam.value), nextCheckpointID)
 					endif
 					
 				set curTeam = curTeam.next
@@ -482,7 +487,7 @@ library Levels initializer Init requires SimpleList, Teams, GameModesGlobals, Ci
         
         //creates the level struct / region triggers for the doors area
         public static method CreateDoors takes Level intro, string startFunction, string stopFunction, rect startspawn, rect vision returns Level
-            local Level new = Level.allocate()
+            local Level new = DOORS_LEVEL_ID
             
             set new.LevelID = DOORS_LEVEL_ID
             set new.Name = "Doors"
@@ -490,7 +495,8 @@ library Levels initializer Init requires SimpleList, Teams, GameModesGlobals, Ci
             set new.RawScore = 0
 
             set new.Content = Content.create(startFunction, stopFunction)
-            set new.CPCount = 0
+			
+			set new.Checkpoints = SimpleList_List.create()
             call new.AddCheckpoint(null, startspawn)
             //set new.CPToHere = tothislevel //these might change
             //set new.StartRect = startspawn
@@ -588,7 +594,7 @@ library Levels initializer Init requires SimpleList, Teams, GameModesGlobals, Ci
         
         //creates a level struct
         static method create takes integer LevelID, string name, integer rawContinues, integer rawScore, string startFunction, string stopFunction, rect startspawn, rect vision, rect levelEnd, Level previouslevel returns Level
-            local Level new = Level.allocate()
+            local Level new = LevelID
             
             //infer this is a partial level
             set new.LevelID = LevelID
@@ -623,7 +629,7 @@ library Levels initializer Init requires SimpleList, Teams, GameModesGlobals, Ci
             
 			set new.LevelEnd = levelEnd
             
-            set new.CPCount = 0
+			set new.Checkpoints = SimpleList_List.create()
             //use the checkpoint schema for the first checkpoint. region enter event is handled separately, so use null for the region
             call new.AddCheckpoint(null, startspawn)
             

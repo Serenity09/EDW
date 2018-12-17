@@ -110,7 +110,7 @@ library GameStart initializer Init requires Levels, EDWVisualVote, UnitGlobals, 
         
     public function Init takes nothing returns nothing
         local Levels_Level l
-        local integer cpID
+        local Checkpoint cp
         
         local SimpleList_List startables
         
@@ -136,7 +136,7 @@ library GameStart initializer Init requires Levels, EDWVisualVote, UnitGlobals, 
         call l.AddCheckpoint(gg_rct_IntroWorldCP_1_1, gg_rct_IntroWorld_R2)
         call l.AddCheckpoint(gg_rct_IntroWorldCP_1_2a, gg_rct_IntroWorld_R3a)
         call l.AddCheckpoint(gg_rct_IntroWorldCP_1_2, gg_rct_IntroWorld_R3)
-        
+		
         set startables = SimpleList_List.create()
         
         set boundedSpoke = BoundedSpoke.create(11970, 14465)
@@ -294,8 +294,8 @@ library GameStart initializer Init requires Levels, EDWVisualVote, UnitGlobals, 
         
         //LEVEL 4
         set l = Levels_Level.create(24, "Hard Angles", 6, 6, "IW4Start", "IW4Stop", gg_rct_IWR_4_1, gg_rct_IW4_Vision, gg_rct_IW4_End, l)
-        set cpID = l.AddCheckpoint(gg_rct_IWCP_4_1, gg_rct_IWR_4_2)
-        set l.CPColors[cpID] = KEY_RED
+        set cp = l.AddCheckpoint(gg_rct_IWCP_4_1, gg_rct_IWR_4_2)
+        set cp.DefaultColor = KEY_RED
         call l.AddCheckpoint(gg_rct_IWCP_4_2, gg_rct_IWR_4_3)
         
         set startables = SimpleList_List.create()
@@ -364,12 +364,14 @@ library GameStart initializer Init requires Levels, EDWVisualVote, UnitGlobals, 
         //LEVEL 2
         set l = Levels_Level.create(16, "Palindrome", 5, 5, "PW2Start", "PW2Stop", gg_rct_PWR_2_1, gg_rct_PW2_Vision, gg_rct_PW2_End, l) //gg_rct_PW1_Vision
         //set cpID = l.AddCheckpoint(gg_rct_PWCP_2_1, gg_rct_PWR_2_2)
-        set cpID = l.AddCheckpoint(gg_rct_PWCP_2_2, gg_rct_PWR_2_3)
-        set cpID = l.AddCheckpoint(gg_rct_PWCP_2_3, gg_rct_PWR_2_4)
-        set l.CPDefaultGameModes[cpID] = Teams_GAMEMODE_PLATFORMING
-        set cpID = l.AddCheckpoint(gg_rct_PWCP_2_4, gg_rct_PWR_2_5)
-        set l.CPDefaultGameModes[cpID] = Teams_GAMEMODE_PLATFORMING
-        set l.CPRequiresLastCP[cpID] = true
+        call l.AddCheckpoint(gg_rct_PWCP_2_2, gg_rct_PWR_2_3)
+        
+		set cp = l.AddCheckpoint(gg_rct_PWCP_2_3, gg_rct_PWR_2_4)
+        set cp.DefaultGameMode = Teams_GAMEMODE_PLATFORMING
+        
+		set cp = l.AddCheckpoint(gg_rct_PWCP_2_4, gg_rct_PWR_2_5)
+        set cp.DefaultGameMode = Teams_GAMEMODE_PLATFORMING
+        set cp.RequiresSameGameMode = true
                 
         set startables = SimpleList_List.create()
         set l.Content.Startables = startables
@@ -414,13 +416,16 @@ library GameStart initializer Init requires Levels, EDWVisualVote, UnitGlobals, 
         
         //LEVEL 3
         set l = Levels_Level.create(23, "Playground", 5, 4, "PW3Start", "PW3Stop", gg_rct_PWR_3_1, gg_rct_PW3_Vision, gg_rct_PW3_End, l) //gg_rct_PW1_Vision
-        set l.CPDefaultGameModes[0] = Teams_GAMEMODE_PLATFORMING
-        set cpID = l.AddCheckpoint(gg_rct_PWCP_3_1, gg_rct_PWR_3_2)
-        set l.CPDefaultGameModes[cpID] = Teams_GAMEMODE_PLATFORMING
-        set cpID = l.AddCheckpoint(gg_rct_PWCP_3_2, gg_rct_PWR_3_3)
-        set l.CPDefaultGameModes[cpID] = Teams_GAMEMODE_PLATFORMING
-        set cpID = l.AddCheckpoint(gg_rct_PWCP_3_3, gg_rct_PWR_3_4)
-        set l.CPDefaultGameModes[cpID] = Teams_GAMEMODE_PLATFORMING
+        set Checkpoint(l.Checkpoints.first.value).DefaultGameMode = Teams_GAMEMODE_PLATFORMING
+        
+		set cp = l.AddCheckpoint(gg_rct_PWCP_3_1, gg_rct_PWR_3_2)
+        set cp.DefaultGameMode = Teams_GAMEMODE_PLATFORMING
+        
+		set cp = l.AddCheckpoint(gg_rct_PWCP_3_2, gg_rct_PWR_3_3)
+        set cp.DefaultGameMode = Teams_GAMEMODE_PLATFORMING
+        
+		set cp = l.AddCheckpoint(gg_rct_PWCP_3_3, gg_rct_PWR_3_4)
+        set cp.DefaultGameMode = Teams_GAMEMODE_PLATFORMING
         
         set startables = SimpleList_List.create()
         set l.Content.Startables = startables
@@ -501,17 +506,12 @@ library GameStart initializer Init requires Levels, EDWVisualVote, UnitGlobals, 
         call startables.add(wheel)
         
         //call l.AddTeamCB("PW3TeamStart", "PW3TeamStop")
-        /*
-        set cpID = l.AddCheckpoint(gg_rct_PWCP_2_1, gg_rct_PWR_2_2)
-        set l.CPDefaultGameModes[cpID] = Teams_GAMEMODE_PLATFORMING
-        set cpID = l.AddCheckpoint(gg_rct_PWCP_2_2, gg_rct_PWR_2_3)
-        set l.CPDefaultGameModes[cpID] = Teams_GAMEMODE_PLATFORMING
-        */
+
         
         //Justine's Four Seasons
 		set l = Levels_Level.create(7, "Spring", 3, 2, "FourSeason1Start", "FourSeason1Stop", gg_rct_FSR_1_1, gg_rct_FS1_Vision, gg_rct_FS1_End, 0)
 		
-		set cpID = l.AddCheckpoint(gg_rct_FSCP_1_1, gg_rct_FSR_1_2)
+		call l.AddCheckpoint(gg_rct_FSCP_1_1, gg_rct_FSR_1_2)
 		
 		set startables = SimpleList_List.create()
 		set l.Content.Startables = startables
@@ -522,7 +522,7 @@ library GameStart initializer Init requires Levels, EDWVisualVote, UnitGlobals, 
         
         //Testing world / secret world
         set l = Levels_Level.create(66, "Test Platforming", 0, 0, null, null, gg_rct_SWR_1_1, null, null, 0)
-        set l.CPDefaultGameModes[0] = Teams_GAMEMODE_PLATFORMING
+        set Checkpoint(l.Checkpoints.first.value).DefaultGameMode = Teams_GAMEMODE_PLATFORMING
         
         set l = Levels_Level.create(67, "Test Standard", 0, 0, null, null, gg_rct_SWR_2_1, null, null, l)
     endfunction

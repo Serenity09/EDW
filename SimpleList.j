@@ -66,6 +66,25 @@ library SimpleList requires Alloc
             
             return pop
         endmethod
+		public method get takes integer index returns ListNode
+			local ListNode cur
+            local integer i = 0
+			
+			if i >= .count then
+				return 0
+			else
+				set cur = .first
+				
+				loop
+				exitwhen i == index
+				set i = i + 1
+				set cur = cur.next
+				endloop
+				
+				return cur
+			endif
+		endmethod
+		
         public method remove takes integer value returns nothing
             local ListNode cur = .first
             
