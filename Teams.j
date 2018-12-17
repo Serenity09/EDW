@@ -30,7 +30,7 @@ public struct MazingTeam
     public integer ContinueCount
     public boolean RecentlyTransferred
     public real LastTransferTime
-    public integer OnLevel
+    public Levels_Level OnLevel
     public string TeamName
     public integer OnCheckpoint //Used purely in conjunction with levels struct. ==0 refers to the initial CP for a level
     public integer Score
@@ -490,7 +490,7 @@ public struct MazingTeam
             
             if GetPlayerSlotState(Player(pID)) == PLAYER_SLOT_STATE_PLAYING then          
 				call MultiboardSetItemValue(MultiboardGetItem(.PlayerStats, pID + 1, 0), .GetStylizedPlayerName(pID))
-                call MultiboardSetItemValue(MultiboardGetItem(.PlayerStats, pID + 1, 1), Levels_Level(.OnLevel).Name)
+                call MultiboardSetItemValue(MultiboardGetItem(.PlayerStats, pID + 1, 1), .OnLevel.Name)
                 call MultiboardSetItemValue(MultiboardGetItem(.PlayerStats, pID + 1, 2), I2S(.Score))
                 call MultiboardSetItemValue(MultiboardGetItem(.PlayerStats, pID + 1, 3), I2S(.ContinueCount))
                 call MultiboardSetItemValue(MultiboardGetItem(.PlayerStats, pID + 1, 4), I2S(u.Deaths))
@@ -642,7 +642,7 @@ public struct MazingTeam
                 set mt = u.Team
                 
                 call MultiboardSetItemValue(MultiboardGetItem(.PlayerStats, i + 1, 0), mt.GetStylizedPlayerName(i))
-                call MultiboardSetItemValue(MultiboardGetItem(.PlayerStats, i + 1, 1), Levels_Level(mt.OnLevel).Name)
+                call MultiboardSetItemValue(MultiboardGetItem(.PlayerStats, i + 1, 1), mt.OnLevel.Name)
                 call MultiboardSetItemValue(MultiboardGetItem(.PlayerStats, i + 1, 2), I2S(mt.Score))
                 call MultiboardSetItemValue(MultiboardGetItem(.PlayerStats, i + 1, 3), I2S(mt.ContinueCount))
                 call MultiboardSetItemValue(MultiboardGetItem(.PlayerStats, i + 1, 4), I2S(u.Deaths))

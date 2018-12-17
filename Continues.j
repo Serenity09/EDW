@@ -6,7 +6,7 @@ public function onPlayerUnitDiedCB takes nothing returns nothing
     local User user = User.GetUserFromPlayerID(pID)
 	
     local Teams_MazingTeam mt = user.Team
-    local Levels_Level level = Levels_Level(mt.OnLevel)
+    local Levels_Level level = mt.OnLevel
 	
 	//check that the user is still dying -- they might have been revived in the mean-time
 	if user.IsAlive then
