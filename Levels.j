@@ -19,6 +19,10 @@ library Levels initializer Init requires SimpleList, Teams, GameModesGlobals, Ci
         
 		private constant boolean DEBUG_START_STOP = false
 		private constant boolean DEBUG_LEVEL_CHANGE = false
+		
+		//used with events
+		Levels_Level TriggerCurrentLevel
+		Levels_Level TriggerPreviousLevel
     endglobals
     
 	//TODO this struct turned into just an extension of Level -- refactor back into level
@@ -39,18 +43,18 @@ library Levels initializer Init requires SimpleList, Teams, GameModesGlobals, Ci
             
             if .StartFunction != null then
                 call ExecuteFunc(.StartFunction)
+			endif
                 
-                if .Startables != 0 then
-                    //debug call .Startables.print(0)
-                    set startableNode = .Startables.first
-                    
-                    loop
-                    exitwhen startableNode == 0
-                        call IStartable(startableNode.value).Start()
-                    set startableNode = startableNode.next
-                    endloop
-                endif
-            endif
+			if .Startables != 0 then
+				//debug call .Startables.print(0)
+				set startableNode = .Startables.first
+				
+				loop
+				exitwhen startableNode == 0
+					call IStartable(startableNode.value).Start()
+				set startableNode = startableNode.next
+				endloop
+			endif
         endmethod
         
         public method Stop takes nothing returns nothing
@@ -58,18 +62,18 @@ library Levels initializer Init requires SimpleList, Teams, GameModesGlobals, Ci
             
             if .StopFunction != null then
                 call ExecuteFunc(.StopFunction)
-                
-                if .Startables != 0 then
-                    //debug call .Startables.print(0)
-                    set startableNode = .Startables.first
-                    
-                    loop
-                    exitwhen startableNode == 0
-                        call IStartable(startableNode.value).Stop()
-                    set startableNode = startableNode.next
-                    endloop
-                endif
             endif
+			
+			if .Startables != 0 then
+				//debug call .Startables.print(0)
+				set startableNode = .Startables.first
+				
+				loop
+				exitwhen startableNode == 0
+					call IStartable(startableNode.value).Stop()
+				set startableNode = startableNode.next
+				endloop
+			endif
         endmethod
         
         public method HasPreload takes nothing returns boolean
@@ -139,6 +143,9 @@ library Levels initializer Init requires SimpleList, Teams, GameModesGlobals, Ci
         
         public SimpleList_List ActiveTeams
         public static SimpleList_List ActiveLevels
+		
+		//used with events
+		
                         
         public method Start takes nothing returns nothing
             static if DEBUG_START_STOP then
@@ -422,13 +429,13 @@ library Levels initializer Init requires SimpleList, Teams, GameModesGlobals, Ci
 							set i = 0
 							loop
 							exitwhen i == WorldCount or nextLevel != 0
-								if RectContainsCoords(DoorRects[i], x, y) then
+								if DoorRects[i] != null and RectContainsCoords(DoorRects[i], x, y) then
 									set nextLevel = Level(i + DOORS_LEVEL_ID + 1) //levels take standard structure after the DOORS level
 								endif
 							set i = i + 1
 							endloop
 						else
-							if RectContainsCoords(Level(curLevel.value).LevelEnd, x, y) then
+							if Level(curLevel.value).LevelEnd != null and RectContainsCoords(Level(curLevel.value).LevelEnd, x, y) then
 								//check if there's a sequential level after the current one
 								if Level(curLevel.value).NextLevel != 0 then
 									set nextLevel = Level(curLevel.value).NextLevel
@@ -457,6 +464,9 @@ library Levels initializer Init requires SimpleList, Teams, GameModesGlobals, Ci
 					
 					//apply either the next level or the next checkpoint or neither to the current team (never apply both)
 					if nextLevel != 0 then
+						static if DEBUG_LEVEL_CHANGE then
+							call DisplayTextToForce(bj_FORCE_PLAYER[0], "Team entered transfer leading to  " + I2S(nextLevel))
+						endif
 						call Level(curLevel.value).ApplyLevelRewards(User(curUser.value), Teams_MazingTeam(curTeam.value), nextLevel)
 						call Level(curLevel.value).SwitchLevels(Teams_MazingTeam(curTeam.value), nextLevel)
 					elseif nextCheckpointID >= 0 then
@@ -509,7 +519,8 @@ library Levels initializer Init requires SimpleList, Teams, GameModesGlobals, Ci
                 loop
                 exitwhen curCinematic == 0
                     //call DisplayTextToForce(bj_FORCE_PLAYER[0], "Checking cinematic " + I2S(curCinematic.value) + ", total count: " + I2S(thistype(curLevel.value).Cinematics.count))
-                    set curTeam = thistype(curLevel.value).ActiveTeams.first
+                    
+					set curTeam = thistype(curLevel.value).ActiveTeams.first
                     
                     loop
                     exitwhen curTeam == 0
@@ -565,6 +576,8 @@ library Levels initializer Init requires SimpleList, Teams, GameModesGlobals, Ci
             set new.PrevLevel = intro
             set intro.NextLevel = new
 			
+			set new.Cinematics = SimpleList_List.create()
+            set new.ActiveTeams = SimpleList_List.create()
 			
 			set DoorRects[0] = gg_rct_IW_Entrance
 			//set DoorRects[1] = gg_rct_LW_Entrance
@@ -619,6 +632,82 @@ library Levels initializer Init requires SimpleList, Teams, GameModesGlobals, Ci
             return new
         endmethod
     endstruct
+	
+	function interface BossBehavior takes BossLevel bossLevel returns nothing
+	
+	struct Boss extends array
+		public integer UnitID
+		public unit Unit
+		public BossBehavior Behavior
+		
+		//use unit object for all possible properties
+		
+		implement Alloc
+	endstruct
+		
+	struct BossLevel extends array
+		public SimpleList_List TeamQueue
+		public Boss Boss
+		public Checkpoint OnCheckpoint
+		public SimpleList_List CurrentTargets
+		
+		private static SimpleList_List ActiveBosses
+		
+		public method ResetTargets takes nothing returns nothing
+			local SimpleList_ListNode curUser = .GetTeam().FirstUser
+			
+			loop
+			exitwhen curUser == 0
+				call .CurrentTargets.addEnd(curUser.value)
+			set curUser = curUser.next
+			endloop
+		endmethod
+		
+		//give a user who just died a temporary reprieve
+		private method OnPlayerDeath takes nothing returns nothing
+			if .CurrentTargets.contains(TriggerUser) then
+				call .CurrentTargets.remove(TriggerUser)
+			endif
+		endmethod
+		private method OnLevelChange takes nothing returns nothing
+			if TriggerCurrentLevel == this then
+				if .GetTeam() == 0 then
+					
+				else
+					call .TeamQueue.addEnd(TriggerTeam)
+				endif
+			elseif TriggerPreviousLevel == this then
+				
+			endif
+		endmethod
+		private method OnCheckpointChange takes nothing returns nothing
+			
+		endmethod
+		
+		private static method RunBossBehavior takes nothing returns nothing
+			local SimpleList_ListNode curBoss = thistype.ActiveBosses.first
+			
+			loop
+			exitwhen curBoss == 0
+				
+			set curBoss = curBoss.next
+			endloop
+		endmethod
+		
+		public method GetTeam takes nothing returns Teams_MazingTeam
+			return Level(this).ActiveTeams.first
+		endmethod
+		
+		public static method create takes integer bossLevelID, string bossName, integer rawContinues, integer rawScore, string startFunction, string stopFunction, rect startspawn, rect vision, Level previousLevel returns BossLevel
+			local thistype new = Level.create(bossLevelID, bossName, rawContinues, rawScore, startFunction, stopFunction, startspawn, vision, null, previousLevel)
+			
+			return new
+		endmethod
+		
+		private static method onInit takes nothing returns nothing
+			//listen to LevelChange and CheckpointChange events
+		endmethod
+	endstruct
     
     private function Init takes nothing returns nothing
         set Levels_Level.ActiveLevels = SimpleList_List.create()

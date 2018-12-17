@@ -11,6 +11,8 @@ globals
     public constant integer GAMEMODE_DEAD = 101
     
     public constant real MULTIBOARD_HIDE_DELAY = 2.
+	
+	Teams_MazingTeam TriggerTeam //used with events
 endglobals
 
 //ASSUMPTIONS: !!IMPORTANT!!

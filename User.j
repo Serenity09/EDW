@@ -1,5 +1,9 @@
 library User requires MazerGlobals, Platformer, TerrainHelpers, Cinema
 
+globals
+	User TriggerUser //used with events
+endglobals
+
 struct User extends array
     //public integer PlayerID
     public boolean IsPlaying
@@ -16,7 +20,7 @@ struct User extends array
 	public effect ActiveEffect
     
     public static integer ActivePlayers
-    
+	
     //TODO
     //public integer TotalScore
     //public integer ResourceCount
