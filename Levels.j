@@ -4,16 +4,19 @@ library Levels initializer Init requires SimpleList, Teams, GameModesGlobals, Ci
         public constant integer     INTRO_LEVEL_ID = 1
         public constant integer     DOORS_LEVEL_ID = 2
         public constant integer     TEMP_LEVEL_ID = 1000
-        private region array        DoorsRegions[NumberPlayers]
-        
+		
+		constant integer WorldCount = 7
+		private rect array DoorRects[WorldCount]
+		
+		public constant real TRANSFER_TIMER_TIMEOUT = .05
         public constant real CINEMATIC_TIMER_TIMEOUT = .5
-        public constant real CHECKPOINT_TIMER_TIMEOUT = .1
         
         public constant real EASY_SCORE_MODIFIER = 1.
         public constant real HARD_SCORE_MODIFIER = 1.25
-        public constant real EASY_CONTINUE_MODIFIER = 1.25
-        public constant integer EASY_MAX_CONTINUE_ROLLOVER = 2
-        public constant real HARD_CONTINUE_MODIFIER = .75
+        public constant real EASY_CONTINUE_MODIFIER = 1.5
+        public constant integer EASY_MAX_CONTINUE_ROLLOVER = 3
+		public constant integer HARD_MAX_CONTINUE_ROLLOVER = 0
+        public constant real HARD_CONTINUE_MODIFIER = .8
         
 		private constant boolean DEBUG_START_STOP = false
 		private constant boolean DEBUG_LEVEL_CHANGE = false
@@ -88,7 +91,6 @@ library Levels initializer Init requires SimpleList, Teams, GameModesGlobals, Ci
     
     /*
     public struct Checkpoint extends array
-        public region Entrance
         public rect ReviveCenter
         public integer DefaultColor
         public integer DefaultGameMode
@@ -117,17 +119,17 @@ library Levels initializer Init requires SimpleList, Teams, GameModesGlobals, Ci
         //readonly rect        StartRect       //marks the position to move the revive rect
         public rect        Vision          //the bounds placed on a player's vision
         //readonly rect        CPToHere        //the checkpoint that triggers this level
-        public static trigger CPToHereTrigger
-        readonly region array CPGates[8]     //entering this region triggers the CP update action
+        public rect LevelEnd				//rect that marks the end of this level
+        readonly rect array  CPGates[8]     //entering this region triggers the CP update action
         readonly rect array  CPCenters[8]    //where to refocus the revive rect to
         public integer array CPColors[8]   //what color key should be applied (if any) after transfering
         public integer array CPDefaultGameModes[8]  //
         public boolean array CPRequiresLastCP[8] //can the unit activate this checkpoint at any moment, allowing skill skips, or is it too abusable for this cp and it's easiest to require that they've gotten the last CP already
-        private string  TeamStartCB
+        public boolean array CPRequiresSameGameMode[8]
+		private string  TeamStartCB
         private string  TeamStopCB
         readonly static Teams_MazingTeam CBTeam
         readonly integer     CPCount         //how many checkpoints there are registered for the level
-        public static trigger CPTrigger //this trigger handles the levels CP events
         public Level         NextLevel       //pointer to the next Level struct
         public Level         PrevLevel       //pointer to the prev Level struct
         //public integer       DefaultGameMode
@@ -281,55 +283,18 @@ library Levels initializer Init requires SimpleList, Teams, GameModesGlobals, Ci
             //TODO add team wide CP effect instead of CP effect on first user in team
             //call CPEffect(mt.FirstUser.value)
         endmethod
-        
-        public static method EntersCheckpoint takes nothing returns nothing
-            local region r = GetTriggeringRegion()
-            local unit u = GetTriggerUnit()
-            local integer i = GetPlayerId(GetOwningPlayer(u))
-            local integer cur = 0
-            
-            local User user = User.GetUserFromPlayerID(i)
-            local Teams_MazingTeam mt = user.Team
-            local Level level = Levels[mt.OnLevel]
-
-            
-            //call DisplayTextToForce(bj_FORCE_PLAYER[0], "Entering CP on level " + level.Name)
-            
-            if mt != 0 then
-                loop
-                    if (r == level.CPGates[cur]) then
-                        //call DisplayTextToForce(bj_FORCE_PLAYER[0], "Mathched checkpoint " + I2S(cur) + ", team on: " + I2S(mt.OnCheckpoint))
-                        if cur > mt.OnCheckpoint and (not level.CPRequiresLastCP[cur] or mt.OnCheckpoint + 1 == cur) then //alternatively cur == mt.OnCheckpoint + 1 if want to ensure no skipping in level                            
-                            call level.SetCheckpointForTeam(mt, cur)
-                            
-                            call CPEffect(i)
-                        endif
-                    else
-                        //call DisplayTextToForce(bj_FORCE_PLAYER[0], "Region not the same " + I2S(cur))
-                    endif
-                    
-                    set cur = cur + 1
-                    exitwhen cur >= level.CPCount
-                endloop
-            endif
-            
-        endmethod
-                
+                        
         public method AddCheckpoint takes rect gate, rect center returns integer
             local integer cpID = .CPCount
             set .CPCenters[cpID] = center
             
-            //TODO handle Checkpoint and level transfer logic via custom rect iterator, which only iterates the active levels instead of all available
-            set .CPGates[cpID] = CreateRegion()
-            if gate != null then
-                call RegionAddRect(.CPGates[cpID], gate)
-                call TriggerRegisterEnterRegion(.CPTrigger, .CPGates[cpID], PlayerOwned)
-            endif
+            set .CPGates[cpID] = gate
             
             //set defaults
             set .CPColors[cpID] = KEY_NONE //by default no color
             set .CPDefaultGameModes[cpID] = Teams_GAMEMODE_STANDARD
             set .CPRequiresLastCP[cpID] = false
+			set .CPRequiresSameGameMode[cpID] = false
             
             set .CPCount = .CPCount + 1
             
@@ -352,33 +317,27 @@ library Levels initializer Init requires SimpleList, Teams, GameModesGlobals, Ci
             call ReleaseTimer(t)
             set t = null
         endmethod
-                
-        //update level continuously or discontinuously from one to the next. IE lvl 1 -> 2 -> 3 -> 4 OR 1 -> 4 -> 2 etc
-        public method SwitchLevels takes Teams_MazingTeam mt, Level nextLevel returns nothing
-            local integer originalContinues
+        
+		public method ApplyLevelRewards takes User u, Teams_MazingTeam mt, Level nextLevel returns nothing			
+			local integer score = 0
+			
+			local integer originalContinues = mt.ContinueCount
 			local integer rolloverContinues
 			local integer nextLevelContinues
 			
-			static if DEBUG_LEVEL_CHANGE then
-				call DisplayTextToForce(bj_FORCE_PLAYER[0], "From (static) " + I2S(this.LevelID) + " To " + I2S(nextLevel.LevelID))
-				call DisplayTextToForce(bj_FORCE_PLAYER[0], "From " + I2S(this) + " To " + I2S(nextLevel))
-            endif
+			//update score
+			if RewardMode == GameModesGlobals_EASY or RewardMode == GameModesGlobals_CHEAT then
+				set score = R2I(.RawScore*EASY_SCORE_MODIFIER + .5)
+			elseif RewardMode == GameModesGlobals_HARD then
+				set score = R2I(.RawScore*HARD_SCORE_MODIFIER + .5)
+			endif
+            if score > 0 then
+				call mt.PrintMessage("Your score has increased by " + ColorMessage(I2S(score), SPEAKER_COLOR))
+				set mt.Score = mt.Score + score
+			endif
 			
-			call mt.ClearCinematicQueue()
-			
-            set this.CBTeam = mt
-            call this.ActiveTeams.remove(mt)
-            
-            set mt.OnLevel = TEMP_LEVEL_ID
-            call this.Stop() //only stops the level if no ones on it. reloads preload scripts after if necessary
-            //debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "Stopped")
-            call nextLevel.Start() //only starts the next level if there is one -- also preloads the following level
-            
-            set mt.OnLevel = nextLevel.LevelID
-			
-			if RewardMode == GameModesGlobals_EASY or RewardMode == GameModesGlobals_HARD then
-				set originalContinues = mt.ContinueCount
-				
+			//update continues
+			if RewardMode == GameModesGlobals_EASY or RewardMode == GameModesGlobals_HARD then				
 				if RewardMode == GameModesGlobals_EASY then
 					if mt.ContinueCount > EASY_MAX_CONTINUE_ROLLOVER then
 						set rolloverContinues = EASY_MAX_CONTINUE_ROLLOVER
@@ -388,16 +347,42 @@ library Levels initializer Init requires SimpleList, Teams, GameModesGlobals, Ci
 					
 					set nextLevelContinues = R2I(nextLevel.RawContinues*EASY_CONTINUE_MODIFIER + .5)
 				elseif RewardMode == GameModesGlobals_HARD then
-					set rolloverContinues = 0
+					if mt.ContinueCount > HARD_MAX_CONTINUE_ROLLOVER then
+						set rolloverContinues = HARD_MAX_CONTINUE_ROLLOVER
+					else
+						set rolloverContinues = mt.ContinueCount
+					endif
+					
 					set nextLevelContinues = R2I(nextLevel.RawContinues*HARD_CONTINUE_MODIFIER + .5)
 				endif
 				
-				set mt.ContinueCount = rolloverContinues + nextLevelContinues
-				
-				//call mt.PrintMessage("Starting level " + ColorMessage(nextLevel.Name, SPEAKER_COLOR) + "!")
-				call mt.PrintMessage("You kept " + ColorMessage(I2S(rolloverContinues), SPEAKER_COLOR) + " of your " + ColorMessage(I2S(originalContinues), SPEAKER_COLOR) + " continues, and gained " + ColorMessage(I2S(nextLevelContinues), SPEAKER_COLOR) + " extra continues to boot")
+				if originalContinues != rolloverContinues + nextLevelContinues then
+					set mt.ContinueCount = rolloverContinues + nextLevelContinues
+					
+					//call mt.PrintMessage("Starting level " + ColorMessage(nextLevel.Name, SPEAKER_COLOR) + "!")
+					call mt.PrintMessage("You kept " + ColorMessage(I2S(rolloverContinues), SPEAKER_COLOR) + " of your " + ColorMessage(I2S(originalContinues), SPEAKER_COLOR) + " continues, and gained " + ColorMessage(I2S(nextLevelContinues), SPEAKER_COLOR) + " extra continues to boot")
+				endif
 			endif
+		endmethod
+		
+        //update level continuously or discontinuously from one to the next. IE lvl 1 -> 2 -> 3 -> 4 OR 1 -> 4 -> 2 etc
+        public method SwitchLevels takes Teams_MazingTeam mt, Level nextLevel returns nothing			
+			static if DEBUG_LEVEL_CHANGE then
+				call DisplayTextToForce(bj_FORCE_PLAYER[0], "From (static) " + I2S(this.LevelID) + " To " + I2S(nextLevel.LevelID))
+				call DisplayTextToForce(bj_FORCE_PLAYER[0], "From " + I2S(this) + " To " + I2S(nextLevel))
+            endif
+			
+			call mt.ClearCinematicQueue()
+			
+            set this.CBTeam = mt
+            call this.ActiveTeams.remove(mt)
+						
+            set mt.OnLevel = TEMP_LEVEL_ID
+            call this.Stop() //only stops the level if no ones on it. reloads preload scripts after if necessary
+            //debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "Stopped")
+            call nextLevel.Start() //only starts the next level if there is one -- also preloads the following level
             
+            set mt.OnLevel = nextLevel.LevelID            
             call nextLevel.ActiveTeams.add(mt)
             
             if this.TeamStopCB != null then
@@ -419,75 +404,85 @@ library Levels initializer Init requires SimpleList, Teams, GameModesGlobals, Ci
             //multiboard update
             //call mt.UpdateMultiboard()
         endmethod
-        
-        //handles transfers
-        public static method EntersLevelTransfer takes nothing returns nothing
-            //local real elapsed = GameElapsedTime()
-            local region r = GetTriggeringRegion()
-            local unit   u = GetTriggerUnit()
-            local integer i = GetPlayerId(GetOwningPlayer(u))
+        		
+		public static method CheckTransfers takes nothing returns nothing
+            local SimpleList_ListNode curLevel = thistype.ActiveLevels.first
+            local SimpleList_ListNode curTeam
+            local SimpleList_ListNode curUser
             
-            local User user = User.GetUserFromPlayerID(i)
-            local Teams_MazingTeam mt = user.Team
-            
-            local Level curLevel = Levels[mt.OnLevel]
+			local integer i
+			local real x
+			local real y
+			
             local Level nextLevel
+			local integer nextCheckpoint
 			
-			local integer score
-            
-			static if DEBUG_LEVEL_CHANGE then
-				call DisplayTextToForce(bj_FORCE_PLAYER[0], "Entered level transfer region on level " + I2S(curLevel.LevelID))
-            endif
-			
-            //call KillUnit(u)
-            if mt != 0 and not mt.RecentlyTransferred then //levels 0, 1 have special hardcoded level transfers -- esp for hub                
-                set mt.RecentlyTransferred = true
-                //set mt.LastTransferTime = elapsed
-                				
-                if RewardMode == GameModesGlobals_EASY or RewardMode == GameModesGlobals_CHEAT then
-                    set score = R2I(curLevel.RawScore*EASY_SCORE_MODIFIER + .5)
-                elseif RewardMode == GameModesGlobals_HARD then
-                    set score = R2I(curLevel.RawScore*HARD_SCORE_MODIFIER + .5)
-                endif
+            loop
+            exitwhen curLevel == 0
+				set curTeam = thistype(curLevel.value).ActiveTeams.first
 				
-				//call mt.PrintMessage("Cleared level " + ColorMessage(curLevel.Name, SPEAKER_COLOR) + "!")
-				if score > 0 then
-					call mt.PrintMessage("Your score has increased by " + ColorMessage(I2S(score), SPEAKER_COLOR))
-				endif
-				
-				set mt.Score = mt.Score + score
+				loop
+				exitwhen curTeam == 0
+					//call DisplayTextToForce(bj_FORCE_PLAYER[0], "Checking team " + I2S(curTeam.value))
+					set nextLevel = 0
+					set nextCheckpoint = -1
+					set curUser = Teams_MazingTeam(curTeam.value).Users.first
+											
+					loop
+					exitwhen curUser == 0 or nextLevel != 0
+						//call DisplayTextToForce(bj_FORCE_PLAYER[0], "Checking player " + I2S(curUser.value))
+						
+						set x = GetUnitX(User(curUser.value).ActiveUnit)
+						set y = GetUnitY(User(curUser.value).ActiveUnit)
+						
+						//check level transfer(s)
+						if Level(curLevel.value).LevelID == DOORS_LEVEL_ID then
+							set i = 0
+							loop
+							exitwhen i == WorldCount or nextLevel != 0
+								if RectContainsCoords(DoorRects[i], x, y) then
+									set nextLevel = Levels[i + DOORS_LEVEL_ID + 1] //levels take standard structure after the DOORS level
+								endif
+							set i = i + 1
+							endloop
+						else
+							if RectContainsCoords(Level(curLevel.value).LevelEnd, x, y) then
+								set nextLevel = Level(curLevel.value).NextLevel
+							endif
+						endif
+						
+						///check for any checkpoints if nothing has been found yet
+						if nextLevel == 0 and nextCheckpoint == -1 then
+							set i = 0
+							loop
+							exitwhen i == Level(curLevel.value).CPCount or nextCheckpoint >= 0
+								if i > Teams_MazingTeam(curTeam.value).OnCheckpoint and (not Level(curLevel.value).CPRequiresSameGameMode[i] or User(curUser.value).GameMode == Level(curLevel.value).CPDefaultGameModes[i]) and RectContainsCoords(Level(curLevel.value).CPGates[i], x, y) then
+									set nextCheckpoint = i
+								endif
+							set i = i + 1
+							endloop
+						endif
+					set curUser = curUser.next
+					endloop
+					
+					//apply either the next level or the next checkpoint or neither to the current team (never apply both)
+					if nextLevel != 0 then
+						call Level(curLevel.value).ApplyLevelRewards(User(curUser.value), Teams_MazingTeam(curTeam.value), nextLevel)
+						call Level(curLevel.value).SwitchLevels(Teams_MazingTeam(curTeam.value), nextLevel)
+					elseif nextCheckpoint >= 0 then
+						call Level(curLevel.value).SetCheckpointForTeam(Teams_MazingTeam(curTeam.value), nextCheckpoint)
+					endif
+					
+				set curTeam = curTeam.next
+				endloop
                 
-                //determine what the next level is, based on what the current level is
-                if mt.OnLevel == DOORS_LEVEL_ID then
-                    call mt.MoveReviveToDoors() //not pretty but it works
-                    
-                    if r == DoorsRegions[0] then
-                        debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "ice")
-                        set nextLevel = Levels_Levels[3]
-                    elseif r == DoorsRegions[1] then
-                        //debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "fdsa ")
-                    elseif r == DoorsRegions[2] then
-                        debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "pride")
-                        set nextLevel = Levels_Levels[9]
-                    else
-                        call DisplayTextToForce(bj_FORCE_PLAYER[0], "couldn't match region")
-                    endif
-                else
-                    set nextLevel = curLevel.NextLevel
-                    //debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "going to " + nextLevel.Name)
-                endif
-                
-                call curLevel.SwitchLevels(mt, nextLevel)
-                
-                call TimerStart(NewTimerEx(mt), .5, false, function Levels_Level.EntersLevelTransferCallback)
-            endif            
+            set curLevel = curLevel.next
+            endloop
         endmethod
         
         //creates the level struct / region triggers for the doors area
-        public static method CreateDoors takes Level intro, string startFunction, string stopFunction, rect startspawn, rect vision, rect tothislevel returns Level
+        public static method CreateDoors takes Level intro, string startFunction, string stopFunction, rect startspawn, rect vision returns Level
             local Level new = Level.allocate()
-            local trigger t
-            local region r
             
             set new.LevelID = DOORS_LEVEL_ID
             set new.Name = "Doors"
@@ -506,35 +501,16 @@ library Levels initializer Init requires SimpleList, Teams, GameModesGlobals, Ci
             set Levels[new.LevelID] = new
             set new.PrevLevel = intro
             set intro.NextLevel = new
-            
-            //call DisplayTextToForce(bj_FORCE_PLAYER[0], I2S(Levels[1]) + " " + I2S(Levels[1].PrevLevel) + " " + I2S(Levels[1].PrevLevel.NextLevel))
-            
-            //set t = CreateTrigger()
-            set r = CreateRegion()
-            
-            call RegionAddRect(r, tothislevel)
-            call TriggerRegisterEnterRegion(.CPToHereTrigger, r, PlayerOwned)
-            //call TriggerAddAction(t, function Level.EntersLevelTransfer)
-            
-            //why did i do this...?
-            //! textmacro Levels_CreateDoorsTrigger takes COUNT, RECT
-                set r = CreateRegion()
-                call RegionAddRect(r, $RECT$)
-                set DoorsRegions[$COUNT$] = r
-                call TriggerRegisterEnterRegion(.CPToHereTrigger, r, PlayerOwned)
-                call TriggerAddAction(.CPToHereTrigger, function Level.EntersLevelTransfer)
-            //! endtextmacro
-            
-            //! runtextmacro Levels_CreateDoorsTrigger("0", "gg_rct_IW_Entrance"))
-            //! runtextmacro Levels_CreateDoorsTrigger("1", "gg_rct_LW_Entrance"))
-            //! runtextmacro Levels_CreateDoorsTrigger("2", "gg_rct_PW_Entrance"))
-            
-            set t = null
-            set r = null
+			
+			
+			set DoorRects[0] = gg_rct_IW_Entrance
+			//set DoorRects[1] = gg_rct_LW_Entrance
+			set DoorRects[6] = gg_rct_PW_Entrance
+
             //call DisplayTextToForce(bj_FORCE_PLAYER[0], "Created doors")
             
             return new
-        endmethod
+        endmethod		
         
         public method UnPreload takes nothing returns nothing
             //check that this level is already preloaded, and that there are no teams on this level or the one before it
@@ -611,9 +587,8 @@ library Levels initializer Init requires SimpleList, Teams, GameModesGlobals, Ci
         endmethod
         
         //creates a level struct
-        static method create takes integer LevelID, string name, integer rawContinues, integer rawScore, string startFunction, string stopFunction, rect startspawn, rect vision, rect tothislevel, Level previouslevel returns Level
+        static method create takes integer LevelID, string name, integer rawContinues, integer rawScore, string startFunction, string stopFunction, rect startspawn, rect vision, rect levelEnd, Level previouslevel returns Level
             local Level new = Level.allocate()
-            local region r
             
             //infer this is a partial level
             set new.LevelID = LevelID
@@ -646,14 +621,7 @@ library Levels initializer Init requires SimpleList, Teams, GameModesGlobals, Ci
                 set new.PrevLevel.NextLevel = new
             endif
             
-            if tothislevel != null then
-                set r = CreateRegion()
-                call RegionAddRect(r, tothislevel)
-            
-                call TriggerRegisterEnterRegion(.CPToHereTrigger, r, PlayerOwned)
-                
-                set r = null
-            endif
+			set new.LevelEnd = levelEnd
             
             set new.CPCount = 0
             //use the checkpoint schema for the first checkpoint. region enter event is handled separately, so use null for the region
@@ -665,14 +633,9 @@ library Levels initializer Init requires SimpleList, Teams, GameModesGlobals, Ci
     endstruct
     
     private function Init takes nothing returns nothing
-        set Levels_Level.CPToHereTrigger = CreateTrigger()
-        set Levels_Level.CPTrigger = CreateTrigger()
         set Levels_Level.ActiveLevels = SimpleList_List.create()
-    
-        call TriggerAddAction(Levels_Level.CPToHereTrigger, function Levels_Level.EntersLevelTransfer)
-        call TriggerAddAction(Levels_Level.CPTrigger, function Levels_Level.EntersCheckpoint)
         
+		call TimerStart(CreateTimer(), TRANSFER_TIMER_TIMEOUT, true, function Levels_Level.CheckTransfers)
         call TimerStart(CreateTimer(), CINEMATIC_TIMER_TIMEOUT, true, function Levels_Level.CheckCinematics)
     endfunction
-
 endlibrary

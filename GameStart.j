@@ -130,7 +130,7 @@ library GameStart initializer Init requires Levels, EDWVisualVote, UnitGlobals, 
         call TimerStart(GameInitTimer, GAME_INIT_TIME_INITIAL, false, function GameStart_First)
         
         //FIRST LEVEL INITS HARD CODED
-        set l = Levels_Level.create(1, "???", 0, 0, "IntroWorldLevelStart", "IntroWorldLevelStop", gg_rct_IntroWorld_R1, gg_rct_IntroWorld_Vision, null, 0)
+        set l = Levels_Level.create(1, "???", 0, 0, "IntroWorldLevelStart", "IntroWorldLevelStop", gg_rct_IntroWorld_R1, gg_rct_IntroWorld_Vision, gg_rct_IntroWorld_End, 0)
         //1st level is now handled in EDWVisualVote vote finish callback
         //call l.StartLevel() //just start it, intro level vision handled by Reveal Intro World... i like the reveal effect
         call l.AddCheckpoint(gg_rct_IntroWorldCP_1_1, gg_rct_IntroWorld_R2)
@@ -239,7 +239,7 @@ library GameStart initializer Init requires Levels, EDWVisualVote, UnitGlobals, 
         
         //DOORS HARD CODED
         //currently no start or stop logic
-        call Levels_Level.CreateDoors(l, null, null, gg_rct_HubWorld_R, gg_rct_HubWorld_Vision, gg_rct_IntroWorld_End)
+        call Levels_Level.CreateDoors(l, null, null, gg_rct_HubWorld_R, gg_rct_HubWorld_Vision)
         
         //REMAINING LEVELS
         //takes integer levelID, trigger start, trigger stop, trigger preload, trigger unload, boolean haspreload, rect startspawn, rect vision, rect tothislevel, Level previouslevel returns Level
@@ -247,7 +247,7 @@ library GameStart initializer Init requires Levels, EDWVisualVote, UnitGlobals, 
         //.setPreload(trigger preload, trigger unload) returns Levels_Level
         //ICE WORLD TECH / ENVY WORLD
         //LEVEL 1
-        set l = Levels_Level.create(3, "Cruise Control", 3, 2, "IW1Start", "IW1Stop", gg_rct_IWR_1_1, gg_rct_IW1_Vision, null, 0)
+        set l = Levels_Level.create(3, "Cruise Control", 3, 2, "IW1Start", "IW1Stop", gg_rct_IWR_1_1, gg_rct_IW1_Vision, gg_rct_IW1_End, 0)
         call l.AddCheckpoint(gg_rct_IWCP_1_1, gg_rct_IWR_1_2)
         
         set startables = SimpleList_List.create()
@@ -264,7 +264,7 @@ library GameStart initializer Init requires Levels, EDWVisualVote, UnitGlobals, 
         //call l.SetStartables(startables)
         
         //LEVEL 2
-        set l = Levels_Level.create(10, "Jesus on Wheel", 6, 4, "IW2Start", "IW2Stop", gg_rct_IWR_2_1, gg_rct_IW2_Vision, gg_rct_IW1_End, l)
+        set l = Levels_Level.create(10, "Jesus on Wheel", 6, 4, "IW2Start", "IW2Stop", gg_rct_IWR_2_1, gg_rct_IW2_Vision, gg_rct_IW2_End, l)
         call l.AddCheckpoint(gg_rct_IWCP_2_1, gg_rct_IWR_2_2)
         call l.AddCheckpoint(gg_rct_IWCP_2_2, gg_rct_IWR_2_3)
         
@@ -282,7 +282,7 @@ library GameStart initializer Init requires Levels, EDWVisualVote, UnitGlobals, 
         set l.Content.Startables = startables
         
         //LEVEL 3
-        set l = Levels_Level.create(17, "Illidan Goes Skiing", 8, 8, "IW3Start", "IW3Stop", gg_rct_IWR_3_1, gg_rct_IW3_Vision, gg_rct_IW2_End, l)
+        set l = Levels_Level.create(17, "Illidan Goes Skiing", 8, 8, "IW3Start", "IW3Stop", gg_rct_IWR_3_1, gg_rct_IW3_Vision, gg_rct_IW3_End, l)
         call l.AddCheckpoint(gg_rct_IWCP_3_1, gg_rct_IWR_3_2)
         call l.AddCheckpoint(gg_rct_IWCP_3_2, gg_rct_IWR_3_3)
         call l.AddCheckpoint(gg_rct_IWCP_3_3, gg_rct_IWR_3_4)
@@ -293,7 +293,7 @@ library GameStart initializer Init requires Levels, EDWVisualVote, UnitGlobals, 
         set l.Content.Startables = startables
         
         //LEVEL 4
-        set l = Levels_Level.create(24, "Hard Angles", 6, 6, "IW4Start", "IW4Stop", gg_rct_IWR_4_1, gg_rct_IW4_Vision, gg_rct_IW3_End, l)
+        set l = Levels_Level.create(24, "Hard Angles", 6, 6, "IW4Start", "IW4Stop", gg_rct_IWR_4_1, gg_rct_IW4_Vision, gg_rct_IW4_End, l)
         set cpID = l.AddCheckpoint(gg_rct_IWCP_4_1, gg_rct_IWR_4_2)
         set l.CPColors[cpID] = KEY_RED
         call l.AddCheckpoint(gg_rct_IWCP_4_2, gg_rct_IWR_4_3)
@@ -334,7 +334,7 @@ library GameStart initializer Init requires Levels, EDWVisualVote, UnitGlobals, 
         set l.Content.Startables = startables
         
         //LEVEL 5
-        set l = Levels_Level.create(31, "TODO SHIIIIT", 4, 4, "IW5Start", "IW5Stop", gg_rct_IWR_5_1, gg_rct_IW5_Vision, gg_rct_IW4_End, l)
+        set l = Levels_Level.create(31, "TODO SHIIIIT", 4, 4, "IW5Start", "IW5Stop", gg_rct_IWR_5_1, gg_rct_IW5_Vision, gg_rct_IW5_End, l)
         call l.AddCheckpoint(gg_rct_IWCP_5_1, gg_rct_IWR_5_2)
         
         set startables = SimpleList_List.create()
@@ -347,7 +347,7 @@ library GameStart initializer Init requires Levels, EDWVisualVote, UnitGlobals, 
                 
         //PRIDE WORLD / PLATFORMING
         //LEVEL 1
-        set l = Levels_Level.create(9, "Perspective", 4, 2, "PW1Start", "PW1Stop", gg_rct_PWR_1_1, gg_rct_PW1_Vision, null, 0) //gg_rct_PW1_Vision
+        set l = Levels_Level.create(9, "Perspective", 4, 2, "PW1Start", "PW1Stop", gg_rct_PWR_1_1, gg_rct_PW1_Vision, gg_rct_PW1_End, 0) //gg_rct_PW1_Vision
         call l.AddCheckpoint(gg_rct_PWCP_1_1, gg_rct_PWR_1_2)
         call l.AddCheckpoint(gg_rct_PWCP_1_2, gg_rct_PWR_1_3)
         call l.AddCheckpoint(gg_rct_PWCP_1_3, gg_rct_PWR_1_4)
@@ -362,7 +362,7 @@ library GameStart initializer Init requires Levels, EDWVisualVote, UnitGlobals, 
         
         
         //LEVEL 2
-        set l = Levels_Level.create(16, "Palindrome", 5, 5, "PW2Start", "PW2Stop", gg_rct_PWR_2_1, gg_rct_PW2_Vision, gg_rct_PW1_End, l) //gg_rct_PW1_Vision
+        set l = Levels_Level.create(16, "Palindrome", 5, 5, "PW2Start", "PW2Stop", gg_rct_PWR_2_1, gg_rct_PW2_Vision, gg_rct_PW2_End, l) //gg_rct_PW1_Vision
         //set cpID = l.AddCheckpoint(gg_rct_PWCP_2_1, gg_rct_PWR_2_2)
         set cpID = l.AddCheckpoint(gg_rct_PWCP_2_2, gg_rct_PWR_2_3)
         set cpID = l.AddCheckpoint(gg_rct_PWCP_2_3, gg_rct_PWR_2_4)
@@ -413,7 +413,7 @@ library GameStart initializer Init requires Levels, EDWVisualVote, UnitGlobals, 
         call startables.add(rg)
         
         //LEVEL 3
-        set l = Levels_Level.create(23, "Playground", 5, 4, "PW3Start", "PW3Stop", gg_rct_PWR_3_1, gg_rct_PW3_Vision, gg_rct_PW2_End, l) //gg_rct_PW1_Vision
+        set l = Levels_Level.create(23, "Playground", 5, 4, "PW3Start", "PW3Stop", gg_rct_PWR_3_1, gg_rct_PW3_Vision, gg_rct_PW3_End, l) //gg_rct_PW1_Vision
         set l.CPDefaultGameModes[0] = Teams_GAMEMODE_PLATFORMING
         set cpID = l.AddCheckpoint(gg_rct_PWCP_3_1, gg_rct_PWR_3_2)
         set l.CPDefaultGameModes[cpID] = Teams_GAMEMODE_PLATFORMING
