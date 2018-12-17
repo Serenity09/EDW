@@ -5,10 +5,12 @@ globals
     //WC3 implements a positive buffer of about 3 seconds under the hood of this function
     //probably should not cause a negative result -- see the shortest message time in GameStart
     constant real MESSAGE_ALIVE_BUFFER = -2.
-    constant real CONVERSATION_BUFFER = 2.
+    constant real DEFAULT_CONVERSATION_BUFFER = 2.
     
+	private constant boolean DEBUG_DESTROY = false
+	
     Cinematic EventCinematic
-    User EventUser
+    User EventUser //TODO replace with User.TriggerUser
 endglobals
 
 function interface CinemaUserConditional takes User user returns boolean
@@ -35,7 +37,8 @@ endstruct
 struct CinemaMessage extends array
     public unit Source
     public string Text
-    public real Time
+    public real MessageTime
+	public real NextMessageBuffer
         
     implement Alloc
     
@@ -51,7 +54,9 @@ struct CinemaMessage extends array
         
         set new.Source = source
         set new.Text = text
-        set new.Time = time
+        set new.MessageTime = time
+		
+		set new.NextMessageBuffer = 0
         
         return new
     endmethod
@@ -105,6 +110,13 @@ struct Cinematic extends array
         return false
     endmethod
     
+	public method SetLastMessageBuffer takes real buffer returns nothing
+		set CinemaMessage(.CinemaMessages.last.value).NextMessageBuffer = buffer
+	endmethod
+	public method SetLastMessageDefaults takes nothing returns nothing
+		call .SetLastMessageBuffer(DEFAULT_CONVERSATION_BUFFER)
+	endmethod
+	
     public method AddMessage takes unit u, string text, real timeout returns nothing
         call .CinemaMessages.addEnd(CinemaMessage.create(u, text, timeout))
     endmethod
@@ -112,7 +124,7 @@ struct Cinematic extends array
     private static method PlayMessageCallback takes nothing returns nothing
         local timer t = GetExpiredTimer()
         local CinemaCallbackModel cinemaCBModel = GetTimerData(t)
-        local real messageTime
+        local real time
         local SimpleList_ListNode curEndCB
         
         if cinemaCBModel.CurrentMessage == 0 then
@@ -132,19 +144,22 @@ struct Cinematic extends array
             //reached last message in cinematic, recycle CB object and release viewers
             call cinemaCBModel.deallocate()
         else
-            set messageTime = CinemaMessage(cinemaCBModel.CurrentMessage.value).Time
-            call cinemaCBModel.User.DisplayMessage(CinemaMessage(cinemaCBModel.CurrentMessage.value).Text, messageTime + MESSAGE_ALIVE_BUFFER)
+            set time = CinemaMessage(cinemaCBModel.CurrentMessage.value).MessageTime
+			//add MESSAGE_ALIVE_BUFFER here instead of in the message's buffer because it's specifically for dealing with the DisplayMessage API adding in a default buffer
+            call cinemaCBModel.User.DisplayMessage(CinemaMessage(cinemaCBModel.CurrentMessage.value).Text, time + MESSAGE_ALIVE_BUFFER)
             
+			//add the message's display time to the buffer time between this message and the next
+			//allows cinematics to show more than one message at once, while still controlling their display time
+			set time = time + CinemaMessage(cinemaCBModel.CurrentMessage.value).NextMessageBuffer
+			if time < 0 then
+				set time = 0
+			endif
+			
             //finished current message in cinematic but there's still more
             set cinemaCBModel.CurrentMessage = cinemaCBModel.CurrentMessage.next
             //call SetTimerData(t, cinemaCBModel) //re-using same model, so original ID attached to timer is still applicable
             
-            //if this is the very last message give an extra buffer after it (to offset any following conversations)
-            if cinemaCBModel.CurrentMessage == 0 then
-                set messageTime = messageTime + CONVERSATION_BUFFER
-            endif
-            
-            call TimerStart(t, messageTime, false, function thistype.PlayMessageCallback)
+            call TimerStart(t, time, false, function thistype.PlayMessageCallback)
         endif
         
         set t = null
@@ -173,8 +188,11 @@ struct Cinematic extends array
         // set EventCinematic = this
         // call .OnDestroy.fire()
         //right now, this is just the level, so hard-coding that dependency may be enough
-        //call DisplayTextToForce(bj_FORCE_PLAYER[0], "Destroying cinematic " + I2S(this) + ", total count: " + I2S(.ParentLevel.Cinematics.count))
-        if .ParentLevel != 0 then
+        static if DEBUG_DESTROY then
+			call DisplayTextToForce(bj_FORCE_PLAYER[0], "Destroying cinematic " + I2S(this) + ", total count: " + I2S(.ParentLevel.Cinematics.count))
+        endif
+		
+		if .ParentLevel != 0 then
             call .ParentLevel.Cinematics.remove(this)
         endif
         
@@ -200,8 +218,11 @@ struct Cinematic extends array
         //could either move logic to check user cine queue + make prev viewers refer to those that have finished
         //OR just assume no cinematic will take longer than X seconds, and have a callback to destroy this cinematic then
         if cinema.PreviousViewers.count == User.ActivePlayers then
-            //call DisplayTextToForce(bj_FORCE_PLAYER[0], "All players have watched, so destroying cinema " + I2S(cinema))
-            call cinema.destroy()
+            static if DEBUG_DESTROY then
+				call DisplayTextToForce(bj_FORCE_PLAYER[0], "All players have watched, so destroying cinema " + I2S(cinema))
+            endif
+			
+			call cinema.destroy()
         endif
         
         return false
@@ -213,7 +234,7 @@ struct Cinematic extends array
         set new.ActivationArea = activationArea
         set new.Individual = individual
         set new.PauseViewers = pause
-        
+        		
         set new.ActivationCondition = 0
         //set new.OnCinemaStart = 0
         //set new.OnCinemaEnd = 0
