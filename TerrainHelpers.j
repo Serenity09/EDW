@@ -49,16 +49,49 @@ library TerrainHelpers requires TerrainGlobals, UnitGlobals, Vector2
         set u = null
         return true
     endfunction
-    
-    public function TryGetFirstSafeLocation takes real centerX, real centerY, integer maxRadius, integer prevGameMode returns vector2
+	
+	function GetDistanceFromTile takes real tileCenterX, real tileCenterY, real x, real y returns real
+		//  var dx = Math.max(rect.min.x - p.x, 0, p.x - rect.max.x);
+		//	var dy = Math.max(rect.min.y - p.y, 0, p.y - rect.max.y);
+		//	return Math.sqrt(dx*dx + dy*dy);
+		local real dx = tileCenterX - TERRAIN_QUADRANT_SIZE - x
+		local real dy = tileCenterY - TERRAIN_QUADRANT_SIZE - y
+		
+		if dx < 0 then
+			set dx = 0
+		endif
+		if dx < x - tileCenterX - TERRAIN_QUADRANT_SIZE then
+			set dx = x - tileCenterX - TERRAIN_QUADRANT_SIZE
+		endif
+		
+		if dy < 0 then
+			set dy = 0
+		endif
+		if dy < y - tileCenterY - TERRAIN_QUADRANT_SIZE then
+			set dy = y - tileCenterY - TERRAIN_QUADRANT_SIZE
+		endif
+		
+		return SquareRoot(dx*dx + dy*dy)
+	endfunction
+	    
+    public function TryGetFirstSafeLocation takes real x, real y, integer maxRadius, integer prevGameMode returns vector2
         local integer iSide
         local integer iRadius
+								
+		local vector2 tileCenter
+		
+		local real checkDistance
+		local real bestDistance = 10000
+		local vector2 bestCenter = 0
                 
         //handle radius 1 separately
-        if NoStaticUnits(centerX, centerY) and IsValidTerrain(GetTerrainType(centerX, centerY)) then
-            return vector2.create(centerX, centerY)
+        if NoStaticUnits(x, y) and (((prevGameMode == Teams_GAMEMODE_STANDARD or prevGameMode == Teams_GAMEMODE_STANDARD_PAUSED) and IsValidTerrain_Standard(GetTerrainType(x, y)))  or ((prevGameMode == Teams_GAMEMODE_PLATFORMING or prevGameMode == Teams_GAMEMODE_PLATFORMING_PAUSED) and IsValidTerrain_Platforming(GetTerrainType(x, y)))) then
+            return vector2.create(x, y)
         endif
-        
+		
+		//get x,y tile center, to define other nearby tiles and check the distance between them and x,y
+        set tileCenter = GetTerrainCenterpoint(x, y)
+		
         set iRadius = 2
         loop
         exitwhen iRadius > maxRadius  
@@ -66,13 +99,32 @@ library TerrainHelpers requires TerrainGlobals, UnitGlobals, Vector2
             set iSide = 1
             loop
             exitwhen iSide > iRadius * 2 - 1      
-                //debug call CreateUnit(Player(0), WWWISP, centerX - 128 * iRadius + 128 * iSide, centerY + 128 * (iRadius - 1), 0)
-                //debug call CreateUnit(Player(1), WWWISP, centerX - 128 * iRadius + 128 * iSide, centerY - 128 * (iRadius - 1), 0)
+                //debug call CreateUnit(Player(0), WWWISP, x - 128 * iRadius + 128 * iSide, y + 128 * (iRadius - 1), 0)
+                //debug call CreateUnit(Player(1), WWWISP, x - 128 * iRadius + 128 * iSide, y - 128 * (iRadius - 1), 0)
                 
-                if NoStaticUnits(centerX - 128 * iRadius + 128 * iSide, centerY + 128 * (iRadius - 1)) and (((prevGameMode == Teams_GAMEMODE_STANDARD or prevGameMode == Teams_GAMEMODE_STANDARD_PAUSED) and IsValidTerrain_Standard(GetTerrainType(centerX - 128 * iRadius + 128 * iSide, centerY + 128 * (iRadius - 1)))) or ((prevGameMode == Teams_GAMEMODE_PLATFORMING or prevGameMode == Teams_GAMEMODE_PLATFORMING_PAUSED) and IsValidTerrain_Platforming(GetTerrainType(centerX - 128 * iRadius + 128 * iSide, centerY + 128 * (iRadius - 1))))) then
-                    return vector2.create(centerX - 128 * iRadius + 128 * iSide, centerY + 128 * (iRadius - 1))
-                elseif NoStaticUnits(centerX - 128 * iRadius + 128 * iSide, centerY - 128 * (iRadius - 1)) and (((prevGameMode == Teams_GAMEMODE_STANDARD or prevGameMode == Teams_GAMEMODE_STANDARD_PAUSED) and IsValidTerrain_Standard(GetTerrainType(centerX - 128 * iRadius + 128 * iSide, centerY - 128 * (iRadius - 1)))) or ((prevGameMode == Teams_GAMEMODE_PLATFORMING or prevGameMode == Teams_GAMEMODE_PLATFORMING_PAUSED) and IsValidTerrain_Platforming(GetTerrainType(centerX - 128 * iRadius + 128 * iSide, centerY - 128 * (iRadius - 1))))) then
-                    return vector2.create(centerX - 128 * iRadius + 128 * iSide, centerY - 128 * (iRadius - 1))
+                if NoStaticUnits(x - 128 * iRadius + 128 * iSide, y + 128 * (iRadius - 1)) and (((prevGameMode == Teams_GAMEMODE_STANDARD or prevGameMode == Teams_GAMEMODE_STANDARD_PAUSED) and IsValidTerrain_Standard(GetTerrainType(x - 128 * iRadius + 128 * iSide, y + 128 * (iRadius - 1)))) or ((prevGameMode == Teams_GAMEMODE_PLATFORMING or prevGameMode == Teams_GAMEMODE_PLATFORMING_PAUSED) and IsValidTerrain_Platforming(GetTerrainType(x - 128 * iRadius + 128 * iSide, y + 128 * (iRadius - 1))))) then
+                    //get the distance between the check center and previous best center
+					set checkDistance = GetDistanceFromTile(tileCenter.x  - 128 * iRadius + 128 * iSide, tileCenter.y  + 128 * (iRadius - 1), x, y)
+					if checkDistance < bestDistance then
+						set bestDistance = checkDistance
+						
+						if bestCenter != 0 then
+							call bestCenter.deallocate()
+						endif
+						set bestCenter = vector2.create(tileCenter.x - 128 * iRadius + 128 * iSide, tileCenter.y + 128 * (iRadius - 1))
+					endif
+                endif
+				
+				if NoStaticUnits(x - 128 * iRadius + 128 * iSide, y - 128 * (iRadius - 1)) and (((prevGameMode == Teams_GAMEMODE_STANDARD or prevGameMode == Teams_GAMEMODE_STANDARD_PAUSED) and IsValidTerrain_Standard(GetTerrainType(x - 128 * iRadius + 128 * iSide, y - 128 * (iRadius - 1)))) or ((prevGameMode == Teams_GAMEMODE_PLATFORMING or prevGameMode == Teams_GAMEMODE_PLATFORMING_PAUSED) and IsValidTerrain_Platforming(GetTerrainType(x - 128 * iRadius + 128 * iSide, y - 128 * (iRadius - 1))))) then
+                    set checkDistance = GetDistanceFromTile(tileCenter.x - 128 * iRadius + 128 * iSide, tileCenter.y - 128 * (iRadius - 1), x, y)
+					if checkDistance < bestDistance then
+						set bestDistance = checkDistance
+						
+						if bestCenter != 0 then
+							call bestCenter.deallocate()
+						endif
+						set bestCenter = vector2.create(tileCenter.x - 128 * iRadius + 128 * iSide, tileCenter.y - 128 * (iRadius - 1))
+					endif
                 endif
             set iSide = iSide + 1
             endloop
@@ -81,29 +133,43 @@ library TerrainHelpers requires TerrainGlobals, UnitGlobals, Vector2
             set iSide = 1
             loop
             exitwhen iSide > iRadius * 2 - 3
-                //debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "placing y: " + R2S(centerY - 128 * (iRadius - 1) + 128 * iSide))
-                //debug call CreateUnit(Player(2), WWWISP, centerX + 128 * (iRadius - 1), centerY - 128 * (iRadius - 1) + 128 * iSide, 0)
-                //debug call CreateUnit(Player(3), WWWISP, centerX - 128 * (iRadius - 1), centerY - 128 * (iRadius - 1) + 128 * iSide, 0)
-
-                /*
-                if NoStaticUnits(centerX + 128 * (iRadius - 1), centerY - 128 * (iRadius - 1) + 128 * iSide) and IsValidTerrain(GetTerrainType(centerX + 128 * (iRadius - 1), centerY - 128 * (iRadius - 1) + 128 * iSide)) then
-                    return vector2.create(centerX + 128 * (iRadius - 1), centerY - 128 * (iRadius - 1) + 128 * iSide)
-                elseif NoStaticUnits(centerX - 128 * (iRadius - 1), centerY - 128 * (iRadius - 1) + 128 * iSide) and IsValidTerrain(GetTerrainType(centerX - 128 * (iRadius - 1), centerY - 128 * (iRadius - 1) + 128 * iSide)) then
-                    return vector2.create(centerX - 128 * (iRadius - 1), centerY - 128 * (iRadius - 1) + 128 * iSide)
-                endif
-                */
-                
-                if NoStaticUnits(centerX + 128 * (iRadius - 1), centerY - 128 * (iRadius - 1) + 128 * iSide) and (((prevGameMode == Teams_GAMEMODE_STANDARD or prevGameMode == Teams_GAMEMODE_STANDARD_PAUSED) and IsValidTerrain_Standard(GetTerrainType(centerX + 128 * (iRadius - 1), centerY - 128 * (iRadius - 1) + 128 * iSide))) or ((prevGameMode == Teams_GAMEMODE_PLATFORMING or prevGameMode == Teams_GAMEMODE_PLATFORMING_PAUSED) and IsValidTerrain_Platforming(GetTerrainType(centerX + 128 * (iRadius - 1), centerY - 128 * (iRadius - 1) + 128 * iSide)))) then
-                    return vector2.create(centerX + 128 * (iRadius - 1), centerY - 128 * (iRadius - 1) + 128 * iSide)
-                elseif NoStaticUnits(centerX - 128 * (iRadius - 1), centerY - 128 * (iRadius - 1) + 128 * iSide) and (((prevGameMode == Teams_GAMEMODE_STANDARD or prevGameMode == Teams_GAMEMODE_STANDARD_PAUSED) and IsValidTerrain_Standard(GetTerrainType(centerX - 128 * (iRadius - 1), centerY - 128 * (iRadius - 1) + 128 * iSide))) or ((prevGameMode == Teams_GAMEMODE_PLATFORMING or prevGameMode == Teams_GAMEMODE_PLATFORMING_PAUSED) and IsValidTerrain_Platforming(GetTerrainType(centerX - 128 * (iRadius - 1), centerY - 128 * (iRadius - 1) + 128 * iSide)))) then
-                    return vector2.create(centerX - 128 * (iRadius - 1), centerY - 128 * (iRadius - 1) + 128 * iSide)
+                //debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "placing y: " + R2S(y - 128 * (iRadius - 1) + 128 * iSide))
+                //debug call CreateUnit(Player(2), WWWISP, x + 128 * (iRadius - 1), y - 128 * (iRadius - 1) + 128 * iSide, 0)
+                //debug call CreateUnit(Player(3), WWWISP, x - 128 * (iRadius - 1), y - 128 * (iRadius - 1) + 128 * iSide, 0)                
+                if NoStaticUnits(x + 128 * (iRadius - 1), y - 128 * (iRadius - 1) + 128 * iSide) and (((prevGameMode == Teams_GAMEMODE_STANDARD or prevGameMode == Teams_GAMEMODE_STANDARD_PAUSED) and IsValidTerrain_Standard(GetTerrainType(x + 128 * (iRadius - 1), y - 128 * (iRadius - 1) + 128 * iSide))) or ((prevGameMode == Teams_GAMEMODE_PLATFORMING or prevGameMode == Teams_GAMEMODE_PLATFORMING_PAUSED) and IsValidTerrain_Platforming(GetTerrainType(x + 128 * (iRadius - 1), y - 128 * (iRadius - 1) + 128 * iSide)))) then
+                    set checkDistance = GetDistanceFromTile(tileCenter.x + 128 * (iRadius - 1), tileCenter.y - 128 * (iRadius - 1) + 128 * iSide, x, y)
+					if checkDistance < bestDistance then
+						set bestDistance = checkDistance
+						
+						if bestCenter != 0 then
+							call bestCenter.deallocate()
+						endif
+						set bestCenter = vector2.create(tileCenter.x + 128 * (iRadius - 1), tileCenter.y - 128 * (iRadius - 1) + 128 * iSide)
+					endif
+                elseif NoStaticUnits(x - 128 * (iRadius - 1), y - 128 * (iRadius - 1) + 128 * iSide) and (((prevGameMode == Teams_GAMEMODE_STANDARD or prevGameMode == Teams_GAMEMODE_STANDARD_PAUSED) and IsValidTerrain_Standard(GetTerrainType(x - 128 * (iRadius - 1), y - 128 * (iRadius - 1) + 128 * iSide))) or ((prevGameMode == Teams_GAMEMODE_PLATFORMING or prevGameMode == Teams_GAMEMODE_PLATFORMING_PAUSED) and IsValidTerrain_Platforming(GetTerrainType(x - 128 * (iRadius - 1), y - 128 * (iRadius - 1) + 128 * iSide)))) then
+                    set checkDistance = GetDistanceFromTile(tileCenter.x - 128 * (iRadius - 1), tileCenter.y - 128 * (iRadius - 1) + 128 * iSide, x, y)
+					if checkDistance < bestDistance then
+						set bestDistance = checkDistance
+						
+						if bestCenter != 0 then
+							call bestCenter.deallocate()
+						endif
+						set bestCenter = vector2.create(tileCenter.x - 128 * (iRadius - 1), tileCenter.y - 128 * (iRadius - 1) + 128 * iSide)
+					endif
                 endif
             set iSide = iSide + 1
             endloop
+			
+			//the best center for any single ring will be better than any best center in the next ring
+			if bestCenter != 0 then
+				call tileCenter.deallocate()
+				return bestCenter
+			endif
         set iRadius = iRadius + 1
         endloop
         
         //failed to find a safe location, return 0 and pass the buck
+		call tileCenter.deallocate()
         return 0
     endfunction
     
