@@ -6,7 +6,7 @@ public function onPlayerUnitDiedCB takes nothing returns nothing
     local User user = User.GetUserFromPlayerID(pID)
 	
     local Teams_MazingTeam mt = user.Team
-    local Levels_Level level = Levels_Levels[mt.OnLevel]
+    local Levels_Level level = Levels_Level(mt.OnLevel)
 	
 	//check that the user is still dying -- they might have been revived in the mean-time
 	if user.IsAlive then
@@ -19,7 +19,7 @@ public function onPlayerUnitDiedCB takes nothing returns nothing
 		call user.SwitchGameModesDefaultLocation(Teams_GAMEMODE_DEAD)
 		
 		//can't lose continues in starting worlds
-		if (level.LevelID == Levels_INTRO_LEVEL_ID or level.LevelID == Levels_DOORS_LEVEL_ID) then
+		if (level == Levels_INTRO_LEVEL_ID or level == Levels_DOORS_LEVEL_ID) then
 			//debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "no continues lost")
 			//respawn players immediately if on intro or doors levels, regardless of other settings
 			
@@ -49,7 +49,7 @@ public function onPlayerUnitDiedCB takes nothing returns nothing
 				endif
 			else
 			call mt.PrintMessage("Your team ran out of lives!")
-			call level.SwitchLevels(mt, Levels_Levels[Levels_DOORS_LEVEL_ID])
+			call level.SwitchLevels(mt, Levels_Level(Levels_DOORS_LEVEL_ID))
 
 				//if not in 99 and none mode, reset continues
 				if RewardMode == 0 or RewardMode == 1 then //standard mode or challenge mode

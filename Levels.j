@@ -1,6 +1,5 @@
 library Levels initializer Init requires SimpleList, Teams, GameModesGlobals, Cinema, User, IStartable
     globals
-        public Levels_Level array   Levels[100]                 //an array containing all the levels. the index of the array should match its elements levelnumber
         public constant integer     INTRO_LEVEL_ID = 1
         public constant integer     DOORS_LEVEL_ID = 2
         public constant integer     TEMP_LEVEL_ID = 1000
@@ -118,7 +117,6 @@ library Levels initializer Init requires SimpleList, Teams, GameModesGlobals, Ci
     endstruct
     
     public struct Level extends array //extends IStartable
-        readonly integer     LevelID         //the number of a level -- the same as the index
         public string      Name            //a levels name, only used in the multiboard
         public integer     RawContinues      //refers to the difficulty of a level
         public integer     RawScore
@@ -144,30 +142,30 @@ library Levels initializer Init requires SimpleList, Teams, GameModesGlobals, Ci
                         
         public method Start takes nothing returns nothing
             static if DEBUG_START_STOP then
-				call DisplayTextToForce(bj_FORCE_PLAYER[0], "Trying to start level " + I2S(this.LevelID) + ", count: " + I2S(Teams_MazingTeam.GetCountOnLevel(.LevelID)))
+				call DisplayTextToForce(bj_FORCE_PLAYER[0], "Trying to start level " + I2S(this) + ", count: " + I2S(Teams_MazingTeam.GetCountOnLevel(this)))
             endif
 			
-            if Teams_MazingTeam.GetCountOnLevel(.LevelID) == 0 then
+            if Teams_MazingTeam.GetCountOnLevel(this) == 0 then
                 call .ActiveLevels.add(this)
                 
                 call .Content.Start()
                 
-                if .NextLevel != 0 and .Content.HasPreload() and not .NextLevel.IsPreloaded and Teams_MazingTeam.GetCountOnLevel(.NextLevel.LevelID) == 0 then
+                if .NextLevel != 0 and .Content.HasPreload() and not .NextLevel.IsPreloaded and Teams_MazingTeam.GetCountOnLevel(.NextLevel) == 0 then
                     set .IsPreloaded = true
                     call ExecuteFunc(.Content.PreloadFunction)
                 endif
                 
-                //debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "Started level " + I2S(this.LevelID))
+                //debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "Started level " + I2S(this))
             endif
         endmethod
         
         //stops this level unless someone else is on it
         //removes units from whatever .Vision is currently set to!
         public method Stop takes nothing returns nothing
-            local integer countprev = Teams_MazingTeam.GetCountOnLevel(.LevelID)
+            local integer countprev = Teams_MazingTeam.GetCountOnLevel(this)
             
 			static if DEBUG_START_STOP then
-				call DisplayTextToForce(bj_FORCE_PLAYER[0], "Trying to stop level " + I2S(this.LevelID) + ", count: " + I2S(countprev))
+				call DisplayTextToForce(bj_FORCE_PLAYER[0], "Trying to stop level " + I2S(this) + ", count: " + I2S(countprev))
             endif
 			
             if countprev == 0 then
@@ -176,15 +174,15 @@ library Levels initializer Init requires SimpleList, Teams, GameModesGlobals, Ci
                 call .Content.Stop()
                 call .RemoveGreenFromLevel()
                 
-                //debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "Stopped level " + I2S(this.LevelID))
+                //debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "Stopped level " + I2S(this))
             endif
         endmethod
         
         public method GetWorldID takes nothing returns integer
-            if .LevelID == INTRO_LEVEL_ID or .LevelID == DOORS_LEVEL_ID then
+            if this == INTRO_LEVEL_ID or this == DOORS_LEVEL_ID then
                 return -1
             else
-                return ModuloInteger(.LevelID - 3, 7)
+                return ModuloInteger(this - 3, 7)
             endif
         endmethod
         
@@ -215,14 +213,14 @@ library Levels initializer Init requires SimpleList, Teams, GameModesGlobals, Ci
             local string name
             local integer convertedLevel
             
-            //debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "Level ID: " + I2S(.LevelID))
+            //debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "Level ID: " + I2S(this))
             
-            if .LevelID == INTRO_LEVEL_ID then
+            if this == INTRO_LEVEL_ID then
                 return "Entrance"
-            elseif .LevelID == DOORS_LEVEL_ID then
+            elseif this == DOORS_LEVEL_ID then
                 return "Doors"
             else
-                set mod = ModuloInteger(.LevelID - 3, 7)
+                set mod = ModuloInteger(this - 3, 7)
                 
                 if mod == 0 then
                     set name = "Envy"
@@ -240,9 +238,9 @@ library Levels initializer Init requires SimpleList, Teams, GameModesGlobals, Ci
                     set name = "Pride"
                 endif
                 
-                //set convertedLevel = R2I((.LevelID - 2) / 7) + 1
+                //set convertedLevel = R2I((this - 2) / 7) + 1
                 //debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "Name: " + name + " " + I2S(convertedLevel))
-                return name + " " + I2S(R2I((.LevelID - 3) / 7) + 1)
+                return name + " " + I2S(R2I((this - 3) / 7) + 1)
             endif
         endmethod
                         
@@ -300,19 +298,7 @@ library Levels initializer Init requires SimpleList, Teams, GameModesGlobals, Ci
             set .TeamStartCB = startCB
             set .TeamStopCB = stopCB
         endmethod
-        
-        private static method EntersLevelTransferCallback takes nothing returns nothing
-            local timer t = GetExpiredTimer()
-            local Teams_MazingTeam mt = Teams_MazingTeam(GetTimerData(t))
-            
-            if mt != 0 then
-                set mt.RecentlyTransferred = false
-            endif
-            
-            call ReleaseTimer(t)
-            set t = null
-        endmethod
-        
+                
 		public method ApplyLevelRewards takes User u, Teams_MazingTeam mt, Level nextLevel returns nothing			
 			local integer score = 0
 			
@@ -363,7 +349,6 @@ library Levels initializer Init requires SimpleList, Teams, GameModesGlobals, Ci
         //update level continuously or discontinuously from one to the next. IE lvl 1 -> 2 -> 3 -> 4 OR 1 -> 4 -> 2 etc
         public method SwitchLevels takes Teams_MazingTeam mt, Level nextLevel returns nothing			
 			static if DEBUG_LEVEL_CHANGE then
-				call DisplayTextToForce(bj_FORCE_PLAYER[0], "From (static) " + I2S(this.LevelID) + " To " + I2S(nextLevel.LevelID))
 				call DisplayTextToForce(bj_FORCE_PLAYER[0], "From " + I2S(this) + " To " + I2S(nextLevel))
             endif
 			
@@ -377,7 +362,7 @@ library Levels initializer Init requires SimpleList, Teams, GameModesGlobals, Ci
             //debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "Stopped")
             call nextLevel.Start() //only starts the next level if there is one -- also preloads the following level
             
-            set mt.OnLevel = nextLevel.LevelID            
+            set mt.OnLevel = nextLevel
             call nextLevel.ActiveTeams.add(mt)
             
             if this.TeamStopCB != null then
@@ -433,12 +418,12 @@ library Levels initializer Init requires SimpleList, Teams, GameModesGlobals, Ci
 						set y = GetUnitY(User(curUser.value).ActiveUnit)
 						
 						//check level transfer(s)
-						if Level(curLevel.value).LevelID == DOORS_LEVEL_ID then
+						if Level(curLevel.value) == DOORS_LEVEL_ID then
 							set i = 0
 							loop
 							exitwhen i == WorldCount or nextLevel != 0
 								if RectContainsCoords(DoorRects[i], x, y) then
-									set nextLevel = Levels[i + DOORS_LEVEL_ID + 1] //levels take standard structure after the DOORS level
+									set nextLevel = Level(i + DOORS_LEVEL_ID + 1) //levels take standard structure after the DOORS level
 								endif
 							set i = i + 1
 							endloop
@@ -449,7 +434,7 @@ library Levels initializer Init requires SimpleList, Teams, GameModesGlobals, Ci
 									set nextLevel = Level(curLevel.value).NextLevel
 								else
 									//finished all available levels in world, returning to Doors
-									set nextLevel = Levels[DOORS_LEVEL_ID]
+									set nextLevel = Level(DOORS_LEVEL_ID)
 								endif
 							endif
 						endif
@@ -485,42 +470,9 @@ library Levels initializer Init requires SimpleList, Teams, GameModesGlobals, Ci
             endloop
         endmethod
         
-        //creates the level struct / region triggers for the doors area
-        public static method CreateDoors takes Level intro, string startFunction, string stopFunction, rect startspawn, rect vision returns Level
-            local Level new = DOORS_LEVEL_ID
-            
-            set new.LevelID = DOORS_LEVEL_ID
-            set new.Name = "Doors"
-            set new.RawContinues = 0
-            set new.RawScore = 0
-
-            set new.Content = Content.create(startFunction, stopFunction)
-			
-			set new.Checkpoints = SimpleList_List.create()
-            call new.AddCheckpoint(null, startspawn)
-            //set new.CPToHere = tothislevel //these might change
-            //set new.StartRect = startspawn
-            set new.Vision = vision
-            
-            set new.IsPreloaded = false
-            
-            set Levels[new.LevelID] = new
-            set new.PrevLevel = intro
-            set intro.NextLevel = new
-			
-			
-			set DoorRects[0] = gg_rct_IW_Entrance
-			//set DoorRects[1] = gg_rct_LW_Entrance
-			set DoorRects[6] = gg_rct_PW_Entrance
-
-            //call DisplayTextToForce(bj_FORCE_PLAYER[0], "Created doors")
-            
-            return new
-        endmethod		
-        
         public method UnPreload takes nothing returns nothing
             //check that this level is already preloaded, and that there are no teams on this level or the one before it
-            if .Content.HasPreload() and .IsPreloaded and Teams_MazingTeam.GetCountOnLevel(.PrevLevel.LevelID) == 0 and Teams_MazingTeam.GetCountOnLevel(.LevelID) == 0 then
+            if .Content.HasPreload() and .IsPreloaded and Teams_MazingTeam.GetCountOnLevel(.PrevLevel) == 0 and Teams_MazingTeam.GetCountOnLevel(this) == 0 then
                 set .IsPreloaded = false
                 call ExecuteFunc(.Content.UnloadFunction)
             endif
@@ -591,13 +543,43 @@ library Levels initializer Init requires SimpleList, Teams, GameModesGlobals, Ci
             set curLevel = curLevel.next
             endloop
         endmethod
+		
+		//creates the level struct / region triggers for the doors area
+        public static method CreateDoors takes Level intro, string startFunction, string stopFunction, rect startspawn, rect vision returns Level
+            local Level new = DOORS_LEVEL_ID
+            
+            set new.Name = "Doors"
+            set new.RawContinues = 0
+            set new.RawScore = 0
+
+            set new.Content = Content.create(startFunction, stopFunction)
+			
+			set new.Checkpoints = SimpleList_List.create()
+            call new.AddCheckpoint(null, startspawn)
+            //set new.CPToHere = tothislevel //these might change
+            //set new.StartRect = startspawn
+            set new.Vision = vision
+            
+            set new.IsPreloaded = false
+            
+            set new.PrevLevel = intro
+            set intro.NextLevel = new
+			
+			
+			set DoorRects[0] = gg_rct_IW_Entrance
+			//set DoorRects[1] = gg_rct_LW_Entrance
+			set DoorRects[6] = gg_rct_PW_Entrance
+
+            //call DisplayTextToForce(bj_FORCE_PLAYER[0], "Created doors")
+            
+            return new
+        endmethod
         
         //creates a level struct
         static method create takes integer LevelID, string name, integer rawContinues, integer rawScore, string startFunction, string stopFunction, rect startspawn, rect vision, rect levelEnd, Level previouslevel returns Level
             local Level new = LevelID
             
             //infer this is a partial level
-            set new.LevelID = LevelID
             //set new.Name = new.ToString()
             set new.Name = name
             set new.RawContinues = rawContinues
@@ -608,7 +590,8 @@ library Levels initializer Init requires SimpleList, Teams, GameModesGlobals, Ci
             set new.Stop = stop
             set new.HasPreload = false
             */
-            set new.Content = LevelContent.create(startFunction, stopFunction)
+            
+			set new.Content = LevelContent.create(startFunction, stopFunction)
             //set new.CPToHere = tothislevel
             //set new.StartRect = startspawn
             set new.Vision = vision
@@ -633,7 +616,6 @@ library Levels initializer Init requires SimpleList, Teams, GameModesGlobals, Ci
             //use the checkpoint schema for the first checkpoint. region enter event is handled separately, so use null for the region
             call new.AddCheckpoint(null, startspawn)
             
-            set Levels[LevelID] = new
             return new
         endmethod
     endstruct

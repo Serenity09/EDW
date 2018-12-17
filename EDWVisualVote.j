@@ -14,10 +14,10 @@ library EDWVisualVote requires VisualVote, ContinueGlobals, Teams, PlayerUtils, 
             //9 == first platforming level
             
             //66 == debug platform testing
-            return Levels_Levels[23]
+            return Levels_Level(23)
             //return Levels_Levels[23]
         else
-            return Levels_Levels[1]
+            return Levels_Level(1)
         endif
     endfunction
         
@@ -282,7 +282,7 @@ library EDWVisualVote requires VisualVote, ContinueGlobals, Teams, PlayerUtils, 
 		
         set i = 0
         loop
-            set team[i].OnLevel = firstLevel.LevelID
+            set team[i].OnLevel = firstLevel
             set team[i].ContinueCount = team[i].GetInitialContinues()
             
             //call team[i].MoveRevive(firstLevel.CPCenters[0])

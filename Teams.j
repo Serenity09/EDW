@@ -490,7 +490,7 @@ public struct MazingTeam
             
             if GetPlayerSlotState(Player(pID)) == PLAYER_SLOT_STATE_PLAYING then          
 				call MultiboardSetItemValue(MultiboardGetItem(.PlayerStats, pID + 1, 0), .GetStylizedPlayerName(pID))
-                call MultiboardSetItemValue(MultiboardGetItem(.PlayerStats, pID + 1, 1), Levels_Levels[.OnLevel].Name)
+                call MultiboardSetItemValue(MultiboardGetItem(.PlayerStats, pID + 1, 1), Levels_Level(.OnLevel).Name)
                 call MultiboardSetItemValue(MultiboardGetItem(.PlayerStats, pID + 1, 2), I2S(.Score))
                 call MultiboardSetItemValue(MultiboardGetItem(.PlayerStats, pID + 1, 3), I2S(.ContinueCount))
                 call MultiboardSetItemValue(MultiboardGetItem(.PlayerStats, pID + 1, 4), I2S(u.Deaths))
@@ -642,7 +642,7 @@ public struct MazingTeam
                 set mt = u.Team
                 
                 call MultiboardSetItemValue(MultiboardGetItem(.PlayerStats, i + 1, 0), mt.GetStylizedPlayerName(i))
-                call MultiboardSetItemValue(MultiboardGetItem(.PlayerStats, i + 1, 1), Levels_Levels[mt.OnLevel].Name)
+                call MultiboardSetItemValue(MultiboardGetItem(.PlayerStats, i + 1, 1), Levels_Level(mt.OnLevel).Name)
                 call MultiboardSetItemValue(MultiboardGetItem(.PlayerStats, i + 1, 2), I2S(mt.Score))
                 call MultiboardSetItemValue(MultiboardGetItem(.PlayerStats, i + 1, 3), I2S(mt.ContinueCount))
                 call MultiboardSetItemValue(MultiboardGetItem(.PlayerStats, i + 1, 4), I2S(u.Deaths))

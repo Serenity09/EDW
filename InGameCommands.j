@@ -176,11 +176,11 @@ function ParseCommand takes nothing returns nothing
 			call DestroyGroup(unitgroup)
 			set unitgroup = null
 		elseif cmd == "level" or cmd == "lvl" then
-			if Levels_Levels[intVal] != null then
-				call Levels_Levels[team.OnLevel].SwitchLevels(team, Levels_Levels[intVal])
+			if Levels_Level(intVal) != 0 then
+				call Levels_Level(team.OnLevel).SwitchLevels(team, Levels_Level(intVal))
 			endif
 		elseif cmd == "checkpoint" or cmd == "cp" then
-			call Levels_Levels[team.OnLevel].SetCheckpointForTeam(team, intVal)
+			call Levels_Level(team.OnLevel).SetCheckpointForTeam(team, intVal)
 		elseif cmd == "help" or cmd == "h" then
 			call PrintPlatformingVariables(p)
 		elseif cmd == "status" or cmd == "s" then
