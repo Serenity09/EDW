@@ -1,12 +1,16 @@
 library MnT requires ListModule, locust, TerrainGlobals, IStartable
 
 globals
+	private constant integer MAX_VALID_TARGET_ATTEMPTS = 20
+
 	//how long to wait between firing each mortar... must be synced with object editor to prevent multiple shots
     private constant real MnTTimeStep = 2.2
     //timer used for all MnT pairs
     private timer MnTTimer = CreateTimer()
     //the target cannot be placed on this terrain type
     private constant integer IllegalTerrainType = ABYSS
+	
+	private constant boolean DEBUG_VALID_TARGET = false
 endglobals
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -52,13 +56,21 @@ struct MortarNTarget extends IStartable
     public method MnTActions takes nothing returns nothing
         local real newX
         local real newY
+		
+		local integer attempt = 0
         
         loop
+			set attempt = attempt + 1
             set newX = GetRandomReal(this.minX, this.maxX)
             set newY = GetRandomReal(this.minY, this.maxY)
             
-            exitwhen (GetTerrainType(newX, newY) != IllegalTerrainType)
+            exitwhen GetTerrainType(newX, newY) != IllegalTerrainType or attempt == MAX_VALID_TARGET_ATTEMPTS
         endloop
+		
+		static if DEBUG_VALID_TARGET then
+			call DisplayTextToForce(bj_FORCE_PLAYER[0], "Valid target loop took " + I2S(attempt) + " iterations")
+		endif
+		
         //move the target randomly within its given boundaries
         call SetUnitX(Target, newX)
         call SetUnitY(Target, newY)
