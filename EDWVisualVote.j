@@ -170,9 +170,23 @@ library EDWVisualVote requires VisualVote, ContinueGlobals, Teams, PlayerUtils, 
         elseif GameMode == 2 then
             //define team sizes
             if count == 1 or count == 2 or count == 3 then
-                //just do one big team
-                set teamCount = 1
-                set teamSize[0] = count
+                if GetRandomInt(0, 1) == 0 then
+					//1v1 or 1v1v1
+					set teamCount = count
+					
+					//set all teams to have size = 1
+					set i = 0
+					loop
+						set teamSize[i] = 1
+						
+					set i = i + 1
+					exitwhen i >= count
+					endloop
+				else
+					//all on same team
+					set teamCount = 1
+					set teamSize[0] = count
+				endif
             elseif count == 4 or count == 6 or count == 8 then
                 if count == 4 then
                     set teamCount = 2
@@ -414,13 +428,13 @@ library EDWVisualVote requires VisualVote, ContinueGlobals, Teams, PlayerUtils, 
             
             set col = MyMenu.addColumn(512)
             //
-            set con = col.addContainer("Game Mode")
+            set con = col.addContainer("Teams")
             set con.required = true
             
             call con.addOption("Solo", "EDWVisualVote_GameModeSolo")
             set opt = con.addOption("Teams - Mixer", "EDWVisualVote_GameModeRandom")
             set con.defaultOption = opt
-            set opt = con.addOption("Teams - All is One", "EDWVisualVote_GameModeAllIsOne")
+            set opt = con.addOption("Teams - One for All", "EDWVisualVote_GameModeAllIsOne")
             //debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "Default: " + con.defaultOption.text)
             
 			set con = col.addContainer("Difficulty")
