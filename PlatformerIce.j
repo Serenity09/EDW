@@ -49,7 +49,10 @@ library PlatformerIce initializer Init requires SimpleList, PlatformerGlobals
         if p.OnDiagonal then
 			if p.HorizontalAxisState == 1 then
 				//check that current velocity is into the diagonal
-				if not p.DoesPointEscapeDiagonal(p.DiagonalPathing.TerrainPathingForPoint, p.XVelocity, p.YVelocity, 0.01) then
+				//this check is purely to allow the up arrow key's effect to run async to physics being applied
+				//TODO potentially replace this check with firing ApplyPhysics for the player after a valid jump
+				//the performance benefit from not evaluating physics for the platformer once, immediately after an up press is probably much less than the hit of checking if the platformer's velocity escapes its diagonal each iteration of being on ice
+				if not p.DoesPointEscapeDiagonal(p.DiagonalPathing.TerrainPathingForPoint, p.XVelocity, p.YVelocity, 10) then
 					//project velocity vector against current diagonal to match actual direction
 					set projVelocity = vector2.create(p.XVelocity, p.YVelocity)
 					
@@ -217,7 +220,10 @@ library PlatformerIce initializer Init requires SimpleList, PlatformerGlobals
 				endif
 			elseif p.HorizontalAxisState == -1 then
 				//check that current velocity is into the diagonal
-				if not p.DoesPointEscapeDiagonal(p.DiagonalPathing.TerrainPathingForPoint, p.XVelocity, p.YVelocity, 0.01) then
+				//this check is purely to allow the up arrow key's effect to run async to physics being applied
+				//TODO potentially replace this check with firing ApplyPhysics for the player after a valid jump
+				//the performance benefit from not evaluating physics for the platformer once, immediately after an up press is probably much less than the hit of checking if the platformer's velocity escapes its diagonal each iteration of being on ice
+				if not p.DoesPointEscapeDiagonal(p.DiagonalPathing.TerrainPathingForPoint, p.XVelocity, p.YVelocity, 10) then
 					set projVelocity = vector2.create(p.XVelocity, p.YVelocity)
 					//debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "Raw velocity: " + projVelocity.toString())
 					call projVelocity.projectUnitVector(ComplexTerrainPathing_GetParallelForPathing(p.DiagonalPathing.TerrainPathingForPoint))
