@@ -147,7 +147,9 @@ library Recycle requires UnitGlobals
             
             call thistype.create(ICETROLL, 0, Player(10)).Preload(1, true)
 
-            call thistype.create(BOUNCER, 0, Player(10)).Preload(10, true)
+            call thistype.create(GRAVITY, 0, Player(10)).Preload(3, true)
+			
+			call thistype.create(BOUNCER, 0, Player(10)).Preload(10, true)
             call thistype.create(UBOUNCE, 90, Player(11)).Preload(5, true)
             call thistype.create(LBOUNCE, 180, Player(11)).Preload(5, true)
             call thistype.create(DBOUNCE, 270, Player(11)).Preload(5, true)

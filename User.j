@@ -144,16 +144,21 @@ struct User extends array
                 if DefaultCameraTracking[this] then
                     call SetCameraTargetController(.ActiveUnit, 0, 0, false)
                 endif
-                
+            endif
+        else
+            call .Platformer.ApplyCamera()
+        endif
+    endmethod
+	public method ApplyDefaultSelections takes nothing returns nothing
+		if .GameMode != Teams_GAMEMODE_PLATFORMING and .GameMode != Teams_GAMEMODE_PLATFORMING_PAUSED then
+            if GetLocalPlayer() == Player(this) then
                 call ClearSelection()
                 if .ActiveUnit != null then
                     call SelectUnit(.ActiveUnit, true)
                 endif
             endif
-        else
-            call .Platformer.ApplyCamera()
-        endif        
-    endmethod
+        endif
+	endmethod
     
     public method ResetDefaultCamera takes nothing returns nothing
         if (GetLocalPlayer() == Player(this)) then
@@ -254,6 +259,7 @@ struct User extends array
 			*/
         endif
         
+		//it's least jarring to call apply default cameras only when it's extremely important
         call this.ApplyDefaultCameras()
 		
 		//call DisplayTextToForce(bj_FORCE_PLAYER[0], "respawn end for player " + I2S(this))
@@ -485,6 +491,9 @@ struct User extends array
                 //pause/unpause the unit to clear order stack
                 call PauseUnit(MazersArray[this], true)
                 call PauseUnit(MazersArray[this], false)
+				
+				//always select the mazing unit when switching to STANDARD mode
+				call .ApplyDefaultSelections()
             elseif newGameMode == Teams_GAMEMODE_PLATFORMING then
                 call Platformer.StartPlatforming(x, y)
             elseif newGameMode == Teams_GAMEMODE_STANDARD_PAUSED then
@@ -513,6 +522,9 @@ struct User extends array
 				call .SetActiveEffect("Abilities\\Spells\\NightElf\\EntanglingRoots\\EntanglingRootsTarget.mdl", "origin")
 				
 				call SetUnitPropWindow(.ActiveUnit, 0)
+				
+				//always select the mazing unit when switching to STANDARD_PAUSED mode
+				call .ApplyDefaultSelections()
                 //call UnitApplyTimedLife(.ActiveUnit, 'BEer', 10.)
 				
                 //resets the game camera and selects the mazing unit
