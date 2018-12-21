@@ -409,12 +409,12 @@ public function CollisionIterInit takes nothing returns nothing
     //Group PlayingMazers is declared and set in trigger SetGlobals in Initialization folder
     //call ForGroup(KeyPressActions_ArrowKeyGroup, function pCollisionIter)
     
-    local Platformer cur = Platformer.first
+    local SimpleList_ListNode curPlatformer = Platformer.ActivePlatformers.first
     
     loop
-    exitwhen cur == 0
-        call CollisionIter(cur)
-    set cur = cur.next
+    exitwhen curPlatformer == 0
+        call CollisionIter(Platformer(curPlatformer.value))
+    set curPlatformer = curPlatformer.next
     endloop
 endfunction
 
@@ -447,12 +447,12 @@ endfunction
 
 public function CollisionBlackholeIterInit takes nothing returns nothing
     //Group PlayingMazers is declared and set in trigger SetGlobals in Initialization folder
-    local Platformer cur = Platformer.first
+    local SimpleList_ListNode curPlatformer = Platformer.ActivePlatformers.first
     
     loop
-    exitwhen cur == 0
-        call CollisionBlackholeIter(cur)
-    set cur = cur.next
+    exitwhen curPlatformer == 0
+        call CollisionBlackholeIter(Platformer(curPlatformer.value))
+    set curPlatformer = curPlatformer.next
     endloop
 endfunction
 

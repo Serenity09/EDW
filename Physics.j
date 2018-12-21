@@ -24,13 +24,13 @@ globals
     private constant real   hJUMPCUTOFF     = 1.0       //if less than this value, set to 0
     private constant real   INSTANT_MS      = 1.25       //.MoveSpeed * INSTANT_MS = the amount offset immediately on left/right key press -- higher = more reactive
     
-    private constant boolean DEBUG_GAMEMODE = false
+    private constant boolean DEBUG_GAMEMODE = true
 	
 	private constant boolean DEBUG_PHYSICS_LOOP = false
 	
 	private constant boolean DEBUG_POSITION = false
     
-    private constant boolean DEBUG_VELOCITY = false
+    private constant boolean DEBUG_VELOCITY = true
     private constant boolean DEBUG_VELOCITY_TERRAIN = false
     private constant boolean DEBUG_VELOCITY_FALLOFF = false
     private constant boolean DEBUG_VELOCITY_DIAGONAL = false
@@ -53,20 +53,19 @@ globals
     private constant boolean APPLY_TERRAIN_KILL = true  //should only be false for debugging purposes
     private constant boolean DEBUG_TERRAIN_KILL = false
     private constant boolean DEBUG_TERRAIN_CHANGE = false
-    private constant boolean DEBUG_JUMPING = false
+    private constant boolean DEBUG_JUMPING = true
     private constant string TERRAIN_KILL_FX = "Abilities\\Spells\\Other\\Incinerate\\FireLordDeathExplode.mdl"
     private constant string DEBUG_TERRAIN_KILL_FX = "Abilities\\Spells\\Other\\Incinerate\\FireLordDeathExplode.mdl"
 endglobals
 
-    struct Platformer
+    struct Platformer extends array
         public boolean    IsPlatforming
         public integer    PID
         public unit       Unit
         
         //all properties that support code mechanics
-        public trigger array  ArrowKeyTriggers[5]  //currently no trigger for up release, down press/release
+        public static trigger array  ArrowKeyTriggers[5]  //currently no trigger for up release, down press/release
         public integer        LastHorizontalKey    //-1: left, 1: right
-        public integer        QuickPressBuffer     //0: still/none; represents the number of ticks on the Gameloop to buffer the quick press by
         public boolean        LeftKey
         public boolean        RightKey
         public integer        HorizontalAxisState  //-1: left, 0: still, 1: right
@@ -115,8 +114,9 @@ endglobals
         static timer            TerrainloopTimer
         //TODO add a unit group of platformer units to enum through to bypass the WC3 operations limit OR give each platformer their own timer and stagger them
         
-        implement List
-        
+		static SimpleList_List		ActivePlatformers
+		
+		implement Alloc
         
         public static method IsPointInQuadrant takes real x, real y, ComplexTerrainPathingResult diagonal returns boolean
             local real diffCenter
@@ -1003,34 +1003,7 @@ endglobals
                     endif
                 else
                     set newX = .HorizontalAxisState * .MoveSpeed
-                endif
-                
-                if .QuickPressBuffer != 0 then
-                    //decrement amount of buffer frames remaining
-                    set .QuickPressBuffer = .QuickPressBuffer - 1 
-                endif
-            else
-                //check if there's any quick press buffer left to use
-                if .QuickPressBuffer > 0 then
-                    if .OnDiagonal then
-                        if DiagonalPathing.TerrainPathingForPoint == ComplexTerrainPathing_Top or DiagonalPathing.TerrainPathingForPoint == ComplexTerrainPathing_Bottom then
-                            set newX = .HorizontalAxisState * .MoveSpeed
-                        elseif DiagonalPathing.TerrainPathingForPoint == ComplexTerrainPathing_NE or DiagonalPathing.TerrainPathingForPoint == ComplexTerrainPathing_SW then
-                            set newX = .HorizontalAxisState * .MoveSpeed * SIN_45
-                            set newY = -.HorizontalAxisState * .MoveSpeed * SIN_45
-                        elseif DiagonalPathing.TerrainPathingForPoint == ComplexTerrainPathing_NW or DiagonalPathing.TerrainPathingForPoint == ComplexTerrainPathing_SE then
-                            set newX = .HorizontalAxisState * .MoveSpeed * SIN_45
-                            set newY = .HorizontalAxisState * .MoveSpeed * SIN_45
-                        elseif DiagonalPathing.TerrainPathingForPoint == ComplexTerrainPathing_Left or DiagonalPathing.TerrainPathingForPoint == ComplexTerrainPathing_Right then
-                            //TODO try it with no effect on position when sticking to a diagonal vertical wall
-                            set newX = .HorizontalAxisState * .MoveSpeed
-                        endif
-                    else
-                        set newX = .HorizontalAxisState * .MoveSpeed
-                    endif
-                    
-                    set .QuickPressBuffer = .QuickPressBuffer - COUNT_BUFFER_TICKS / 2 //apply the quick press over two frames
-                endif
+                endif                
             endif
             
             //TODO constant forces need to happen in the main physics loop, which is performance hungry, or can they go to a less performance needy timer?
@@ -1832,40 +1805,6 @@ endglobals
 						set directionY = 0
                     endif
                     
-                    /*
-                    //repurpose newX and newY
-                    //newX = length of change vector
-                    //newY = amount to scale the full change vector by
-                    set newX = SquareRoot(newPosition.x * newPosition.x + newPosition.y * newPosition.y)
-                    //only sample points along segment if our original change distance is bigger than 1 segment
-
-                    if newX > PATHING_SEGMENT_SIZE then
-                        set newY = PATHING_SEGMENT_SIZE / newX
-                        
-                        //debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "Checking middle of movement segment")
-                        
-                        //TODO improve to be more efficient: very frequently checking 90% of the change vector and then 100%
-                        loop
-                        exitwhen newY >= 1 or pathingResult != 0
-                            //debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "Loop: " + R2S(newY))
-                            set pathingResult = ComplexTerrainPathing_GetPathingForPoint(.XPosition + newPosition.x * newY, .YPosition + newPosition.y * newY)
-                            set newY = newY + PATHING_SEGMENT_SIZE / newX
-                        endloop
-                    endif
-                    */
-                    /*
-                    static if PLATFORMING_CHECK_HALFWAY then
-                        //try just checking halfway
-                        set pathingResult = ComplexTerrainPathing_GetPathingForPoint(.XPosition + newPosition.x * .5, .YPosition + newPosition.y * .5)
-                        
-                        if pathingResult == 0 then
-                            //debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "Checking end of movement segment")
-                            set pathingResult = ComplexTerrainPathing_GetPathingForPoint(.XPosition + newPosition.x, .YPosition + newPosition.y)
-                        endif
-                    else
-                        set pathingResult = ComplexTerrainPathing_GetPathingForPoint(.XPosition + newPosition.x, .YPosition + newPosition.y)
-                    endif
-                    */
                     static if PLATFORMING_CHECK_HALFWAY then
                         //try just checking halfway
                         set pathingResult = ComplexTerrainPathing_GetPathingForPoint(.XPosition + newPosition.x * .5 + directionX * wOFFSET, .YPosition + newPosition.y * .5 + directionY * wOFFSET)
@@ -3051,21 +2990,21 @@ endglobals
         endmethod
         
         private static method GameloopListIteration takes nothing returns nothing
-            local Platformer p = .first
+            local SimpleList_ListNode p = thistype.ActivePlatformers.first
             
             loop
             exitwhen p == 0
-                call p.ApplyPhysics()
+                call Platformer(p.value).ApplyPhysics()
                 set p = p.next
             endloop
         endmethod
         
         private static method TerrainloopListIteration takes nothing returns nothing
-            local Platformer p = .first
+			local SimpleList_ListNode p = thistype.ActivePlatformers.first
             
             loop
             exitwhen p == 0
-                call p.UpdateTerrain()
+                call Platformer(p.value).UpdateTerrain()
                 set p = p.next
             endloop
         endmethod
@@ -3116,7 +3055,7 @@ endglobals
                 
                 call SetPhysicsToProfile()
                 
-                if .count == 0 then
+                if thistype.ActivePlatformers.count == 0 then
                     call TimerStart(.GameloopTimer, PlatformerGlobals_GAMELOOP_TIMESTEP, true, function Platformer.GameloopListIteration)
                     call TimerStart(.TerrainloopTimer, PlatformerGlobals_TERRAINLOOP_TIMESTEP, true, function Platformer.TerrainloopListIteration)
                     
@@ -3131,7 +3070,7 @@ endglobals
                     //call SelectUnit(.Unit, true)
                 endif
 
-                call .listAdd()
+                call thistype.ActivePlatformers.add(this)
                 
                 call this.ApplyCamera()
                 
@@ -3151,7 +3090,7 @@ endglobals
                 set .HorizontalAxisState = 0
                 set .LeftKey = false
                 set .RightKey = false
-                call .listRemove()
+                call thistype.ActivePlatformers.remove(this)
                 
                 //debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "Start clearing adjustments")
                 call .MSEquation.clearAdjustments()
@@ -3161,7 +3100,7 @@ endglobals
                 call .TVYEquation.clearAdjustments()
                 //debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "End clearing adjustments")
                 
-                if .count == 0 then
+                if thistype.ActivePlatformers.count == 0 then
                     call PauseTimer(.GameloopTimer)
                     call PauseTimer(.TerrainloopTimer)
                     
@@ -3198,8 +3137,10 @@ endglobals
                         //debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "And right not down")
                         set p.HorizontalAxisState = -1
                         set p.LastHorizontalKey = -1
-                        set p.QuickPressBuffer = COUNT_BUFFER_TICKS
                         
+						call p.ApplyPhysics()
+						
+						/*                        
                         //do left down actions -- move unit a bit
                         if p.OnDiagonal then
                             //test what happens if we just move the unit a tiny bit in the correct direction, without doing any complicated checks
@@ -3215,6 +3156,7 @@ endglobals
                                 set p.XPosition = newX
                             endif
                         endif
+						*/
                     endif
                 else //left was released
                     //debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "Left key released")
@@ -3223,8 +3165,10 @@ endglobals
                         //set axis state towards right and move unit a bit
                         set p.HorizontalAxisState = 1
                         set p.LastHorizontalKey = 1
-                        set p.QuickPressBuffer = COUNT_BUFFER_TICKS
                         
+						call p.ApplyPhysics()
+						
+						/*                        
                         //do right down actions -- move unit a bit
                         if p.OnDiagonal then
                         
@@ -3236,6 +3180,7 @@ endglobals
                                 set p.XPosition = newX
                             endif
                         endif
+						*/
                     else
                         //debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "And right not down")
                         //set axis state to neutral
@@ -3262,8 +3207,10 @@ endglobals
                         //debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "And left not down")
                         set p.HorizontalAxisState = 1
                         set p.LastHorizontalKey = 1
-                        set p.QuickPressBuffer = COUNT_BUFFER_TICKS
                         
+						call p.ApplyPhysics()
+						
+						/*                        
                         //do right down actions -- move unit a bit
                         if p.OnDiagonal then
                         
@@ -3275,6 +3222,7 @@ endglobals
                                 set p.XPosition = newX
                             endif
                         endif
+						*/
                     endif
                 else //right was released
                     //debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "Right key released")
@@ -3283,8 +3231,10 @@ endglobals
                         //set axis state towards left and move unit a bit
                         set p.HorizontalAxisState = -1
                         set p.LastHorizontalKey = -1
-                        set p.QuickPressBuffer = COUNT_BUFFER_TICKS
-                        
+						
+						call p.ApplyPhysics()
+						
+						/*                        
                         //do left down actions -- move unit a bit
                         if p.OnDiagonal then
                         
@@ -3296,6 +3246,7 @@ endglobals
                                 set p.XPosition = newX
                             endif
                         endif
+						*/
                     else
                         //debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "And left not down")
                         //set axis state to neutral
@@ -3422,6 +3373,10 @@ endglobals
 								set p.YVelocity = p.YVelocity + -p.vJumpSpeed * p.v2hJumpRatio
 							endif
 						endif
+						
+						static if DEBUG_VELOCITY then
+                            call DisplayTextToForce(bj_FORCE_PLAYER[0], "X Velocity: " + R2S(p.XVelocity) + ", Y Velocity: " + R2S(p.YVelocity))
+                        endif
                         
                         call DestroyEffect(AddSpecialEffect("Abilities\\Spells\\Orc\\FeralSpirit\\feralspirittarget.mdl", p.XPosition, p.YPosition))
                         
@@ -3541,7 +3496,7 @@ endglobals
         
         public static method create takes integer pID returns thistype
             local thistype new = thistype.allocate()
-            
+			
             static if DEBUG_CREATE then
                 call DisplayTextToForce(bj_FORCE_PLAYER[0], "Starting to create platformer for player " + I2S(pID))
             endif
@@ -3550,7 +3505,6 @@ endglobals
             
             set new.LeftKey = false
             set new.RightKey = false
-            set new.QuickPressBuffer = 0 //none
             set new.LastHorizontalKey = 0 //none since last death
             set new.HorizontalAxisState = 0 //none
             
@@ -3574,29 +3528,13 @@ endglobals
             set new.PlatformingCamera = CreateCameraSetup()
             call CameraSetupSetField(new.PlatformingCamera, CAMERA_FIELD_ANGLE_OF_ATTACK, 270, 0)
             call CameraSetupSetField(new.PlatformingCamera, CAMERA_FIELD_TARGET_DISTANCE, 2200, 0)
-            
-            set new.ArrowKeyTriggers[0] = CreateTrigger()
-            set new.ArrowKeyTriggers[1] = CreateTrigger()
-            set new.ArrowKeyTriggers[2] = CreateTrigger()
-            set new.ArrowKeyTriggers[3] = CreateTrigger()
-            set new.ArrowKeyTriggers[4] = CreateTrigger()
-            
-            call TriggerRegisterPlayerEvent(new.ArrowKeyTriggers[0], Player(pID), EVENT_PLAYER_ARROW_LEFT_DOWN)
-            call TriggerRegisterPlayerEvent(new.ArrowKeyTriggers[1], Player(pID), EVENT_PLAYER_ARROW_LEFT_UP)
-            call TriggerRegisterPlayerEvent(new.ArrowKeyTriggers[2], Player(pID), EVENT_PLAYER_ARROW_RIGHT_DOWN)
-            call TriggerRegisterPlayerEvent(new.ArrowKeyTriggers[3], Player(pID), EVENT_PLAYER_ARROW_RIGHT_UP)
-            call TriggerRegisterPlayerEvent(new.ArrowKeyTriggers[4], Player(pID), EVENT_PLAYER_ARROW_UP_DOWN)
-            
-            static if DEBUG_CREATE then
-                call DisplayTextToForce(bj_FORCE_PLAYER[0], "Registering kb event callbacks")
-            endif
-            
-            call TriggerAddCondition(new.ArrowKeyTriggers[0], Condition(function Platformer.Left_PRESSED))
-            call TriggerAddCondition(new.ArrowKeyTriggers[1], Condition(function Platformer.Left_RELEASED))
-            call TriggerAddCondition(new.ArrowKeyTriggers[2], Condition(function Platformer.Right_PRESSED))
-            call TriggerAddCondition(new.ArrowKeyTriggers[3], Condition(function Platformer.Right_RELEASED))
-            call TriggerAddCondition(new.ArrowKeyTriggers[4], Condition(function Platformer.Up_PRESSED))
-            
+                        
+            call TriggerRegisterPlayerEvent(thistype.ArrowKeyTriggers[0], Player(pID), EVENT_PLAYER_ARROW_LEFT_DOWN)
+            call TriggerRegisterPlayerEvent(thistype.ArrowKeyTriggers[1], Player(pID), EVENT_PLAYER_ARROW_LEFT_UP)
+            call TriggerRegisterPlayerEvent(thistype.ArrowKeyTriggers[2], Player(pID), EVENT_PLAYER_ARROW_RIGHT_DOWN)
+            call TriggerRegisterPlayerEvent(thistype.ArrowKeyTriggers[3], Player(pID), EVENT_PLAYER_ARROW_RIGHT_UP)
+            call TriggerRegisterPlayerEvent(thistype.ArrowKeyTriggers[4], Player(pID), EVENT_PLAYER_ARROW_UP_DOWN)
+                                    
             static if DEBUG_CREATE then
                 call DisplayTextToForce(bj_FORCE_PLAYER[0], "Finished creating platformer")
             endif
@@ -3608,6 +3546,20 @@ endglobals
             local integer i = 0
             local Platformer p
             
+			set thistype.ArrowKeyTriggers[0] = CreateTrigger()
+            set thistype.ArrowKeyTriggers[1] = CreateTrigger()
+            set thistype.ArrowKeyTriggers[2] = CreateTrigger()
+            set thistype.ArrowKeyTriggers[3] = CreateTrigger()
+            set thistype.ArrowKeyTriggers[4] = CreateTrigger()
+			
+			call TriggerAddCondition(thistype.ArrowKeyTriggers[0], Condition(function Platformer.Left_PRESSED))
+            call TriggerAddCondition(thistype.ArrowKeyTriggers[1], Condition(function Platformer.Left_RELEASED))
+            call TriggerAddCondition(thistype.ArrowKeyTriggers[2], Condition(function Platformer.Right_PRESSED))
+            call TriggerAddCondition(thistype.ArrowKeyTriggers[3], Condition(function Platformer.Right_RELEASED))
+            call TriggerAddCondition(thistype.ArrowKeyTriggers[4], Condition(function Platformer.Up_PRESSED))
+			
+			set .ActivePlatformers = SimpleList_List.create()
+			
             set .GameloopTimer = CreateTimer()
             set .TerrainloopTimer = CreateTimer()
         endmethod
