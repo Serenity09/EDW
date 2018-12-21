@@ -1091,15 +1091,6 @@ endglobals
             //check new x and/or y position for pathability and apply it dependingly
             if newX != 0 or newY != 0 then
                 //debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "Change in position")
-                //bound newX and newY if they're too big
-                set distance = SquareRoot(newX * newX + newY * newY)
-                if distance > PLATFORMING_MAXCHANGE then
-                    //boundedPercent = PLATFORMING_MAXCHANGE / distance
-                    
-                    set newX = newX * PLATFORMING_MAXCHANGE / distance
-                    set newY = newY * PLATFORMING_MAXCHANGE / distance
-                endif
-                
                 if .OnDiagonal then
                     //project newX and newY along the diagonal, sticking or releasing based on fun-syics logic
                     //step 1: check if newX / newY escape the current diagonal
@@ -1114,7 +1105,16 @@ endglobals
                     
                     //step 1: check if newX / newY escape the current diagonal
                     if DoesPointEscapeDiagonal(.DiagonalPathing.TerrainPathingForPoint, newX, newY, DIAGONAL_ESCAPEDISTANCE) then
-                        //step 2a: if they do, leave the diagonal and switch back to normal path finding
+                        //bound newX and newY if they're too big -- this needs to occur AFTER checking if point escapes diagonal, or else the result may be skewed towards any much larger value
+						set distance = SquareRoot(newX * newX + newY * newY)
+						if distance > PLATFORMING_MAXCHANGE then
+							//boundedPercent = PLATFORMING_MAXCHANGE / distance
+							
+							set newX = newX * PLATFORMING_MAXCHANGE / distance
+							set newY = newY * PLATFORMING_MAXCHANGE / distance
+						endif
+						
+						//step 2a: if they do, leave the diagonal and switch back to normal path finding
 						//platformer is allowed to escape the diagonal, now need to check if destination is legal
 						
                         //this is way more intense then i need here, and i can't even handle any of the cases appropriately as things are setup now
@@ -1197,6 +1197,15 @@ endglobals
                         //    debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "Warning, unhandled case for escaping a diagonal into an unpathable destination")
                         //endif
                     else
+						//bound newX and newY if they're too big -- this needs to occur AFTER checking if point escapes diagonal, or else the result may be skewed towards any much larger value
+						set distance = SquareRoot(newX * newX + newY * newY)
+						if distance > PLATFORMING_MAXCHANGE then
+							//boundedPercent = PLATFORMING_MAXCHANGE / distance
+							
+							set newX = newX * PLATFORMING_MAXCHANGE / distance
+							set newY = newY * PLATFORMING_MAXCHANGE / distance
+						endif
+						
 						//step 2: if they don't escape the diagonal, project newX and newY along the current diagonal
                         //project newX and newY along the current diagonal
                         //debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "Projecting") 
@@ -1787,7 +1796,16 @@ endglobals
                         call newPosition.destroy()
                     endif
                 else //not currently on a diagonal
-                    //TODO implement raycasting to get the first non pathable complex terrain pathing result for newX newY pairs that are big enough to need it to be accurate
+                    //bound newX and newY if they're too big -- this needs to occur AFTER checking if point escapes diagonal, or else the result may be skewed towards any much larger value
+					set distance = SquareRoot(newX * newX + newY * newY)
+					if distance > PLATFORMING_MAXCHANGE then
+						//boundedPercent = PLATFORMING_MAXCHANGE / distance
+						
+						set newX = newX * PLATFORMING_MAXCHANGE / distance
+						set newY = newY * PLATFORMING_MAXCHANGE / distance
+					endif
+						
+					//TODO implement raycasting to get the first non pathable complex terrain pathing result for newX newY pairs that are big enough to need it to be accurate
                     set newPosition = vector2.create(newX, newY)
                     
                     if newX > 0 then
