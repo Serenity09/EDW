@@ -3350,7 +3350,9 @@ endglobals
                         
                         
                         call DestroyEffect(AddSpecialEffect("Abilities\\Spells\\Orc\\FeralSpirit\\feralspirittarget.mdl", p.XPosition, p.YPosition))
-                        
+						
+						call p.ApplyPhysics()
+						
                         return false
                     elseif p.PushedAgainstVector == ComplexTerrainPathing_SW_UnitVector then
                         set l = -p.hJumpSpeed * p.PushedAgainstVector.x + -p.vJumpSpeed * p.PushedAgainstVector.y
@@ -3359,6 +3361,8 @@ endglobals
                         set p.YVelocity = p.YVelocity + l * p.PushedAgainstVector.y
                         
                         call DestroyEffect(AddSpecialEffect("Abilities\\Spells\\Orc\\FeralSpirit\\feralspirittarget.mdl", p.XPosition, p.YPosition))
+						
+						call p.ApplyPhysics()
 						
 						return false
                     elseif p.PushedAgainstVector == ComplexTerrainPathing_SE_UnitVector then
@@ -3369,6 +3373,8 @@ endglobals
                         
                         call DestroyEffect(AddSpecialEffect("Abilities\\Spells\\Orc\\FeralSpirit\\feralspirittarget.mdl", p.XPosition, p.YPosition))
                         
+						call p.ApplyPhysics()
+						
                         return false
                     elseif p.PushedAgainstVector == ComplexTerrainPathing_NW_UnitVector then
                         set l = -p.hJumpSpeed * p.PushedAgainstVector.x + p.vJumpSpeed * p.PushedAgainstVector.y
@@ -3378,6 +3384,8 @@ endglobals
                         
                         call DestroyEffect(AddSpecialEffect("Abilities\\Spells\\Orc\\FeralSpirit\\feralspirittarget.mdl", p.XPosition, p.YPosition))
                         
+						call p.ApplyPhysics()
+						
                         static if DEBUG_VELOCITY then
                             call DisplayTextToForce(bj_FORCE_PLAYER[0], "X Velocity: " + R2S(p.XVelocity) + ", Y Velocity: " + R2S(p.YVelocity) + ", L: " + R2S(l))
                         endif
@@ -3394,19 +3402,31 @@ endglobals
 						static if DEBUG_VELOCITY then
                             call DisplayTextToForce(bj_FORCE_PLAYER[0], "X Velocity: " + R2S(p.XVelocity) + ", Y Velocity: " + R2S(p.YVelocity))
                         endif
+						
+						call p.ApplyPhysics()
                         
                         return false
                     elseif p.PushedAgainstVector == ComplexTerrainPathing_Left_UnitVector or p.PushedAgainstVector == ComplexTerrainPathing_Right_UnitVector and TerrainGlobals_IsTerrainWallJumpable(p.XTerrainPushedAgainst) then
                         set p.XVelocity = p.hJumpSpeed * p.PushedAgainstVector.x
                         
-                        if p.GravitationalAccel < 0 then
-                            set p.YVelocity = p.vJumpSpeed * p.v2hJumpRatio
-                        elseif p.GravitationalAccel > 0 then
-                            set p.YVelocity = -p.vJumpSpeed * p.v2hJumpRatio
-                        endif
+						if TerrainGlobals_IsTerrainGoodFooting(p.XTerrainPushedAgainst) then
+							if p.GravitationalAccel < 0 then
+								set p.YVelocity = p.vJumpSpeed * p.v2hJumpRatio
+							elseif p.GravitationalAccel > 0 then
+								set p.YVelocity = -p.vJumpSpeed * p.v2hJumpRatio
+							endif
+						else
+							if p.GravitationalAccel < 0 then
+								set p.YVelocity = p.YVelocity + p.vJumpSpeed * p.v2hJumpRatio
+							elseif p.GravitationalAccel > 0 then
+								set p.YVelocity = p.YVelocity + -p.vJumpSpeed * p.v2hJumpRatio
+							endif
+						endif
                         
                         call DestroyEffect(AddSpecialEffect("Abilities\\Spells\\Orc\\FeralSpirit\\feralspirittarget.mdl", p.XPosition, p.YPosition))
                         
+						call p.ApplyPhysics()
+						
                         return false
                     endif
                 else
@@ -3443,11 +3463,19 @@ endglobals
                     //check left of x
                     if TerrainGlobals_IsTerrainWallJumpable(GetTerrainType(p.XPosition - hjBUFFER, p.YPosition)) and TerrainGlobals_IsTerrainSquare(GetTerrainType(p.XPosition - hjBUFFER, p.YPosition)) then
                         //apply a percentage, given by v2hJumpRatio, of vJumpSpeed as immediate YVelocity
-                        if p.GravitationalAccel < 0 then
-                            set p.YVelocity = p.vJumpSpeed * p.v2hJumpRatio
-                        elseif p.GravitationalAccel > 0 then
-                            set p.YVelocity = -p.vJumpSpeed * p.v2hJumpRatio
-                        endif
+                        if TerrainGlobals_IsTerrainGoodFooting(GetTerrainType(p.XPosition - hjBUFFER, p.YPosition)) then
+							if p.GravitationalAccel < 0 then
+								set p.YVelocity = p.vJumpSpeed * p.v2hJumpRatio
+							elseif p.GravitationalAccel > 0 then
+								set p.YVelocity = -p.vJumpSpeed * p.v2hJumpRatio
+							endif
+						else
+							if p.GravitationalAccel < 0 then
+								set p.YVelocity = p.YVelocity + p.vJumpSpeed * p.v2hJumpRatio
+							elseif p.GravitationalAccel > 0 then
+								set p.YVelocity = p.YVelocity + -p.vJumpSpeed * p.v2hJumpRatio
+							endif
+						endif
                         
                         //apply full horizontal jump speed (this is the only use for it)
                         set p.XVelocity = p.hJumpSpeed
@@ -3461,11 +3489,19 @@ endglobals
                     //otherwise check if can right wall jump
                     if TerrainGlobals_IsTerrainWallJumpable(GetTerrainType(p.XPosition + hjBUFFER, p.YPosition)) and TerrainGlobals_IsTerrainSquare(GetTerrainType(p.XPosition + hjBUFFER, p.YPosition)) then
                         //apply a percentage, given by v2hJumpRatio, of vJumpSpeed as immediate YVelocity
-                        if p.GravitationalAccel < 0 then
-                            set p.YVelocity = p.vJumpSpeed * p.v2hJumpRatio
-                        elseif p.GravitationalAccel > 0 then
-                            set p.YVelocity = -p.vJumpSpeed * p.v2hJumpRatio
-                        endif
+						if TerrainGlobals_IsTerrainGoodFooting(GetTerrainType(p.XPosition + hjBUFFER, p.YPosition)) then
+							if p.GravitationalAccel < 0 then
+								set p.YVelocity = p.vJumpSpeed * p.v2hJumpRatio
+							elseif p.GravitationalAccel > 0 then
+								set p.YVelocity = -p.vJumpSpeed * p.v2hJumpRatio
+							endif
+						else
+							if p.GravitationalAccel < 0 then
+								set p.YVelocity = p.YVelocity + p.vJumpSpeed * p.v2hJumpRatio
+							elseif p.GravitationalAccel > 0 then
+								set p.YVelocity = p.YVelocity + -p.vJumpSpeed * p.v2hJumpRatio
+							endif
+						endif
                         
                         //apply full horizontal jump speed (this is the only use for it)
                         set p.XVelocity = -p.hJumpSpeed

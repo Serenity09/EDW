@@ -81,6 +81,10 @@ library TerrainGlobals initializer initTerrainGlobals requires GameGlobalConstan
     public function IsTerrainWallJumpable takes integer ttype returns boolean
         return ttype == WALL or ttype == RSNOW or ttype == GRASS or ttype == DGRASS or ttype == SLOWICE or ttype == FASTICE
     endfunction
+	//a strict subset of IsTerrainWallJumpable
+	public function IsTerrainGoodFooting takes integer ttype returns boolean
+		return ttype == WALL or ttype == RSNOW or ttype == GRASS or ttype == DGRASS
+	endfunction
     
     public function IsTerrainSoft takes integer ttype returns boolean
         return ttype == SAND or ttype == SNOW
