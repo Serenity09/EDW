@@ -24,13 +24,16 @@ globals
     private constant real   hJUMPCUTOFF     = 1.0       //if less than this value, set to 0
     private constant real   INSTANT_MS      = 1.25       //.MoveSpeed * INSTANT_MS = the amount offset immediately on left/right key press -- higher = more reactive
     
-    private constant boolean DEBUG_GAMEMODE = true
+	private constant boolean APPLY_TERRAIN_KILL = true  //should only be false for debugging purposes
+	
+	private constant boolean DEBUG_CREATE = false
+    private constant boolean DEBUG_GAMEMODE = false
 	
 	private constant boolean DEBUG_PHYSICS_LOOP = false
 	
 	private constant boolean DEBUG_POSITION = false
     
-    private constant boolean DEBUG_VELOCITY = true
+    private constant boolean DEBUG_VELOCITY = false
     private constant boolean DEBUG_VELOCITY_TERRAIN = false
     private constant boolean DEBUG_VELOCITY_FALLOFF = false
     private constant boolean DEBUG_VELOCITY_DIAGONAL = false
@@ -47,14 +50,12 @@ globals
 	private constant boolean DEBUG_DIAGONAL_START_CHECK = false
 	
 	private constant boolean BUFFER_STICKY_TRANSITION_ESCAPE = LEAVE_DIAGONAL_OFFSET > 0 //enable/disable: when leaving a diagonal into empty space due to exceeding the sticky limit for diagonal transitions, position is offset away from diagonal surface when enabled / left as-is when disabled
-    
-    private constant boolean DEBUG_CREATE = false
-    
-    private constant boolean APPLY_TERRAIN_KILL = true  //should only be false for debugging purposes
+	
     private constant boolean DEBUG_TERRAIN_KILL = false
     private constant boolean DEBUG_TERRAIN_CHANGE = false
-    private constant boolean DEBUG_JUMPING = true
-    private constant string TERRAIN_KILL_FX = "Abilities\\Spells\\Other\\Incinerate\\FireLordDeathExplode.mdl"
+    private constant boolean DEBUG_JUMPING = false
+    
+	private constant string TERRAIN_KILL_FX = "Abilities\\Spells\\Other\\Incinerate\\FireLordDeathExplode.mdl"
     private constant string DEBUG_TERRAIN_KILL_FX = "Abilities\\Spells\\Other\\Incinerate\\FireLordDeathExplode.mdl"
 endglobals
 
@@ -2235,15 +2236,15 @@ endglobals
                                 //debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "Setting X Velocity 0") 
                                 set .XVelocity = 0
                             else
-                                //get the angle (in rads) representing the target diagonals slope
-                                set newY = ComplexTerrainPathing_GetAngleForUnitVector(ComplexTerrainPathing_GetUnitVectorForPathing(pathingResult.TerrainPathingForPoint))
-                                
-                                //get angle (in rads) between unit's new position and the positive x axis (0 game degrees)
-                                //set newX = Atan2((.YPosition + newPosition.y) - .YPosition, (.XPosition + newPosition.x) - .XPosition)
-                                set newX = Atan2(newPosition.y, newPosition.x)
-                                
                                 static if DEBUG_DIAGONAL_START then
-                                    if newX < 0 then
+                                    //get the angle (in rads) representing the target diagonals slope
+									set newY = ComplexTerrainPathing_GetAngleForUnitVector(ComplexTerrainPathing_GetUnitVectorForPathing(pathingResult.TerrainPathingForPoint))
+									
+									//get angle (in rads) between unit's new position and the positive x axis (0 game degrees)
+									//set newX = Atan2((.YPosition + newPosition.y) - .YPosition, (.XPosition + newPosition.x) - .XPosition)
+									set newX = Atan2(newPosition.y, newPosition.x)
+									
+									if newX < 0 then
                                         set newX = newX + 2*bj_PI
                                     endif
                                     
