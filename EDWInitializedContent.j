@@ -266,7 +266,11 @@ library EDWCinematics requires EDWLevels, Cinema
 		
         //LEVEL 3
         //set l = Levels_Level.create(23, "Playground", 5, 4, "PW3Start", "PW3Stop", gg_rct_PWR_3_1, gg_rct_PW3_Vision, gg_rct_PW3_End, l) //gg_rct_PW1_Vision
-        
+        set cineMsg = CinemaMessage.create(null, GetEDWSpeakerMessage("Joe", "*sniff*", DEFAULT_TEXT_COLOR), DEFAULT_SHORT_TEXT_SPEED)
+        set cine = Cinematic.create(gg_rct_PW3Sniff, true, false, cineMsg)
+		call cine.SetLastMessageBuffer(-1)
+		call Levels_Level(23).AddCinematic(cine)
+		
         //Justine's Four Seasons
 		//set l = Levels_Level.create(7, "Spring", 3, 2, "FourSeason1Start", "FourSeason1Stop", gg_rct_FSR_1_1, gg_rct_FS1_Vision, gg_rct_FS1_End, 0)
 	
@@ -419,7 +423,23 @@ library EDWLevels requires SimpleList, Teams, Levels
         call startables.add(DrunkWalker_DrunkWalkerSpawn.create(gg_rct_IW5_Drunks_2, 6, 3.5, LGUARD, 16))
         call startables.add(DrunkWalker_DrunkWalkerSpawn.create(gg_rct_IW5_Drunks_1, 10, 8, LGUARD, 60))
         
-                
+		//ICE WORLD B
+		//LEVEL 1
+		set l = Levels_Level.create(4, "Training Wheels", 4, 2, "IWB1Start", "IWB1Stop", gg_rct_EIWR_1_1, gg_rct_EIW1_Vision, gg_rct_EIW1_End, 0)
+        call l.AddCheckpoint(gg_rct_EIWCP_1_1, gg_rct_EIWR_1_2)
+		
+		set startables = SimpleList_List.create()
+		
+		set rg = RelayGenerator.create(-5948, 10836, 4, 4, 270, 0, ICETROLL, 2.)
+        call rg.AddTurnSimple(0, 12)
+        call rg.AddTurnSimple(90, 11)
+        call rg.EndTurns(90)
+		        
+        call startables.add(rg)
+		
+		
+		set l.Content.Startables = startables
+		
         //PRIDE WORLD / PLATFORMING
         //LEVEL 1
         set l = Levels_Level.create(9, "Perspective", 4, 2, "PW1Start", "PW1Stop", gg_rct_PWR_1_1, gg_rct_PW1_Vision, gg_rct_PW1_End, 0) //gg_rct_PW1_Vision

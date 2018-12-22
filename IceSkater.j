@@ -10,10 +10,11 @@ library IceSkater requires SimpleList, Vector2, IceMovement
 	
 	private struct Destination extends array
 		public vector2 Position
+		//TODO replace with vector containing slope and offset values for line orthogonal to path from previous destination, and intersecting next destinations position
 		//TODO metadata about destination
 		public vector2 QuadrantDirection //value sign pair for what quadrant this destination is in compared to its previous
+		//public vector2 PositionNormal //normal through .Position with x = m, y = b for equation thats perpindicular to the straight line between the previous destination and this one
 		public real AngleFromPrevious //in degrees, only used for unit facing
-		public real AngleToNext
 		
 		implement Alloc
 		
@@ -22,7 +23,6 @@ library IceSkater requires SimpleList, Vector2, IceMovement
 			call DisplayTextToForce(bj_FORCE_PLAYER[0], "Position: " + .Position.toString())
 			call DisplayTextToForce(bj_FORCE_PLAYER[0], "Quadrant From Previous: " + .QuadrantDirection.toString())
 			call DisplayTextToForce(bj_FORCE_PLAYER[0], "Angle From Previous: " + R2S(.AngleFromPrevious))
-			call DisplayTextToForce(bj_FORCE_PLAYER[0], "Angle To Next: " + R2S(.AngleToNext))
 		endmethod
 		
 		public method destroy takes nothing returns nothing
@@ -49,10 +49,9 @@ library IceSkater requires SimpleList, Vector2, IceMovement
 					endif
 				endif
 				
-				set previousDestination.AngleToNext = rel.getAngleHorizontal() * bj_RADTODEG
-				set new.AngleFromPrevious = previousDestination.AngleToNext
+				set new.AngleFromPrevious = rel.getAngleHorizontal() * bj_RADTODEG
+				
 				call rel.destroy()
-				//set previousDestination.AngleToNext = vector2.getAngle(previousDestination.Position, position) * bj_RADTODEG
 			
 				if position.x >= previousDestination.Position.x - AXIS_BUFFER and position.x <= previousDestination.Position.x + AXIS_BUFFER then
 					if position.y >= previousDestination.Position.y then
@@ -132,9 +131,8 @@ library IceSkater requires SimpleList, Vector2, IceMovement
 			local vector2 rel = vector2.create(Destination(.Destinations.first.value).Position.x, Destination(.Destinations.first.value).Position.y)
 			call rel.subtract(Destination(.Destinations.last.value).Position)
 			
-			set end.AngleToNext = rel.getAngleHorizontal() * bj_RADTODEG
-			set start.AngleFromPrevious = end.AngleToNext
-			
+			set start.AngleFromPrevious = rel.getAngleHorizontal() * bj_RADTODEG
+
 			call rel.destroy()
 			
 			//set start.AngleFromPrevious = vector2.getAngle(end, start) * bj_RADTODEG

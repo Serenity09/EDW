@@ -71,7 +71,7 @@ library TerrainGlobals initializer initTerrainGlobals requires GameGlobalConstan
         return ttype == DEATH or ttype == PATHABLE or ttype == OCEAN or ttype == PLATFORMING or ttype == VINES or ttype == RTILE or ttype == LEAVES or ttype == RUNEBRICKS
     endfunction
     public function IsTerrainUnpathable takes integer ttype returns boolean
-        return ttype == WALL or ttype == SAND or ttype == SNOW or ttype == RSNOW or ttype == GRASS or ttype == DGRASS or ttype == FASTICE or ttype == SLOWICE
+        return ttype == WALL or ttype == GRASS or ttype == DGRASS or ttype == FASTICE or ttype == SLOWICE or ttype == SAND or ttype == SNOW or ttype == RSNOW 
     endfunction
     
     public function IsTerrainJumpable takes integer ttype returns boolean
@@ -81,7 +81,7 @@ library TerrainGlobals initializer initTerrainGlobals requires GameGlobalConstan
     public function IsTerrainWallJumpable takes integer ttype returns boolean
         return ttype == WALL or ttype == RSNOW or ttype == GRASS or ttype == DGRASS or ttype == SLOWICE or ttype == FASTICE
     endfunction
-	//a strict subset of IsTerrainWallJumpable
+	//relevant to a strict subset of IsTerrainWallJumpable
 	public function IsTerrainGoodFooting takes integer ttype returns boolean
 		return ttype == WALL or ttype == RSNOW or ttype == GRASS or ttype == DGRASS
 	endfunction
@@ -89,7 +89,22 @@ library TerrainGlobals initializer initTerrainGlobals requires GameGlobalConstan
     public function IsTerrainSoft takes integer ttype returns boolean
         return ttype == SAND or ttype == SNOW
     endfunction
-    
+	//Use not IsTerrainSoft in conjunction with IsTerrainUnpathable instead of IsTerrainHard
+	
+	
+	//relevant to a strict subset of hard terrains
+	/* //ice isn't fun unless its got a 0 bouncyness value, but then its very unintuitive that its so much less bouncy than grass...
+	public function GetTerrainBouncyness takes integer ttype returns real
+		if ttype == WALL then
+			return .9
+		elseif ttype == GRASS or ttype == DGRASS or ttype == FASTICE or ttype == SLOWICE then
+			return 0
+		elseif ttype == RSNOW then
+			return .5
+		endif
+	endfunction
+    */
+	
     public function IsTerrainDiagonal takes integer ttype returns boolean
         return ttype == SLOWICE or ttype == FASTICE or ttype == GRASS or ttype == DGRASS
     endfunction

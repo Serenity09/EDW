@@ -1,4 +1,4 @@
-library InGameCommands initializer init requires MazerGlobals, Platformer
+library InGameCommands initializer init requires MazerGlobals, Platformer, RelayGenerator
 globals
 
 endglobals
