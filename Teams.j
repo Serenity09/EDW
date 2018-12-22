@@ -20,7 +20,22 @@ endglobals
 //it also assumes that the platforming unit is fit to match (mistakes were made) and that all the relevant gameloops are ready to go / have been recycled properly
 //this should only be relevant when first starting the game (for which it's hardcoded in already...) or if attempting to implement -restart lol
 
-
+struct WorldProgress extends array
+	public integer WorldID
+	public Levels_Level FurthestLevel
+	
+	private static integer c = 1
+	
+	public static method create takes Levels_Level furthestLevel returns thistype
+		local thistype new = c
+		set c = c + 1
+		
+		set new.WorldID = furthestLevel.GetWorldID()
+		set new.FurthestLevel = furthestLevel
+		
+		return new
+	endmethod
+endstruct
 
 public struct MazingTeam
     readonly integer TeamID
@@ -40,6 +55,7 @@ public struct MazingTeam
     public integer DefaultGameMode
     public VisualVote_voteMenu VoteMenu
     
+	public SimpleList_List AllWorldProgress
     //public integer DefaultGameMode
     
     public static multiboard PlayerStats
@@ -418,6 +434,35 @@ public struct MazingTeam
         
         return true
     endmethod
+	
+	public method GetWorldProgress takes integer worldID returns WorldProgress
+		local SimpleList_ListNode curWorld = .AllWorldProgress.first
+				
+		loop
+		exitwhen curWorld == 0
+			if WorldProgress(curWorld.value).WorldID == worldID then
+				return WorldProgress(curWorld.value)
+			endif
+		set curWorld = curWorld.next
+		endloop
+		
+		return 0
+	endmethod
+	public method UpdateWorldProgress takes Levels_Level level returns nothing
+		local integer worldID = level.GetWorldID()
+		local WorldProgress currentProgress
+				
+		if worldID != 0 then
+			set currentProgress = .GetWorldProgress(worldID)
+						
+			if currentProgress == 0 then
+				set currentProgress = WorldProgress.create(level)
+				call .AllWorldProgress.add(currentProgress)
+			elseif currentProgress.FurthestLevel + 0 < level + 0 then
+				set currentProgress.FurthestLevel = level
+			endif
+		endif
+	endmethod
     
     public static method PlayerLeaves takes nothing returns nothing
         local player p = GetTriggerPlayer()
@@ -687,8 +732,9 @@ public struct MazingTeam
             set mt.Score = 0
             set mt.DefaultGameMode = GAMEMODE_STANDARD
             
-            set mt.Users = SimpleList_List.create()
-            
+			set mt.Users = SimpleList_List.create()
+            set mt.AllWorldProgress = SimpleList_List.create()
+			
             set .AllTeams[teamID] = mt
             //set .NumberTeams = .NumberTeams + 1
             set Teams_MazingTeam.NumberTeams = Teams_MazingTeam.NumberTeams + 1

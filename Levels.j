@@ -26,10 +26,7 @@ library Levels initializer Init requires SimpleList, Teams, GameModesGlobals, Ci
     endglobals
     
 	//TODO this struct turned into just an extension of Level -- refactor back into level
-    struct LevelContent extends array //extends IStartable
-        //struct does not support recycling
-		private static integer c = 0
-		
+    struct LevelContent extends array //extends IStartable		
 		private string StartFunction
         private string StopFunction
         
@@ -80,9 +77,9 @@ library Levels initializer Init requires SimpleList, Teams, GameModesGlobals, Ci
             return this.PreloadFunction != null
         endmethod
         
-        public static method create takes string startFunction, string stopFunction returns thistype
-            local thistype new = c + 1
-			set c = new
+        public static method create takes Levels_Level parent, string startFunction, string stopFunction returns thistype
+            //struct extends from parent
+			local thistype new = parent
             
             set new.StartFunction = startFunction
             set new.StopFunction = stopFunction
@@ -143,9 +140,6 @@ library Levels initializer Init requires SimpleList, Teams, GameModesGlobals, Ci
         
         public SimpleList_List ActiveTeams
         public static SimpleList_List ActiveLevels
-		
-		//used with events
-		
                         
         public method Start takes nothing returns nothing
             static if DEBUG_START_STOP then
@@ -186,39 +180,38 @@ library Levels initializer Init requires SimpleList, Teams, GameModesGlobals, Ci
         endmethod
         
         public method GetWorldID takes nothing returns integer
-            if this == INTRO_LEVEL_ID or this == DOORS_LEVEL_ID then
-                return -1
-            else
-                return ModuloInteger(this - 3, 7)
+            //World levels follow this format
+			if this >= 3 and this <= 38 then //last level ID
+                return ModuloInteger(this - 3, 7) + 1
+			else
+				return 0
             endif
         endmethod
         
         public method GetWorldString takes nothing returns string
             local integer onWorld = .GetWorldID()
             
-            if onWorld == -1 then
+            if onWorld == 0 then
                 return ""
-            elseif onWorld == 0 then
-                return "Envy"
             elseif onWorld == 1 then
-                return "Lust"
+                return "Envy"
             elseif onWorld == 2 then
-                return "Sloth"
+                return "Lust"
             elseif onWorld == 3 then
-                return "Greed"
+                return "Sloth"
             elseif onWorld == 4 then
-                return "Wrath"
+                return "Greed"
             elseif onWorld == 5 then
+                return "Wrath"
+            elseif onWorld == 6 then
                 return "Gluttony"
-            else//if onWorld == 6
+            else//if onWorld == 7
                 return "Pride"
             endif
         endmethod
         
         public method ToString takes nothing returns string
-            local integer mod
             local string name
-            local integer convertedLevel
             
             //debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "Level ID: " + I2S(this))
             
@@ -227,26 +220,8 @@ library Levels initializer Init requires SimpleList, Teams, GameModesGlobals, Ci
             elseif this == DOORS_LEVEL_ID then
                 return "Doors"
             else
-                set mod = ModuloInteger(this - 3, 7)
-                
-                if mod == 0 then
-                    set name = "Envy"
-                elseif mod == 1 then
-                    set name = "Lust"
-                elseif mod == 2 then
-                    set name = "Sloth"
-                elseif mod == 3 then
-                    set name = "Greed"
-                elseif mod == 4 then
-                    set name = "Wrath"
-                elseif mod == 5 then
-                    set name = "Gluttony"
-                else
-                    set name = "Pride"
-                endif
-                
-                //set convertedLevel = R2I((this - 2) / 7) + 1
-                //debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "Name: " + name + " " + I2S(convertedLevel))
+                set name = .GetWorldString()
+
                 return name + " " + I2S(R2I((this - 3) / 7) + 1)
             endif
         endmethod
@@ -406,6 +381,8 @@ library Levels initializer Init requires SimpleList, Teams, GameModesGlobals, Ci
             local Level nextLevel
 			local integer nextCheckpointID
 			
+			local WorldProgress worldProgress
+			
             loop
             exitwhen curLevel == 0
 				set curTeam = thistype(curLevel.value).ActiveTeams.first
@@ -431,6 +408,21 @@ library Levels initializer Init requires SimpleList, Teams, GameModesGlobals, Ci
 							exitwhen i == WorldCount or nextLevel != 0
 								if DoorRects[i] != null and RectContainsCoords(DoorRects[i], x, y) then
 									set nextLevel = Level(i + DOORS_LEVEL_ID + 1) //levels take standard structure after the DOORS level
+									
+									//check if the team has already made progress into that world
+									set worldProgress = Teams_MazingTeam(curTeam.value).GetWorldProgress(nextLevel.GetWorldID())
+									//call DisplayTextToForce(bj_FORCE_PLAYER[0], "World ID " + I2S(nextLevel.GetWorldID()))
+									//call DisplayTextToForce(bj_FORCE_PLAYER[0], "World Progress " + I2S(worldProgress))
+									if worldProgress != 0 then
+										if worldProgress.FurthestLevel.NextLevel == 0 then
+											//team has already beaten this world!
+											call DisplayTextToForce(bj_FORCE_PLAYER[0], "You've already beaten that world!")
+											set nextLevel = 0
+											call User(curUser.value).RespawnAtRect(Teams_MazingTeam(curTeam.value).Revive, true)
+										else
+											set nextLevel = worldProgress.FurthestLevel.NextLevel
+										endif
+									endif
 								endif
 							set i = i + 1
 							endloop
@@ -468,6 +460,10 @@ library Levels initializer Init requires SimpleList, Teams, GameModesGlobals, Ci
 							call DisplayTextToForce(bj_FORCE_PLAYER[0], "Team entered transfer leading to  " + I2S(nextLevel))
 						endif
 						call Level(curLevel.value).ApplyLevelRewards(User(curUser.value), Teams_MazingTeam(curTeam.value), nextLevel)
+						
+						//TODO apply LastLevel logic
+						call Teams_MazingTeam(curTeam.value).UpdateWorldProgress(curLevel.value)
+						
 						call Level(curLevel.value).SwitchLevels(Teams_MazingTeam(curTeam.value), nextLevel)
 					elseif nextCheckpointID >= 0 then
 						call Level(curLevel.value).SetCheckpointForTeam(Teams_MazingTeam(curTeam.value), nextCheckpointID)
@@ -563,7 +559,7 @@ library Levels initializer Init requires SimpleList, Teams, GameModesGlobals, Ci
             set new.RawContinues = 0
             set new.RawScore = 0
 
-            set new.Content = Content.create(startFunction, stopFunction)
+            set new.Content = Content.create(new, startFunction, stopFunction)
 			
 			set new.Checkpoints = SimpleList_List.create()
             call new.AddCheckpoint(null, startspawn)
@@ -604,7 +600,7 @@ library Levels initializer Init requires SimpleList, Teams, GameModesGlobals, Ci
             set new.HasPreload = false
             */
             
-			set new.Content = LevelContent.create(startFunction, stopFunction)
+			set new.Content = LevelContent.create(new, startFunction, stopFunction)
             //set new.CPToHere = tothislevel
             //set new.StartRect = startspawn
             set new.Vision = vision
