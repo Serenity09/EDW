@@ -36,9 +36,7 @@ public function onPlayerUnitDiedCB takes nothing returns nothing
 		//should death cause a continue to be used
 		if RespawnASAPMode or mt.IsTeamDead() then
 			//can a continue be used
-			if mt.ContinueCount > 0 then
-				set mt.ContinueCount = mt.ContinueCount - 1
-				
+			if mt.GetContinueCount() > 0 then
 				//how should that continue be used
 				if RespawnASAPMode then
 					//debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "Continues ASAP respawn")
@@ -47,21 +45,9 @@ public function onPlayerUnitDiedCB takes nothing returns nothing
 					//debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "Continues Team respawn")
 					call mt.RespawnTeamAtRect(mt.Revive, false)
 				endif
-			else
-			call mt.PrintMessage("Your team ran out of lives!")
-			call level.SwitchLevels(mt, Levels_Level(Levels_DOORS_LEVEL_ID))
-
-				//if not in 99 and none mode, reset continues
-				if RewardMode == 0 or RewardMode == 1 then //standard mode or challenge mode
-					set mt.ContinueCount = mt.GetInitialContinues()
-					call mt.RespawnTeamAtRect(mt.Revive, true)
-				elseif RewardMode == 2 then
-					//call RemoveUnit()
-					//**************************************
-					//no more continues in 99 and none mode -- team has lost!
-					//**************************************
-				endif
 			endif
+			
+			call mt.ChangeContinueCount(-1)
 		endif
 		
 		call mt.UpdateMultiboard()

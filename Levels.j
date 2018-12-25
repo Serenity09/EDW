@@ -194,9 +194,9 @@ library Levels initializer Init requires SimpleList, Teams, GameModesGlobals, Ci
             if onWorld == 0 then
                 return ""
             elseif onWorld == 1 then
-                return "Envy"
+                return ColorMessage("Black Ice", SAD_TEXT_COLOR)
             elseif onWorld == 2 then
-                return "Lust"
+                return ColorMessage("Icetown", SAD_TEXT_COLOR)
             elseif onWorld == 3 then
                 return "Sloth"
             elseif onWorld == 4 then
@@ -206,7 +206,7 @@ library Levels initializer Init requires SimpleList, Teams, GameModesGlobals, Ci
             elseif onWorld == 6 then
                 return "Gluttony"
             else//if onWorld == 7
-                return "Pride"
+                return "of " + ColorMessage("2.5 Dimensions", HAPPY_TEXT_COLOR)
             endif
         endmethod
         
@@ -284,9 +284,9 @@ library Levels initializer Init requires SimpleList, Teams, GameModesGlobals, Ci
 		public method ApplyLevelRewards takes User u, Teams_MazingTeam mt, Level nextLevel returns nothing			
 			local integer score = 0
 			
-			local integer originalContinues = mt.ContinueCount
-			local integer rolloverContinues
-			local integer nextLevelContinues
+			local integer originalContinues = mt.GetContinueCount()
+			local integer rolloverContinues = 0
+			local integer nextLevelContinues = 0
 			
 			//update score
 			if RewardMode == GameModesGlobals_EASY or RewardMode == GameModesGlobals_CHEAT then
@@ -296,33 +296,47 @@ library Levels initializer Init requires SimpleList, Teams, GameModesGlobals, Ci
 			endif
             if score > 0 then
 				call mt.PrintMessage("Your score has increased by " + ColorMessage(I2S(score), SPEAKER_COLOR))
-				set mt.Score = mt.Score + score
+				call mt.ChangeScore(score)
 			endif
 			
 			//update continues
 			if RewardMode == GameModesGlobals_EASY or RewardMode == GameModesGlobals_HARD then				
 				if RewardMode == GameModesGlobals_EASY then
-					if mt.ContinueCount > EASY_MAX_CONTINUE_ROLLOVER then
+					if mt.GetContinueCount() > EASY_MAX_CONTINUE_ROLLOVER then
 						set rolloverContinues = EASY_MAX_CONTINUE_ROLLOVER
 					else
-						set rolloverContinues = mt.ContinueCount
+						set rolloverContinues = mt.GetContinueCount()
 					endif
 					
 					set nextLevelContinues = R2I(nextLevel.RawContinues*EASY_CONTINUE_MODIFIER + .5)
 				elseif RewardMode == GameModesGlobals_HARD then
-					if mt.ContinueCount > HARD_MAX_CONTINUE_ROLLOVER then
+					if mt.GetContinueCount() > HARD_MAX_CONTINUE_ROLLOVER then
 						set rolloverContinues = HARD_MAX_CONTINUE_ROLLOVER
 					else
-						set rolloverContinues = mt.ContinueCount
+						set rolloverContinues = mt.GetContinueCount()
 					endif
 					
 					set nextLevelContinues = R2I(nextLevel.RawContinues*HARD_CONTINUE_MODIFIER + .5)
 				endif
 				
+				if this == DOORS_LEVEL_ID then
+					set rolloverContinues = 0
+				endif
+				
 				if originalContinues != rolloverContinues + nextLevelContinues then
-					set mt.ContinueCount = rolloverContinues + nextLevelContinues
-					
-					//call mt.PrintMessage("Starting level " + ColorMessage(nextLevel.Name, SPEAKER_COLOR) + "!")
+					call mt.SetContinueCount(rolloverContinues + nextLevelContinues)
+				endif
+			endif
+			
+			if this == DOORS_LEVEL_ID then
+				//call mt.PrintMessage("Starting level " + ColorMessage(nextLevel.Name, SPEAKER_COLOR) + "!")
+				if RewardMode == GameModesGlobals_CHEAT then
+					call mt.PrintMessage("Starting the world " + nextLevel.GetWorldString())
+				else
+					call mt.PrintMessage("Starting the world " + nextLevel.GetWorldString() + " with " + ColorMessage(I2S(mt.GetContinueCount()), SPEAKER_COLOR) + " continues")
+				endif
+			else
+				if RewardMode != GameModesGlobals_CHEAT and originalContinues != rolloverContinues + nextLevelContinues then
 					call mt.PrintMessage("You kept " + ColorMessage(I2S(rolloverContinues), SPEAKER_COLOR) + " of your " + ColorMessage(I2S(originalContinues), SPEAKER_COLOR) + " continues, and gained " + ColorMessage(I2S(nextLevelContinues), SPEAKER_COLOR) + " extra continues to boot")
 				endif
 			endif

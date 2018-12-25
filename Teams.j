@@ -1,6 +1,8 @@
 library Teams initializer Init requires MazerGlobals, User
 globals
-    
+    private constant real VOTE_TOP_LEFT_X = -15000
+	private constant real VOTE_TOP_LEFT_Y = -4220
+	
     public constant integer GAMEMODE_STANDARD = 0
     public constant integer GAMEMODE_PLATFORMING = 1
     public constant integer GAMEMODE_MINIGAMES = 5
@@ -44,13 +46,13 @@ public struct MazingTeam
     
     readonly boolean IsTeamPlaying
     readonly rect Revive
-    public integer ContinueCount
+    private integer ContinueCount
     public boolean RecentlyTransferred
     public real LastTransferTime
     public Levels_Level OnLevel
     public string TeamName
     public integer OnCheckpoint //Used purely in conjunction with levels struct. ==0 refers to the initial CP for a level
-    public integer Score
+    private integer Score
     public real Weight
     public integer DefaultGameMode
     public VisualVote_voteMenu VoteMenu
@@ -73,7 +75,7 @@ public struct MazingTeam
     
     public method CreateMenu takes real time, string optionCB returns nothing
         local real x = VOTE_TOP_LEFT_X + R2I((TeamID + 1) / 4)
-        local real y = VOTE_TOP_LEFT_X + R2I((TeamID + 1) / 2)
+        local real y = VOTE_TOP_LEFT_Y + R2I((TeamID + 1) / 2)
         local SimpleList_ListNode cur = .FirstUser
                 
         set .VoteMenu = VisualVote_voteMenu.create(x, y, time, optionCB)
@@ -333,6 +335,18 @@ public struct MazingTeam
         set fp = fp.next
         endloop
     endmethod
+	public static method PrintMessageAll takes string message, MazingTeam filterTeam returns nothing
+		local integer i = 0
+        
+        loop
+        exitwhen i >= .NumberTeams
+            if filterTeam == 0 or .AllTeams[i] != filterTeam then
+				call .AllTeams[i].PrintMessage(message)
+			endif
+			
+            set i = i + 1
+        endloop
+	endmethod
     
     //returns -1 if could not find that player in this.plist
     public method ConvertPlayerID takes integer pID returns User
@@ -360,7 +374,7 @@ public struct MazingTeam
         elseif RewardMode == 1 then
             set weighted = weighted * .Weight
         elseif RewardMode == 2 then
-            set weighted = 99
+            set weighted = 0
         endif
         
         if this != 0 and RespawnASAPMode then
@@ -568,33 +582,38 @@ public struct MazingTeam
         endloop
     endmethod
     
-    private method GetStylizedPlayerName takes integer pID returns string
-        local string hex
+	public method GetTeamColor takes nothing returns string
+		local string hex
         
         if .TeamID == 0 then
-            set hex = "|cFF00CC00"
+            set hex = "00CC00"
         elseif .TeamID == 1 then
-            set hex = "|cFF0000FF"
+            set hex = "0000FF"
         elseif .TeamID == 2 then
-            set hex = "|cFF00FFCC"
+            set hex = "00FFCC"
         elseif .TeamID == 3 then
-            set hex = "|cFFFF66CC"
+            set hex = "FF66CC"
         elseif .TeamID == 4 then
-            set hex = "|cFFFFFF66"
+            set hex = "FFFF66"
         elseif .TeamID == 5 then
-            set hex = "|cFFFF9933"
+            set hex = "FF9933"
         elseif .TeamID == 6 then
-            set hex = "|cFFFF0000"
+            set hex = "FF0000"
         elseif .TeamID == 7 then
-            set hex = "|cFFFF66CC"
+            set hex = "FF66CC"
         else
             set hex = ""
         endif
+		
+		return hex
+	endmethod
+    public method GetStylizedPlayerName takes integer pID returns string
+        local string hex = .GetTeamColor()
         
         if GetPlayerSlotState(Player(pID)) == PLAYER_SLOT_STATE_PLAYING then
-            return hex + GetPlayerName(Player(pID)) + "|r"
+			return ColorMessage(GetPlayerName(Player(pID)), hex)
         else
-            return hex + "Gone" + "|r"
+			return ColorMessage("Gone", hex)
         endif
     endmethod
     
@@ -630,8 +649,118 @@ public struct MazingTeam
             set i = i + 1
         endloop
     endmethod
+	
+	public static method GetRandomTeam takes MazingTeam filter returns MazingTeam
+		local integer rand = GetRandomInt(0, NumberTeams - 1)
+		
+		if NumberTeams != 1 or filter == 0 then
+			if filter != 0 then
+				loop
+				exitwhen rand != filter
+				set rand = GetRandomInt(0, NumberTeams - 1)
+				endloop
+			endif
+			
+			return AllTeams[rand]
+		else
+			return 0
+		endif
+	endmethod
+    	
+	//returning the 1st place winner is fine for now, but eventually i'll want to run through all team ranks
+	//TODO replace with a sort by score function that returns a simple list
+	public static method GetLeadingScore takes nothing returns MazingTeam
+		local MazingTeam leader = 0
+		local integer leadScore = -1
+		local boolean tie = false
+		
+		local integer i = 0
+		
+		loop
+        exitwhen i >= .NumberTeams
+            if .AllTeams[i].Score > leadScore then
+				set tie = false
+				set leader = .AllTeams[i]
+				set leadScore = leader.Score
+			elseif .AllTeams[i].Score == leadScore then
+				set tie = true
+			endif
+			
+            set i = i + 1
+        endloop
+		
+		return leader
+	endmethod
+	
+	public method GetContinueCount takes nothing returns integer
+		return .ContinueCount
+	endmethod
+	public method SetContinueCount takes integer continueCount returns nothing
+		static if DEBUG_MODE then
+			if continueCount <= 0 then
+				call .PrintMessage("Setting continues negative!")
+			endif
+		endif
+		
+		set .ContinueCount = continueCount
+		
+		call .UpdateMultiboard()
+	endmethod
+	public method ChangeContinueCount takes integer continueOffset returns nothing
+		if continueOffset != 0 then
+			if .ContinueCount + continueOffset < 0 then
+				call .PrintMessage("Your team ran out of lives!")
+				call .OnLevel.SwitchLevels(this, Levels_Level(Levels_DOORS_LEVEL_ID))
+				
+				//if not in 99 and none mode, reset continues
+				if RewardMode == 0 or RewardMode == 1 then //standard mode or challenge mode
+					set .ContinueCount = 0
+					//call mt.RespawnTeamAtRect(mt.Revive, true)
+				elseif RewardMode == 2 then
+					//call RemoveUnit()
+					//**************************************
+					//no more continues in 99 and none mode -- team has lost!
+					//**************************************
+				endif
+			else
+				set .ContinueCount = .ContinueCount + continueOffset
+			endif
+			
+			call .UpdateMultiboard()
+		endif
+	endmethod
+	
+	public method GetScore takes nothing returns integer
+		return .Score
+	endmethod
+	public method ChangeScore takes integer scoreOffset returns nothing
+		local integer ogScore = VictoryScore - .Score
+		
+		if scoreOffset != 0 then
+			set .Score = .Score + scoreOffset
+			
+			//TODO update multiboard leader positions
+			
+			//check for victory conditions
+			if VictoryScore != 0 then
+				if VictoryScore - .Score <= 0 then
+					call MazingTeam.ApplyEndGameAll(this)
+				elseif (VictoryScore - .Score <= 10 and ogScore > 10) or (VictoryScore - .Score <= 5 and ogScore > 5) then
+					call MazingTeam.PrintMessageAll("Team " + ColorValue(I2S(this)) + " needs " + ColorValue(I2S(VictoryScore - .Score)) + " more points to win", 0)
+				elseif VictoryScore - .Score <= 3 and ogScore > 3 then
+					if VictoryScore - .Score == 1 then
+						call MazingTeam.PrintMessageAll("Team " + ColorValue(I2S(this)) + " only needs " + ColorValue(I2S(VictoryScore - .Score)) + " more point to win!", 0)
+					else
+						call MazingTeam.PrintMessageAll("Team " + ColorValue(I2S(this)) + " only needs " + ColorValue(I2S(VictoryScore - .Score)) + " more points to win!", 0)
+					endif
+				endif
+			endif
+			
+			call .UpdateMultiboard()
+		endif
+	endmethod
     
-    private static method MultiboardInitHideCallback takes nothing returns nothing
+	private static method MultiboardHideCallback takes nothing returns nothing
         local timer t = GetExpiredTimer()
         
         call MultiboardMinimize(.PlayerStats, true)
@@ -639,7 +768,7 @@ public struct MazingTeam
         call ReleaseTimer(t)
         set t = null
     endmethod
-    
+
     //intended to be run after initial team setup
     public static method MultiboardSetupInit takes nothing returns nothing
         local integer i = 0
@@ -711,10 +840,38 @@ public struct MazingTeam
         call MultiboardMinimize(.PlayerStats, true)
         call MultiboardMinimize(.PlayerStats, false)
         
-        call TimerStart(t, MULTIBOARD_HIDE_DELAY, false, function MazingTeam.MultiboardInitHideCallback)
+        call TimerStart(t, MULTIBOARD_HIDE_DELAY, false, function MazingTeam.MultiboardHideCallback)
         
         set t = null
     endmethod
+	
+	public method ApplyEndGame takes boolean victory returns nothing
+		local SimpleList_ListNode curPlayer = .FirstUser
+		
+		loop
+		exitwhen curPlayer == 0
+			if victory then
+				call CustomVictoryBJ(Player(curPlayer.value), true, false)
+			else
+				call CustomDefeatDialogBJ(Player(curPlayer.value), "Here to play. Forever stay.")
+			endif
+		set curPlayer = curPlayer.next
+		endloop
+	endmethod
+	public static method ApplyEndGameAll takes MazingTeam victor returns nothing
+		local integer i = 0
+		
+		loop
+        exitwhen i >= .NumberTeams
+            if .AllTeams[i] == victor then
+				call .AllTeams[i].ApplyEndGame(true)
+			else
+				call .AllTeams[i].ApplyEndGame(false)
+			endif
+			
+            set i = i + 1
+        endloop
+	endmethod
     
     public static method create takes integer teamID returns thistype
         local thistype mt = thistype.allocate()

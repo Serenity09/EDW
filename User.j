@@ -271,41 +271,46 @@ struct User extends array
 		
         //set .LastTransferTime = GameElapsedTime()
     endmethod
-    
-    public method GetStylizedPlayerName takes nothing returns string
-        local string hex
+	
+	public method GetPlayerColorHex takes nothing returns string
+		local string hex
         
-        if this.Team.TeamID == 0 then
-            set hex = "|cFF00CC00"
-        elseif this.Team.TeamID == 1 then
-            set hex = "|cFF0000FF"
-        elseif this.Team.TeamID == 2 then
-            set hex = "|cFF00FFCC"
-        elseif this.Team.TeamID == 3 then
-            set hex = "|cFFFF66CC"
-        elseif this.Team.TeamID == 4 then
-            set hex = "|cFFFFFF66"
-        elseif this.Team.TeamID == 5 then
-            set hex = "|cFFFF9933"
-        elseif this.Team.TeamID == 6 then
-            set hex = "|cFFFF0000"
-        elseif this.Team.TeamID == 7 then
-            set hex = "|cFFFF66CC"
+        if this == 0 then
+            set hex = "FF0303"
+        elseif this == 1 then
+            set hex = "0042ff"
+        elseif this == 2 then
+            set hex = "1ce6b9"
+        elseif this == 3 then
+            set hex = "540081"
+        elseif this == 4 then
+            set hex = "fffc01"
+        elseif this == 5 then
+            set hex = "feba0e"
+        elseif this == 6 then
+            set hex = "20c000"
+        elseif this == 7 then
+            set hex = "e55bb0"
         else
             set hex = ""
         endif
+		
+		return hex
+	endmethod
+	public method GetStylizedPlayerName takes nothing returns string
+        local string hex = .GetPlayerColorHex()
         
         if GetPlayerSlotState(Player(this)) == PLAYER_SLOT_STATE_PLAYING then
-            return hex + GetPlayerName(Player(this)) + "|r"
+			return ColorMessage(GetPlayerName(Player(this)), hex)
         else
-            return hex + "Gone" + "|r"
+			return ColorMessage("Gone", hex)
         endif
     endmethod
     
     public method PartialUpdateMultiboard takes nothing returns nothing
         if GetPlayerSlotState(Player(this)) == PLAYER_SLOT_STATE_PLAYING then                
-            call MultiboardSetItemValue(MultiboardGetItem(.Team.PlayerStats, this + 1, 2), I2S(.Team.Score))
-            call MultiboardSetItemValue(MultiboardGetItem(.Team.PlayerStats, this + 1, 3), I2S(.Team.ContinueCount))
+            call MultiboardSetItemValue(MultiboardGetItem(.Team.PlayerStats, this + 1, 2), I2S(.Team.GetScore()))
+            call MultiboardSetItemValue(MultiboardGetItem(.Team.PlayerStats, this + 1, 3), I2S(.Team.GetContinueCount()))
             call MultiboardSetItemValue(MultiboardGetItem(.Team.PlayerStats, this + 1, 4), I2S(.Deaths))
             
             call MultiboardReleaseItem(MultiboardGetItem(.Team.PlayerStats, this + 1, 2))
