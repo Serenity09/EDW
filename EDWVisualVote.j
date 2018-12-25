@@ -14,7 +14,7 @@ library EDWVisualVote requires VisualVote, ContinueGlobals, Teams, PlayerUtils, 
             //9 == first platforming level
             
             //66 == debug platform testing
-            return Levels_Level(23)
+            return Levels_Level(1)
             //return Levels_Levels[23]
         else
             return Levels_Level(1)
@@ -94,6 +94,8 @@ library EDWVisualVote requires VisualVote, ContinueGlobals, Teams, PlayerUtils, 
 			//call mt.ChangePlayerVision(Levels_Levels[0].Vision)
 		set fp = fp.next
 		endloop
+		
+		call TrackGameTime()
 		
 		call DestroyTimer(t)
 		set t = null
@@ -297,7 +299,7 @@ library EDWVisualVote requires VisualVote, ContinueGlobals, Teams, PlayerUtils, 
         set i = 0
         loop
             set team[i].OnLevel = firstLevel
-            set team[i].ContinueCount = team[i].GetInitialContinues()
+            //call team[i].ChangeContinueCount(team[i].GetInitialContinues())
             
             //call team[i].MoveRevive(firstLevel.CPCenters[0])
             //set team[i].DefaultGameMode = firstLevel.CPDefaultGameModes[0]
@@ -347,6 +349,15 @@ library EDWVisualVote requires VisualVote, ContinueGlobals, Teams, PlayerUtils, 
         
         call Teams_MazingTeam.MultiboardSetupInit()
         
+		if RewardMode == GameModesGlobals_CHEAT then
+			set i = 0
+			loop
+				call team[i].SetContinueCount(99)
+			set i = i + 1
+			exitwhen i >= teamCount
+			endloop
+		endif
+		
         //call DisplayTextToForce(bj_FORCE_PLAYER[0], "Finished Initializing Game For Globals!")
 	endfunction
     
@@ -400,6 +411,7 @@ library EDWVisualVote requires VisualVote, ContinueGlobals, Teams, PlayerUtils, 
             set MinigamesMode = false
             
             call InitializeGameForGlobals()
+			call TrackGameTime()
 		elseif GetHumanPlayersCount() == 1 then
 			set GameMode = GameModesGlobals_SOLO
 			set RespawnASAPMode = true

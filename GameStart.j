@@ -31,9 +31,8 @@ library GameStart initializer Init requires Levels, EDWVisualVote, UnitGlobals, 
         exitwhen u == null
             set uID = GetUnitTypeId(u)
             
-            if uID == POWERUP_MARKER then
-                call InWorldPowerup.CreateRandom(GetUnitX(u), GetUnitY(u))
-                call RemoveUnit(u)
+            if uID == POWERUP_MARKER or InWorldPowerup.IsPowerupUnit(uID) then
+				call InWorldPowerup.CreateFromUnit(u)
             elseif uID == UBOUNCE then
                 call AddUnitLocust(CreateUnit(Player(11), UBOUNCE, GetUnitX(u), GetUnitY(u), 90))
                 call RemoveUnit(u)

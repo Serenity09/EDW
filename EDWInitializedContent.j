@@ -174,11 +174,11 @@ library EDWCinematics requires EDWLevels, Cinema
         call cine.SetLastMessageBuffer(-1)
 		call Levels_Level(3).AddCinematic(cine)
 		
-		set cineMsg = CinemaMessage.create(null, GetEDWSpeakerMessage("Bobby", "Hey little Timmy, I really appreciate you talking to me", DEFAULT_TEXT_COLOR), DEFAULT_LONG_TEXT_SPEED)
+		set cineMsg = CinemaMessage.create(null, GetEDWSpeakerMessage("Bobby", "Hey Little Timmy, I really appreciate you talking to me", DEFAULT_TEXT_COLOR), DEFAULT_LONG_TEXT_SPEED)
         set cine = Cinematic.create(gg_rct_IW1Listen, true, true, cineMsg)
         call cine.AddMessage(null, GetEDWSpeakerMessage("Bobby", "Look, I know we both like Becky, let's face it who wouldn't", DEFAULT_TEXT_COLOR), DEFAULT_MEDIUM_TEXT_SPEED)
         call cine.AddMessage(null, GetEDWSpeakerMessage("Little Timmy", "Bobby, pal, I'm going to have to cut you off right here,", DEFAULT_TEXT_COLOR), DEFAULT_LONG_TEXT_SPEED)
-		call cine.AddMessage(null, GetEDWSpeakerMessage("Little Timmy", "Becky isn't even on my radar.", DEFAULT_TEXT_COLOR), DEFAULT_SHORT_TEXT_SPEED)
+		call cine.AddMessage(null, GetEDWSpeakerMessage("Little Timmy", "Becky isn't even on my radar.", DEFAULT_TEXT_COLOR), DEFAULT_MEDIUM_TEXT_SPEED)
 		call cine.AddMessage(null, GetEDWSpeakerMessage("Little Timmy", "But, if you wanted to impress her,", DEFAULT_TEXT_COLOR), DEFAULT_SHORT_TEXT_SPEED)
 		call cine.AddMessage(null, GetEDWSpeakerMessage("Little Timmy", "You'd grab her some of the flowers from inside the fake cage up on Hagatha Hill", DEFAULT_TEXT_COLOR), DEFAULT_LONG_TEXT_SPEED)
         call cine.SetLastMessageBuffer(-1)
@@ -195,7 +195,7 @@ library EDWCinematics requires EDWLevels, Cinema
         set cine = Cinematic.create(gg_rct_IW1Cage, true, true, cineMsg)
 		call cine.AddMessage(null, GetEDWSpeakerMessage("Bobby", "this", DEFAULT_TEXT_COLOR), DEFAULT_TINY_TEXT_SPEED)
 		call cine.AddMessage(null, GetEDWSpeakerMessage("Bobby", "THIS", DEFAULT_TEXT_COLOR), DEFAULT_SHORT_TEXT_SPEED)
-		call cine.AddMessage(null, GetEDWSpeakerMessage("Bobby", "IS THE BEST FAKE CAGE EVER!@!", DEFAULT_TEXT_COLOR), DEFAULT_MEDIUM_TEXT_SPEED)
+		call cine.AddMessage(null, GetEDWSpeakerMessage("Bobby", "IS THE BEST FAKE CAGE EVERR!@!", DEFAULT_TEXT_COLOR), DEFAULT_MEDIUM_TEXT_SPEED)
         call cine.SetLastMessageBuffer(-1)
 		call Levels_Level(3).AddCinematic(cine)
 		
@@ -210,7 +210,7 @@ library EDWCinematics requires EDWLevels, Cinema
 		
         //LEVEL 3
         //set l = Levels_Level.create(17, "Illidan Goes Skiing", 8, 8, "IW3Start", "IW3Stop", gg_rct_IWR_3_1, gg_rct_IW3_Vision, gg_rct_IW3_End, l)
-		set cineMsg = CinemaMessage.create(null, GetEDWSpeakerMessage("???", "Why it's 'Little Timmy'!", DEFAULT_TEXT_COLOR), DEFAULT_SHORT_TEXT_SPEED)
+		set cineMsg = CinemaMessage.create(null, GetEDWSpeakerMessage("???", "Why, it's 'Little Timmy'!", DEFAULT_TEXT_COLOR), DEFAULT_SHORT_TEXT_SPEED)
 		//set cineMsg = CinemaMessage.create(null, GetEDWSpeakerMessage("Little Timmy", "We had a deal you jive ass snowball", DEFAULT_TEXT_COLOR), DEFAULT_SHORT_TEXT_SPEED)
         set cine = Cinematic.create(gg_rct_IW3Deal, true, true, cineMsg)
         call cine.AddMessage(null, GetEDWSpeakerMessage("???", "Now what seems to be the problem, my dear 'Little Timmy'?", DEFAULT_TEXT_COLOR), DEFAULT_MEDIUM_TEXT_SPEED)
@@ -223,7 +223,27 @@ library EDWCinematics requires EDWLevels, Cinema
 		
         //LEVEL 4
         //set l = Levels_Level.create(24, "Hard Angles", 6, 6, "IW4Start", "IW4Stop", gg_rct_IWR_4_1, gg_rct_IW4_Vision, gg_rct_IW4_End, l)
-        
+        set cineMsg = CinemaMessage.create(null, GetEDWSpeakerMessage("Rocco", "Uhhhhhhhhhhh", DEFAULT_TEXT_COLOR), DEFAULT_MEDIUM_TEXT_SPEED)
+        set cine = Cinematic.create(gg_rct_IW4QuestionMark, true, false, cineMsg)
+		set cine.ActivationCondition = IsUserDying
+		call cine.AddMessage(null, GetEDWSpeakerMessage("Rocco", "Quuuestion mark?", DEFAULT_TEXT_COLOR), DEFAULT_MEDIUM_TEXT_SPEED)
+		call cine.SetLastMessageBuffer(-1)
+		call Levels_Level(24).AddCinematic(cine)
+		
+		if CONFIGURATION_PROFILE == RELEASE then
+			set cineMsg = CinemaMessage.create(null, GetEDWSpeakerMessage(PRIMARY_SPEAKER_NAME, "Haven't seen a tear in space this bad in awhile", DEFAULT_TEXT_COLOR), DEFAULT_MEDIUM_TEXT_SPEED)
+			set cine = Cinematic.create(gg_rct_IW4Performance, true, false, cineMsg)
+			call cine.AddMessage(null, GetEDWSpeakerMessage(PRIMARY_SPEAKER_NAME, "It's like the level was cut right down the middle", DEFAULT_TEXT_COLOR), DEFAULT_MEDIUM_TEXT_SPEED)
+			call cine.AddMessage(null, GetEDWSpeakerMessage(PRIMARY_SPEAKER_NAME, "Only one thing that could do this", DEFAULT_TEXT_COLOR), DEFAULT_MEDIUM_TEXT_SPEED)
+			//call cine.AddMessage(null, GetEDWSpeakerMessage(PRIMARY_SPEAKER_NAME, "4 words:", DEFAULT_TEXT_COLOR), DEFAULT_SHORT_TEXT_SPEED)
+			call cine.AddMessage(null, GetEDWSpeakerMessage(PRIMARY_SPEAKER_NAME, "Big.", DEFAULT_TEXT_COLOR), DEFAULT_TINY_TEXT_SPEED)
+			call cine.AddMessage(null, GetEDWSpeakerMessage(PRIMARY_SPEAKER_NAME, "Ass.", DEFAULT_TEXT_COLOR), DEFAULT_TINY_TEXT_SPEED)
+			call cine.AddMessage(null, GetEDWSpeakerMessage(PRIMARY_SPEAKER_NAME, "Optimization problems.", DEFAULT_TEXT_COLOR), DEFAULT_SHORT_TEXT_SPEED)
+			//call cine.AddMessage(null, GetEDWSpeakerMessage(PRIMARY_SPEAKER_NAME, "Big. Ass. Optimization problems.", DEFAULT_TEXT_COLOR), DEFAULT_MEDIUM_TEXT_SPEED)
+			call cine.SetLastMessageBuffer(-1)
+			call Levels_Level(24).AddCinematic(cine)
+		endif
+		
         //LEVEL 5
         //set l = Levels_Level.create(31, "TODO SHIIIIT", 4, 4, "IW5Start", "IW5Stop", gg_rct_IWR_5_1, gg_rct_IW5_Vision, gg_rct_IW5_End, l)
                 
@@ -343,7 +363,7 @@ library EDWLevels requires SimpleList, Teams, Levels
         //call l.SetStartables(startables)
         
         //LEVEL 2
-        set l = Levels_Level.create(10, "Jesus on Wheel", 6, 4, "IW2Start", "IW2Stop", gg_rct_IWR_2_1, gg_rct_IW2_Vision, gg_rct_IW2_End, l)
+        set l = Levels_Level.create(10, "Jesus on Wheel", 4, 3, "IW2Start", "IW2Stop", gg_rct_IWR_2_1, gg_rct_IW2_Vision, gg_rct_IW2_End, l)
         call l.AddCheckpoint(gg_rct_IWCP_2_1, gg_rct_IWR_2_2)
         call l.AddCheckpoint(gg_rct_IWCP_2_2, gg_rct_IWR_2_3)
         
@@ -361,18 +381,21 @@ library EDWLevels requires SimpleList, Teams, Levels
         set l.Content.Startables = startables
         
         //LEVEL 3
-        set l = Levels_Level.create(17, "Illidan Goes Skiing", 8, 8, "IW3Start", "IW3Stop", gg_rct_IWR_3_1, gg_rct_IW3_Vision, gg_rct_IW3_End, l)
+        set l = Levels_Level.create(17, "Illidan Goes Skiing", 6, 6, "IW3Start", "IW3Stop", gg_rct_IWR_3_1, gg_rct_IW3_Vision, gg_rct_IW3_End, l)
         call l.AddCheckpoint(gg_rct_IWCP_3_1, gg_rct_IWR_3_2)
         call l.AddCheckpoint(gg_rct_IWCP_3_2, gg_rct_IWR_3_3)
         call l.AddCheckpoint(gg_rct_IWCP_3_3, gg_rct_IWR_3_4)
         
         set startables = SimpleList_List.create()
+		
+		call startables.add(Blackhole.create(15000, 3330))
+		
         call startables.add(DrunkWalker_DrunkWalkerSpawn.create(gg_rct_IW3_Drunks_1, 6, 5, LGUARD, 24))
         call startables.add(DrunkWalker_DrunkWalkerSpawn.create(gg_rct_IW3_Drunks_2, 8, 6, LGUARD, 16))
         set l.Content.Startables = startables
         
         //LEVEL 4
-        set l = Levels_Level.create(24, "Hard Angles", 6, 6, "IW4Start", "IW4Stop", gg_rct_IWR_4_1, gg_rct_IW4_Vision, gg_rct_IW4_End, l)
+        set l = Levels_Level.create(24, "Hard Angles", 6, 4, "IW4Start", "IW4Stop", gg_rct_IWR_4_1, gg_rct_IW4_Vision, gg_rct_IW4_End, l)
         set cp = l.AddCheckpoint(gg_rct_IWCP_4_1, gg_rct_IWR_4_2)
         set cp.DefaultColor = KEY_RED
         call l.AddCheckpoint(gg_rct_IWCP_4_2, gg_rct_IWR_4_3)
@@ -413,16 +436,18 @@ library EDWLevels requires SimpleList, Teams, Levels
         set l.Content.Startables = startables
         
         //LEVEL 5
-        set l = Levels_Level.create(31, "TODO SHIIIIT", 4, 4, "IW5Start", "IW5Stop", gg_rct_IWR_5_1, gg_rct_IW5_Vision, gg_rct_IW5_End, l)
-        call l.AddCheckpoint(gg_rct_IWCP_5_1, gg_rct_IWR_5_2)
-        
-        set startables = SimpleList_List.create()
-        set l.Content.Startables = startables
-        
-        call startables.add(DrunkWalker_DrunkWalkerSpawn.create(gg_rct_IW5_Drunks_3, 2, 2, GUARD, 12))
-        call startables.add(DrunkWalker_DrunkWalkerSpawn.create(gg_rct_IW5_Drunks_2, 6, 3.5, LGUARD, 16))
-        call startables.add(DrunkWalker_DrunkWalkerSpawn.create(gg_rct_IW5_Drunks_1, 10, 8, LGUARD, 60))
-        
+		if CONFIGURATION_PROFILE != RELEASE then
+			set l = Levels_Level.create(31, "Frosty", 4, 4, "IW5Start", "IW5Stop", gg_rct_IWR_5_1, gg_rct_IW5_Vision, gg_rct_IW5_End, l)
+			call l.AddCheckpoint(gg_rct_IWCP_5_1, gg_rct_IWR_5_2)
+			
+			set startables = SimpleList_List.create()
+			set l.Content.Startables = startables
+			
+			call startables.add(DrunkWalker_DrunkWalkerSpawn.create(gg_rct_IW5_Drunks_3, 2, 2, GUARD, 12))
+			call startables.add(DrunkWalker_DrunkWalkerSpawn.create(gg_rct_IW5_Drunks_2, 6, 3.5, LGUARD, 16))
+			call startables.add(DrunkWalker_DrunkWalkerSpawn.create(gg_rct_IW5_Drunks_1, 10, 8, LGUARD, 60))
+        endif
+		
 		//ICE WORLD B
 		//LEVEL 1
 		set l = Levels_Level.create(4, "Training Wheels", 4, 2, "IWB1Start", "IWB1Stop", gg_rct_EIWR_1_1, gg_rct_EIW1_Vision, gg_rct_EIW1_End, 0)
