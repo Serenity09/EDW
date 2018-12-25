@@ -22,6 +22,9 @@ library GameMessage
 	function ColorMessage takes string message, string hexColor returns string
 		return "|cFF" + hexColor + message + "|r"
 	endfunction
+	function ColorValue takes string value returns string
+		return ColorMessage(value, SPEAKER_COLOR)
+	endfunction
 	
 	function GetEDWSpeakerMessage takes string speaker, string message, string messageColor returns string
         if messageColor == null then
