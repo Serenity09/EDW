@@ -337,14 +337,10 @@ private function AfterMazerInvulnCB takes nothing returns nothing
     local timer t = GetExpiredTimer()
     local integer pID = GetTimerData(t)
     
-    //check that the unit is still standard
-    if User(pID).GameMode == Teams_GAMEMODE_STANDARD then
-        call User(pID).SwitchGameModesDefaultLocation(Teams_GAMEMODE_STANDARD)
-    endif
-    
     set MobImmune[pID] = false
     set CanReviveOthers[pID] = true
     
+	call ReleaseTimer(t)
     set t = null
 endfunction
 
@@ -392,7 +388,7 @@ private function P2PCollisionIter takes nothing returns nothing
             
             call TimerStart(NewTimerEx(cuPID), P2P_REVIVE_PAUSE_TIME, false, function AfterMazerReviveCB)
         else
-            debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "Non standard unit inside standard collision")
+            //debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "Non standard unit inside standard collision")
         endif
         
         set mu = null
@@ -420,45 +416,6 @@ public function CollisionP2PIterInit takes nothing returns nothing
     call ForGroup(MazersGroup, function CollisionP2PIter)
 endfunction
 
-private function CollisionBlackhole takes nothing returns nothing
-    local unit mu = CollidingMazer
-    local unit cu = GetEnumUnit()
-    
-    local integer pID = GetPlayerId(GetOwningPlayer(mu))
-    
-    local integer cuID = GetUnitTypeId(cu)
-    
-    local Blackhole blackhole
-    
-    if cuID == BLACKHOLE then
-        //get blackhole struct
-        set blackhole = Blackhole.GetActiveBlackholeFromUnit(cu)
-        
-        if blackhole != 0 then
-            //add unit to blackhole watch list
-            call blackhole.WatchPlayer(pID)
-        endif
-        
-        
-    endif
-endfunction
-
-private function CollisionBlackholeIter takes nothing returns nothing
-    local unit u = GetEnumUnit()
-    
-    call GroupEnumUnitsInRange(NearbyUnits, GetUnitX(u), GetUnitY(u), BLACKHOLE_MAXRADIUS, GreenOrBrown)
-    set CollidingMazer = u
-    call ForGroup(NearbyUnits, function CollisionBlackhole)
-    call GroupClear(NearbyUnits)
-    
-    set u = null
-endfunction
-
-public function CollisionBlackholeIterInit takes nothing returns nothing
-    //Group PlayingMazers is declared and set in trigger SetGlobals in Initialization folder
-    call ForGroup(MazersGroup, function CollisionBlackholeIter)
-endfunction
-
 //===========================================================================
 
 private function Init takes nothing returns nothing
@@ -468,7 +425,6 @@ private function Init takes nothing returns nothing
     call TimerStart(CreateTimer(), COLLISION_MEDIUM_TIMESTEP, true, function CollisionMediumIterInit)
     call TimerStart(CreateTimer(), COLLISION_LARGE_TIMESTEP, true, function CollisionLargeIterInit)
     call TimerStart(CreateTimer(), P2P_TIMESTEP, true, function CollisionP2PIterInit)
-    call TimerStart(CreateTimer(), BLACKHOLE_TIMESTEP, true, function CollisionBlackholeIterInit)
 endfunction
 
 endlibrary

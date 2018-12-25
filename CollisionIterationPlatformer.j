@@ -7,8 +7,6 @@ globals
     
     public timer CollisionTimer
     constant real PLATFORMING_COLLISION_TIMEOUT = .1
-    
-    public timer BlackholeTimer
 endglobals
 
 private function IsCollidingCallback takes nothing returns nothing
@@ -69,15 +67,31 @@ private struct WaitingToRespawn
     endmethod
 endstruct
 
+private function AfterInvulnCB takes nothing returns nothing
+    local timer t = GetExpiredTimer()
+    local integer pID = GetTimerData(t)
+        
+    set MobImmune[pID] = false
+    set CanReviveOthers[pID] = true
+    
+	call ReleaseTimer(t)
+    set t = null
+endfunction
 private function AfterPlatformerReviveCB takes nothing returns nothing
     local timer t = GetExpiredTimer()
     local integer pID = GetTimerData(t)
     
+	//check that the unit is still plat paused
     if User(pID).GameMode == Teams_GAMEMODE_PLATFORMING_PAUSED then
         call User(pID).SwitchGameModesDefaultLocation(Teams_GAMEMODE_PLATFORMING)
     endif
     
-    call ReleaseTimer(t)
+	//set immune for 1 sec and create effect
+    call DummyCaster['A006'].castTarget(Player(pID), 1, OrderId("bloodlust"), User(pID).ActiveUnit)
+	set MobImmune[pID] = true
+    set CanReviveOthers[pID] = false
+	
+    call TimerStart(t, P2P_REVIVE_PAUSE_TIME, false, function AfterInvulnCB)
     set t = null
 endfunction
 
@@ -102,7 +116,7 @@ private function PlayerCollision takes nothing returns nothing
             set cuPID = GetPlayerId(GetOwningPlayer(cu))
             
             //safety check, this should never actually come up
-            if cuPID != pID then
+            if cuPID != pID and CanReviveOthers[pID] then
                 //revive unit at position of mazer to avoid reviving in an illegal position
                 call User(cuPID).SwitchGameModes(Teams_GAMEMODE_PLATFORMING_PAUSED, CollidingPlatformer.XPosition, CollidingPlatformer.YPosition)
                 call TimerStart(NewTimerEx(cuPID), P2P_REVIVE_PAUSE_TIME, false, function AfterPlatformerReviveCB)
@@ -113,7 +127,7 @@ endif
             endif
             //camera enforced by setting gamemode to platforming -- which always has a single static camera active and can be safely assumed to be set when mode is switched
         else
-            call DisplayTextToForce(bj_FORCE_PLAYER[0], "Non platformer unit inside platforming collision")
+            //call DisplayTextToForce(bj_FORCE_PLAYER[0], "Non platformer unit inside platforming collision")
         endif
         
         set cu = null
@@ -154,7 +168,7 @@ private function CollisionIter2 takes nothing returns nothing
         
         //call DisplayTextToForce(bj_FORCE_PLAYER[0], "unit is distance: " + R2S(dist))
         if dist <= CollisSmlRadius then //CollisSmlRadius == 45
-            if cuID == WWWISP and dist < 40 then                
+            if cuID == WWWISP and dist < 40 and not MobImmune[p.PID] then                
                 call CollisionDeathEffect(pu)
                 
                 call p.KillPlatformer()
@@ -162,7 +176,7 @@ private function CollisionIter2 takes nothing returns nothing
                 set pu = null
                 set cu = null
                 return
-            elseif cuID == WWSKUL and dist < 42 then
+            elseif cuID == WWSKUL and dist < 42 and not MobImmune[p.PID] then
                 call CollisionDeathEffect(pu)
                 
                 call p.KillPlatformer()
@@ -170,7 +184,7 @@ private function CollisionIter2 takes nothing returns nothing
                 set pu = null
                 set cu = null
                 return
-            elseif (cuID == GUARD or cuID == LGUARD) and dist < 36 then
+            elseif (cuID == GUARD or cuID == LGUARD) and dist < 36 and not MobImmune[p.PID] then
                 call CollisionDeathEffect(pu)
                 
                 call p.KillPlatformer()
@@ -313,7 +327,7 @@ private function CollisionIter2 takes nothing returns nothing
                 set pu = null
                 set cu = null
                 return
-            elseif cuID == ICETROLL and dist < 56 then
+            elseif cuID == ICETROLL and dist < 56 and not MobImmune[p.PID] then
                 call CollisionDeathEffect(pu)
                 
                 call p.KillPlatformer()
@@ -418,50 +432,11 @@ public function CollisionIterInit takes nothing returns nothing
     endloop
 endfunction
 
-private function CollisionBlackhole takes nothing returns nothing
-    local Platformer p = CollidingPlatformer
-    local unit cu = GetEnumUnit()
-        
-    local integer cuID = GetUnitTypeId(cu)
-    local Blackhole blackhole
-    
-    if cuID == BLACKHOLE then
-        call DisplayTextToForce(bj_FORCE_PLAYER[0], "near blackhole")
-        
-        //get blackhole struct
-        set blackhole = Blackhole.GetActiveBlackholeFromUnit(cu)
-        
-        if blackhole != 0 then
-            //add unit to blackhole watch list
-            call blackhole.WatchPlayer(p.PID)
-        endif
-    endif
-endfunction
-
-private function CollisionBlackholeIter takes Platformer p returns nothing
-    call GroupEnumUnitsInRange(pNearbyUnits, p.XPosition, p.YPosition, BLACKHOLE_MAXRADIUS, GreenOrBrown)
-    set CollidingPlatformer = p
-    call ForGroup(pNearbyUnits, function CollisionBlackhole)
-    call GroupClear(pNearbyUnits)
-endfunction
-
-public function CollisionBlackholeIterInit takes nothing returns nothing
-    //Group PlayingMazers is declared and set in trigger SetGlobals in Initialization folder
-    local SimpleList_ListNode curPlatformer = Platformer.ActivePlatformers.first
-    
-    loop
-    exitwhen curPlatformer == 0
-        call CollisionBlackholeIter(Platformer(curPlatformer.value))
-    set curPlatformer = curPlatformer.next
-    endloop
-endfunction
-
 //===========================================================================
 private function Init takes nothing returns nothing
     local integer i = 0
     
     set CollisionTimer = CreateTimer()
-    set BlackholeTimer = CreateTimer()
     
     //Now handled in Platformer -- paused when no one is platforming, active when >0 are
     //call TimerStart(CollisionTimer, PLATFORMING_COLLISION_TIMEOUT, true, function CollisionIterInit)
