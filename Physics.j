@@ -6,10 +6,7 @@ globals
     private constant integer KEY_LEFT   = -1
     private constant integer KEY_DOWN   = -2
     
-    
-    private constant real TIME_BUFFERED = .15           //approx length in seconds that a quick press buffer should extend for
-    private constant integer COUNT_BUFFER_TICKS = R2I(TIME_BUFFERED / PlatformerGlobals_GAMELOOP_TIMESTEP)     //gives the number of physic loop ticks the buffer will last for
-    
+    private constant real	CAMERA_APPLY_TIMESTEP = 1.    
     
     private constant boolean PRESSED    = true
     private constant boolean RELEASED   = false
@@ -30,6 +27,7 @@ globals
     private constant boolean DEBUG_GAMEMODE = false
 	
 	private constant boolean DEBUG_PHYSICS_LOOP = false
+	private constant boolean DEBUG_PHYSICS_LOOP_DELTA = false
 	
 	private constant boolean DEBUG_POSITION = false
     
@@ -109,10 +107,13 @@ endglobals
         public boolean     OnDiagonal                   //set by physics loop
         public ComplexTerrainPathingResult     DiagonalPathing   //set by physics loop
         
+		private real		PhysicsLoopDelta //prevEffect * (timer timestep - time remaining on timer) / timer timestep
+		
         //static properties shared among all platformers/players (1:1 platformer per player)
         //static integer ActivePlatformers //same as List's .count, with how it's used
         static timer            GameloopTimer
         static timer            TerrainloopTimer
+		static timer			CameraTimer
         //TODO add a unit group of platformer units to enum through to bypass the WC3 operations limit OR give each platformer their own timer and stagger them
         
 		static SimpleList_List		ActivePlatformers
@@ -1088,6 +1089,29 @@ endglobals
              
              //apply y velocity
              set newY = newY + .YVelocity
+			 
+			 //apply newX and newY based on % of current timestep fulfilled
+			 //this is relevant because apply physics is called after keyboard events, in order to maximize reactivity
+			 //to render apply physics properly over multiple, variable-length frames we need to keep track of % of physics to render per frame
+			 if TimerGetRemaining(.GameloopTimer) != 0 then
+				static if DEBUG_PHYSICS_LOOP_DELTA then
+					call DisplayTextToForce(bj_FORCE_PLAYER[0], "Physics applied with time still on timer. Time left: " + R2S(TimerGetRemaining(.GameloopTimer)) + ", Delta applied: " + R2S(.PhysicsLoopDelta * (PlatformerGlobals_GAMELOOP_TIMESTEP - TimerGetRemaining(.GameloopTimer)) / PlatformerGlobals_GAMELOOP_TIMESTEP))
+				endif
+				
+				set newX = newX * .PhysicsLoopDelta * (PlatformerGlobals_GAMELOOP_TIMESTEP - TimerGetRemaining(.GameloopTimer)) / PlatformerGlobals_GAMELOOP_TIMESTEP
+				set newY = newY * .PhysicsLoopDelta * (PlatformerGlobals_GAMELOOP_TIMESTEP - TimerGetRemaining(.GameloopTimer)) / PlatformerGlobals_GAMELOOP_TIMESTEP
+				
+				set .PhysicsLoopDelta = 1 - .PhysicsLoopDelta * (PlatformerGlobals_GAMELOOP_TIMESTEP - TimerGetRemaining(.GameloopTimer)) / PlatformerGlobals_GAMELOOP_TIMESTEP
+			 elseif .PhysicsLoopDelta != 1 then
+				static if DEBUG_PHYSICS_LOOP_DELTA then
+					call DisplayTextToForce(bj_FORCE_PLAYER[0], "Physics applied with delta debt. Time left: " + R2S(TimerGetRemaining(.GameloopTimer)) + ", Delta applied: " + R2S(.PhysicsLoopDelta))
+				endif
+				
+				set newX = newX * .PhysicsLoopDelta
+				set newY = newY * .PhysicsLoopDelta
+				
+				set .PhysicsLoopDelta = 1
+			 endif
 
             //check new x and/or y position for pathability and apply it dependingly
             if newX != 0 or newY != 0 then
@@ -2410,7 +2434,10 @@ endglobals
                 
                 call PlatformerOcean_Remove(this)
             elseif .TerrainDX == VINES then
-                call .GravityEquation.removeAdjustment(PlatformerPropertyEquation_MULTIPLY_ADJUSTMENT, VINES)
+                call .MSEquation.removeAdjustment(PlatformerPropertyEquation_MULTIPLY_ADJUSTMENT, VINES)
+                set .MoveSpeed = .MSEquation.calculateAdjustedValue(.BaseProfile.MoveSpeed)
+				
+				call .GravityEquation.removeAdjustment(PlatformerPropertyEquation_MULTIPLY_ADJUSTMENT, VINES)
                 set .GravitationalAccel = .GravityEquation.calculateAdjustedValue(.BaseProfile.GravitationalAccel)
                 //set .GravitationalAccel = .GravitationalAccel / VINES_SLOWDOWNPERCENT
                 
@@ -3050,11 +3077,21 @@ endglobals
         endmethod
         
         public method ApplyCamera takes nothing returns nothing
-            if GetLocalPlayer() == Player(.PID) then
+            if GetLocalPlayer() == Player(.PID) and GetCameraField(CAMERA_FIELD_ANGLE_OF_ATTACK) != 270 then
                 call CameraSetupApply(.PlatformingCamera, false, false) //orients the camera to face down from above
                 call SetCameraTargetController(.Unit, 0, 0, false) //fixes the camera to platforming unit
             endif
         endmethod
+		
+		private static method ApplyAllCameras takes nothing returns nothing
+			local SimpleList_ListNode p = thistype.ActivePlatformers.first
+            
+            loop
+            exitwhen p == 0
+                call Platformer(p.value).ApplyCamera()
+			set p = p.next
+            endloop
+		endmethod
         
         public method StartPlatforming takes real x, real y returns nothing
             if not .IsPlatforming then
@@ -3071,15 +3108,17 @@ endglobals
                 set .YPosition = y
                 set .YVelocity = 0
                 set .XVelocity = 0
+				
+				set .PhysicsLoopDelta = 1
                 
                 call SetPhysicsToProfile()
                 
                 if thistype.ActivePlatformers.count == 0 then
                     call TimerStart(.GameloopTimer, PlatformerGlobals_GAMELOOP_TIMESTEP, true, function Platformer.GameloopListIteration)
                     call TimerStart(.TerrainloopTimer, PlatformerGlobals_TERRAINLOOP_TIMESTEP, true, function Platformer.TerrainloopListIteration)
-                    
+                    call TimerStart(.CameraTimer, CAMERA_APPLY_TIMESTEP, true, function Platformer.ApplyAllCameras)
+					
                     call TimerStart(PlatformingCollision_CollisionTimer, PLATFORMING_COLLISION_TIMEOUT, true, function PlatformingCollision_CollisionIterInit)
-                    call TimerStart(PlatformingCollision_BlackholeTimer, BLACKHOLE_TIMESTEP, true, function PlatformingCollision_CollisionBlackholeIterInit)
                 endif
                 
                 call SetUnitPosition(.Unit, x, y)
@@ -3122,9 +3161,9 @@ endglobals
                 if thistype.ActivePlatformers.count == 0 then
                     call PauseTimer(.GameloopTimer)
                     call PauseTimer(.TerrainloopTimer)
+					call PauseTimer(.CameraTimer)
                     
                     call PauseTimer(PlatformingCollision_CollisionTimer)
-                    call PauseTimer(PlatformingCollision_BlackholeTimer)
                 endif
                 
                 call User(.PID).ResetDefaultCamera()
@@ -3581,6 +3620,7 @@ endglobals
 			
             set .GameloopTimer = CreateTimer()
             set .TerrainloopTimer = CreateTimer()
+			set .CameraTimer = CreateTimer()
         endmethod
     endstruct
 endlibrary
