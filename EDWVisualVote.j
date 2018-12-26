@@ -368,6 +368,7 @@ library EDWVisualVote requires VisualVote, ContinueGlobals, Teams, PlayerUtils, 
         local VisualVote_voteOption opt   
 		
 		if GameMode != 0 then
+			/*
 			//start round 2 of voting!
 			set MyMenu = VisualVote_voteMenu.create(3060, 5800, VOTE_TIME_ROUND_TWO, "EDWVisualVote_InitializeGameForGlobals")
 			call MyMenu.addAllPlayersToMenu()
@@ -383,6 +384,13 @@ library EDWVisualVote requires VisualVote, ContinueGlobals, Teams, PlayerUtils, 
 			
 			call MyMenu.render()
             call MyMenu.enforceVoteMode()
+			*/
+			
+			//I think I actually like just always setting game to We Band of Brothers
+			set RespawnASAPMode = false
+			set MinigamesMode = false
+			
+			call InitializeGameForGlobals()
 		else
 			set RespawnASAPMode = true
 			set MinigamesMode = false
@@ -459,22 +467,24 @@ library EDWVisualVote requires VisualVote, ContinueGlobals, Teams, PlayerUtils, 
             //debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "Default: " + con.defaultOption.text)
             
             //debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "Default: " + con.defaultOption.text)
-			set col = MyMenu.addColumn(512)
-			
-            set con = col.addContainer("Contests")
-            set con.required = false
-            set con.enabled = false
-            set opt = con.addOption("yea", "EDWVisualVote_MinigamesOn")
-            set opt = con.addOption("nei", "EDWVisualVote_MinigamesOn")
-            call opt.setDefault()
+			if CONFIGURATION_PROFILE != RELEASE then
+				set col = MyMenu.addColumn(512)
+				
+				set con = col.addContainer("Contests")
+				set con.required = false
+				set con.enabled = false
+				set opt = con.addOption("yea", "EDWVisualVote_MinigamesOn")
+				set opt = con.addOption("nei", "EDWVisualVote_MinigamesOn")
+				call opt.setDefault()
 
-            set con = col.addContainer("RPG Mode")
-            set con.required = false
-            set con.enabled = false
-            set opt = con.addOption("yea", "EDWVisualVote_MinigamesOn")
-            set opt = con.addOption("nei", "EDWVisualVote_MinigamesOn")
-            call opt.setDefault()
-            
+				set con = col.addContainer("RPG Mode")
+				set con.required = false
+				set con.enabled = false
+				set opt = con.addOption("yea", "EDWVisualVote_MinigamesOn")
+				set opt = con.addOption("nei", "EDWVisualVote_MinigamesOn")
+				call opt.setDefault()
+            endif
+			
             call MyMenu.render()
             
             call MyMenu.enforceVoteMode()
