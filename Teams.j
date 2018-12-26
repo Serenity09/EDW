@@ -172,8 +172,7 @@ public struct MazingTeam
                         call FogModifierStop(u.Vision)
                     endif
 					*/
-                    set User(fp.value).Vision = CreateFogModifierRect(Player(u), FOG_OF_WAR_VISIBLE, newvision, false, true)
-                    call FogModifierStart(u.Vision)
+                    call FogModifierStart(CreateFogModifierRect(Player(u), FOG_OF_WAR_VISIBLE, newvision, false, true))
 					
 					//call DisplayTextToForce(bj_FORCE_PLAYER[0], "added vision for user " + I2S(u))
                 endif

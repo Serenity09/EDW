@@ -9,7 +9,6 @@ struct User extends array
     public boolean IsPlaying
     public boolean IsAlive
     public integer Deaths
-    public fogmodifier Vision
     public unit ActiveUnit
     public Platformer Platformer
     public integer GameMode //0: regular DH mazing, 1: wisp platforming, 9: mini-games?
@@ -98,27 +97,14 @@ struct User extends array
         call SwitchGameModesDefaultLocation(Teams_GAMEMODE_STANDARD)
         
         set .IsPlaying = false
-        set .IsAlive = false
-        
-        //moves the mazing unit
-        call SetUnitPosition(MazersArray[this], MazerGlobals_SAFE_X, MazerGlobals_SAFE_Y)
-        //removes the reg unit from the reg game loop. thereby enabling regular terrain effects
-        call GroupRemoveUnit(MazersGroup, MazersArray[this])
-        //updates the number of units platforming/regular mazing
-        set NumberMazing = NumberMazing - 1
-        //hides the DH
-        call ShowUnit(MazersArray[this], false)
-        
-        //update multiboard
-        call .Team.UpdateMultiboard()
-        
+		
+		call .SwitchGameModesDefaultLocation(Teams_GAMEMODE_DYING)
+
         //TODO cleanup any structs
-        call DestroyFogModifier(.Vision)
         
         //call thistype.DisplayMessageAll(GetPlayerName(Player(this)) + " has left the game!")
         call thistype.DisplayMessageAll(this.GetStylizedPlayerName() + " has left the game!")
         
-        set .Vision = null
         set .ActiveUnit = null
         
         set User.ActivePlayers = User.ActivePlayers - 1
@@ -373,7 +359,7 @@ struct User extends array
         call ResetDefaultCamera()
         
         //check if respawn circles should be used
-        if not RespawnASAPMode then
+        if not RespawnASAPMode and .IsPlaying then
             //figure out the coordinates for respawn point given the previous game mode and other info
             set respawnPoint = TerrainHelpers_TryGetLastValidLocation(x, y, facing, oldGameMode)
             

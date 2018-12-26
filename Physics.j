@@ -1094,14 +1094,31 @@ endglobals
 			 //this is relevant because apply physics is called after keyboard events, in order to maximize reactivity
 			 //to render apply physics properly over multiple, variable-length frames we need to keep track of % of physics to render per frame
 			 if TimerGetRemaining(.GameloopTimer) != 0 then
-				static if DEBUG_PHYSICS_LOOP_DELTA then
-					call DisplayTextToForce(bj_FORCE_PLAYER[0], "Physics applied with time still on timer. Time left: " + R2S(TimerGetRemaining(.GameloopTimer)) + ", Delta applied: " + R2S(.PhysicsLoopDelta * (PlatformerGlobals_GAMELOOP_TIMESTEP - TimerGetRemaining(.GameloopTimer)) / PlatformerGlobals_GAMELOOP_TIMESTEP))
+				set distance = .PhysicsLoopDelta * (PlatformerGlobals_GAMELOOP_TIMESTEP - TimerGetRemaining(.GameloopTimer)) / PlatformerGlobals_GAMELOOP_TIMESTEP
+				//TODO remove hack fix once other events overriding physics are fixed
+				//don't let it buffer over tiny frames, half the point is that this solves other events happening before physics can
+				if distance < .5 then
+					set distance = .5
+					static if DEBUG_PHYSICS_LOOP_DELTA then
+						call DisplayTextToForce(bj_FORCE_PLAYER[0], "Physics delta set to minimum allowed: " + R2S(distance))
+					endif
 				endif
 				
-				set newX = newX * .PhysicsLoopDelta * (PlatformerGlobals_GAMELOOP_TIMESTEP - TimerGetRemaining(.GameloopTimer)) / PlatformerGlobals_GAMELOOP_TIMESTEP
-				set newY = newY * .PhysicsLoopDelta * (PlatformerGlobals_GAMELOOP_TIMESTEP - TimerGetRemaining(.GameloopTimer)) / PlatformerGlobals_GAMELOOP_TIMESTEP
+				static if DEBUG_PHYSICS_LOOP_DELTA then
+					call DisplayTextToForce(bj_FORCE_PLAYER[0], "Physics applied with time still on timer. Time left: " + R2S(TimerGetRemaining(.GameloopTimer)) + ", Delta applied: " + R2S(distance))
+				endif
 				
-				set .PhysicsLoopDelta = 1 - .PhysicsLoopDelta * (PlatformerGlobals_GAMELOOP_TIMESTEP - TimerGetRemaining(.GameloopTimer)) / PlatformerGlobals_GAMELOOP_TIMESTEP
+				set newX = newX * distance
+				set newY = newY * distance
+				
+				set .PhysicsLoopDelta = 1 - distance
+				
+				//TODO replace with this after hack is gone
+				//set distance = .PhysicsLoopDelta * (PlatformerGlobals_GAMELOOP_TIMESTEP - TimerGetRemaining(.GameloopTimer)) / PlatformerGlobals_GAMELOOP_TIMESTEP
+				// set newX = newX * distance
+				// set newY = newY * distance
+				
+				// set .PhysicsLoopDelta = 1 - distance				
 			 elseif .PhysicsLoopDelta != 1 then
 				static if DEBUG_PHYSICS_LOOP_DELTA then
 					call DisplayTextToForce(bj_FORCE_PLAYER[0], "Physics applied with delta debt. Time left: " + R2S(TimerGetRemaining(.GameloopTimer)) + ", Delta applied: " + R2S(.PhysicsLoopDelta))

@@ -744,8 +744,7 @@ library VisualVote initializer Init requires Vector2, Alloc, Table, PlayerUtils,
                         //only show timer dialog for players it effects
                         call TimerDialogDisplay(.td, true)
                         
-						set User(fp.value).Vision = CreateFogModifierRect(Player(fp.value), FOG_OF_WAR_VISIBLE, Rect(topLeft.x, botRight.y, botRight.x, topLeft.y), false, true)
-						call FogModifierStart(User(fp.value).Vision)
+						call FogModifierStart(CreateFogModifierRect(Player(fp.value), FOG_OF_WAR_VISIBLE, Rect(topLeft.x, botRight.y, botRight.x, topLeft.y), false, true))
 						
                         call SetCameraBounds(topLeft.x, topLeft.y, topLeft.x, botRight.y, botRight.x, botRight.y, botRight.x, topLeft.y)
                         call PanCameraToTimed((topLeft.x + botRight.x) / 2, (topLeft.y + botRight.y) / 2, 0.01)
