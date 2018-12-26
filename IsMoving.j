@@ -28,7 +28,8 @@ function applyTeleportMovement takes integer pID returns nothing
     local real deltaY = OrderDestinationY[pID] - curY
     
     local real theta = Atan2(deltaY, deltaX)
-    
+    local integer i = 1
+	
     //local real dist = SquareRoot(deltaX * deltaX + deltaY * deltaY)
     
     //debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "Teleporting with angle: " + R2S(theta * 180 / bj_PI))
@@ -36,18 +37,38 @@ function applyTeleportMovement takes integer pID returns nothing
     if (theta < 0 and theta >= -bj_PI/4) or (theta >= 0 and theta < bj_PI/4) then
         //debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "East")
         set deltaY = 0
-        set deltaX = TELEPORT_EXACTDISTANCE
+		
+		loop
+		exitwhen i == TELEPORT_MAXDISTANCE or GetTerrainType(curX + i*TERRAIN_TILE_SIZE, curY) != ABYSS
+		set i = i + 1
+		endloop
+        set deltaX = i*TERRAIN_TILE_SIZE
     elseif theta >= bj_PI/4 and theta < bj_PI * 3/4 then
         //debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "North")
-        set deltaY = TELEPORT_EXACTDISTANCE
-        set deltaX = 0
+        loop
+		exitwhen i == TELEPORT_MAXDISTANCE or GetTerrainType(curX, curY + i*TERRAIN_TILE_SIZE) != ABYSS
+		set i = i + 1
+		endloop
+        set deltaY = i*TERRAIN_TILE_SIZE
+		
+		set deltaX = 0
     elseif (theta < 0 and theta < -bj_PI * 3/4) or (theta >= 0 and theta >= bj_PI * 3/4) then
         //debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "West")
         set deltaY = 0
-        set deltaX = -TELEPORT_EXACTDISTANCE
+        
+		loop
+		exitwhen i == TELEPORT_MAXDISTANCE or GetTerrainType(curX - i*TERRAIN_TILE_SIZE, curY) != ABYSS
+		set i = i + 1
+		endloop
+        set deltaX = -i*TERRAIN_TILE_SIZE
     else//if theta >= -bj_PI * 3/4 and theta < -bj_PI/4 then
         //debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "South")
-        set deltaY = -TELEPORT_EXACTDISTANCE
+        loop
+		exitwhen i == TELEPORT_MAXDISTANCE or GetTerrainType(curX, curY - i*TERRAIN_TILE_SIZE) != ABYSS
+		set i = i + 1
+		endloop
+        set deltaY = -i*TERRAIN_TILE_SIZE
+		
         set deltaX = 0
     endif
     
