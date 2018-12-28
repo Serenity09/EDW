@@ -94,15 +94,14 @@ library EDWVisualVote requires VisualVote, ContinueGlobals, Teams, PlayerUtils, 
 			//call mt.ChangePlayerVision(Levels_Levels[0].Vision)
 		set fp = fp.next
 		endloop
-		
-		call TrackGameTime()
-		
+				
 		call DestroyTimer(t)
 		set t = null
 	endfunction
 	private function FadeCBOne takes nothing returns nothing
 		local timer t = GetExpiredTimer()
 		
+		call MultiboardMinimize(Teams_MazingTeam.PlayerStats, true)
 		
 		call DisplayCineFilter(false)
 		
@@ -136,6 +135,7 @@ library EDWVisualVote requires VisualVote, ContinueGlobals, Teams, PlayerUtils, 
         local boolean flag
         local Levels_Level firstLevel
 		
+		local real welcomeCineTime = 0
 		local Cinematic welcomeCine
         local CinemaMessage cineMsg
         
@@ -290,11 +290,40 @@ library EDWVisualVote requires VisualVote, ContinueGlobals, Teams, PlayerUtils, 
         call firstLevel.Start()
         
         //debug call DisplayTextToPlayer(Player(0), 0, 0, "Team count " + I2S(teamCount))
+		
         
-		set cineMsg = CinemaMessage.create(null, GetEDWSpeakerMessage(FINAL_BOSS_PRE_REVEAL, "Welcome", DEFAULT_TEXT_COLOR), DEFAULT_TINY_TEXT_SPEED)
-        set welcomeCine = Cinematic.create(null, false, false, cineMsg)
+		if GameMode == GameModesGlobals_SOLO then
+			set cineMsg = CinemaMessage.create(null, ColorMessage("Solo mode", SPEAKER_COLOR) + " selected. Fend for yourselves", DEFAULT_MEDIUM_TEXT_SPEED)
+			set welcomeCineTime = welcomeCineTime + DEFAULT_MEDIUM_TEXT_SPEED
+		elseif GameMode == GameModesGlobals_TEAMALL then
+			set cineMsg = CinemaMessage.create(null, ColorMessage("One team", SPEAKER_COLOR) + " selected. Get cozy", DEFAULT_MEDIUM_TEXT_SPEED)
+			set welcomeCineTime = welcomeCineTime + DEFAULT_MEDIUM_TEXT_SPEED
+		else //TEAMRANDOM
+			set cineMsg = CinemaMessage.create(null, ColorMessage("Random teams", SPEAKER_COLOR) + " selected. Check out the scoreboard for specifics", DEFAULT_MEDIUM_TEXT_SPEED)
+			set welcomeCineTime = welcomeCineTime + DEFAULT_MEDIUM_TEXT_SPEED
+		endif
+		
+		set welcomeCine = Cinematic.create(null, false, true, cineMsg)
+		
+		if RewardMode == GameModesGlobals_EASY then
+			call welcomeCine.AddMessage(null, ColorMessage("Easy mode", SPEAKER_COLOR) + " selected", DEFAULT_MEDIUM_TEXT_SPEED)
+			set welcomeCineTime = welcomeCineTime + DEFAULT_MEDIUM_TEXT_SPEED
+		elseif RewardMode == GameModesGlobals_HARD then
+			call welcomeCine.AddMessage(null, ColorMessage("Hard mode", SPEAKER_COLOR) + " selected", DEFAULT_MEDIUM_TEXT_SPEED)
+			set welcomeCineTime = welcomeCineTime + DEFAULT_MEDIUM_TEXT_SPEED
+		else //CHEAT
+			call welcomeCine.AddMessage(null, ColorMessage("99 and None mode", SPEAKER_COLOR) + " selected. Like " + ColorMessage("easy mode", SPEAKER_COLOR) + ", but you start with 99 continues and can only get more through special bonuses", DEFAULT_LONG_TEXT_SPEED)
+			set welcomeCineTime = welcomeCineTime + DEFAULT_LONG_TEXT_SPEED
+		endif
+		
+		call welcomeCine.SetLastMessageBuffer(1)
+		set welcomeCineTime = welcomeCineTime + 1
+
+		call welcomeCine.AddMessage(null, GetEDWSpeakerMessage(FINAL_BOSS_PRE_REVEAL, "Welcome", DEFAULT_TEXT_COLOR), DEFAULT_TINY_TEXT_SPEED)
         call welcomeCine.AddMessage(null, GetEDWSpeakerMessage(FINAL_BOSS_PRE_REVEAL, "To", DEFAULT_TEXT_COLOR), DEFAULT_TINY_TEXT_SPEED)
         call welcomeCine.AddMessage(null, GetEDWSpeakerMessage(FINAL_BOSS_PRE_REVEAL, "Dream World", DEFAULT_TEXT_COLOR), DEFAULT_SHORT_TEXT_SPEED)
+		
+		set welcomeCineTime = welcomeCineTime + 2 * DEFAULT_TINY_TEXT_SPEED //don't include last message, more dramatic that way
 		
         set i = 0
         loop
@@ -307,6 +336,8 @@ library EDWVisualVote requires VisualVote, ContinueGlobals, Teams, PlayerUtils, 
             
             call team[i].ApplyTeamDefaultCameras()
             call team[i].AddTeamVision(firstLevel.Vision)
+			
+			
 			
 			static if not DEBUG_MODE then
 				call team[i].AddTeamCinema(welcomeCine, team[i].FirstUser.value)
@@ -333,7 +364,7 @@ library EDWVisualVote requires VisualVote, ContinueGlobals, Teams, PlayerUtils, 
 			call SetCineFilterDuration(0)
 			call DisplayCineFilter(true)
 			
-			call TimerStart(CreateTimer(), 3, false, function FadeCBOne)
+			call TimerStart(CreateTimer(), welcomeCineTime, false, function FadeCBOne)
 		else
 			set fp = PlayerUtils_FirstPlayer
 			loop
@@ -360,7 +391,7 @@ library EDWVisualVote requires VisualVote, ContinueGlobals, Teams, PlayerUtils, 
 		
         //call DisplayTextToForce(bj_FORCE_PLAYER[0], "Finished Initializing Game For Globals!")
 	endfunction
-    
+	    
 	public function OnRoundOneFinishCB takes nothing returns nothing
 		local VisualVote_voteMenu MyMenu
 		local VisualVote_voteColumn col

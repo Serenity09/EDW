@@ -1,4 +1,4 @@
-library EDWCinematics requires EDWLevels, Cinema
+library EDWCinematics requires EDWLevels, Cinema, EDWGameTime
 	private function IsUserRed takes User user returns boolean
         return MazerColor[user] == KEY_RED
     endfunction
@@ -300,6 +300,10 @@ library EDWCinematics requires EDWLevels, Cinema
 endlibrary
 
 library EDWLevels requires SimpleList, Teams, Levels
+	private function FinishedIntro takes nothing returns nothing
+		call TrackGameTime()
+	endfunction
+	
 	public function Initialize takes nothing returns nothing
 		local Levels_Level l
         local Checkpoint cp
@@ -328,13 +332,16 @@ library EDWLevels requires SimpleList, Teams, Levels
         set boundedSpoke = BoundedSpoke.create(11970, 14465)
         set boundedSpoke.InitialOffset = 1*TERRAIN_TILE_SIZE
         set boundedSpoke.LayerOffset = 2.25*TERRAIN_QUADRANT_SIZE
-        set boundedSpoke.CurrentRotationSpeed = bj_PI / 5 * BoundedSpoke_TIMESTEP
+        set boundedSpoke.CurrentRotationSpeed = bj_PI / 6. * BoundedSpoke_TIMESTEP
         call boundedSpoke.AddUnits('e00A', 3)
-        call boundedSpoke.SetAngleBounds(bj_PI/4, bj_PI * 3/4)
+        // call boundedSpoke.SetAngleBounds(bj_PI/4, bj_PI*3./4.)
+		call boundedSpoke.SetAngleBounds(55./180.*bj_PI, 125./180.*bj_PI)
         
         call startables.add(boundedSpoke)
         
         set l.Content.Startables = startables
+		
+		call l.AddLevelStopCB(Condition(function FinishedIntro))
                 
         //DOORS HARD CODED
         //currently no start or stop logic
@@ -468,9 +475,14 @@ library EDWLevels requires SimpleList, Teams, Levels
         //PRIDE WORLD / PLATFORMING
         //LEVEL 1
         set l = Levels_Level.create(9, "Perspective", 4, 2, "PW1Start", "PW1Stop", gg_rct_PWR_1_1, gg_rct_PW1_Vision, gg_rct_PW1_End, 0) //gg_rct_PW1_Vision
-        call l.AddCheckpoint(gg_rct_PWCP_1_1, gg_rct_PWR_1_2)
-        call l.AddCheckpoint(gg_rct_PWCP_1_2, gg_rct_PWR_1_3)
-        call l.AddCheckpoint(gg_rct_PWCP_1_3, gg_rct_PWR_1_4)
+        set cp = l.AddCheckpoint(gg_rct_PWCP_1_1, gg_rct_PWR_1_2)
+		set cp.DefaultGameMode = Teams_GAMEMODE_PLATFORMING
+		
+        set cp = l.AddCheckpoint(gg_rct_PWCP_1_2, gg_rct_PWR_1_3)
+        set cp.DefaultGameMode = Teams_GAMEMODE_PLATFORMING
+		
+		set cp = l.AddCheckpoint(gg_rct_PWCP_1_3, gg_rct_PWR_1_4)
+		set cp.RequiresSameGameMode = true
         
         set startables = SimpleList_List.create()
         set l.Content.Startables = startables

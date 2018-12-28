@@ -585,7 +585,7 @@ public struct MazingTeam
 		local string hex
         
         if .TeamID == 0 then
-            set hex = "00CC00"
+            set hex = "FF0000"
         elseif .TeamID == 1 then
             set hex = "0000FF"
         elseif .TeamID == 2 then
@@ -597,7 +597,7 @@ public struct MazingTeam
         elseif .TeamID == 5 then
             set hex = "FF9933"
         elseif .TeamID == 6 then
-            set hex = "FF0000"
+            set hex = "00CC00"
         elseif .TeamID == 7 then
             set hex = "FF66CC"
         else
@@ -605,6 +605,32 @@ public struct MazingTeam
         endif
 		
 		return hex
+	endmethod
+	public method GetTeamName takes nothing returns string
+		local string hex = .GetTeamColor()
+		local string name
+		
+		if .TeamID == 0 then
+			set name = "Red"
+		elseif .TeamID == 1 then
+			set name = "Blue"
+		elseif .TeamID == 2 then
+			set name = "Teal"
+		elseif .TeamID == 3 then
+			set name = "Purple"
+		elseif .TeamID == 4 then
+			set name = "Yellow"
+		elseif .TeamID == 5 then
+			set name = "Orange"
+		elseif .TeamID == 6 then
+			set name = "Green"
+		elseif .TeamID == 7 then
+			set name = "Pink"
+		else
+			set name = ""
+		endif
+		
+		return ColorMessage(name, hex)
 	endmethod
     public method GetStylizedPlayerName takes integer pID returns string
         local string hex = .GetTeamColor()
@@ -745,12 +771,12 @@ public struct MazingTeam
 				if VictoryScore - .Score <= 0 then
 					call MazingTeam.ApplyEndGameAll(this)
 				elseif (VictoryScore - .Score <= 10 and ogScore > 10) or (VictoryScore - .Score <= 5 and ogScore > 5) then
-					call MazingTeam.PrintMessageAll("Team " + ColorValue(I2S(this)) + " needs " + ColorValue(I2S(VictoryScore - .Score)) + " more points to win", 0)
+					call MazingTeam.PrintMessageAll("Team " + this.GetTeamName() + " needs " + ColorValue(I2S(VictoryScore - .Score)) + " more points to win", 0)
 				elseif VictoryScore - .Score <= 3 and ogScore > 3 then
 					if VictoryScore - .Score == 1 then
-						call MazingTeam.PrintMessageAll("Team " + ColorValue(I2S(this)) + " only needs " + ColorValue(I2S(VictoryScore - .Score)) + " more point to win!", 0)
+						call MazingTeam.PrintMessageAll("Team " + this.GetTeamName() + " only needs " + ColorValue(I2S(VictoryScore - .Score)) + " more point to win!", 0)
 					else
-						call MazingTeam.PrintMessageAll("Team " + ColorValue(I2S(this)) + " only needs " + ColorValue(I2S(VictoryScore - .Score)) + " more points to win!", 0)
+						call MazingTeam.PrintMessageAll("Team " + this.GetTeamName() + " only needs " + ColorValue(I2S(VictoryScore - .Score)) + " more points to win!", 0)
 					endif
 				endif
 			endif
@@ -839,7 +865,7 @@ public struct MazingTeam
         call MultiboardMinimize(.PlayerStats, true)
         call MultiboardMinimize(.PlayerStats, false)
         
-        call TimerStart(t, MULTIBOARD_HIDE_DELAY, false, function MazingTeam.MultiboardHideCallback)
+        //call TimerStart(t, MULTIBOARD_HIDE_DELAY, false, function MazingTeam.MultiboardHideCallback)
         
         set t = null
     endmethod

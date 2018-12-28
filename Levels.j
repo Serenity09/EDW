@@ -1,4 +1,4 @@
-library Levels initializer Init requires SimpleList, Teams, GameModesGlobals, Cinema, User, IStartable
+library Levels requires SimpleList, Teams, GameModesGlobals, Cinema, User, IStartable
     globals
         public constant integer     INTRO_LEVEL_ID = 1
         public constant integer     DOORS_LEVEL_ID = 2
@@ -21,8 +21,10 @@ library Levels initializer Init requires SimpleList, Teams, GameModesGlobals, Ci
 		private constant boolean DEBUG_LEVEL_CHANGE = false
 		
 		//used with events
-		Levels_Level TriggerCurrentLevel
-		Levels_Level TriggerPreviousLevel
+		Levels_Level EventCurrentLevel
+		Levels_Level EventPreviousLevel
+		
+		Checkpoint EventCheckpoint
     endglobals
     
 	//TODO this struct turned into just an extension of Level -- refactor back into level
@@ -140,6 +142,10 @@ library Levels initializer Init requires SimpleList, Teams, GameModesGlobals, Ci
         
         public SimpleList_List ActiveTeams
         public static SimpleList_List ActiveLevels
+		
+		private Event OnLevelStart
+		private Event OnLevelStop
+		private Event OnCheckpointChange
                         
         public method Start takes nothing returns nothing
             static if DEBUG_START_STOP then
@@ -250,6 +256,7 @@ library Levels initializer Init requires SimpleList, Teams, GameModesGlobals, Ci
             local Checkpoint cp = Checkpoint(.Checkpoints.get(cpID).value)
 			
 			if cp != 0 then
+				set EventCheckpoint = cp
                 //call DisplayTextToForce(bj_FORCE_PLAYER[0], "Started setting CP for team " + I2S(mt) + ", index " + I2S(cpID) + ", cp " + I2S(cp))
 				set mt.OnCheckpoint = cpID
                 
@@ -262,6 +269,9 @@ library Levels initializer Init requires SimpleList, Teams, GameModesGlobals, Ci
                 
                 call mt.UpdateMultiboard()
 
+				if this.OnCheckpointChange != 0 then
+					call this.OnCheckpointChange.fire()
+				endif
 				//call DisplayTextToForce(bj_FORCE_PLAYER[0], "Finished setting CP for team " + I2S(mt))				
             endif
             
@@ -348,6 +358,9 @@ library Levels initializer Init requires SimpleList, Teams, GameModesGlobals, Ci
 				call DisplayTextToForce(bj_FORCE_PLAYER[0], "From " + I2S(this) + " To " + I2S(nextLevel))
             endif
 			
+			set EventPreviousLevel = this
+			set EventCurrentLevel = nextLevel
+			
 			call mt.ClearCinematicQueue()
 			
             set this.CBTeam = mt
@@ -355,9 +368,16 @@ library Levels initializer Init requires SimpleList, Teams, GameModesGlobals, Ci
 						
             set mt.OnLevel = TEMP_LEVEL_ID
             call this.Stop() //only stops the level if no ones on it. reloads preload scripts after if necessary
+			if this.OnLevelStop != 0 then
+				call this.OnLevelStop.fire()
+			endif
+			
             //debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "Stopped")
             call nextLevel.Start() //only starts the next level if there is one -- also preloads the following level
-            
+			if nextLevel.OnLevelStart != 0 then
+				call nextLevel.OnLevelStart.fire()
+			endif
+			
             set mt.OnLevel = nextLevel
             call nextLevel.ActiveTeams.add(mt)
             
@@ -371,6 +391,7 @@ library Levels initializer Init requires SimpleList, Teams, GameModesGlobals, Ci
 
             
             call mt.AddTeamVision(nextLevel.Vision)
+			
             //debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "Started")
             //team tele, respawn update, vision, pause + unpause
             call nextLevel.SetCheckpointForTeam(mt, 0)
@@ -381,7 +402,7 @@ library Levels initializer Init requires SimpleList, Teams, GameModesGlobals, Ci
             //call mt.UpdateMultiboard()
         endmethod
         		
-		public static method CheckTransfers takes nothing returns nothing
+		private static method CheckTransfers takes nothing returns nothing
             local SimpleList_ListNode curLevel = thistype.ActiveLevels.first
             local SimpleList_ListNode curTeam
             local SimpleList_ListNode curUser
@@ -475,7 +496,6 @@ library Levels initializer Init requires SimpleList, Teams, GameModesGlobals, Ci
 						endif
 						call Level(curLevel.value).ApplyLevelRewards(User(curUser.value), Teams_MazingTeam(curTeam.value), nextLevel)
 						
-						//TODO apply LastLevel logic
 						call Teams_MazingTeam(curTeam.value).UpdateWorldProgress(curLevel.value)
 						
 						call Level(curLevel.value).SwitchLevels(Teams_MazingTeam(curTeam.value), nextLevel)
@@ -514,7 +534,7 @@ library Levels initializer Init requires SimpleList, Teams, GameModesGlobals, Ci
             call .Cinematics.addEnd(cinema)
             set cinema.ParentLevel = this
         endmethod
-        public static method CheckCinematics takes nothing returns nothing
+        private static method CheckCinematics takes nothing returns nothing
             local SimpleList_ListNode curLevel = thistype.ActiveLevels.first
             local SimpleList_ListNode curCinematic
             local SimpleList_ListNode curTeam
@@ -598,6 +618,29 @@ library Levels initializer Init requires SimpleList, Teams, GameModesGlobals, Ci
             return new
         endmethod
         
+		public method AddLevelStartCB takes conditionfunc cb returns nothing
+			if .OnLevelStart == 0 then
+				set .OnLevelStart = Event.create()
+			endif
+			
+			call .OnLevelStart.register(cb)
+		endmethod
+		public method AddLevelStopCB takes conditionfunc cb returns nothing
+			if .OnLevelStop == 0 then
+				set .OnLevelStop = Event.create()
+			endif
+			
+			call .OnLevelStop.register(cb)
+		endmethod
+		public method AddCheckpointChangeCB takes conditionfunc cb returns nothing
+			if .OnCheckpointChange == 0 then
+				set .OnCheckpointChange = Event.create()
+			endif
+			
+			call .OnCheckpointChange.register(cb)
+		endmethod
+		
+		
         //creates a level struct
         static method create takes integer LevelID, string name, integer rawContinues, integer rawScore, string startFunction, string stopFunction, rect startspawn, rect vision, rect levelEnd, Level previouslevel returns Level
             local Level new = LevelID
@@ -639,14 +682,21 @@ library Levels initializer Init requires SimpleList, Teams, GameModesGlobals, Ci
             //use the checkpoint schema for the first checkpoint. region enter event is handled separately, so use null for the region
             call new.AddCheckpoint(null, startspawn)
             
+			set new.OnLevelStart = 0
+			set new.OnLevelStop = 0
+			set new.OnCheckpointChange = 0
+			
             return new
         endmethod
+		
+		private static method onInit takes nothing returns nothing
+			//set OnLevelChange = Event.create()
+			//set OnCheckpointChange = Event.create()
+			
+			set thistype.ActiveLevels = SimpleList_List.create()
+			
+			call TimerStart(CreateTimer(), TRANSFER_TIMER_TIMEOUT, true, function thistype.CheckTransfers)
+			call TimerStart(CreateTimer(), CINEMATIC_TIMER_TIMEOUT, true, function thistype.CheckCinematics)
+		endmethod
     endstruct
-    
-    private function Init takes nothing returns nothing
-        set Levels_Level.ActiveLevels = SimpleList_List.create()
-        
-		call TimerStart(CreateTimer(), TRANSFER_TIMER_TIMEOUT, true, function Levels_Level.CheckTransfers)
-        call TimerStart(CreateTimer(), CINEMATIC_TIMER_TIMEOUT, true, function Levels_Level.CheckCinematics)
-    endfunction
 endlibrary

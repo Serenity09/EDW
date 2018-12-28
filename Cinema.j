@@ -120,6 +120,9 @@ struct Cinematic extends array
     public method AddMessage takes unit u, string text, real timeout returns nothing
         call .CinemaMessages.addEnd(CinemaMessage.create(u, text, timeout))
     endmethod
+	public method AddMessageCustom takes CinemaMessage message returns nothing
+		call .CinemaMessages.addEnd(message)
+	endmethod
     
     private static method PlayMessageCallback takes nothing returns nothing
         local timer t = GetExpiredTimer()

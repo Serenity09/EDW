@@ -1,6 +1,6 @@
 library EDWGameTime requires Teams, GameMessage
     globals
-        private timer t
+        private timer t = null
 		private constant integer TIMEOUT = 60
 		private real currentTime = 0
     endglobals
@@ -37,13 +37,29 @@ library EDWGameTime requires Teams, GameMessage
 			endif
 		endif
 	endfunction
+	
+	function ToggleGameTime takes boolean flag returns nothing
+		if t != null then
+			if flag then
+				call ResumeTimer(t)
+			else
+				call PauseTimer(t)
+			endif
+		endif
+	endfunction
     
     function TrackGameTime takes nothing returns nothing
-		set t = CreateTimer()
-		call TimerStart(t, TIMEOUT, true, function CB)
-		
-		if VictoryTime != 0 then
-			call Teams_MazingTeam.PrintMessageAll(ColorValue(I2S(R2I(VictoryTime / 60))) + " minutes remaining", 0)
+		if t == null then
+			set t = CreateTimer()
+			call TimerStart(t, TIMEOUT, true, function CB)
+			
+			if VictoryTime != 0 then
+				call Teams_MazingTeam.PrintMessageAll(ColorValue(I2S(R2I(VictoryTime / 60))) + " minutes remaining", 0)
+			endif
 		endif
-    endfunction	
+    endfunction
+	
+	function IsGameTimeTracked takes nothing returns boolean
+		return t != null
+	endfunction
 endlibrary

@@ -65,6 +65,7 @@ endglobals
 			//endif
 		endmethod
 		private method OnLevelChange takes nothing returns nothing
+			/*
 			if TriggerCurrentLevel == this then
 				if Levels_Level(this).ActiveTeams.count == 1 then
 					
@@ -72,6 +73,7 @@ endglobals
 			elseif TriggerPreviousLevel == this then
 				call .Boss.destroy()
 			endif
+			*/
 		endmethod
 		private method OnCheckpointChange takes nothing returns nothing
 			

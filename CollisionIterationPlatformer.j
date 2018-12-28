@@ -335,6 +335,17 @@ private function CollisionIter2 takes nothing returns nothing
                 set pu = null
                 set cu = null
                 return
+			elseif InWorldPowerup.IsPowerupUnit(cuID) and dist < 65 then
+				set pLastCollisionUnit[p.PID] = cu
+				
+				call InWorldPowerup.GetFromUnit(cu).OnUserAcquire(p.PID)
+                
+				//no need to clear last collision unit from powerup, will never be able to interact with it again anyways
+                //call TimerStart(NewTimerEx(p.PID), COLLISION_TIME, false, function IsCollidingCallback)
+                //debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "Finished colliding")
+                set pu = null
+                set cu = null
+                return
             elseif cuID == RKEY and dist < 65  then
                 call RShieldEffect(pu)
                 set MazerColor[i] = KEY_RED

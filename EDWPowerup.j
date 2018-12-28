@@ -101,7 +101,7 @@ library EDWPowerup requires Alloc, MazerGlobals, FilterFuncs, Table, PlayerUtils
 					call team.PrintMessage(user.GetStylizedPlayerName() + " stole " + I2S(TEAM_STEALCONT_COUNT) + " continue from your team!")
 					
 					call user.Team.ChangeContinueCount(TEAM_STEALCONT_COUNT)
-					call user.Team.PrintMessage(user.GetStylizedPlayerName() + " stole " + I2S(TEAM_STEALCONT_COUNT) + " continue from team " + I2S(team) + "!")
+					call user.Team.PrintMessage(user.GetStylizedPlayerName() + " stole " + I2S(TEAM_STEALCONT_COUNT) + " continue from team " + team.GetTeamName() + "!")
 				else
 					call user.Team.ChangeContinueCount(TEAM_ADDCONT_COUNT)
 					call user.Team.PrintMessage(user.GetStylizedPlayerName() + " gained your team " + I2S(TEAM_ADDCONT_COUNT) + " continues")
@@ -117,7 +117,7 @@ library EDWPowerup requires Alloc, MazerGlobals, FilterFuncs, Table, PlayerUtils
 					call team.PrintMessage(user.GetStylizedPlayerName() + " stole " + I2S(TEAM_STEALSCORE_COUNT) + " point from your team!")
 					
 					call user.Team.ChangeScore(TEAM_STEALSCORE_COUNT)
-					call user.Team.PrintMessage(user.GetStylizedPlayerName() + " stole " + I2S(TEAM_STEALSCORE_COUNT) + " point from team " + I2S(team) + "!")
+					call user.Team.PrintMessage(user.GetStylizedPlayerName() + " stole " + I2S(TEAM_STEALSCORE_COUNT) + " point from team " + team.GetTeamName() + "!")
 				else
 					call user.Team.ChangeScore(TEAM_ADDSCORE_COUNT)
 					call user.Team.PrintMessage(user.GetStylizedPlayerName() + " gained your team " + I2S(TEAM_ADDSCORE_COUNT) + " points")
