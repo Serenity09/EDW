@@ -128,7 +128,13 @@ library Blackhole requires ListModule, SimpleList, User, locust, MazerGlobals, I
                     //call DestroyEffect(AddSpecialEffect("Abilities\\Spells\\Other\\Doom\\DoomTarget.mdl", nearbyX, nearbyY))
                     //call DestroyEffect(AddSpecialEffect("Abilities\\Spells\\Demon\\DarkPortal\\DarkPortalTarget.mdl", nearbyX, nearbyY))
                     
-                    call nearbyUser.SwitchGameModesDefaultLocation(Teams_GAMEMODE_DYING)
+					if nearbyUser.GameMode != Teams_GAMEMODE_DEAD then
+						call nearbyUser.SwitchGameModesDefaultLocation(Teams_GAMEMODE_DYING)
+					else
+						call ShowUnit(nearbyUser.ActiveUnit, false)
+						call SetUnitX(nearbyUser.ActiveUnit, MazerGlobals_SAFE_X)
+						call SetUnitY(nearbyUser.ActiveUnit, MazerGlobals_SAFE_Y)
+					endif
                 elseif dist >= BLACKHOLE_MAXRADIUS then
                     //escaped blackhole, stop watching unit... for now...
                     static if DEBUG then
