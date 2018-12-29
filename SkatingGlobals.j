@@ -27,12 +27,7 @@ library SkatingGlobals requires GameGlobalConstants
                 
         boolean array CanSteer[NumberPlayers]
         
-        group OnSandGroup = CreateGroup()
-        group OnSnowGroup = CreateGroup()
-        group OnRSnowGroup = CreateGroup()
-        
-        integer NumberOnSand = 0
-        integer NumberOnSnow = 0
+        group OnRSnowGroup = CreateGroup()        
         integer NumberOnRSnow = 0
     endglobals
 endlibrary

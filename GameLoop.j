@@ -214,7 +214,7 @@ function GameLoopRemoveTerrainAction takes unit u, integer i, integer oldterrain
     local real r
     //call DisplayTextToForce(bj_FORCE_PLAYER[i], "Removing: " + I2S(oldterrain) + " Adding: " + I2S(curterrain))
     
-    if (oldterrain == FASTICE) then
+    if oldterrain == FASTICE then
         set CanSteer[i] = false
         call IceMovement_Remove(MazersArray[i])
         
@@ -230,12 +230,8 @@ function GameLoopRemoveTerrainAction takes unit u, integer i, integer oldterrain
         else
             set VelocityX[i] = 0
             set VelocityY[i] = 0
-        endif
-        
-        return //if this statement is reached, it's not possible to reach any other
-    endif
-    
-    if (oldterrain == MEDIUMICE) then
+        endif    
+    elseif oldterrain == MEDIUMICE then
         set CanSteer[i] = false
         call IceMovement_Remove(MazersArray[i])
                 
@@ -256,11 +252,7 @@ function GameLoopRemoveTerrainAction takes unit u, integer i, integer oldterrain
             set VelocityX[i] = 0
             set VelocityY[i] = 0
         endif
-        
-        return
-    endif
-    
-    if(oldterrain == SLOWICE) then
+    elseif oldterrain == SLOWICE then
         set CanSteer[i] = false
         call IceMovement_Remove(MazersArray[i])
              
@@ -281,34 +273,16 @@ function GameLoopRemoveTerrainAction takes unit u, integer i, integer oldterrain
             set VelocityX[i] = 0
             set VelocityY[i] = 0
         endif
-        
-        return
-    endif
- 
-    if(oldterrain == GRASS) then
+    elseif oldterrain == GRASS then
         call SetUnitMoveSpeed(u, DefaultMoveSpeed)
-        return
-    endif
-    
-    if (oldterrain == D_GRASS) then
+    elseif (oldterrain == D_GRASS) then
         call SetUnitMoveSpeed(u, DefaultMoveSpeed)
-        return
-    endif
-    
-    if (oldterrain == VINES) then
+    elseif (oldterrain == VINES) then
         call SetUnitMoveSpeed(u, DefaultMoveSpeed)
-        return
-    endif
-    
-    if (oldterrain == SAND) then
-        call GroupRemoveUnit(OnSandGroup, u)
-        call GroupRemoveUnit(DestinationGroup, u)
+    elseif (oldterrain == SAND) then
+		call SandMovement.Remove(u)
+		call GroupRemoveUnit(DestinationGroup, u)
 		call SetUnitMoveSpeed(u, DefaultMoveSpeed)
-        set NumberOnSand = NumberOnSand - 1
-        
-        if NumberOnSand == 0 then
-            call DisableTrigger(gg_trg_Sand_Movement)
-        endif
         
         if (curterrain == SNOW or curterrain == RSNOW or curterrain == SLOWICE or curterrain == MEDIUMICE or curterrain == FASTICE) then
             //velocity carries over to snow
@@ -318,18 +292,9 @@ function GameLoopRemoveTerrainAction takes unit u, integer i, integer oldterrain
         endif
         //call DisplayTextToForce(bj_FORCE_PLAYER[i], R2S(VelocityX[i]))
         //call DisplayTextToForce(bj_FORCE_PLAYER[i], R2S(VelocityY[i]))
-        return
-    endif
-    
-    if (oldterrain == SNOW) then
+    elseif (oldterrain == SNOW) then
         set CanSteer[i] = false
-        
-        call GroupRemoveUnit(OnSnowGroup, u)
-        set NumberOnSnow = NumberOnSnow - 1
-        
-        if NumberOnSnow == 0 then
-            call DisableTrigger(gg_trg_Snow_Movement)
-        endif
+        call SnowMovement.Remove(u)
         
         if (curterrain == SAND or curterrain == RSNOW or curterrain == SLOWICE or curterrain == MEDIUMICE or curterrain == FASTICE) then
             //velocity carries over to sand, so do nothing
@@ -344,10 +309,7 @@ function GameLoopRemoveTerrainAction takes unit u, integer i, integer oldterrain
         
         //call DisplayTextToForce(bj_FORCE_PLAYER[i], "P" + I2S(i) + "X: " + R2S(VelocityX[i]))
         //call DisplayTextToForce(bj_FORCE_PLAYER[i], "Y: " + R2S(VelocityY[i]))
-        return
-    endif
-    
-    if (oldterrain == RSNOW) then
+    elseif (oldterrain == RSNOW) then
         set CanSteer[i] = false
         
         call GroupRemoveUnit(OnRSnowGroup, u)
@@ -366,22 +328,14 @@ function GameLoopRemoveTerrainAction takes unit u, integer i, integer oldterrain
         
         //call DisplayTextToForce(bj_FORCE_PLAYER[i], "P" + I2S(i) + "X: " + R2S(VelocityX[i]))
         //call DisplayTextToForce(bj_FORCE_PLAYER[i], "Y: " + R2S(VelocityY[i]))
-        return
-    endif
-    
-    if (oldterrain == LAVA) then
+    elseif (oldterrain == LAVA) then
         call GroupRemoveUnit(OnLavaGroup, u)
         set NumberOnLava = NumberOnLava - 1
         
         if NumberOnLava == 0 then
             call DisableTrigger(gg_trg_Lava_Damage)
         endif
-        
-        return
-    endif
-    
-    
-    if (oldterrain == LEAVES) then
+    elseif (oldterrain == LEAVES) then
         call GroupRemoveUnit(SuperFastGroup, u)
         call GroupRemoveUnit(DestinationGroup, u)
         set NumberOnSuperFast = NumberOnSuperFast - 1
@@ -391,24 +345,13 @@ function GameLoopRemoveTerrainAction takes unit u, integer i, integer oldterrain
         endif
         
         call SetUnitMoveSpeed(u, DefaultMoveSpeed)
-        
-        return
-    endif
-    
-    if (oldterrain == LRGBRICKS) then
+    elseif (oldterrain == LRGBRICKS) then
         //should do nothing
-        
-        return
-    endif
-    
-    if (oldterrain == RTILE) then
+    elseif (oldterrain == RTILE) then
         //call RotationCameras[i].cPause()
         set UseTeleportMovement[i] = false
-        
-        return
     endif
-    
-    
+	
 endfunction
 
 function GameLoopNewTerrainAction takes nothing returns nothing
@@ -537,10 +480,7 @@ function GameLoopNewTerrainAction takes nothing returns nothing
         //call DisplayTextToForce(bj_FORCE_PLAYER[i], "On Fast Ice")
         set TerrainOffset[i] = FASTICEOFFSET
         set PreviousTerrainTypedx[i] = basicterrain
-        return //can only be on 1 terrain type, inefficient to check the rest
-    endif
-
-    if (basicterrain == MEDIUMICE) then
+    elseif (basicterrain == MEDIUMICE) then
         set CanSteer[i] = true
         set SkateSpeed[i] = MediumIceSpeed
         
@@ -548,10 +488,7 @@ function GameLoopNewTerrainAction takes nothing returns nothing
         
         set TerrainOffset[i] = MEDIUMICEOFFSET
         set PreviousTerrainTypedx[i] = basicterrain
-        return //can only be on 1 terrain type, inefficient to check the rest
-    endif
-    
-    if (basicterrain == SLOWICE) then
+    elseif (basicterrain == SLOWICE) then
         set CanSteer[i] = true
         set SkateSpeed[i] = SlowIceSpeed
         
@@ -559,34 +496,22 @@ function GameLoopNewTerrainAction takes nothing returns nothing
         
         set TerrainOffset[i] = SLOWICEOFFSET
         set PreviousTerrainTypedx[i] = basicterrain
-        return
-    endif
-    
-    if (basicterrain == VINES) then
+    elseif (basicterrain == VINES) then
         call SetUnitMoveSpeed(u, SlowGrassSpeed)
         
         set TerrainOffset[i] = VINESOFFSET
         set PreviousTerrainTypedx[i] = basicterrain
-        return
-    endif
-    
-    if (basicterrain == GRASS) then
+    elseif (basicterrain == GRASS) then
         call SetUnitMoveSpeed(u, MediumGrassSpeed)
         
         set TerrainOffset[i] = GRASSOFFSET
         set PreviousTerrainTypedx[i] = basicterrain
-        return
-    endif
-    
-    if (basicterrain == D_GRASS) then
+    elseif (basicterrain == D_GRASS) then
         call SetUnitMoveSpeed(u, FastGrassSpeed)
         
         set TerrainOffset[i] = D_GRASSOFFSET
         set PreviousTerrainTypedx[i] = basicterrain
-        return
-    endif
-    
-    if (basicterrain == RTILE) then
+    elseif (basicterrain == RTILE) then
         //call DisplayTextToForce(bj_FORCE_PLAYER[i], "R Tiles")
         //call RotationCameras[i].cUnpause()
         //functionality defined within Ice.isMoving
@@ -600,62 +525,38 @@ function GameLoopNewTerrainAction takes nothing returns nothing
         set PreviousTerrainTypedx[i] = basicterrain
 		
 		call terrainCenterPoint.destroy()
-        return
-    endif
-    
-    if (basicterrain == SAND) then
+    elseif (basicterrain == SAND) then
         //call DisplayTextToForce(bj_FORCE_PLAYER[i], "On Sand")
-        set facingRad = (GetUnitFacing(u)/180) * bj_PI
-        call SetUnitMoveSpeed(u, SandMovement_MOVESPEED)
-		
-        //if the sand movement trigger was previously off, turn it on
-        if (NumberOnSand == 0) then
-            call EnableTrigger(gg_trg_Sand_Movement)
-        endif
-        
-        //add unit to the group of units definitely on sand
+        call SandMovement.Add(u)
+		call SetUnitMoveSpeed(u, SandMovement_MOVESPEED)
         call GroupAddUnit(DestinationGroup, u)
-        call GroupAddUnit(OnSandGroup, u)
-        set NumberOnSand = NumberOnSand + 1
         
         //momentum going onto sand from regular ice (do momentum ice later)
         if (previousterrain == FASTICE or previousterrain == MEDIUMICE or previousterrain == SLOWICE) then
-            set VelocityX[i] = Cos(facingRad) * SkateSpeed[i] * ICE2MOMENTUMFACTOR
+            set facingRad = (GetUnitFacing(u)/180) * bj_PI
+			
+			set VelocityX[i] = Cos(facingRad) * SkateSpeed[i] * ICE2MOMENTUMFACTOR
             set VelocityY[i] = Sin(facingRad) * SkateSpeed[i] * ICE2MOMENTUMFACTOR
         endif
         
         //update previous terrain type
         set TerrainOffset[i] = SANDOFFSET
         set PreviousTerrainTypedx[i] = basicterrain
-        return
-    endif
-    
-    if (basicterrain == SNOW) then
-        set facingRad = (GetUnitFacing(u)/180) * bj_PI
-        
+    elseif (basicterrain == SNOW) then
         set CanSteer[i] = true
-        
-        //if the sand movement trigger was previously off, turn it on
-        if (NumberOnSnow == 0) then
-            call EnableTrigger(gg_trg_Snow_Movement)
-        endif        
-        //add unit to the group of units definitely on sand
-        call GroupAddUnit(OnSnowGroup, u)
-        set NumberOnSnow = NumberOnSnow + 1
+        call SnowMovement.Add(u)
         
         //momentum going onto sand from regular ice (do momentum ice later)
         if (previousterrain == FASTICE or previousterrain == MEDIUMICE or previousterrain == SLOWICE) then
-            set VelocityX[i] = Cos(facingRad) * SkateSpeed[i] * ICE2MOMENTUMFACTOR
+            set facingRad = (GetUnitFacing(u)/180) * bj_PI
+			set VelocityX[i] = Cos(facingRad) * SkateSpeed[i] * ICE2MOMENTUMFACTOR
             set VelocityY[i] = Sin(facingRad) * SkateSpeed[i] * ICE2MOMENTUMFACTOR
         endif
         
         //update previous terrain type
         set TerrainOffset[i] = SNOWOFFSET
         set PreviousTerrainTypedx[i] = basicterrain
-        return
-    endif
-    
-    if basicterrain == RSNOW then
+    elseif basicterrain == RSNOW then
         //call DisplayTextToForce(bj_FORCE_PLAYER[i], "On RSnow")
         set RSFacing[i] = (GetUnitFacing(u)/180) * bj_PI
         
@@ -680,10 +581,7 @@ function GameLoopNewTerrainAction takes nothing returns nothing
         //call DisplayTextToForce(bj_FORCE_PLAYER[i], "Setting PreviousTerrainTypedx[" + I2S(i) + "] as: " + I2S(basicterrain))
         set TerrainOffset[i] = RSNOWOFFSET
         set PreviousTerrainTypedx[i] = basicterrain
-        return
-    endif
-    
-    if basicterrain == LAVA then
+    elseif basicterrain == LAVA then
         //call DisplayTextToForce(bj_FORCE_PLAYER[i], "Lava")
         if NumberOnLava == 0 then
             call EnableTrigger(gg_trg_Lava_Damage)
@@ -694,10 +592,7 @@ function GameLoopNewTerrainAction takes nothing returns nothing
         
         set TerrainOffset[i] = LAVAOFFSET
         set PreviousTerrainTypedx[i] = basicterrain
-        return
-    endif
-    
-    if basicterrain == LEAVES then        
+    elseif basicterrain == LEAVES then        
         call SetUnitMoveSpeed(u, FastGrassSpeed)
         
         //check if unit is moving currently, otherwise set isMoving appropriately
@@ -717,7 +612,6 @@ function GameLoopNewTerrainAction takes nothing returns nothing
         
         set TerrainOffset[i] = LEAVESOFFSET
         set PreviousTerrainTypedx[i] = basicterrain
-        return
     elseif basicterrain == LRGBRICKS then
         //call PlatformingAux_StartPlatforming(i)
 //        call StopRegularMazing(i)
@@ -726,14 +620,10 @@ function GameLoopNewTerrainAction takes nothing returns nothing
 //        set TerrainOffset[i] = LRGBRICKSOFFSET
 //        set PreviousTerrainTypedx[i] = basicterrain
         call user.SwitchGameModesDefaultLocation(Teams_GAMEMODE_PLATFORMING)
-        
-        return
+	else
+		//otherwise set the previous terrain to the current terrain (which has no effect)
+		set PreviousTerrainTypedx[i] = basicterrain
     endif
-    
-    //otherwise set the previous terrain to the current terrain (which has no effect)
-    set PreviousTerrainTypedx[i] = basicterrain
-
-
 endfunction
 
 function GameLoop takes nothing returns nothing
