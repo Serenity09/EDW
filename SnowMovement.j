@@ -11,11 +11,12 @@ endglobals
 
 function SnowMove takes nothing returns nothing
     local unit u = GetEnumUnit()
-    local real x
-    local real y
+    local real facingRad = GetUnitFacing(u)/180*bj_PI
+	local real x = Cos(facingRad)
+    local real y = Sin(facingRad)
     local integer i = GetPlayerId(GetOwningPlayer(u))
     
-    local real facingRad = GetUnitFacing(u)/180*bj_PI
+    
     /*
     if VelocityX[i] > MAXVELOCITY then
         set VelocityX[i] = MAXVELOCITY
@@ -28,14 +29,14 @@ function SnowMove takes nothing returns nothing
         set VelocityY[i] = -MAXVELOCITY
     endif
     */
-    set x = Cos(facingRad)
+	
+	
     if (x > 0 and VelocityX[i] < 0) or (x < 0 and VelocityX[i] > 0) then
         set x = x * OPPOSITION_BONUS * ACCELERATION
     else
         set x = x * ACCELERATION
     endif
     
-    set y = Sin(facingRad)
     if (y > 0 and VelocityY[i] < 0) or (y < 0 and VelocityY[i] > 0) then
         set y = y * OPPOSITION_BONUS * ACCELERATION
     else
