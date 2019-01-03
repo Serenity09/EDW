@@ -738,12 +738,13 @@ library VisualVote initializer Init requires Vector2, Alloc, Table, PlayerUtils,
                 set .td = CreateTimerDialog(t)
                 call TimerDialogSetTitle(.td, "Game Mode Selection:")
                 
-				call FogModifierStart(CreateFogModifierRect(Player(fp.value), FOG_OF_WAR_VISIBLE, Rect(topLeft.x, botRight.y, botRight.x, topLeft.y), false, true))
-				
                 loop
                 exitwhen fp == 0
                     if GetLocalPlayer() == Player(fp.value) then
-                        //only show timer dialog for players it effects
+						//for some reason, this will only work properly for all effected players when applied only to each effected player locally. Otherwise, only the first player see's it
+                        call FogModifierStart(CreateFogModifierRect(Player(fp.value), FOG_OF_WAR_VISIBLE, Rect(topLeft.x, botRight.y, botRight.x, topLeft.y), false, true))
+						
+						//only show timer dialog for players it effects
                         call TimerDialogDisplay(.td, true)
 						
                         call SetCameraBounds(topLeft.x, topLeft.y, topLeft.x, botRight.y, botRight.x, botRight.y, botRight.x, topLeft.y)
@@ -751,7 +752,7 @@ library VisualVote initializer Init requires Vector2, Alloc, Table, PlayerUtils,
                         
                         //pivot camera to top down view
                         //static if Library_Platformer then
-                        call CameraSetupApply(User(fp.value).Platformer.PlatformingCamera, false, false)
+                        call CameraSetupApply(Platformer.PlatformingCamera, false, false)
                         //endif
                     endif
                 set fp = fp.next

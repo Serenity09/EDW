@@ -68,7 +68,7 @@ endglobals
         public boolean        LeftKey
         public boolean        RightKey
         public integer        HorizontalAxisState  //-1: left, 0: still, 1: right
-        public camerasetup    PlatformingCamera    //camera setup to apply periodically during platforming movement
+        public static camerasetup    PlatformingCamera    //camera setup to apply periodically during platforming movement
         //public effect         FX                   //any visual effect needed for the platformer -- this shit was useless
         
         //all properties that support physics
@@ -3039,7 +3039,6 @@ endglobals
                     call PlatformerSlipStream_Add(this)
                 elseif ttype == PLATFORMING then
                     call User(.PID).SwitchGameModesDefaultLocation(Teams_GAMEMODE_STANDARD)
-                    
                     call SetDefaultCameraForPlayer(.PID, .5)
                     //call StartRegularMazing(.PID, .XPosition, .YPosition)
                     //call .StopPlatforming()
@@ -3095,7 +3094,7 @@ endglobals
         
         public method ApplyCamera takes nothing returns nothing
             if GetLocalPlayer() == Player(.PID) and GetCameraField(CAMERA_FIELD_ANGLE_OF_ATTACK) != 270 then
-                call CameraSetupApply(.PlatformingCamera, false, false) //orients the camera to face down from above
+                call CameraSetupApply(thistype.PlatformingCamera, false, false) //orients the camera to face down from above
                 call SetCameraTargetController(.Unit, 0, 0, false) //fixes the camera to platforming unit
             endif
         endmethod
@@ -3600,9 +3599,7 @@ endglobals
             call SetUnitPropWindow(new.Unit, 0)
             
             set new.IsPlatforming = false
-            set new.PlatformingCamera = CreateCameraSetup()
-            call CameraSetupSetField(new.PlatformingCamera, CAMERA_FIELD_ANGLE_OF_ATTACK, 270, 0)
-            call CameraSetupSetField(new.PlatformingCamera, CAMERA_FIELD_TARGET_DISTANCE, 2200, 0)
+            
                         
             call TriggerRegisterPlayerEvent(thistype.ArrowKeyTriggers[0], Player(pID), EVENT_PLAYER_ARROW_LEFT_DOWN)
             call TriggerRegisterPlayerEvent(thistype.ArrowKeyTriggers[1], Player(pID), EVENT_PLAYER_ARROW_LEFT_UP)
@@ -3621,6 +3618,10 @@ endglobals
             local integer i = 0
             local Platformer p
             
+			set thistype.PlatformingCamera = CreateCameraSetup()
+            call CameraSetupSetField(thistype.PlatformingCamera, CAMERA_FIELD_ANGLE_OF_ATTACK, 270, 0)
+            call CameraSetupSetField(thistype.PlatformingCamera, CAMERA_FIELD_TARGET_DISTANCE, 2200, 0)
+			
 			set thistype.ArrowKeyTriggers[0] = CreateTrigger()
             set thistype.ArrowKeyTriggers[1] = CreateTrigger()
             set thistype.ArrowKeyTriggers[2] = CreateTrigger()

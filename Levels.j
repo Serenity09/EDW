@@ -131,8 +131,6 @@ library Levels requires SimpleList, Teams, GameModesGlobals, Cinema, User, IStar
         public rect LevelEnd				//rect that marks the end of this level
 		readonly SimpleList_List Checkpoints
 		
-		private string  TeamStartCB
-        private string  TeamStopCB
         readonly static Teams_MazingTeam CBTeam
 		
         public Level         NextLevel       //pointer to the next Level struct
@@ -285,12 +283,7 @@ library Levels requires SimpleList, Teams, GameModesGlobals, Cinema, User, IStar
 			
 			return cp
         endmethod
-        
-        public method AddTeamCB takes string startCB, string stopCB returns nothing
-            set .TeamStartCB = startCB
-            set .TeamStopCB = stopCB
-        endmethod
-                
+                        
 		public method ApplyLevelRewards takes User u, Teams_MazingTeam mt, Level nextLevel returns nothing			
 			local integer score = 0
 			
@@ -361,9 +354,9 @@ library Levels requires SimpleList, Teams, GameModesGlobals, Cinema, User, IStar
 			set EventPreviousLevel = this
 			set EventCurrentLevel = nextLevel
 			
-			call mt.ClearCinematicQueue()
-			
             set this.CBTeam = mt
+			
+			call mt.ClearCinematicQueue()
             call this.ActiveTeams.remove(mt)
 						
             set mt.OnLevel = TEMP_LEVEL_ID
@@ -380,15 +373,6 @@ library Levels requires SimpleList, Teams, GameModesGlobals, Cinema, User, IStar
 			
             set mt.OnLevel = nextLevel
             call nextLevel.ActiveTeams.add(mt)
-            
-            if this.TeamStopCB != null then
-                call ExecuteFunc(this.TeamStopCB)
-            endif
-            
-            if nextLevel.TeamStartCB != null then
-                call ExecuteFunc(nextLevel.TeamStartCB)
-            endif
-
             
             call mt.AddTeamVision(nextLevel.Vision)
 			
@@ -662,9 +646,6 @@ library Levels requires SimpleList, Teams, GameModesGlobals, Cinema, User, IStar
             //set new.StartRect = startspawn
             set new.Vision = vision
                         
-            set new.TeamStartCB = null
-            set new.TeamStopCB = null
-            
             set new.IsPreloaded = false
             
             set new.Cinematics = SimpleList_List.create()
