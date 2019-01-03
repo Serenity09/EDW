@@ -58,7 +58,7 @@ library Blackhole requires ListModule, SimpleList, User, locust, MazerGlobals, I
                     return 100. * TIMESTEP
                 endif
             else
-                return 0.
+                return 50. * TIMESTEP
             endif
         endmethod
 		
@@ -131,9 +131,13 @@ library Blackhole requires ListModule, SimpleList, User, locust, MazerGlobals, I
 					if nearbyUser.GameMode != Teams_GAMEMODE_DEAD then
 						call nearbyUser.SwitchGameModesDefaultLocation(Teams_GAMEMODE_DYING)
 					else
+						static if DEBUG then
+							call DisplayTextToForce(bj_FORCE_PLAYER[0], "Blackhole absorbed revive circle")
+						endif
+						//call SetUnitX(nearbyUser.ActiveUnit, MazerGlobals_SAFE_X)
+						//call SetUnitY(nearbyUser.ActiveUnit, MazerGlobals_SAFE_Y)
+						call SetUnitPosition(nearbyUser.ActiveUnit, MazerGlobals_SAFE_X, MazerGlobals_SAFE_Y)
 						call ShowUnit(nearbyUser.ActiveUnit, false)
-						call SetUnitX(nearbyUser.ActiveUnit, MazerGlobals_SAFE_X)
-						call SetUnitY(nearbyUser.ActiveUnit, MazerGlobals_SAFE_Y)
 					endif
                 elseif dist >= BLACKHOLE_MAXRADIUS then
                     //escaped blackhole, stop watching unit... for now...
@@ -149,9 +153,9 @@ library Blackhole requires ListModule, SimpleList, User, locust, MazerGlobals, I
                     //debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "angle rad " + R2S(angle / 180 * bj_PI))
 
                     //repurpose dx to measure strength
-                    set ttype = GetTerrainType(nearbyX, nearbyY)
-                    set dx = (BLACKHOLE_MAXRADIUS - dist) / BLACKHOLE_MAXRADIUS * .GetMaxStrength(ttype, dist, nearbyUser.GameMode)
                     
+					set ttype = GetTerrainType(nearbyX, nearbyY)
+                    set dx = (BLACKHOLE_MAXRADIUS - dist) / BLACKHOLE_MAXRADIUS * .GetMaxStrength(ttype, dist, nearbyUser.GameMode)
                     if nearbyUser.GameMode == Teams_GAMEMODE_STANDARD then
                         static if DEBUG then
 							call DisplayTextToForce(bj_FORCE_PLAYER[0], "Standard scaled strength " + R2S(dx))
@@ -175,7 +179,15 @@ library Blackhole requires ListModule, SimpleList, User, locust, MazerGlobals, I
                         set nearbyUser.Platformer.YVelocity = nearbyUser.Platformer.YVelocity + Sin(angle) * dx
                         
                         //debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "After Velocity: " + R2S(nearbyUser.Platformer.XVelocity) + "," + R2S(nearbyUser.Platformer.YVelocity))
-                    endif
+                    elseif nearbyUser.GameMode == Teams_GAMEMODE_DEAD and nearbyUser.ActiveUnit != null then
+						static if DEBUG then
+							call DisplayTextToForce(bj_FORCE_PLAYER[0], "Blackhole moving revive circle")
+							call DisplayTextToForce(bj_FORCE_PLAYER[0], "Revive scaled strength " + R2S(dx))
+						endif
+						
+						call SetUnitX(nearbyUser.ActiveUnit, nearbyX + Cos(angle) * dx)
+						call SetUnitY(nearbyUser.ActiveUnit, nearbyY + Sin(angle) * dx)
+					endif
                 endif
             set curNode = curNode.next
             endloop            
@@ -206,7 +218,7 @@ library Blackhole requires ListModule, SimpleList, User, locust, MazerGlobals, I
 					call DisplayTextToForce(bj_FORCE_PLAYER[0], "Now watching: " + I2S(pID))
 				endif
 				
-                call .PlayersInRange.addEnd(pID)
+                call .PlayersInRange.add(pID)
             endif
         endmethod
         
@@ -215,7 +227,7 @@ library Blackhole requires ListModule, SimpleList, User, locust, MazerGlobals, I
                 call TimerStart(t, TIMESTEP, true, function Blackhole.Periodic)
             endif
 			
-            call .ActiveBlackholes.addEnd(this)
+            call .ActiveBlackholes.add(this)
         endmethod
         
         public method Stop takes nothing returns nothing
