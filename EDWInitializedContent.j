@@ -395,6 +395,11 @@ library EDWLevels requires SimpleList, Teams, Levels
         
         set startables = SimpleList_List.create()
 		
+		call startables.add(MortarNTarget.create(SMLMORT, SMLTARG, Player(8), gg_rct_IW3_Mortar1 , gg_rct_IW3_Target1))
+		call startables.add(MortarNTarget.create(SMLMORT, SMLTARG, Player(8), gg_rct_IW3_Mortar1 , gg_rct_IW3_Target1))
+		call startables.add(MortarNTarget.create(SMLMORT, SMLTARG, Player(8), gg_rct_IW3_Mortar1 , gg_rct_IW3_Target1))
+		call startables.add(MortarNTarget.create(SMLMORT, SMLTARG, Player(8), gg_rct_IW3_Mortar1 , gg_rct_IW3_Target1))
+		
 		call startables.add(Blackhole.create(15000, 3330))
 		
         call startables.add(DrunkWalker_DrunkWalkerSpawn.create(gg_rct_IW3_Drunks_1, 6, 5, LGUARD, 24))
@@ -637,9 +642,14 @@ library EDWLevels requires SimpleList, Teams, Levels
         */
         call startables.add(wheel)
         
-        //call l.AddTeamCB("PW3TeamStart", "PW3TeamStop")
-
-        
+		//LEVEL 4
+		if CONFIGURATION_PROFILE != RELEASE then
+			set l = Levels_Level.create(23, "Moon", 5, 4, "PW4Start", "PW4Stop", gg_rct_PWR_4_1, gg_rct_PW4_Vision, gg_rct_PW4_End, l) //gg_rct_PW1_Vision
+			set Checkpoint(l.Checkpoints.first.value).DefaultGameMode = Teams_GAMEMODE_PLATFORMING
+			call l.AddLevelStartCB(Condition(function PW4TeamStart))
+			call l.AddLevelStopCB(Condition(function PW4TeamStop))
+		endif
+		
         //Justine's Four Seasons
 		set l = Levels_Level.create(7, "Spring", 3, 2, "FourSeason1Start", "FourSeason1Stop", gg_rct_FSR_1_1, gg_rct_FS1_Vision, gg_rct_FS1_End, 0)
 		
