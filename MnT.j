@@ -116,7 +116,9 @@ struct MortarNTarget extends IStartable
     endmethod
     
     public method Start takes nothing returns nothing
-        if .count == 0 then
+        call PauseUnit(.Mortar, false)
+		
+		if .count == 0 then
             call TimerStart(MnTTimer, MnTTimeStep, true, function MortarNTarget.MnTPeriodic)
         endif
         call .listAdd()
@@ -124,7 +126,9 @@ struct MortarNTarget extends IStartable
     
     public method Stop takes nothing returns nothing
         call IssueImmediateOrder(Mortar, "stop")
-        call .listRemove()
+        call PauseUnit(.Mortar, true)
+		
+		call .listRemove()
         if .count == 0 then
             call PauseTimer(MnTTimer)
         endif
@@ -150,7 +154,9 @@ struct MortarNTarget extends IStartable
         local MortarNTarget new = MortarNTarget.allocate()
         //create the mortar and target
         set new.Mortar = CreateUnit(playerID, mortarID, GetRectCenterX(mortarloc), GetRectCenterY(mortarloc), 0)
-        set new.Target = CreateUnit(playerID, targetID, GetRectCenterX(targetrect), GetRectCenterY(targetrect), 0)
+        call PauseUnit(new.Mortar, true)
+		
+		set new.Target = CreateUnit(playerID, targetID, GetRectCenterX(targetrect), GetRectCenterY(targetrect), 0)
         
         call AddUnitLocust(new.Mortar)
         call AddUnitLocust(new.Target)

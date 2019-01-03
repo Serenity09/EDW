@@ -83,14 +83,14 @@ private function CollisionSmallIter takes nothing returns nothing
                 set mu = null
                 set cu = null
                 return
-            elseif cuTypeID == WWSKUL and dist < 42 then
+            elseif cuTypeID == WWSKUL and dist < 40 then
                 call CollisionDeathEffect(mu)
                 
                 call User(pID).SwitchGameModesDefaultLocation(Teams_GAMEMODE_DYING)
                 set mu = null
                 set cu = null
                 return
-            elseif cuTypeID == REGRET and dist < 43 then
+            elseif cuTypeID == REGRET and dist < 42 then
                 call CollisionDeathEffect(mu)
                 
                 call User(pID).SwitchGameModesDefaultLocation(Teams_GAMEMODE_DYING)
