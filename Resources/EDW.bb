@@ -30,17 +30,16 @@ When playing in a team mode, dying will leave a revive circle in your wake. [b]A
 
 [hidden=Difficulty]
 [otablei]
-[tr][td]Vanilla[/td][td]More continues, more checkpoints, fewer enemies, glory[/td][/tr]
-[tr][td]Chocolate[/td][td]Fewer continues, fewer checkpoints, more enemies, even more glory[/td][/tr]
+[tr][td]Vanilla[/td][td]More continues, more checkpoints, fewer enemies, basic glory[/td][/tr]
+[tr][td]Chocolate[/td][td]Fewer continues, fewer checkpoints, more enemies, advance glory[/td][/tr]
 [tr][td]99 and None[/td][td]Like Vanilla difficulty, except you start with 99 continues and never get anymore. Meant to be a more wholesome alternative to save/loading and memory editing[/td][/tr]
 [/otablei]
 [/hidden]
 
 Some settings have been intentionally left out of the options menus. I want to leave them as presets for now, but let's play with their values based on outside and inside feedback. Time-limit is fixed to 45min (up from 30min) -- after which the team with the leading score will win -- and score to win immediately is fixed at 20. 
 [/Tab]
-[Tab=Worlds][Center]
-Choices, choices, everywhere; and not a one for me
-I hope when I wake up, that I'll know where to be.
+[Tab=Worlds][Center]Choices, choices, everywhere; and not a one for me
+I hope that when I wake up, I'll know where to be.
 
 Winter seems so cold and lonely,
 But at least there I can relate.
@@ -55,12 +54,11 @@ Fall's just around the corner then,
 That's the place for Oz.[/Center]
 
 
-
 Learn how the basics of the game in a easy-does-it tutorial level. While on the tutorial level you'll have unlimited continues, your deaths won't be counted, and you'll even instantly come back to life! What a deal!
 
 Past the intro you'll find the Doors to different worlds. Each world has a different theme, mostly focusing on the types of terrain and enemies. The game is shipping with two worlds initially. A full game for new players will probably only see part of one world.
 
-The Ice world focuses on movement mechanics. It's meant to highlight your understanding of that movement. This worlds is decently hard to start, and then picks up drastically from Level 3 onward
+The Ice world focuses on movement mechanics. It's meant to highlight your understanding and dexterity of movement. This world is pretty hard to start, and then picks up drastically from Level 3 onward
 
 The 2.5D world focuses on changing perspective. It's meant to highlight how the same experience can play out so many different ways. This world isn't easy, but fun is definitely prioritized over difficulty
 
@@ -143,8 +141,8 @@ As you advance through a world, you'll gain and lose continues, and (hopefully) 
 [/otablei]
 [/hidden]
 
-[hidden=Screenshots]
-[otablei][h3]Powerup models may change to be more clear[/h3]
+[hidden=Screenshots][h3]Powerup models may change to be more clear[/h3]
+[otablei]
 [tr][td]Continues[/td][td][img]https://i.imgur.com/shjfcIS.png[/img][/td][/tr]
 [tr][td]Score[/td][td][img]https://i.imgur.com/4PLJNsT.png[/img][/td][/tr]
 [tr][td]Invulnerability[/td][td][img]https://i.imgur.com/s5Edy62.png[/img][/td][/tr]
@@ -181,14 +179,14 @@ Demo of square and diamond 2d geometry shapes: https://www.youtube.com/watch?v=q
 Demo of Ice world: 
 Demo of 2.5D world: 
 [/Tab]
-[Tab=Changelog]More details can be found at https://trello.com/b/L5ajt18j/edw
-Reach me at WCEscapeDreamWorld@gmail.com with suggestions
-[2018-12-27] First full release!
-[2018-12-24] Final alpha testing on EDW
+[Tab=Changelog]Full development log can be found at https://trello.com/b/L5ajt18j/edw
+[2018-12-28] (v15.11) Third online alpha test
+[2018-12-27] (v15.6) Second online alpha test
+[2018-12-24] (v15.0) First online alpha test
 [/Tab]
 [Tab=Credits]Endless thanks to my girlfriend, who's endured this map's development
 
-Shout out to the old WC3 crew, whose names will be forever ideal: Pat1487, Achilles.42, Mazemasta77, Amazin[G], FFSlayer, Olonavy, hlw_rocer, popartica., Eat_Bacon_Daily, marksoccer, monkeys-forever, DoughnutMuffin, God[A]nt69, Makshak
+Shout out to the old WC3 crew: Pat1487, Achilles.42, Mazemasta77, Amazin[G], FFSlayer, Olonavy, hlw_rocer, popartica., Eat_Bacon_Daily, marksoccer, monkeys-forever, DoughnutMuffin, God[A]nt69, Makshak
 To Pat1487 and Anitarf for level ideas and coding help
 
 Pat1487 - OG locust trick
@@ -201,16 +199,20 @@ Nestheasarus - Alloc, DummyCaster, Event (https://github.com/nestharus/JASS/tree
 TriggerHappy - PreventSave (https://www.hiveworkshop.com/threads/snippet-preventsave.158048/)
 
 MC ! - Blackhole Model (https://www.hiveworkshop.com/threads/blackhole.48038/#resource-20933)
-Anonymous author - Beautiful loading screen art
+Anonymous author - Anime Sunset loadscreen art (https://www.wallpapervortex.com/wallpaper-38651_anime_scenery_anime_sunset.html)
 
 aznricepuff - The best guide to understanding vJASS's OOP design and intended usage (https://www.hiveworkshop.com/threads/vjass-oop-lesson.128236/#13)
 Nestheasarus - A guide to optimizing vJASS's syntactic sugar (where did you go)
 Codemonkey11 - A guide to scaling group enums in WC3's engine (https://www.hiveworkshop.com/threads/vjass-optimization-using-a-first-of-group-loop-for-enumeration.223140/)
 Jeff Pang - Online vanilla JASS documentation (http://jass.sourceforge.net/index.shtml)
+Dr Super Good - Too many small answers to list
+Wrda & Pyrogasm - Approach to making units locally visible/invisible (https://www.hiveworkshop.com/threads/make-units-locally-visible.310326/)
 BloodRaven - Advanced WE doodads & terrain (https://www.hiveworkshop.com/threads/advanced-terraining-tutorial.203428/)
 Rufus - Map Description guide & templates (https://www.hiveworkshop.com/threads/description-guide-maps.287829/)
 [/Tab]
-[Tab=Future releases]The V1 release includes what I consider a fully playable game. To be fair, I think that in some ways it's more than a full arcade game, and other ways it's less. There's a lot more that I want to add, but I think its time to get some outside feedback. Here are my current priorities, in something like an order
+[Tab=Future releases]The V1 release includes what I consider a fully playable game. To be fair, I think there's often too much going on, and occassionally too little. There's a lot more that I want to add, but I think its time to get some outside feedback. Here are my current priorities, in something like an order
+
+Language Localizations (German, French, etc) -- start with all major languages for important dialogues, but add in all dialogues as possible. will need to look into if WC3 offers any extendable solution. since WC3 1.30+ games will often include multiple languages, the solution will need to run in the game instance, targetting local player, rather than be set at compile time
 
 The fourth platforming level -- the moon, focused on jumping between geometric planes
 
@@ -219,8 +221,6 @@ Another world -- probably an easy ice world with lower scores, OR a world focuse
 Minigames -- every 10min a random arcade game will be held between all teams. Progress for all teams in their current level will be fully saved (and paused while the minigame happens). Minigames should be short-scale games (around 5min duration) with a focus on fun, ala Mario Party. Each world should have 2 minigames in its theme. The winning team gets a choice between 5 additional continues, stealing 2 continues from a specific team (able to send them back to Doors), stealing 3 points from a specific team (actually a lot of points). More interesting rewards should trickle down from Powerup scope enhancements
 
 Rework terrain detection algorithm -- terrain effects would transition when they're applying much more smoothly
-
-Language Localizations (German, French, etc) -- start with major languages and important dialogues, but add in all dialogues as possible. will need to look into if WC3 offers any extendable solution
 
 The first Boss -- for either hard ice or platforming. will include checkpoint-based behaviors capable of handling 1+ teams. behaviors will be largely limited to teams on same CP, mostly to prevent FU moments from out of nowhere. Whatever the players use to hurt the boss, they can also use to snipe other teams' members
 
@@ -241,6 +241,8 @@ A: yes! please let me know which ones need it. That said, I try to explain less 
 
 Q: can I leave feedback directly?
 A: yes! thank you for taking the time to share. WCEscapeDreamWorld@gmail.com or PM here
+[/Tab]
+[Tab=Bugs]
 [/Tab]
 [/Tabs]
 [/Left]
