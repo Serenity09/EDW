@@ -31,10 +31,7 @@ library Levels requires SimpleList, Teams, GameModesGlobals, Cinema, User, IStar
     struct LevelContent extends array //extends IStartable		
 		private string StartFunction
         private string StopFunction
-        
-        public string PreloadFunction
-        public string UnloadFunction
-        
+                
         public SimpleList_List Startables
         		
         public method Start takes nothing returns nothing
@@ -75,10 +72,6 @@ library Levels requires SimpleList, Teams, GameModesGlobals, Cinema, User, IStar
 			endif
         endmethod
         
-        public method HasPreload takes nothing returns boolean
-            return this.PreloadFunction != null
-        endmethod
-        
         public static method create takes Levels_Level parent, string startFunction, string stopFunction returns thistype
             //struct extends from parent
 			local thistype new = parent
@@ -87,7 +80,6 @@ library Levels requires SimpleList, Teams, GameModesGlobals, Cinema, User, IStar
             set new.StopFunction = stopFunction
             
             set new.Startables = 0
-            set new.PreloadFunction = null
             
             return new
         endmethod
@@ -125,7 +117,6 @@ library Levels requires SimpleList, Teams, GameModesGlobals, Cinema, User, IStar
         public integer     RawScore
         
 		public LevelContent Content          //all the stuff to fill a level with when turned on/off
-		readonly boolean     IsPreloaded     //is this level currently preloaded
         
         public rect        Vision          //the bounds placed on a player's vision
         public rect LevelEnd				//rect that marks the end of this level
@@ -144,6 +135,9 @@ library Levels requires SimpleList, Teams, GameModesGlobals, Cinema, User, IStar
 		private Event OnLevelStart
 		private Event OnLevelStop
 		private Event OnCheckpointChange
+		
+		//private static Event OnLevelChange
+		//private static Event OnCheckpointChange
                         
         public method Start takes nothing returns nothing
             static if DEBUG_START_STOP then
@@ -154,11 +148,6 @@ library Levels requires SimpleList, Teams, GameModesGlobals, Cinema, User, IStar
                 call .ActiveLevels.add(this)
                 
                 call .Content.Start()
-                
-                if .NextLevel != 0 and .Content.HasPreload() and not .NextLevel.IsPreloaded and Teams_MazingTeam.GetCountOnLevel(.NextLevel) == 0 then
-                    set .IsPreloaded = true
-                    call ExecuteFunc(.Content.PreloadFunction)
-                endif
                 
                 //debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "Started level " + I2S(this))
             endif
@@ -360,13 +349,13 @@ library Levels requires SimpleList, Teams, GameModesGlobals, Cinema, User, IStar
             call this.ActiveTeams.remove(mt)
 						
             set mt.OnLevel = TEMP_LEVEL_ID
-            call this.Stop() //only stops the level if no ones on it. reloads preload scripts after if necessary
+            call this.Stop() //only stops the level if no ones on it
 			if this.OnLevelStop != 0 then
 				call this.OnLevelStop.fire()
 			endif
 			
             //debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "Stopped")
-            call nextLevel.Start() //only starts the next level if there is one -- also preloads the following level
+            call nextLevel.Start() //only starts the next level if there is one
 			if nextLevel.OnLevelStart != 0 then
 				call nextLevel.OnLevelStart.fire()
 			endif
@@ -492,20 +481,7 @@ library Levels requires SimpleList, Teams, GameModesGlobals, Cinema, User, IStar
                 
             set curLevel = curLevel.next
             endloop
-        endmethod
-        
-        public method UnPreload takes nothing returns nothing
-            //check that this level is already preloaded, and that there are no teams on this level or the one before it
-            if .Content.HasPreload() and .IsPreloaded and Teams_MazingTeam.GetCountOnLevel(.PrevLevel) == 0 and Teams_MazingTeam.GetCountOnLevel(this) == 0 then
-                set .IsPreloaded = false
-                call ExecuteFunc(.Content.UnloadFunction)
-            endif
-        endmethod
-        
-        public method addPreload takes string preloadFunction, string unloadFunction returns nothing
-            set .Content.PreloadFunction = preloadFunction
-            set .Content.UnloadFunction = unloadFunction
-        endmethod
+        endmethod        
         
         public method GetContent takes nothing returns LevelContent
             return .Content
@@ -584,9 +560,7 @@ library Levels requires SimpleList, Teams, GameModesGlobals, Cinema, User, IStar
             //set new.CPToHere = tothislevel //these might change
             //set new.StartRect = startspawn
             set new.Vision = vision
-            
-            set new.IsPreloaded = false
-            
+                        
             set new.PrevLevel = intro
             set intro.NextLevel = new
 			
@@ -638,16 +612,13 @@ library Levels requires SimpleList, Teams, GameModesGlobals, Cinema, User, IStar
             /*
             set new.Start = start
             set new.Stop = stop
-            set new.HasPreload = false
             */
             
 			set new.Content = LevelContent.create(new, startFunction, stopFunction)
             //set new.CPToHere = tothislevel
             //set new.StartRect = startspawn
             set new.Vision = vision
-                        
-            set new.IsPreloaded = false
-            
+                                    
             set new.Cinematics = SimpleList_List.create()
             set new.ActiveTeams = SimpleList_List.create()
             
