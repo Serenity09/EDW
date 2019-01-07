@@ -644,10 +644,34 @@ library EDWLevels requires SimpleList, Teams, Levels
         
 		//LEVEL 4
 		if CONFIGURATION_PROFILE != RELEASE then
-			set l = Levels_Level.create(23, "Moon", 5, 4, "PW4Start", "PW4Stop", gg_rct_PWR_4_1, gg_rct_PW4_Vision, gg_rct_PW4_End, l) //gg_rct_PW1_Vision
+			set l = Levels_Level.create(30, "Moon", 5, 4, "PW4Start", "PW4Stop", gg_rct_PWR_4_1, gg_rct_PW4_Vision, gg_rct_PW4_End, l) //gg_rct_PW1_Vision
 			set Checkpoint(l.Checkpoints.first.value).DefaultGameMode = Teams_GAMEMODE_PLATFORMING
 			call l.AddLevelStartCB(Condition(function PW4TeamStart))
 			call l.AddLevelStopCB(Condition(function PW4TeamStop))
+			
+			set startables = SimpleList_List.create()
+			set l.Content.Startables = startables
+			
+			set wheel = Wheel.create(-7040, -2942)
+			set wheel.LayerCount = 2
+			set wheel.SpokeCount = 4
+			set wheel.AngleBetween = 90 * bj_PI / 180.
+			set wheel.RotationSpeed = bj_PI / 16. * Wheel_TIMEOUT
+			set wheel.DistanceBetween = 3*TERRAIN_TILE_SIZE
+			set wheel.InitialOffset = 2*TERRAIN_TILE_SIZE
+			
+			//layer 1
+			call wheel.AddUnits('e00K', 1)
+			call wheel.AddEmptySpace(1)
+			call wheel.AddUnits('e00K', 1)
+			call wheel.AddEmptySpace(1)
+			//layer 2
+			call wheel.AddEmptySpace(1)
+			call wheel.AddUnits('e00K', 1)
+			call wheel.AddEmptySpace(1)
+			call wheel.AddUnits('e00K', 1)
+			
+			call startables.add(wheel)
 		endif
 		
         //Justine's Four Seasons

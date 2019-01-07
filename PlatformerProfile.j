@@ -75,6 +75,6 @@ library PlatformerProfile initializer Init requires PlatformerGlobals
 		*/
 		
 		//moon profile
-        set profile = PlatformerProfile.create(YTERMINAL*5, R2I(xFALLOFF * 0.1), R2I(yFALLOFF * 0.1), R2I(MOVESPEED * .75), MOVESPEEDOFFSET, R2I(GRAVITYACCEL * .1), vJUMPSPEED, v2hJUMPSPEED, hJUMPSPEED)
+        set profile = PlatformerProfile.create(R2I(YTERMINAL * .75), R2I(xFALLOFF * 0.1), R2I(yFALLOFF * 0.1), R2I(MOVESPEED * .9), MOVESPEEDOFFSET, 10, vJUMPSPEED, v2hJUMPSPEED, hJUMPSPEED)
     endfunction
 endlibrary
