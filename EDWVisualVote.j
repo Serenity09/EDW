@@ -15,7 +15,6 @@ library EDWVisualVote requires VisualVote, ContinueGlobals, Teams, PlayerUtils, 
             
             //66 == debug platform testing
             return Levels_Level(1)
-            //return Levels_Levels[23]
         else
             return Levels_Level(1)
         endif
@@ -484,9 +483,9 @@ library EDWVisualVote requires VisualVote, ContinueGlobals, Teams, PlayerUtils, 
             
             call con.addOption("Solo", "EDWVisualVote_GameModeSolo")
             set opt = con.addOption("Teams - Mixer", "EDWVisualVote_GameModeRandom")
-            set con.defaultOption = opt
             set opt = con.addOption("Teams - One for All", "EDWVisualVote_GameModeAllIsOne")
-            //debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "Default: " + con.defaultOption.text)
+            set con.defaultOption = opt
+			//debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "Default: " + con.defaultOption.text)
             
 			set con = col.addContainer("Difficulty")
             set con.required = true

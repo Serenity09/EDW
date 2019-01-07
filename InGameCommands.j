@@ -139,7 +139,7 @@ function ParseCommand takes nothing returns nothing
         set intVal = R2I(val)
 	endif
     
-	if CONFIGURATION_PROFILE != RELEASE then
+	if CONFIGURATION_PROFILE != RELEASE or DEBUG_MODE then
 		//debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "msg: " + msg + " cmd: " + cmd + " val: " + R2S(val))
 		if cmd == "tvy" then
 			set p.TerminalVelocityY = val
