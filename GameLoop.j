@@ -1,4 +1,9 @@
 library StandardGameLoop requires Effects, IceMovement
+	globals
+		private constant real STD_TERRAIN_OFFSET = 32.
+		private constant real STD_DIAGONAL_TERRAIN_OFFSET = 32. * SIN_45
+	endglobals
+
 //checks points in a square formation around the unit's x,y coordinate
 //in the diagram, the * mark where the check is performed while u marks the location of the unit
 //*_________*_________*
@@ -10,6 +15,82 @@ library StandardGameLoop requires Effects, IceMovement
 //|                   |
 //|                   |
 //*---------*---------*
+
+
+//! textmacro GetTerrainPriority takes TType, TPriority
+	if $TType$ == ABYSS or $TType$ == LRGBRICKS or $TType$ == RTILE then
+		set $TPriority$ = 0
+	elseif $TType$ == LAVA then
+		set $TPriority$ = 1
+	elseif $TType$ == NOEFFECT or $TType$ == VINES or $TType$ == SAND or $TType$ == RSNOW then
+		set $TPriority$ = 2
+	elseif $TType$ == GRASS or $TType$ == SNOW then
+		set $TPriority$ = 3
+	elseif $TType$ == D_GRASS or $TType$ == SLOWICE then
+		set $TPriority$ = 4
+	elseif $TType$ == LEAVES or $TType$ == MEDIUMICE then
+		set $TPriority$ = 5
+	elseif $TType$ == FASTICE then
+		set $TPriority$ = 6
+	elseif $TType$ == RUNEBRICKS then
+		set $TPriority$ = 7
+	endif
+//! endtextmacro
+//! textmacro UpdatePriorityTerrain takes CurTType, CurTPriority, BestTType, BestTPriority
+	if $CurTPriority$ > $BestTPriority$ then
+		set $BestTPriority$ = $CurTPriority$
+		set $BestTType$ = $CurTType$
+	endif
+//! endtextmacro
+
+function GetBestTerrainForPoint takes real x, real y returns integer
+	local integer bestTType = GetTerrainType(x, y)
+	local integer bestTPriority
+	
+	local integer curTType
+	local integer curTPriority
+	
+	//initialize bestTPriority
+	//! runtextmacro GetTerrainPriority("bestTType", "bestTPriority")
+	
+	//check cardinal directions
+	set curTType = GetTerrainType(x + STD_TERRAIN_OFFSET, y)
+	//! runtextmacro GetTerrainPriority("curTType", "curTPriority")
+	//! runtextmacro UpdatePriorityTerrain("curTType", "curTPriority", "bestTType", "bestTPriority")
+	
+	set curTType = GetTerrainType(x - STD_TERRAIN_OFFSET, y)
+	//! runtextmacro GetTerrainPriority("curTType", "curTPriority")
+	//! runtextmacro UpdatePriorityTerrain("curTType", "curTPriority", "bestTType", "bestTPriority")
+	
+	set curTType = GetTerrainType(x, y + STD_TERRAIN_OFFSET)
+	//! runtextmacro GetTerrainPriority("curTType", "curTPriority")
+	//! runtextmacro UpdatePriorityTerrain("curTType", "curTPriority", "bestTType", "bestTPriority")
+	
+	set curTType = GetTerrainType(x, y - STD_TERRAIN_OFFSET)
+	//! runtextmacro GetTerrainPriority("curTType", "curTPriority")
+	//! runtextmacro UpdatePriorityTerrain("curTType", "curTPriority", "bestTType", "bestTPriority")
+	
+	
+	//check diagonal directions
+	set curTType = GetTerrainType(x + STD_DIAGONAL_TERRAIN_OFFSET, y + STD_DIAGONAL_TERRAIN_OFFSET)
+	//! runtextmacro GetTerrainPriority("curTType", "curTPriority")
+	//! runtextmacro UpdatePriorityTerrain("curTType", "curTPriority", "bestTType", "bestTPriority")
+	
+	set curTType = GetTerrainType(x - STD_DIAGONAL_TERRAIN_OFFSET, y + STD_DIAGONAL_TERRAIN_OFFSET)
+	//! runtextmacro GetTerrainPriority("curTType", "curTPriority")
+	//! runtextmacro UpdatePriorityTerrain("curTType", "curTPriority", "bestTType", "bestTPriority")
+	
+	set curTType = GetTerrainType(x + STD_DIAGONAL_TERRAIN_OFFSET, y - STD_DIAGONAL_TERRAIN_OFFSET)
+	//! runtextmacro GetTerrainPriority("curTType", "curTPriority")
+	//! runtextmacro UpdatePriorityTerrain("curTType", "curTPriority", "bestTType", "bestTPriority")
+	
+	set curTType = GetTerrainType(x - STD_DIAGONAL_TERRAIN_OFFSET, y - STD_DIAGONAL_TERRAIN_OFFSET)
+	//! runtextmacro GetTerrainPriority("curTType", "curTPriority")
+	//! runtextmacro UpdatePriorityTerrain("curTType", "curTPriority", "bestTType", "bestTPriority")
+		
+	return bestTType
+endfunction
+
 function TerrainCheckAdvancedFlexible takes real x, real y, integer terrain, integer i returns boolean
     //by default is 20
     local real offset = DefaultTerrainOffset
@@ -378,7 +459,10 @@ function GameLoopNewTerrainAction takes nothing returns nothing
         return //skip remaining actions -- the player died lol
     endif
     */
-    local integer basicterrain = GetTerrainType(x, y)
+    
+	local integer basicterrain = GetBestTerrainForPoint(x, y)
+	//local integer basicterrain = GetBestTerrainForPoint(x, y, 32.)
+	//local integer basicterrain = GetTerrainType(x, y)
     local real terrainOffset
     local vector2 terrainCenterPoint
     
@@ -411,7 +495,7 @@ function GameLoopNewTerrainAction takes nothing returns nothing
         endif
     endif
     */
-    
+    /*
     if ABYSS == basicterrain or LAVA == basicterrain then
         set terrainOffset = TerrainOffset[i]
         set basicterrain = GetTerrainType(x + terrainOffset, y)
@@ -438,7 +522,7 @@ function GameLoopNewTerrainAction takes nothing returns nothing
             endif
         endif
     endif
-    
+    */
     if not AbyssImmune[i] and basicterrain == ABYSS then
         call HeroKill(i)
         return //skip remaining actions -- the player died lol
