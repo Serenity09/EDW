@@ -4,26 +4,11 @@ library StandardGameLoop requires Effects, IceMovement
 		private constant real STD_DIAGONAL_TERRAIN_OFFSET = 32. * SIN_45
 	endglobals
 
-//checks points in a square formation around the unit's x,y coordinate
-//in the diagram, the * mark where the check is performed while u marks the location of the unit
-//*_________*_________*
-//|                   |
-//|                   |
-//|                   |
-//*         U         *
-//|                   |
-//|                   |
-//|                   |
-//*---------*---------*
-
-
 //! textmacro GetTerrainPriority takes TType, TPriority
 	if $TType$ == ABYSS or $TType$ == LRGBRICKS or $TType$ == RTILE then
 		set $TPriority$ = 0
 	elseif $TType$ == LAVA then
-		set $TPriority$ = 1
-	elseif $TType$ == NOEFFECT or $TType$ == VINES or $TType$ == SAND or $TType$ == RSNOW then
-		set $TPriority$ = 2
+		set $TPriority$ = 1		
 	elseif $TType$ == GRASS or $TType$ == SNOW then
 		set $TPriority$ = 3
 	elseif $TType$ == D_GRASS or $TType$ == SLOWICE then
@@ -34,6 +19,8 @@ library StandardGameLoop requires Effects, IceMovement
 		set $TPriority$ = 6
 	elseif $TType$ == RUNEBRICKS then
 		set $TPriority$ = 7
+	else //if $TType$ == NOEFFECT or $TType$ == VINES or $TType$ == SAND or $TType$ == RSNOW then
+		set $TPriority$ = 2
 	endif
 //! endtextmacro
 //! textmacro UpdatePriorityTerrain takes CurTType, CurTPriority, BestTType, BestTPriority
@@ -89,198 +76,6 @@ function GetBestTerrainForPoint takes real x, real y returns integer
 	//! runtextmacro UpdatePriorityTerrain("curTType", "curTPriority", "bestTType", "bestTPriority")
 		
 	return bestTType
-endfunction
-
-function TerrainCheckAdvancedFlexible takes real x, real y, integer terrain, integer i returns boolean
-    //by default is 20
-    local real offset = DefaultTerrainOffset
-        
-    //if the unit is currently set to be immune to death regions, dont bother checking to see if it should die
-    if AbyssImmune[i] then
-        return false
-    endif
-    
-    //flexible offsets for different terrain types
-    if terrain == D_GRASS then
-        set offset = offset + 6
-    elseif terrain == GRASS then
-        set offset = offset + 2
-    elseif terrain == VINES then
-        set offset = offset + 16
-    elseif terrain == LEAVES then
-        set offset = offset + 16
-    elseif terrain == SAND then
-        set offset = offset + 3
-    elseif terrain == SNOW then
-        set offset = offset + 3
-    elseif terrain == LRGBRICKS then
-        set offset = offset - 5
-    elseif terrain == RUNEBRICKS then
-        set offset = offset + 15
-    elseif terrain == SLOWICE then
-        set offset = offset + 4
-    elseif terrain == MEDIUMICE then
-        set offset = offset + 22
-    elseif terrain == FASTICE then
-        set offset = offset + 6
-    endif
-            
-    //since this code is called so often, nested if's were used to optimize it
-    //checks corners/diagonals
-    if terrain == GetTerrainType(x, y) then
-        if terrain == GetTerrainType(x + offset, y) then
-            if terrain == GetTerrainType(x - offset, y) then
-                if terrain == GetTerrainType(x, y + offset) then
-                    if terrain == GetTerrainType (x, y - offset) then
-                        if terrain == GetTerrainType(x + offset, y + offset) then
-                            if terrain == GetTerrainType (x - offset, y + offset) then
-                                if terrain == GetTerrainType (x - offset, y - offset) then
-                                    if terrain == GetTerrainType(x + offset, y - offset) then
-                                        //unit is on abyss even with flexible offset
-                                        return true
-                                    endif
-                                endif
-                            endif
-                        endif
-                    endif
-                endif
-            endif
-        endif
-    endif
-    
-    //if all those conditions aren't reached, then unit is not really on abyss
-    return false
-endfunction
-
-//checks points in a square formation around the unit's x,y coordinate
-//in the diagram, the * mark where the check is performed while u marks the location of the unit
-//*_________*_________*
-//|                   |
-//|                   |
-//|                   |
-//*         U         *
-//|                   |
-//|                   |
-//|                   |
-//*---------*---------*
-function newTerrainCheckAdvancedFlexible takes real x, real y, integer killTerrain, integer i returns boolean
-    //if the unit is currently set to be immune to death regions, dont bother checking to see if it should die
-    if AbyssImmune[i] then
-        return false
-    endif
-    
-    //call DisplayTextToForce(bj_FORCE_PLAYER[i], "curent offset: " + R2S(TerrainOffset[i]))
-    
-    //since this code is called so often, nested if's were used to optimize it
-    //checks corners/diagonals
-    if killTerrain == GetTerrainType(x, y) then
-        if killTerrain == GetTerrainType(x + TerrainOffset[i], y) then
-            if killTerrain == GetTerrainType(x - TerrainOffset[i], y) then
-                if killTerrain == GetTerrainType(x, y + TerrainOffset[i]) then
-                    if killTerrain == GetTerrainType (x, y - TerrainOffset[i]) then
-                        if killTerrain == GetTerrainType(x + TerrainOffset[i], y + TerrainOffset[i]) then
-                            if killTerrain == GetTerrainType (x - TerrainOffset[i], y + TerrainOffset[i]) then
-                                if killTerrain == GetTerrainType (x - TerrainOffset[i], y - TerrainOffset[i]) then
-                                    if killTerrain == GetTerrainType(x + TerrainOffset[i], y - TerrainOffset[i]) then
-                                        //unit is on abyss even with flexible TerrainOffset[i]
-                                        return true
-                                    endif
-                                endif
-                            endif
-                        endif
-                    endif
-                endif
-            endif
-        endif
-    endif
-    
-    //if all those conditions aren't reached, then unit is not really on abyss
-    return false
-endfunction
-
-
-//checks points in a diamond formation around the unit's x,y coordinate
-//in the diagram, the * mark where the check is performed while u marks the location of the unit
-//take the diagram with a grain of salt, slash marks suck
-//             *
-//             /\
-//            /  \
-//          */    \*
-//          /      \
-//         /        \
-//        *     U    *
-//         \        /
-//          \      /
-//          *\    /*
-//            \  /
-//             \/
-//             *
-
-
-function GetTerrainDominantType takes real x, real y, integer pID returns integer
-    local real terrainOffset
-    local integer otherTerrainType
-    //local integer array otherTerrainTypes
-    
-    //TODO move out of this function
-    //if the unit is currently set to be immune to death regions, dont bother checking to see if it should die
-    //if AbyssImmune[i] then
-    //    return false
-    //endif
-    
-    //call DisplayTextToForce(bj_FORCE_PLAYER[i], "curent offset: " + R2S(TerrainOffset[i]))
-    
-    //since this code is called so often, nested if's were used to optimize it
-    //checks corners/diagonals
-    set otherTerrainType = GetTerrainType(x, y)
-    if ABYSS == otherTerrainType then
-        set terrainOffset = TerrainOffset[pID]
-        set otherTerrainType = GetTerrainType(x + terrainOffset, y)
-        
-        if ABYSS == otherTerrainType then
-            set otherTerrainType = GetTerrainType(x - terrainOffset, y)
-            if ABYSS == otherTerrainType then
-                set otherTerrainType = GetTerrainType(x, y + terrainOffset)
-                if ABYSS == otherTerrainType then
-                    set otherTerrainType = GetTerrainType(x, y - terrainOffset)
-                    if ABYSS == otherTerrainType then
-                        set otherTerrainType = GetTerrainType(x + terrainOffset, y + terrainOffset)
-                        if ABYSS == otherTerrainType then
-                            set otherTerrainType = GetTerrainType(x - terrainOffset, y + terrainOffset)
-                            if ABYSS == otherTerrainType then
-                                set otherTerrainType = GetTerrainType(x - terrainOffset, y - terrainOffset)
-                                if ABYSS == otherTerrainType then
-                                    set otherTerrainType = GetTerrainType(x + terrainOffset, y - terrainOffset)
-                                    if ABYSS == otherTerrainType then
-                                        //unit is on abyss even with flexible terrainOffset
-                                        return ABYSS
-                                    else
-                                        return otherTerrainType
-                                    endif
-                                else
-                                    return otherTerrainType
-                                endif
-                            else
-                                return otherTerrainType
-                            endif
-                        else
-                            return otherTerrainType
-                        endif
-                    else
-                        return otherTerrainType
-                    endif
-                else
-                    return otherTerrainType
-                endif
-            else
-                return otherTerrainType
-            endif
-        else
-            return otherTerrainType
-        endif
-    else
-        return otherTerrainType
-    endif
 endfunction
 
 function HeroKill takes integer i returns nothing
