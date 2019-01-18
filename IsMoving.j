@@ -1,10 +1,10 @@
-library isMoving requires MazerGlobals
+library isMoving requires TerrainGlobals, ORDER
 globals
     group DestinationGroup = CreateGroup()
     constant real TOLERANCE = 25
     trigger Click = CreateTrigger()
-    trigger CheckDest = CreateTrigger()
-    
+	trigger StopEvent = CreateTrigger()
+	
     //1.5 tiles
     constant real TELEPORT_MAXDISTANCE = 20
     constant real TELEPORT_EXACTDISTANCE = TERRAIN_TILE_SIZE * 3
@@ -96,55 +96,50 @@ function moves takes nothing returns nothing
     //call DisplayTextToForce(bj_FORCE_PLAYER[0], "MOVING")
 endfunction
 
-function checkDest takes nothing returns nothing
-    local unit u = GetEnumUnit()
-    local integer i = GetPlayerId(GetOwningPlayer(u))
-    local real x = GetUnitX(u)
-    local real y = GetUnitY(u)
-    if ((RAbsBJ(OrderDestinationX[i] - x) < TOLERANCE) and (RAbsBJ(OrderDestinationY[i] - y) < TOLERANCE)) then
-        set isMoving[i] = false
-        call IssueImmediateOrder(u, "stop")
-        //call DisplayTextToForce(bj_FORCE_PLAYER[0], "NOT MOVING")
-    endif
+function stops takes nothing returns nothing
+	if GetIssuedOrderId() == ORDER_stop then
+		set isMoving[GetPlayerId(GetOwningPlayer(GetOrderedUnit()))] = true
+	endif
 	
-    set u = null
+	//call DisplayTextToForce(bj_FORCE_PLAYER[0], "Order ID " + I2S(orderID) + " name " + OrderId2String(orderID))
 endfunction
 
-function checkDestInit takes nothing returns nothing
-    call ForGroup(DestinationGroup, function checkDest)
+function checkDestination takes nothing returns nothing
+	local group tempGroup = NewGroup()
+	local unit u
+	local integer i
+	loop
+	set u = FirstOfGroup(DestinationGroup)
+	exitwhen u == null
+		set i = GetPlayerId(GetOwningPlayer(u))
+		if ((RAbsBJ(OrderDestinationX[i] - GetUnitX(u)) < TOLERANCE) and (RAbsBJ(OrderDestinationY[i] - GetUnitY(u)) < TOLERANCE)) then
+			set isMoving[i] = false
+			call IssueImmediateOrder(u, "stop")
+			//call DisplayTextToForce(bj_FORCE_PLAYER[0], "NOT MOVING")
+		endif
+		
+		call GroupAddUnit(tempGroup, u)
+		call GroupRemoveUnit(DestinationGroup, u)
+	endloop
+	
+	call ReleaseGroup(DestinationGroup)
+	set DestinationGroup = tempGroup
 endfunction
-/*
-function registerUnits takes nothing returns nothing
-    local integer i = 0
-    //call DisplayTextToForce(bj_FORCE_PLAYER[0], "Registering")
-    
-    loop
-    exitwhen i > NumberPlayers
-        call TriggerRegisterUnitEvent(Click, MazersArray[i], EVENT_UNIT_ISSUED_TARGET_ORDER)
-        call TriggerRegisterUnitEvent(Click, MazersArray[i], EVENT_UNIT_ISSUED_POINT_ORDER)
-        //call DisplayTextToForce(bj_FORCE_PLAYER[0], I2S(i))
-        set i = i + 1
-    endloop
-    
-    call TriggerAddAction(Click, function moves)
-    //call DisplayTextToForce(bj_FORCE_PLAYER[0], "Finished Registering")
+
+function RegisterMazingClickEvents takes integer pID returns nothing
+	//click event
+	call TriggerRegisterUnitEvent(Click, MazersArray[pID], EVENT_UNIT_ISSUED_TARGET_ORDER)
+	call TriggerRegisterUnitEvent(Click, MazersArray[pID], EVENT_UNIT_ISSUED_POINT_ORDER)
+	
+	//stop event
+	call TriggerRegisterUnitEvent(StopEvent, MazersArray[pID], EVENT_UNIT_ISSUED_ORDER)
 endfunction
-*/
 
 //===========================================================================
 function InitTrig_isMoving takes nothing returns nothing
-    //local trigger move1 = CreateTrigger()
+	call TriggerAddAction(Click, function moves)
+	call TriggerAddAction(StopEvent, function stops)
     
-    //call TriggerRegisterUnitEvent( move1, gg_unit_Edem_0001, EVENT_UNIT_ISSUED_TARGET_ORDER )
-    //call TriggerRegisterUnitEvent( move1, gg_unit_Edem_0001, EVENT_UNIT_ISSUED_POINT_ORDER )
-    //call TriggerAddAction( move1, function moves )    
-    
-    call TriggerAddAction(CheckDest, function checkDestInit)
-    call TriggerRegisterTimerEvent(CheckDest, .1, true)
-    
-    call TriggerAddAction(Click, function moves)
-    
-    //set move1 = null
-    //set stop1 = null
+	call TimerStart(CreateTimer(), .1, true, function checkDestination)
 endfunction
 endlibrary

@@ -164,10 +164,10 @@ library MazerGlobals initializer Init requires GameGlobalConstants, ContinueGlob
                 
                 //assumes all units will start in standard gamemode
                 set NumberMazing = NumberMazing + 1
+				
+				call RegisterMazingClickEvents(i)
                 
                 call PauseUnit(MazersArray[i], true)
-                call TriggerRegisterUnitEvent(Click, MazersArray[i], EVENT_UNIT_ISSUED_TARGET_ORDER)
-                call TriggerRegisterUnitEvent(Click, MazersArray[i], EVENT_UNIT_ISSUED_POINT_ORDER)
             else 
                 call RemoveUnit(MazersArray[i])
                 set MazersArray[i] = null
