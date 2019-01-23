@@ -1,4 +1,4 @@
-library PlatformingCollision initializer Init requires TimerUtils, GameGlobalConstants, Recycle, Effects
+library PlatformingCollision initializer Init requires TimerUtils, GameGlobalConstants, Recycle, Effects, RespawningUnit
 globals
     Platformer CollidingPlatformer
     group pCollisionGroup = CreateGroup()
@@ -18,54 +18,6 @@ private function IsCollidingCallback takes nothing returns nothing
     call ReleaseTimer(t)
     set t = null
 endfunction
-
-private struct WaitingToRespawn
-    private real x
-    private real y
-    private integer uID
-    private real facing 
-    //in degrees
-    //special values: {-1: random direction out of up,right,down,left, -2: random direction out of diagonals, }
-    
-    public static method callback takes nothing returns nothing
-        local timer t = GetExpiredTimer()
-        local thistype wtr = thistype(GetTimerData(t))
-        local real direction
-        local unit u
-        
-        if wtr.facing >= 0 then
-            set direction = wtr.facing
-        else
-            if wtr.facing == -1 then
-                set direction = GetRandomInt(0, 3) * 90
-            elseif wtr.facing == -2 then
-                set direction = GetRandomInt(0, 3) * 90 + 45
-            else
-                set direction = 0
-            endif
-        endif
-        
-        //call Recycle_MakeAndPatrol(wtr.uID, wtr.x, wtr.y, wtr.x + 20, wtr.y + 20)
-        call Recycle_MakeUnitWithFacing(wtr.uID, wtr.x, wtr.y, direction)
-        //set u = CreateUnit(Player(10), wtr.uID, wtr.x, wtr.y, direction)
-        //call SetUnitX(u, wtr.x)
-        //call SetUnitY(u, wtr.y)
-        //call DisplayTextToForce(bj_FORCE_PLAYER[0], "made unit with recycler for " + I2S(wtr.uID) + " at " + R2S(wtr.x))
-        call ReleaseTimer(t)
-        set t = null
-        call wtr.destroy()
-    endmethod
-    
-    public static method create takes real X, real Y, integer UID, real Facing returns thistype
-        local thistype new = thistype.allocate()
-        set new.x = X
-        set new.y = Y
-        set new.uID = UID
-        set new.facing = Facing
-        
-        return new
-    endmethod
-endstruct
 
 private function AfterInvulnCB takes nothing returns nothing
     local timer t = GetExpiredTimer()
@@ -143,7 +95,7 @@ private function CollisionIter2 takes nothing returns nothing
     local unit cu = GetEnumUnit()
     local integer i = p.PID
     local timer t
-    local WaitingToRespawn wtr
+    local AutoRespawningUnit wtr
     
     local integer cuID
     
@@ -204,7 +156,7 @@ private function CollisionIter2 takes nothing returns nothing
         endif
         
         if dist <= CollisMedRadius then //CollisMedRadius == 80
-            if cuID == GRAVITY and dist < 55 then
+            if cuID == GRAVITY and dist < 60 then
                 if p.GravityEquation.getAdjustment(PlatformerPropertyEquation_MULTIPLY_ADJUSTMENT, GRAVITY) != 0 then
                     set p.GravityEquation.getAdjustment(PlatformerPropertyEquation_MULTIPLY_ADJUSTMENT, GRAVITY).Value = -1 * p.GravityEquation.getAdjustment(PlatformerPropertyEquation_MULTIPLY_ADJUSTMENT, GRAVITY).Value 
                 else
@@ -255,74 +207,41 @@ private function CollisionIter2 takes nothing returns nothing
                 set cu = null
                 return
             elseif cuID == UBOUNCE and dist < 50 then
-                //set pIsColliding[i] = true
                 set p.YVelocity = p.YVelocity + DIR_BOUNCER_SPEED
-                
-                //set t = NewTimerEx(i)
-                //call TimerStart(t, .4, false, function IsCollidingCallback)
-                
-                set wtr = WaitingToRespawn.create(GetUnitX(cu), GetUnitY(cu), UBOUNCE, 90)
-                set t = NewTimerEx(wtr)
-                //call KillUnit(cu)
+                                
+                set wtr = AutoRespawningUnit.create(GetUnitX(cu), GetUnitY(cu), UBOUNCE, 90, DIR_BOUNCER_RESPAWN_TIME)
                 call Recycle_ReleaseUnit(cu)
-                //call RemoveUnit(cu)
-                call TimerStart(t, 3, false, function WaitingToRespawn.callback)
-                
-                set t = null
+
                 call GroupClear(pCollisionGroup)
                 set pu = null
                 set cu = null
                 return
             elseif cuID == RBOUNCE and dist < 50 then
-                //set pIsColliding[i] = true
                 set p.XVelocity = p.XVelocity + DIR_BOUNCER_SPEED
                 
-                //set t = NewTimerEx(i)
-                //call TimerStart(t, .4, false, function IsCollidingCallback)
+                set wtr = AutoRespawningUnit.create(GetUnitX(cu), GetUnitY(cu), RBOUNCE, 0, DIR_BOUNCER_RESPAWN_TIME)
+                call Recycle_ReleaseUnit(cu)
                 
-                set wtr = WaitingToRespawn.create(GetUnitX(cu), GetUnitY(cu), RBOUNCE, 0)
-                set t = NewTimerEx(wtr)
-                //call KillUnit(cu)
-                call RemoveUnit(cu)
-                call TimerStart(t, 3, false, function WaitingToRespawn.callback)
-                
-                set t = null
                 call GroupClear(pCollisionGroup)
                 set pu = null
                 set cu = null
                 return
             elseif cuID == DBOUNCE and dist < 50 then
-                //set pIsColliding[i] = true
                 set p.YVelocity = p.YVelocity - DIR_BOUNCER_SPEED
                 
-                //set t = NewTimerEx(i)
-                //call TimerStart(t, .4, false, function IsCollidingCallback)
+                set wtr = AutoRespawningUnit.create(GetUnitX(cu), GetUnitY(cu), DBOUNCE, 270, DIR_BOUNCER_RESPAWN_TIME)
+                call Recycle_ReleaseUnit(cu)
                 
-                set wtr = WaitingToRespawn.create(GetUnitX(cu), GetUnitY(cu), DBOUNCE, 270)
-                set t = NewTimerEx(wtr)
-                //call KillUnit(cu)
-                call RemoveUnit(cu)
-                call TimerStart(t, 3, false, function WaitingToRespawn.callback)
-                
-                set t = null
                 call GroupClear(pCollisionGroup)
                 set pu = null
                 set cu = null
                 return
             elseif cuID == LBOUNCE and dist < 46 then
-                //set pIsColliding[i] = true
                 set p.XVelocity = p.XVelocity - DIR_BOUNCER_SPEED
+                                
+                set wtr = AutoRespawningUnit.create(GetUnitX(cu), GetUnitY(cu), LBOUNCE, 180, DIR_BOUNCER_RESPAWN_TIME)
+                call Recycle_ReleaseUnit(cu)
                 
-                //set t = NewTimerEx(i)
-                //call TimerStart(t, .4, false, function IsCollidingCallback)
-                
-                set wtr = WaitingToRespawn.create(GetUnitX(cu), GetUnitY(cu), LBOUNCE, 180)
-                set t = NewTimerEx(wtr)
-                //call KillUnit(cu)
-                call RemoveUnit(cu)
-                call TimerStart(t, 3, false, function WaitingToRespawn.callback)
-                
-                set t = null
                 call GroupClear(pCollisionGroup)
                 set pu = null
                 set cu = null

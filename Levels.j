@@ -323,9 +323,9 @@ library Levels requires SimpleList, Teams, GameModesGlobals, Cinema, User, IStar
 			if this == DOORS_LEVEL_ID then
 				//call mt.PrintMessage("Starting level " + ColorMessage(nextLevel.Name, SPEAKER_COLOR) + "!")
 				if RewardMode == GameModesGlobals_CHEAT then
-					call mt.PrintMessage("Starting the world " + nextLevel.GetWorldString())
+					call mt.PrintMessage("Starting " + nextLevel.GetWorldString())
 				else
-					call mt.PrintMessage("Starting the world " + nextLevel.GetWorldString() + " with " + ColorMessage(I2S(mt.GetContinueCount()), SPEAKER_COLOR) + " continues")
+					call mt.PrintMessage("Starting " + nextLevel.GetWorldString() + " with " + ColorMessage(I2S(mt.GetContinueCount()), SPEAKER_COLOR) + " continues")
 				endif
 			else
 				if RewardMode != GameModesGlobals_CHEAT and originalContinues != rolloverContinues + nextLevelContinues then
@@ -483,12 +483,18 @@ library Levels requires SimpleList, Teams, GameModesGlobals, Cinema, User, IStar
             endloop
         endmethod        
         
-        public method GetContent takes nothing returns LevelContent
-            return .Content
-        endmethod
-        public method SetStartables takes SimpleList_List startables returns nothing
-            set .Content.Startables = startables
-        endmethod
+		public method AddStartable takes IStartable startable returns nothing
+			if startable.ParentLevel != 0 and startable.ParentLevel.Content.Startables != 0 then
+				call startable.ParentLevel.Content.Startables.remove(startable)
+			endif
+			
+			set startable.ParentLevel = this
+			
+			if .Content.Startables == 0 then
+				set .Content.Startables = SimpleList_List.create()
+			endif
+			call .Content.Startables.add(startable)
+		endmethod
         
         public method AddCinematic takes Cinematic cinema returns nothing
             call .Cinematics.addEnd(cinema)

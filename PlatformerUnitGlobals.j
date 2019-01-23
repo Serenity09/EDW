@@ -12,6 +12,7 @@ globals
     constant real BOUNCER_SPEED = 925 * PlatformerGlobals_GAMELOOP_TIMESTEP
     constant real BOUNCER_MAX_SPEED = 1600 * PlatformerGlobals_GAMELOOP_TIMESTEP
     constant real DIR_BOUNCER_SPEED = 1000 * PlatformerGlobals_GAMELOOP_TIMESTEP
+	constant real DIR_BOUNCER_RESPAWN_TIME = 3.
     
     constant real SUPERSPEED_SPEED = 5000 * PlatformerGlobals_GAMELOOP_TIMESTEP
 endglobals

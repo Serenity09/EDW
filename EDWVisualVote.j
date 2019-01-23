@@ -449,6 +449,9 @@ library EDWVisualVote requires VisualVote, ContinueGlobals, Teams, PlayerUtils, 
             set MinigamesMode = false
             
             call InitializeGameForGlobals()
+			
+			call MultiboardMinimize(Teams_MazingTeam.PlayerStats, true)
+			
 			call TrackGameTime()
 		elseif GetHumanPlayersCount() == 1 then
 			set GameMode = GameModesGlobals_SOLO

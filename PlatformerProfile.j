@@ -4,7 +4,7 @@ library PlatformerProfile initializer Init requires PlatformerGlobals
         //public constant integer             CrazyIceProfileID = 2
         public constant integer		    MoonProfileID = 2
         
-        private constant integer   vJUMPSPEED      = 715      //default vertical jump speed
+        private constant integer   vJUMPSPEED      = 800      //default vertical jump speed
         private constant integer   hJUMPSPEED      = 785      //default horizontal jump speed
         private constant real   v2hJUMPSPEED       = .8500       //vWALLJUMP * vJUMPSPEED = vTOTALJUMPHEIGHT for wall jumps
         private constant integer   xFALLOFF        = 50       //linear rate horizontal speed falls off
@@ -52,7 +52,6 @@ library PlatformerProfile initializer Init requires PlatformerGlobals
             //ratios/percentages don't get effected by timestep length
             set new.MoveSpeedVelOffset = msoff
             set new.v2hJumpRatio = v2h
-
             
             return new
         endmethod        
@@ -65,7 +64,6 @@ library PlatformerProfile initializer Init requires PlatformerGlobals
             call DisplayTextToForce(bj_FORCE_PLAYER[0], "Warning, another profile was created before the default profile! Platforming is going to crash and burn horribly!")
         endif
         
-        
         //old profile to make ice feel better -- this caused everything to feel a bit off from what you'd just gotten used to
         /*
 		set profile = PlatformerProfile.create(YTERMINAL*2, 0, 0, MOVESPEED, MOVESPEEDOFFSET, GRAVITYACCEL, vJUMPSPEED, v2hJUMPSPEED, hJUMPSPEED)
@@ -75,6 +73,6 @@ library PlatformerProfile initializer Init requires PlatformerGlobals
 		*/
 		
 		//moon profile
-        set profile = PlatformerProfile.create(R2I(YTERMINAL * .75), R2I(xFALLOFF * 0.1), R2I(yFALLOFF * 0.1), R2I(MOVESPEED * .9), MOVESPEEDOFFSET, 10, vJUMPSPEED, v2hJUMPSPEED, hJUMPSPEED)
+        set profile = PlatformerProfile.create(R2I(YTERMINAL * .75), R2I(xFALLOFF * 0.1), R2I(yFALLOFF * 0.1), R2I(MOVESPEED * .9), MOVESPEEDOFFSET, -10, vJUMPSPEED, v2hJUMPSPEED, hJUMPSPEED)
     endfunction
 endlibrary
