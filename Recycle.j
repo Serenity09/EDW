@@ -154,6 +154,9 @@ library Recycle requires UnitGlobals
             call thistype.create(LBOUNCE, 180, Player(11)).Preload(5, true)
             call thistype.create(DBOUNCE, 270, Player(11)).Preload(5, true)
             call thistype.create(RBOUNCE, 0, Player(11)).Preload(5, true)
+			
+			call thistype.create(RFIRE, 0, Player(11)).Preload(3, true)
+			call thistype.create(BFIRE, 0, Player(11)).Preload(3, true)
             
             call thistype.create(WWWISP, 0, Player(11))//.Preload(10, true)
             

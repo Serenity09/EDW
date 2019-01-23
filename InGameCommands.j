@@ -169,7 +169,11 @@ function ParseCommand takes nothing returns nothing
 			set PlatformerIce_SLOW_VELOCITY = val
 		elseif cmd == "ifs" then
 			set PlatformerIce_FAST_VELOCITY = val
-		elseif cmd == "distance" or cmd == "dist" then
+		elseif cmd == "size" or cmd == "s" then
+			call DisplayTextToForce(bj_FORCE_PLAYER[pID], "Size: " + R2S(GetUnitCollision(FirstOfGroup(GetUnitsSelectedAll(Player(pID))))))
+		elseif cmd == "unitmovespeed" or cmd == "ums" then
+			call SetUnitMoveSpeed(FirstOfGroup(GetUnitsSelectedAll(Player(pID))), val)
+		elseif cmd == "distance" or cmd == "dist" or cmd == "d" then
 			set unitgroup = CreateGroup()
 			call GroupEnumUnitsSelected(unitgroup, Player(pID), null)
 			call ForGroup(unitgroup, function DistanceCallback)

@@ -36,7 +36,7 @@ When playing in a team mode, dying will leave a revive circle in your wake. [b]A
 [/otablei]
 [/hidden]
 
-Some settings have been intentionally left out of the options menus. I want to leave them as presets for now, but let's play with their values based on outside and inside feedback. Time-limit is fixed to 45min (up from 30min) -- after which the team with the leading score will win -- and score to win immediately is fixed at 20. 
+Some settings have been intentionally left out of the options menus. I want to leave them preset for now, but let's play with their values based on outside and inside feedback. Time-limit is fixed to 45min (up from 30min) -- after which the team with the leading score will win -- and score to win immediately is fixed at 20. 
 [/Tab]
 [Tab=Worlds][Center]Choices, choices, everywhere; and not a one for me
 I hope that when I wake up, I'll know where to be.
@@ -184,7 +184,7 @@ Demo of 2.5D world:
 [2018-12-27] (v15.6) Second online alpha test
 [2018-12-24] (v15.0) First online alpha test
 [/Tab]
-[Tab=Credits]Endless thanks to my girlfriend, who's endured this map's development
+[Tab=Credits]Endless thanks to my partner, who's endured this map's development
 
 Shout out to the old WC3 crew: Pat1487, Achilles.42, Mazemasta77, Amazin[G], FFSlayer, Olonavy, hlw_rocer, popartica., Eat_Bacon_Daily, marksoccer, monkeys-forever, DoughnutMuffin, God[A]nt69, Makshak
 To Pat1487 and Anitarf for level ideas and coding help
@@ -195,24 +195,33 @@ Vexorian - vJASS, TimerUtils (http://www.wc3c.net/showthread.php?t=101322)
 Anitarf - vector3 (http://www.wc3c.net/showthread.php?t=87027)
 Bribe - Table (https://www.hiveworkshop.com/threads/snippet-new-table.188084/)
 Alain.Mark - PlayerUtils
-Nestheasarus - Alloc, DummyCaster, Event (https://github.com/nestharus/JASS/tree/master/jass but, realistically, https://github.com/nestharus/JASS/tree/master/lua/wc3%20project/Sample/mapname/src/imports)
+Nestheasarus - Alloc, DummyCaster, Event, Order IDs (https://github.com/nestharus/JASS/tree/master/jass but, realistically, https://github.com/nestharus/JASS/tree/master/lua/wc3%20project/Sample/mapname/src/imports)
 TriggerHappy - PreventSave (https://www.hiveworkshop.com/threads/snippet-preventsave.158048/)
 
 MC ! - Blackhole Model (https://www.hiveworkshop.com/threads/blackhole.48038/#resource-20933)
 Anonymous author - Anime Sunset loadscreen art (https://www.wallpapervortex.com/wallpaper-38651_anime_scenery_anime_sunset.html)
 
+PipeDream, Vecorian, Cohadar, UMSWE team, Pitzermike, SFilip, Van Damm, Risc, ScorpioT1000, Mc!, Moyack, PurgeAndFire - JNGP World Editor v2.0
+MindWorx & the above - SharpCraft World Editor Extended
+Blizzard - Vanilla World Editor
+
+gameslayer001 - Platform Escape (influenced Platform/2D game mode and levels)
+Mech_1000 - Tricks & Traps (influenced goals for level design)
+nomorholywar - Into the Wild (influenced ice level design), Sliding Murlocs (influenced what I wanted to avoid)
+adamt - Maze (influenced land level design)
+
 aznricepuff - The best guide to understanding vJASS's OOP design and intended usage (https://www.hiveworkshop.com/threads/vjass-oop-lesson.128236/#13)
 Nestheasarus - A guide to optimizing vJASS's syntactic sugar (where did you go)
 Codemonkey11 - A guide to scaling group enums in WC3's engine (https://www.hiveworkshop.com/threads/vjass-optimization-using-a-first-of-group-loop-for-enumeration.223140/)
 Jeff Pang - Online vanilla JASS documentation (http://jass.sourceforge.net/index.shtml)
-Dr Super Good - Too many small answers to list
+Dr Super Good - Too many small answers to list all, but among which are tips to generating random points (https://www.hiveworkshop.com/threads/get-evenly-weighted-random-point-in-rectangle.294547/), unit rotation mechanics (https://www.hiveworkshop.com/threads/unit-turning-mechanics.300224/), 
 Wrda & Pyrogasm - Approach to making units locally visible/invisible (https://www.hiveworkshop.com/threads/make-units-locally-visible.310326/)
 BloodRaven - Advanced WE doodads & terrain (https://www.hiveworkshop.com/threads/advanced-terraining-tutorial.203428/)
 Rufus - Map Description guide & templates (https://www.hiveworkshop.com/threads/description-guide-maps.287829/)
 [/Tab]
 [Tab=Future releases]The V1 release includes what I consider a fully playable game. To be fair, I think there's often too much going on, and occassionally too little. There's a lot more that I want to add, but I think its time to get some outside feedback. Here are my current priorities, in something like an order
 
-Language Localizations (German, French, etc) -- start with all major languages for important dialogues, but add in all dialogues as possible. will need to look into if WC3 offers any extendable solution. since WC3 1.30+ games will often include multiple languages, the solution will need to run in the game instance, targetting local player, rather than be set at compile time
+Language Localizations (German, French, etc) -- start with all major languages for important tutorial dialogues, but add in all dialogues as able. will need to look into if WC3 offers any extendable solution. since WC3 1.30+ games will often include multiple languages among its user list, the solution will need to run in the game instance, targetting local player, rather than be set at compile time
 
 The fourth platforming level -- the moon, focused on jumping between geometric planes
 
@@ -231,18 +240,19 @@ More interesting powerups -- some of the offensive variety, and more that intera
 A dragged out victory process -- basically 30 seconds to gloat and chat. Either you guys want it or its not happening cuz I sure as f*** don't want to do it
 [/Tab]
 [Tab=FAQ]Q: there's so many terrain tiles! I can't enjoy all of them because I don't even know what's happening some of the time
-A: yeah, that's a very real problem, and at this point I can't really see it fresh. The basic premise was that the tiles should all effect gameplay to some degree, and they alone should be enough to be interesting even to veteran players. I think one of the biggest issues is that I present too many tiles that have huge gameplay impacts in quick succession, especially in the tutorial. I'd love to get feedback from you all on that topic
+A: yeah, that's a very real problem, and at this point I can't really see it fresh. The basic premise was that the tiles should all effect gameplay to some degree, and their combinations alone should be enough to be interesting even to veteran players. I think one of the biggest issues is that I present too many tiles that have huge gameplay impacts in quick succession, especially in the tutorial. I'd love to get feedback from you all on that topic
 
 Q: the 2d terrain tiles looks don't match their physics geometry
-A: that's another problem and I'm not going to solve it fully on my own. I tried to pick the most diamond looking tiles, and those are somewhat okay, but the square grass tile is especially confusing. **If anyone would be willing to make a square grass tile, they would get any ingame credits they'd want, continuing after Reforged releases**
+A: that's another problem and I'm not going to solve it fully on my own. I tried to pick the most diamond looking tiles, and those are somewhat okay, but the square grass tile is especially confusing. **If anyone would be willing to make a square grass tile based on the original, they would get any ingame credits they'd want, continuing after Reforged releases**
 
 Q: can you explain a mechanic more properly in game? trying to figure it out really detracted from my experience
-A: yes! please let me know which ones need it. That said, I try to explain less than more, while keeping the penalty for failure small. I really like the idea of exploring the different terrain effects and then discovering how you can use them situationally
+A: yes! please let me know which ones need it. That said, I try to explain less than more, while keeping the penalty for failure small. I really like the idea of discovering the different terrain effects and then exploring how it effects your gameplay / how you can use them situationally
 
 Q: can I leave feedback directly?
-A: yes! thank you for taking the time to share. WCEscapeDreamWorld@gmail.com or PM here
+A: yes! thank you for taking the time to share. WCEscapeDreamWorld@gmail.com, PM, or thread reply here
 [/Tab]
-[Tab=Bugs]
+[Tab=Bugs]Only showstoppers will be shown on the forum. For the full up-to-date list, check https://trello.com/b/L5ajt18j/edw
+1. Desync issue when multiple users play together and meet an unknown set of conditions. The set is not always met, and so desync is not always problematic. This looks to be ultimately on Blizzard to fix, but it also appears that not every map is desyncing, so a WE side fix might also be possible.
 [/Tab]
 [/Tabs]
 [/Left]
