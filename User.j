@@ -220,6 +220,7 @@ struct User extends array
 				// call DisplayTextToForce(bj_FORCE_PLAYER[0], "reviving at x: " + R2S(x) + ", y: " + R2S(y))
 			// endif
 			
+			/*
             if .Team.DefaultGameMode == Teams_GAMEMODE_STANDARD or .Team.DefaultGameMode == Teams_GAMEMODE_STANDARD_PAUSED then
                 call this.SwitchGameModes(Teams_GAMEMODE_STANDARD_PAUSED, x, y)
                 
@@ -228,6 +229,9 @@ struct User extends array
                 else
                     call TimerStart(NewTimerEx(this), REVIVE_PAUSE_TIME_NONASAP, false, function User.UnpauseUserCB)
                 endif
+			*/
+			if .Team.DefaultGameMode == Teams_GAMEMODE_STANDARD or .Team.DefaultGameMode == Teams_GAMEMODE_STANDARD_PAUSED then
+				call this.SwitchGameModes(Teams_GAMEMODE_STANDARD, x, y)
             /*
             elseif .Team.DefaultGameMode == Teams_GAMEMODE_PLATFORMING then
                 call this.SwitchGameModes(Teams_GAMEMODE_PLATFORMING_PAUSED, x, y)
@@ -616,7 +620,6 @@ struct User extends array
         //set new.PlayerID = new
         set new.Team = 0
         set new.Deaths = 0
-        set new.IsPlaying = GetPlayerSlotState(Player(new))==PLAYER_SLOT_STATE_PLAYING
         set new.IsAlive = true
         
         set new.CinematicPlaying = 0
@@ -628,20 +631,17 @@ struct User extends array
                     
         //set new.Platformer = Platformer.AllPlatformers[new]
         set new.Platformer = Platformer.create(new)
-		
-        if new.IsPlaying then
-            set User.ActivePlayers = User.ActivePlayers + 1
-        endif
-        
+		        
         return new
     endmethod
 
+	//currently assumes that the human players are all the first n players
     public static method onInit takes nothing returns nothing
         local integer n = 0
         set User.ActivePlayers = 0
         
         loop
-        exitwhen n>=8
+        exitwhen n>=NumberPlayers
             //debug call DisplayTextToPlayer(Player(0), 0, 0, "Creating User: " + I2S(n))
             
             //if GetPlayerSlotState(Player(n))==PLAYER_SLOT_STATE_PLAYING then

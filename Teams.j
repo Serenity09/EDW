@@ -1,4 +1,4 @@
-library Teams initializer Init requires MazerGlobals, User
+library Teams requires MazerGlobals, User
 globals
     private constant real VOTE_TOP_LEFT_X = -15000
 	private constant real VOTE_TOP_LEFT_Y = -4220

@@ -71,7 +71,9 @@ library GameStart initializer Init requires Levels, EDWVisualVote, UnitGlobals, 
         call AddLocustAll()
         
         //CALL OTHER INITS
-        call PlayerInit()
+        call EDWPlayerSlotsInit()
+		
+		//connect editor placed units with their needed logic
         call PreplacedUnitInit()
         
         //GAME MODE INIT

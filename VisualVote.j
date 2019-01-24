@@ -1,4 +1,4 @@
-library VisualVote initializer Init requires Vector2, Alloc, Table, PlayerUtils, SimpleList, locust, TimerUtils
+library VisualVote requires Vector2, Alloc, Table, PlayerUtils, SimpleList, locust, TimerUtils
     globals
         public constant real    MENU_DESTROY_TIMEOUT = .5
         public constant integer CONTAINER_BORDER_MARGIN = 64
@@ -922,6 +922,24 @@ library VisualVote initializer Init requires Vector2, Alloc, Table, PlayerUtils,
             endloop
         endmethod
         endif
+		
+		public static method filterVisualVoteSelection takes nothing returns boolean
+			return GetUnitTypeId(GetFilterUnit()) == VOTE_UNIT_ID
+		endmethod
+		public static method onVisualVoteSelection takes nothing returns nothing
+			local unit selected = GetTriggerUnit()
+			local player p = GetTriggerPlayer()
+			
+			local voteOption vo = voteMenu.globalGetVoteOptionFromSelectedUnit(selected)
+			
+			//check that this player is a member of the menu
+			if vo != 0 and vo.parent.parent.parent.forPlayers.contains(GetPlayerId(p)) then
+				//debug call DisplayTextToPlayer(p, 0, 0, "Selection Found")
+				call vo.onSelect(p)
+			else
+				debug call DisplayTextToPlayer(p, 0, 0, "Sorry, you can't vote on this menu!!")
+			endif
+		endmethod
         
         public method destroy takes nothing returns nothing
             local integer iVC = 0
@@ -972,40 +990,31 @@ library VisualVote initializer Init requires Vector2, Alloc, Table, PlayerUtils,
             set new.onOptionExecuteFinish = onOptionFinishCallback
             
             return new
-        endmethod        
+        endmethod
     endstruct
     
-    public function OnVisualVoteSelection takes nothing returns nothing
-        local unit selected = GetTriggerUnit()
-        local player p = GetTriggerPlayer()
-        
-        local voteOption vo = voteMenu.globalGetVoteOptionFromSelectedUnit(selected)
-        
-        //check that this player is a member of the menu
-        if vo != 0 and vo.parent.parent.parent.forPlayers.contains(GetPlayerId(p)) then
-            //debug call DisplayTextToPlayer(p, 0, 0, "Selection Found")
-            call vo.onSelect(p)
-        else
-            debug call DisplayTextToPlayer(p, 0, 0, "ERROR: Option not found!!")
-        endif
-    endfunction
-    
-    public function FilterVisualVoteSelection takes nothing returns boolean
-        return GetUnitTypeId(GetFilterUnit()) == VOTE_UNIT_ID
-    endfunction
-    
-    public function Init takes nothing returns nothing
+	public function Init takes nothing returns nothing
         local trigger t = CreateTrigger()
         local SimpleList_ListNode pn = PlayerUtils_FirstPlayer
         
         loop
         exitwhen pn == 0
             if GetPlayerSlotState(Player(pn.value)) == PLAYER_SLOT_STATE_PLAYING then
-                call TriggerRegisterPlayerUnitEvent(t, Player(pn.value), EVENT_PLAYER_UNIT_SELECTED, function FilterVisualVoteSelection)
+                call TriggerRegisterPlayerUnitEvent(t, Player(pn.value), EVENT_PLAYER_UNIT_SELECTED, function voteMenu.filterVisualVoteSelection)
             endif
         set pn = pn.next
-        endloop
-        
-        call TriggerAddAction(t, function OnVisualVoteSelection)
-    endfunction
+		endloop
+		
+		call TriggerAddAction(t, function voteMenu.onVisualVoteSelection)
+		set t = null
+	endfunction
+	
+	public function InitForPlayer takes integer i returns nothing
+		local trigger t = CreateTrigger()
+		
+		call TriggerRegisterPlayerUnitEvent(t, Player(i), EVENT_PLAYER_UNIT_SELECTED, function voteMenu.filterVisualVoteSelection)
+		call TriggerAddAction(t, function voteMenu.onVisualVoteSelection)
+		
+		set t = null
+	endfunction
 endlibrary

@@ -1,4 +1,4 @@
-library PlayerUtils initializer PlayerUtils_ini requires SimpleList
+library PlayerUtils requires SimpleList, GameGlobalConstants
 //===========================================================================
 // "PlayerUtils" by Alain.Mark
 //
@@ -15,10 +15,6 @@ library PlayerUtils initializer PlayerUtils_ini requires SimpleList
 //===========================================================================
 
     //=======================================================================
-        globals
-            // The value of "AVAILABLE_SLOTS" is in counting numbers. (starts from 1)
-            private constant integer AVAILABLE_SLOTS = 12 
-        endglobals
         
     //=======================================================================
         globals
@@ -65,14 +61,14 @@ library PlayerUtils initializer PlayerUtils_ini requires SimpleList
         endfunction
         
     //=======================================================================
-        private function PlayerUtils_ini takes nothing returns nothing
+        public function Init takes nothing returns nothing
             local player  pl
             local integer n = 0
             
             set PlayerList = SimpleList_List.create()
             
             loop
-                exitwhen n>AVAILABLE_SLOTS
+                exitwhen n > NumberPlayers
                 set pl=Player(n)
                 if GetPlayerSlotState(pl)==PLAYER_SLOT_STATE_PLAYING then
                     if GetPlayerController(pl)==MAP_CONTROL_USER then
