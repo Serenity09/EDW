@@ -220,7 +220,6 @@ struct User extends array
 				// call DisplayTextToForce(bj_FORCE_PLAYER[0], "reviving at x: " + R2S(x) + ", y: " + R2S(y))
 			// endif
 			
-			/*
             if .Team.DefaultGameMode == Teams_GAMEMODE_STANDARD or .Team.DefaultGameMode == Teams_GAMEMODE_STANDARD_PAUSED then
                 call this.SwitchGameModes(Teams_GAMEMODE_STANDARD_PAUSED, x, y)
                 
@@ -229,9 +228,10 @@ struct User extends array
                 else
                     call TimerStart(NewTimerEx(this), REVIVE_PAUSE_TIME_NONASAP, false, function User.UnpauseUserCB)
                 endif
-			*/
+			/*
 			if .Team.DefaultGameMode == Teams_GAMEMODE_STANDARD or .Team.DefaultGameMode == Teams_GAMEMODE_STANDARD_PAUSED then
 				call this.SwitchGameModes(Teams_GAMEMODE_STANDARD, x, y)
+			*/
             /*
             elseif .Team.DefaultGameMode == Teams_GAMEMODE_PLATFORMING then
                 call this.SwitchGameModes(Teams_GAMEMODE_PLATFORMING_PAUSED, x, y)
@@ -437,7 +437,7 @@ struct User extends array
 				
                 //call UnitRemoveBuffs(.ActiveUnit, true, true)
                 call DummyCaster['A004'].castTarget(Player(10), 1, OrderId("dispel"), .ActiveUnit)
-				call SetUnitPropWindow(.ActiveUnit, GetUnitDefaultPropWindow(.ActiveUnit))
+				call SetUnitPropWindow(.ActiveUnit, GetUnitDefaultPropWindow(.ActiveUnit) * bj_DEGTORAD)
                 
                 //if the new gamemode isnt to unpause the unit then we need to undo the pause effect
                 if newGameMode != Teams_GAMEMODE_STANDARD then
