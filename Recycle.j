@@ -122,11 +122,8 @@ library Recycle requires UnitGlobals, DisposableUnit
         endmethod
         
         public method Release takes unit u returns nothing
-            local DisposableUnit disposable = GetUnitId(u)
-			
-			if disposable != 0 and DisposableUnit.IsUnitDisposable(u) then
-				debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "Releasing disposable unit: " + I2S(disposable))
-				call disposable.dispose()
+			if GetUnitId(u) != 0 and DisposableUnit.IsUnitDisposable(u) then
+				call DisposableUnit(GetUnitId(u)).dispose()
 			endif
 			
 			if this == 0 or this.count == MAX_SINGLE_INSTANCE_COUNT then

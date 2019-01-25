@@ -6,6 +6,6 @@ library IStartable
         
         method Stop takes nothing returns nothing
 		
-		method Dispose takes nothing returns nothing
+		method destroy takes nothing returns nothing
     endinterface
 endlibrary

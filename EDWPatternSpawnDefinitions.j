@@ -55,6 +55,22 @@ library EDWPatternSpawnDefinitions requires PatternSpawn, Recycle
 		return g
 	endfunction
 	
+	function BlackholeSpawn takes PatternSpawn spawn, Levels_Level parentLevel returns group
+		local group g = NewGroup()
+		local vector2 spawnPosition = LinePatternSpawn(spawn).GetSpawnPosition(0)
+		local Blackhole bhole = Blackhole.create(spawnPosition.x, spawnPosition.y)
+		set bhole.ParentLevel = parentLevel
+		
+		call DisposableUnit.register(bhole.BlackholeUnit, bhole)
+		call bhole.Start()
+		
+		call GroupAddUnit(g, bhole.BlackholeUnit)
+		
+		call spawnPosition.deallocate()
+		
+		return g
+	endfunction
+	
 	function W3APatternSpawn takes PatternSpawn spawn, Levels_Level parentLevel returns group
 		local group g = NewGroup()
 		local integer variation = spawn.GetVariation()
@@ -99,6 +115,7 @@ library EDWPatternSpawnDefinitions requires PatternSpawn, Recycle
 				set spawnPosition = LinePatternSpawn(spawn).GetSpawnPosition(GetRandomInt(0, 2))
 				
 				set bhole = Blackhole.create(spawnPosition.x, spawnPosition.y)
+				set bhole.ParentLevel = parentLevel
 				call DisposableUnit.register(bhole.BlackholeUnit, bhole)
 				call bhole.Start()
 				

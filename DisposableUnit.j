@@ -7,7 +7,7 @@ library DisposableUnit requires IndexedUnit, IStartable
 		endmethod
 		
 		public method dispose takes nothing returns nothing
-			call TrackedUnits[this].destroy()
+			call IStartable(TrackedUnits[this]).destroy()
 			
 			set TrackedUnits[this] = 0
 			call DeindexUnit(GetUnitFromId(this))
