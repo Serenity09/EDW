@@ -215,6 +215,7 @@ Nestheasarus - A guide to optimizing vJASS's syntactic sugar (where did you go)
 Codemonkey11 - A guide to scaling group enums in WC3's engine (https://www.hiveworkshop.com/threads/vjass-optimization-using-a-first-of-group-loop-for-enumeration.223140/)
 Jeff Pang - Online vanilla JASS documentation (http://jass.sourceforge.net/index.shtml)
 Dr Super Good - Too many small answers to list all, but among which are tips to generating random points (https://www.hiveworkshop.com/threads/get-evenly-weighted-random-point-in-rectangle.294547/), unit rotation mechanics (https://www.hiveworkshop.com/threads/unit-turning-mechanics.300224/), 
+-Manuel- - Fix to setting unit immobile/mobile (https://www.hiveworkshop.com/threads/prevent-movement.312061/#post-3321807)
 Wrda & Pyrogasm - Approach to making units locally visible/invisible (https://www.hiveworkshop.com/threads/make-units-locally-visible.310326/)
 BloodRaven - Advanced WE doodads & terrain (https://www.hiveworkshop.com/threads/advanced-terraining-tutorial.203428/)
 Rufus - Map Description guide & templates (https://www.hiveworkshop.com/threads/description-guide-maps.287829/)
