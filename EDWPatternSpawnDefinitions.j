@@ -95,16 +95,16 @@ library EDWPatternSpawnDefinitions requires PatternSpawn, Recycle
 				call GroupAddUnit(g, Recycle_MakeUnit(ICETROLL, spawnPosition.x, spawnPosition.y))
 				call spawnPosition.deallocate()
 			elseif cycle == 1 then
-				/*
+				//TODO make some sort of IDisposable interface / Using-like wrapper that can interact with Recycle_ReleaseUnit
 				set spawnPosition = LinePatternSpawn(spawn).GetSpawnPosition(GetRandomInt(0, 2))
 				
 				set bhole = Blackhole.create(spawnPosition.x, spawnPosition.y)
+				call DisposableUnit.register(bhole.BlackholeUnit, bhole)
 				call bhole.Start()
+				
 				call GroupAddUnit(g, bhole.BlackholeUnit)
 				
 				call spawnPosition.deallocate()
-				*/
-				//! runtextmacro AllSpawn("spawn", "g", "i", "1", "spawnPositionLastIndex", "spawnPosition", "ICETROLL")
 			elseif cycle == 2 then
 				set spawnPosition = LinePatternSpawn(spawn).GetSpawnPosition(GetRandomInt(0, 2))
 				call GroupAddUnit(g, Recycle_MakeUnit(ICETROLL, spawnPosition.x, spawnPosition.y))

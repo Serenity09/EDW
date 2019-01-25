@@ -1,4 +1,4 @@
-library Recycle requires UnitGlobals
+library Recycle requires UnitGlobals, DisposableUnit
     globals
         public constant integer MAX_SINGLE_INSTANCE_COUNT = 100
         public constant real SAFE_X = -15000
@@ -122,7 +122,14 @@ library Recycle requires UnitGlobals
         endmethod
         
         public method Release takes unit u returns nothing
-            if this == 0 or this.count == MAX_SINGLE_INSTANCE_COUNT then
+            local DisposableUnit disposable = GetUnitId(u)
+			
+			if disposable != 0 and DisposableUnit.IsUnitDisposable(u) then
+				debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "Releasing disposable unit: " + I2S(disposable))
+				call disposable.dispose()
+			endif
+			
+			if this == 0 or this.count == MAX_SINGLE_INSTANCE_COUNT then
                 //call DisplayTextToForce(bj_FORCE_PLAYER[0], "no recycler exists for uid: " + I2S(GetUnitTypeId(u)) + " " + I2S(Levels_ticker))
                 call RemoveUnit(u)
                 return

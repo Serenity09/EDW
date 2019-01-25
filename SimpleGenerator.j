@@ -209,7 +209,20 @@ struct SimpleGenerator extends IStartable
             call PauseTimer(thistype.MoveTimer)
         endif
     endmethod
-        
+	
+	public method destroy takes nothing returns nothing
+        if thistype.ActiveWidgets.contains(this) then
+			call .Stop()
+		endif
+		
+		if .SpawnPattern != 0 then
+			//TODO
+			//call .SpawnPattern.destroy()
+		endif
+		
+		call RemoveRect(.SpawnArea)
+		set .SpawnArea = null
+	endmethod
     public static method create takes rect spawn, integer spawnUnitID, real spawnTimestep, real spawnDirection, integer spawnLength, real movespeed returns thistype
         local thistype new = thistype.allocate()
         

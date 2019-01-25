@@ -240,11 +240,13 @@ library Blackhole requires ListModule, SimpleList, User, locust, MazerGlobals, I
 			endif
         endmethod
 
-            
         public method destroy takes nothing returns nothing
-			call .Stop()
+			debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "Destroying blackhole: " + I2S(this))
+			if .ActiveBlackholes.contains(this) then
+				call .Stop()
+			endif
 			
-            call RemoveUnit(.BlackholeUnit)
+            call Recycle_ReleaseUnit(.BlackholeUnit)
             call .PlayersInRange.destroy()
             
             set .BlackholeUnit = null

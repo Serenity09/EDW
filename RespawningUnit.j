@@ -1,4 +1,4 @@
-library RespawningUnit requires Alloc
+library RespawningUnit requires Alloc, Recycle
 
 struct RespawningUnit extends array
     private vector2 position

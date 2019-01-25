@@ -1,4 +1,4 @@
-library SynchronizedGroup requires Alloc, SimpleList, Vector2
+library SynchronizedGroup requires Alloc, SimpleList, Vector2, Recycle
 	globals
 		private constant real TIMESTEP = .2
 		private constant real DESTINATION_TOLERANCE = 32.		

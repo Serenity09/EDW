@@ -1,4 +1,4 @@
-library IStartable requires Alloc
+library IStartable
     interface IStartable
         Levels_Level ParentLevel
 
@@ -6,6 +6,6 @@ library IStartable requires Alloc
         
         method Stop takes nothing returns nothing
 		
-		//method Dispose takes nothing returns nothing
+		method Dispose takes nothing returns nothing
     endinterface
 endlibrary
