@@ -44,7 +44,7 @@ library EDWPatternSpawnDefinitions requires PatternSpawn, Recycle
 		call $SPAWN_POSITION$.deallocate()
 	//! endtextmacro
 	//basic wrapper for above pattern
-	function DiagonalCrossSpawn takes PatternSpawn spawn returns group
+	function DiagonalCrossSpawn takes PatternSpawn spawn, Levels_Level parentLevel returns group
 		local group g = NewGroup()
 		local integer cycle = spawn.GetCycle(spawn.GetVariation())
 		local integer spawnPositionLastIndex = LinePatternSpawn(spawn).GetSpawnPositionCount() - 1
@@ -55,7 +55,66 @@ library EDWPatternSpawnDefinitions requires PatternSpawn, Recycle
 		return g
 	endfunction
 	
-	function LW1BPatternSpawn takes PatternSpawn spawn returns group
+	function W3APatternSpawn takes PatternSpawn spawn, Levels_Level parentLevel returns group
+		local group g = NewGroup()
+		local integer variation = spawn.GetVariation()
+		local integer cycle = spawn.GetCycle(variation)
+		local integer spawnPositionLastIndex = LinePatternSpawn(spawn).GetSpawnPositionCount() - 1
+		local vector2 spawnPosition
+		local integer rand
+		local integer i
+		local Blackhole bhole
+		
+		if variation == 0 then
+			if cycle == 0 then
+				//! runtextmacro AllSpawn("spawn", "g", "i", "2", "spawnPositionLastIndex", "spawnPosition", "ICETROLL")
+			elseif cycle == 1 then
+				//! runtextmacro AllSpawn("spawn", "g", "i", "1", "spawnPositionLastIndex", "spawnPosition", "ICETROLL")
+			elseif cycle == 2 then
+				//! runtextmacro AllSpawn("spawn", "g", "i", "0", "spawnPositionLastIndex", "spawnPosition", "ICETROLL")
+			endif
+		elseif variation == 1 then
+			if cycle == 0 or cycle == 2 then
+				//! runtextmacro AllSpawn("spawn", "g", "i", "1", "spawnPositionLastIndex", "spawnPosition", "ICETROLL")
+			elseif cycle == 1 then
+				set spawnPosition = LinePatternSpawn(spawn).GetSpawnPosition(1)
+				call GroupAddUnit(g, Recycle_MakeUnit(ICETROLL, spawnPosition.x, spawnPosition.y))
+				call spawnPosition.deallocate()
+			endif
+		elseif variation == 2 then
+			if cycle == 0 or cycle == 2 then
+				set spawnPosition = LinePatternSpawn(spawn).GetSpawnPosition(1)
+				call GroupAddUnit(g, Recycle_MakeUnit(ICETROLL, spawnPosition.x, spawnPosition.y))
+				call spawnPosition.deallocate()
+			elseif cycle == 1 then
+				//! runtextmacro AllSpawn("spawn", "g", "i", "1", "spawnPositionLastIndex", "spawnPosition", "ICETROLL")
+			endif
+		elseif variation == 3 then
+			if cycle == 0 then
+				set spawnPosition = LinePatternSpawn(spawn).GetSpawnPosition(GetRandomInt(0, 2))
+				call GroupAddUnit(g, Recycle_MakeUnit(ICETROLL, spawnPosition.x, spawnPosition.y))
+				call spawnPosition.deallocate()
+			elseif cycle == 1 then
+				/*
+				set spawnPosition = LinePatternSpawn(spawn).GetSpawnPosition(GetRandomInt(0, 2))
+				
+				set bhole = Blackhole.create(spawnPosition.x, spawnPosition.y)
+				call bhole.Start()
+				call GroupAddUnit(g, bhole.BlackholeUnit)
+				
+				call spawnPosition.deallocate()
+				*/
+				//! runtextmacro AllSpawn("spawn", "g", "i", "1", "spawnPositionLastIndex", "spawnPosition", "ICETROLL")
+			elseif cycle == 2 then
+				set spawnPosition = LinePatternSpawn(spawn).GetSpawnPosition(GetRandomInt(0, 2))
+				call GroupAddUnit(g, Recycle_MakeUnit(ICETROLL, spawnPosition.x, spawnPosition.y))
+				call spawnPosition.deallocate()
+			endif
+		endif
+				
+		return g
+	endfunction
+	function W4APatternSpawn takes PatternSpawn spawn, Levels_Level parentLevel returns group
 		local group g = NewGroup()
 		local integer variation = spawn.GetVariation()
 		local integer cycle = spawn.GetCycle(variation)
@@ -68,7 +127,7 @@ library EDWPatternSpawnDefinitions requires PatternSpawn, Recycle
 			if cycle == 0 then
 				set rand = GetRandomInt(0, 3)
 				//! runtextmacro AllSpawn("spawn", "g", "i", "rand", "spawnPositionLastIndex", "spawnPosition", "ICETROLL")
-			elseif cycle == 1 then
+			elseif cycle == 1 or cycle == 4 then
 				//! runtextmacro EvenSpawn("spawn", "g", "i", "spawnPositionLastIndex", "spawnPosition", "ICETROLL")
 			elseif cycle == 2 then
 				//! runtextmacro OddSpawn("spawn", "g", "i", "spawnPositionLastIndex", "spawnPosition", "ICETROLL")
@@ -77,11 +136,58 @@ library EDWPatternSpawnDefinitions requires PatternSpawn, Recycle
 				//! runtextmacro AllSpawn("spawn", "g", "i", "rand", "spawnPositionLastIndex", "spawnPosition", "ICETROLL")
 			endif
 		elseif variation == 1 then
-		
+			if cycle == 0 or cycle == 3 then
+				set spawnPosition = LinePatternSpawn(spawn).GetSpawnPosition(0)
+				call GroupAddUnit(g, Recycle_MakeUnit(ICETROLL, spawnPosition.x, spawnPosition.y))
+				call spawnPosition.deallocate()
+				
+				set spawnPosition = LinePatternSpawn(spawn).GetSpawnPosition(3)
+				call GroupAddUnit(g, Recycle_MakeUnit(ICETROLL, spawnPosition.x, spawnPosition.y))
+				call spawnPosition.deallocate()
+			elseif cycle == 1 or cycle == 2 or cycle == 4 then
+				set spawnPosition = LinePatternSpawn(spawn).GetSpawnPosition(1)
+				call GroupAddUnit(g, Recycle_MakeUnit(ICETROLL, spawnPosition.x, spawnPosition.y))
+				call spawnPosition.deallocate()
+				
+				set spawnPosition = LinePatternSpawn(spawn).GetSpawnPosition(2)
+				call GroupAddUnit(g, Recycle_MakeUnit(ICETROLL, spawnPosition.x, spawnPosition.y))
+				call spawnPosition.deallocate()
+			endif
+		elseif variation == 2 then
+			if cycle == 0 or cycle == 2 then
+				set rand = GetRandomInt(0, 3)
+				//! runtextmacro AllSpawn("spawn", "g", "i", "rand", "spawnPositionLastIndex", "spawnPosition", "ICETROLL")
+			elseif cycle == 1 or cycle == 4 then
+				set rand = GetRandomInt(0, 1)
+				
+				if rand == 0 then
+					//! runtextmacro EvenSpawn("spawn", "g", "i", "spawnPositionLastIndex", "spawnPosition", "ICETROLL")
+				else
+					//! runtextmacro OddSpawn("spawn", "g", "i", "spawnPositionLastIndex", "spawnPosition", "ICETROLL")
+				endif
+			elseif cycle == 3 then
+				set rand = GetRandomInt(0, 1)
+				
+				if rand == 0 then
+					set spawnPosition = LinePatternSpawn(spawn).GetSpawnPosition(0)
+					call GroupAddUnit(g, Recycle_MakeUnit(ICETROLL, spawnPosition.x, spawnPosition.y))
+					call spawnPosition.deallocate()
+					
+					set spawnPosition = LinePatternSpawn(spawn).GetSpawnPosition(3)
+					call GroupAddUnit(g, Recycle_MakeUnit(ICETROLL, spawnPosition.x, spawnPosition.y))
+					call spawnPosition.deallocate()
+				else
+					set spawnPosition = LinePatternSpawn(spawn).GetSpawnPosition(1)
+					call GroupAddUnit(g, Recycle_MakeUnit(ICETROLL, spawnPosition.x, spawnPosition.y))
+					call spawnPosition.deallocate()
+					
+					set spawnPosition = LinePatternSpawn(spawn).GetSpawnPosition(2)
+					call GroupAddUnit(g, Recycle_MakeUnit(ICETROLL, spawnPosition.x, spawnPosition.y))
+					call spawnPosition.deallocate()
+				endif
+			endif
 		endif
-		
-		set rand = GetRandomInt(0, 3)
-		
+				
 		return g
 	endfunction
 endlibrary

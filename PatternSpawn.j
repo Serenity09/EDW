@@ -3,7 +3,7 @@ library PatternSpawn
 		private constant boolean DEBUG_PATTERN = false
 	endglobals
 	
-	function interface IPatternSpawn takes PatternSpawn spawn returns group
+	function interface IPatternSpawn takes PatternSpawn spawn, Levels_Level parentLevel returns group
 	
 	struct PatternSpawn extends array
 		private IPatternSpawn SpawnCB
@@ -23,7 +23,7 @@ library PatternSpawn
 			return .CurrentCycle - variation * .CycleCount
 		endmethod
 		
-		public method Spawn takes nothing returns group
+		public method Spawn takes Levels_Level parentLevel returns group
 			if (.CycleVariations == 1 and .CurrentCycle + 1 == .CycleCount) or (.CycleVariations != 1 and ModuloInteger(.CurrentCycle + 1, .CycleCount) == 0) then
 				if .CycleVariations == 1 then
 					set .CurrentCycle = 0
@@ -38,7 +38,7 @@ library PatternSpawn
 				debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "Spawning for pattern " + I2S(this))
 			endif
 			
-			return .SpawnCB.evaluate(this)
+			return .SpawnCB.evaluate(this, parentLevel)
 		endmethod
 		
 		public method Reset takes nothing returns nothing

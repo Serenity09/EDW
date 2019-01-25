@@ -200,6 +200,7 @@ library EDWLevelContent requires SimpleList, Teams, Levels, EDWPatternSpawnDefin
 		call l.AddStartable(RespawningGateway.create(RFIRE, -4533, -15735, -6015, -15612, 3*60))
 		call l.AddStartable(RespawningGateway.create(BFIRE, -4437, -15735, -5122, -15095, 3*60))
 		
+		//width 3 behavior diagonal cross
 		set sg = SimpleGenerator.create(gg_rct_LW1_Generator1, ICETROLL, 2., 270, 12, 150)
 		set sg.AnimateMovement = true
 		
@@ -208,11 +209,35 @@ library EDWLevelContent requires SimpleList, Teams, Levels, EDWPatternSpawnDefin
 		set sg.SpawnPattern = pattern
 		call l.AddStartable(sg)
 		
-		set sg = SimpleGenerator.create(gg_rct_LW1_Generator2, ICETROLL, 1.5, 270, 23, 220)
+		//width 4 behavior A spawn
+		set sg = SimpleGenerator.create(gg_rct_LW1_Generator2, ICETROLL, 1.35, 270, 23, 175)
 		set sg.AnimateMovement = true
 		
-		set pattern = LinePatternSpawn.create(LW1BPatternSpawn, 4, GetTerrainCenterpoint(-6784, -12924), 0, 4*TERRAIN_TILE_SIZE, TERRAIN_TILE_SIZE)
+		set pattern = LinePatternSpawn.create(W4APatternSpawn, 5, GetTerrainCenterpoint(-6784, -12924), 0, 4*TERRAIN_TILE_SIZE, TERRAIN_TILE_SIZE)
+		set pattern.CycleVariations = 3
 		set sg.SpawnPattern = pattern
+		call l.AddStartable(sg)
+		
+		//width 3 behavior A spawn
+		set sg = SimpleGenerator.create(gg_rct_LW1_Generator3, ICETROLL, 1.35, 270, 23, 175)
+		set sg.AnimateMovement = true
+		
+		set pattern = LinePatternSpawn.create(W3APatternSpawn, 3, GetTerrainCenterpoint(-6153, -12924), 0, 3*TERRAIN_TILE_SIZE, TERRAIN_TILE_SIZE)
+		set pattern.CycleVariations = 4
+		set sg.SpawnPattern = pattern
+		call l.AddStartable(sg)
+		
+		//standard simple generators
+		set sg = SimpleGenerator.create(gg_rct_LW1_Generator4, ICETROLL, 4, 270, 23, 350)
+		set sg.AnimateMovement = true
+		call l.AddStartable(sg)
+		
+		set sg = SimpleGenerator.create(gg_rct_LW1_Generator5, ICETROLL, 1.73, 270, 23, 175)
+		set sg.AnimateMovement = true
+		call l.AddStartable(sg)
+		
+		set sg = SimpleGenerator.create(gg_rct_LW1_Generator6, ICETROLL, 4., 270, 23, 350)
+		set sg.AnimateMovement = true
 		call l.AddStartable(sg)
 		
 		// set rg = RelayGenerator.create(-5948, 10836, 4, 4, 270, 0, ICETROLL, 2.)
@@ -221,10 +246,7 @@ library EDWLevelContent requires SimpleList, Teams, Levels, EDWPatternSpawnDefin
         // call rg.EndTurns(90)
 		        
         // call l.AddStartable(rg)
-		
-		
-		
-		
+				
         //PRIDE WORLD / PLATFORMING
         //LEVEL 1
         set l = Levels_Level.create(9, "Perspective", 4, 2, "PW1Start", "PW1Stop", gg_rct_PWR_1_1, gg_rct_PW1_Vision, gg_rct_PW1_End, 0) //gg_rct_PW1_Vision

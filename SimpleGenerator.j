@@ -4,8 +4,14 @@ globals
     private constant real BUFFER = 64
     private constant real MOVEMENT_UPDATE_TIMESTEP = .035
     //private constant real DESPAWN_CHECK_TIMESTEP = .5
+	
+	private constant real MOVEMENT_ANIMATION_EXTRASLOW = 50. //helps animation match actual speed
     
     private constant player GENERATOR_PLAYER = Player(10)
+	
+	private constant boolean DEBUG_MOVE_LOOP = false
+	private constant boolean DEBUG_SPAWN_LOOP = false
+	private constant boolean DEBUG_START = false
 endglobals
 
 struct SimpleGenerator extends IStartable
@@ -30,50 +36,58 @@ struct SimpleGenerator extends IStartable
     
     public static method PeriodicSpawn takes nothing returns nothing
         local thistype generator = GetTimerData(GetExpiredTimer())
-		local group g
-		
+		local group spawnGroup
 		local group tempGroup
 		local unit u
 		
+		static if DEBUG_SPAWN_LOOP then
+			call DisplayTextToForce(bj_FORCE_PLAYER[0], "Spawning for generator " + I2S(generator))
+		endif
+		
 		//might as well keep this optimization/default implementation, since it's already built
 		if generator.SpawnPattern == 0 then					
-			set g = NewGroup()
-			call GroupAddUnit(g, Recycle_MakeUnit(generator.SpawnUnit, GetRandomReal(GetRectMinX(generator.SpawnArea), GetRectMaxX(generator.SpawnArea)), GetRandomReal(GetRectMinY(generator.SpawnArea), GetRectMaxY(generator.SpawnArea))))
+			set spawnGroup = NewGroup()
+			call GroupAddUnit(spawnGroup, Recycle_MakeUnit(generator.SpawnUnit, GetRandomReal(GetRectMinX(generator.SpawnArea), GetRectMaxX(generator.SpawnArea)), GetRandomReal(GetRectMinY(generator.SpawnArea), GetRectMaxY(generator.SpawnArea))))
 		else
-			set g = generator.SpawnPattern.Spawn()
+			set spawnGroup = generator.SpawnPattern.Spawn(generator.ParentLevel)
 		endif
 		
 		if generator.AnimateMovement then
 			set tempGroup = NewGroup()
 			
 			loop
-			set u = FirstOfGroup(g)
+			set u = FirstOfGroup(spawnGroup)
 			exitwhen u == null
 				call SetUnitFacingTimed(u, generator.SpawnDirection, 0)
-				// call SetUnitAnimation(u, "walk")
 				
-				//TODO replace walk animation hard code and move speed hard code with lookups for all EDW units
 				call SetUnitAnimationByIndex(u, GetWalkAnimationIndex(GetUnitTypeId(u)))
-				call SetUnitTimeScale(u, generator.MoveSpeed / MOVEMENT_UPDATE_TIMESTEP / GetDefaultMoveSpeed(GetUnitTypeId(u)))
+				call SetUnitTimeScale(u, generator.MoveSpeed / MOVEMENT_UPDATE_TIMESTEP / (GetDefaultMoveSpeed(GetUnitTypeId(u)) + MOVEMENT_ANIMATION_EXTRASLOW))
 			call GroupAddUnit(tempGroup, u)
-			call GroupRemoveUnit(g, u)
+			call GroupRemoveUnit(spawnGroup, u)
 			endloop
 			
-			call ReleaseGroup(g)
-			set g = tempGroup
+			call ReleaseGroup(spawnGroup)
+			set spawnGroup = tempGroup
 		endif
 		
+		static if DEBUG_SPAWN_LOOP then
+			call DisplayTextToForce(bj_FORCE_PLAYER[0], "Spawning " + I2S(CountUnitsInGroup(spawnGroup)) + " new units")
+		endif
 		
-        call MergeGroups(generator.SpawnedUnits, g)
+		//! runtextmacro MergeGroups("generator.SpawnedUnits", "spawnGroup", "u", "tempGroup")
 		
-		call ReleaseGroup(g)
-		set g = null
+		call ReleaseGroup(spawnGroup)
+		set spawnGroup = null
+				
+		static if DEBUG_SPAWN_LOOP then
+			call DisplayTextToForce(bj_FORCE_PLAYER[0], "Finished spawning with " + I2S(CountUnitsInGroup(generator.SpawnedUnits)) + " total units")
+		endif
     endmethod
     
 	//TODO could support any angle by using sin/cos
     public static method PeriodicMove takes nothing returns nothing
         local SimpleList_ListNode curActiveWidgetNode = thistype.ActiveWidgets.first
-        local group swapGroup = NewGroup()
+        local group swapGroup
         local thistype curActiveWidget
         local unit curUnit
         
@@ -84,7 +98,11 @@ struct SimpleGenerator extends IStartable
         
         loop
         exitwhen curActiveWidgetNode == 0
-            set curActiveWidget = thistype(curActiveWidgetNode.value)
+			set curActiveWidget = thistype(curActiveWidgetNode.value)
+			
+			static if DEBUG_MOVE_LOOP then
+				call DisplayTextToForce(bj_FORCE_PLAYER[0], "Started generator update for " + I2S(curActiveWidget))
+			endif
             
             if curActiveWidget.SpawnDirection == 0 then
                 set xDirection = 1
@@ -100,18 +118,26 @@ struct SimpleGenerator extends IStartable
                 set yDirection = -1
             endif
             
-            set curUnit = FirstOfGroup(curActiveWidget.SpawnedUnits)
+			set swapGroup = NewGroup()
             loop
-            exitwhen curUnit == null
+            set curUnit = FirstOfGroup(curActiveWidget.SpawnedUnits)
+			exitwhen curUnit == null
                 if xDirection != 0 then
                     set destinationCoordinate = GetUnitX(curUnit) + xDirection * curActiveWidget.MoveSpeed
                     
                     //debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "end: " + R2S(curActiveWidget.EndCoordinate) + ", cur: " + R2S(destinationCoordinate))
                     if (curActiveWidget.EndCoordinate >= 0 and destinationCoordinate >= curActiveWidget.EndCoordinate) or (curActiveWidget.EndCoordinate < 0 and destinationCoordinate <= curActiveWidget.EndCoordinate) then
                         //unit has gone past end
+						call GroupRemoveUnit(curActiveWidget.SpawnedUnits, curUnit)
                         call Recycle_ReleaseUnit(curUnit)
+						
+						static if DEBUG_MOVE_LOOP then
+							call DisplayTextToForce(bj_FORCE_PLAYER[0], "Removed unit from movement")
+						endif
                     else
                         call SetUnitX(curUnit, destinationCoordinate)
+						
+						call GroupRemoveUnit(curActiveWidget.SpawnedUnits, curUnit)
                         call GroupAddUnit(swapGroup, curUnit)
                     endif
                 else //yDirection != 0
@@ -120,22 +146,34 @@ struct SimpleGenerator extends IStartable
                     //debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "end: " + R2S(curActiveWidget.EndCoordinate) + ", cur: " + R2S(destinationCoordinate))
                     if (curActiveWidget.EndCoordinate >= 0 and destinationCoordinate >= curActiveWidget.EndCoordinate) or (curActiveWidget.EndCoordinate < 0 and destinationCoordinate <= curActiveWidget.EndCoordinate) then
                         //unit has gone past end
+						call GroupRemoveUnit(curActiveWidget.SpawnedUnits, curUnit)
                         call Recycle_ReleaseUnit(curUnit)
+						
+						static if DEBUG_MOVE_LOOP then
+							call DisplayTextToForce(bj_FORCE_PLAYER[0], "Removed unit from movement")
+						endif
                     else
                         call SetUnitY(curUnit, destinationCoordinate)
+						
+						call GroupRemoveUnit(curActiveWidget.SpawnedUnits, curUnit)
                         call GroupAddUnit(swapGroup, curUnit)
                     endif
                 endif
-            
-            call GroupRemoveUnit(curActiveWidget.SpawnedUnits, curUnit)
-            set curUnit = FirstOfGroup(curActiveWidget.SpawnedUnits)
             endloop
-            
+			
+			static if DEBUG_MOVE_LOOP then
+				call DisplayTextToForce(bj_FORCE_PLAYER[0], "Finished generator update")
+            endif
+			
             call ReleaseGroup(curActiveWidget.SpawnedUnits)
             set curActiveWidget.SpawnedUnits = swapGroup
                         
         set curActiveWidgetNode = curActiveWidgetNode.next
         endloop
+		
+		static if DEBUG_MOVE_LOOP then
+			call DisplayTextToForce(bj_FORCE_PLAYER[0], "Finished all generators")
+		endif
     endmethod
 	
 	public method Start takes nothing returns nothing
@@ -146,15 +184,22 @@ struct SimpleGenerator extends IStartable
         call thistype.ActiveWidgets.addEnd(this)
         set this.SpawnTimer = NewTimerEx(this)
         set this.SpawnedUnits = NewGroup()
+		
+		static if DEBUG_START then
+			call DisplayTextToForce(bj_FORCE_PLAYER[0], "Starting generator " + I2S(this) + " with group " + I2S(GetHandleId(this.SpawnedUnits)))
+		endif
+		
         call TimerStart(this.SpawnTimer, this.SpawnTimeStep, true, function thistype.PeriodicSpawn)
     endmethod
     
     public method Stop takes nothing returns nothing
         call thistype.ActiveWidgets.remove(this)
-        //call PauseTimer(this.SpawnTimer)
+		
         call ReleaseTimer(this.SpawnTimer)
-        call ReleaseGroup(this.SpawnedUnits)
         set this.SpawnTimer = null
+		
+		call ReleaseGroup(this.SpawnedUnits)
+		set this.SpawnedUnits = null
         
 		if this.SpawnPattern != 0 then
 			call this.SpawnPattern.Reset()
