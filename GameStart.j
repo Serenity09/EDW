@@ -1,8 +1,11 @@
-library GameStart initializer Init requires Levels, EDWVisualVote, UnitGlobals, MazerGlobals, GameMessage, EDWCinematics
+library EDWGameStart initializer Init requires Levels, EDWVisualVote, UnitGlobals, MazerGlobals, GameMessage, EDWLevelContent, EDWCinematicContent
     globals
         constant real GAME_INIT_TIME_INITIAL = 0.01 //how long into the game before we start
         //constant real GAME_INIT_TIME_STEP = .5
-        public timer GameInitTimer        
+        public timer GameInitTimer     
+		
+		private boolean FinishedPreLoad = false
+		private boolean FinishedPostLoad = false
     endglobals
     
     private function PlayerInit takes nothing returns nothing
@@ -60,8 +63,20 @@ library GameStart initializer Init requires Levels, EDWVisualVote, UnitGlobals, 
             
         endif
     endfunction
+	
+	static if DEBUG_MODE then
+		private function CheckInitFinished takes nothing returns nothing
+			if not FinishedPreLoad then
+				call DisplayTextToForce(bj_FORCE_PLAYER[0], "Did not finish Game Pre Load")
+			endif
+			
+			if not FinishedPostLoad then
+				call DisplayTextToForce(bj_FORCE_PLAYER[0], "Did not finish Game Post Load")
+			endif
+		endfunction
+	endif
             
-    public function First takes nothing returns nothing
+    private function First takes nothing returns nothing
         //INITIALIZE MAP SETTINGS
         //time should be fixed at noon
         call SetFloatGameState(GAME_STATE_TIME_OF_DAY, 12.00001)
@@ -81,17 +96,29 @@ library GameStart initializer Init requires Levels, EDWVisualVote, UnitGlobals, 
         //use single players when in debug mode, now that menu is functional
         call EDWVisualVote_CreateMenu()
         
-        debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "Finished GameStart")
-    endfunction
+		static if DEBUG_MODE then
+			set FinishedPostLoad = true
+		endif
+        debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "Finished Game Start 0 second callback")
+    endfunction	
             
-    public function Init takes nothing returns nothing
+    private function Init takes nothing returns nothing
         set GameInitTimer = CreateTimer()
-        call TimerStart(GameInitTimer, GAME_INIT_TIME_INITIAL, false, function GameStart_First)
+        call TimerStart(GameInitTimer, GAME_INIT_TIME_INITIAL, false, function First)
         
-        //call level initalizer, in EDWInitializedContent -- library EDWLevels
-		call EDWLevels_Initialize()
+		static if DEBUG_MODE then
+			call TimerStart(CreateTimer(), 1.0, false, function CheckInitFinished)
+		endif
 		
-		//call cinematic initalizer after levels are ready, in EDWInitializedContent -- library EDWCinematics
-		call EDWCinematics_Initialize()
+        //call level initalizer
+		call EDWLevelContent_Initialize()
+		
+		//call cinematic initalizer after levels are ready
+		call EDWCinematicContent_Initialize()
+		
+		static if DEBUG_MODE then
+			set FinishedPreLoad = true
+		endif
+		debug 
     endfunction
 endlibrary
