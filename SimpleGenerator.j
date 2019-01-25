@@ -1,40 +1,73 @@
-library SimpleGenerator requires TimerUtils, SimpleList, Recycle, GroupUtils
+library SimpleGenerator requires TimerUtils, SimpleList, Recycle, GroupUtils, PatternSpawn
 
 globals
     private constant real BUFFER = 64
-    private constant real MOVEMENT_UPDATE_TIMESTEP = .1
+    private constant real MOVEMENT_UPDATE_TIMESTEP = .035
     //private constant real DESPAWN_CHECK_TIMESTEP = .5
     
     private constant player GENERATOR_PLAYER = Player(10)
 endglobals
 
 struct SimpleGenerator extends IStartable
-    public rect SpawnArea
+    public LinePatternSpawn SpawnPattern
+	
+	public rect SpawnArea
     public integer SpawnUnit
+	
     public real SpawnDirection
     public real EndCoordinate
     
     private timer SpawnTimer
     private real SpawnTimeStep
+	
     private group SpawnedUnits
     private real MoveSpeed
+	
+	public boolean AnimateMovement
     
     private static timer MoveTimer
     private static SimpleList_List ActiveWidgets
     
     public static method PeriodicSpawn takes nothing returns nothing
         local thistype generator = GetTimerData(GetExpiredTimer())
-        local real x = GetRandomReal(GetRectMinX(generator.SpawnArea), GetRectMaxX(generator.SpawnArea))
-        local real y = GetRandomReal(GetRectMinY(generator.SpawnArea), GetRectMaxY(generator.SpawnArea))
-        local unit u = Recycle_MakeUnit(generator.SpawnUnit, x, y)
-        local real radDirection = generator.SpawnDirection / 180 * bj_PI
-        
-        //debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "Spawning for generator " + I2S(generator))
-        //debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "x: " + R2S(x) + ", y: " + R2S(y))
-        
-        //send unit onwards!
-        //call IssuePointOrder(u, "move", x + generator.SpawnDistance * Cos(radDirection), y + generator.SpawnDistance * Sin(radDirection))
-        call GroupAddUnit(generator.SpawnedUnits, u)
+		local group g
+		
+		local group tempGroup
+		local unit u
+		
+		//might as well keep this optimization/default implementation, since it's already built
+		if generator.SpawnPattern == 0 then					
+			set g = NewGroup()
+			call GroupAddUnit(g, Recycle_MakeUnit(generator.SpawnUnit, GetRandomReal(GetRectMinX(generator.SpawnArea), GetRectMaxX(generator.SpawnArea)), GetRandomReal(GetRectMinY(generator.SpawnArea), GetRectMaxY(generator.SpawnArea))))
+		else
+			set g = generator.SpawnPattern.Spawn()
+		endif
+		
+		if generator.AnimateMovement then
+			set tempGroup = NewGroup()
+			
+			loop
+			set u = FirstOfGroup(g)
+			exitwhen u == null
+				call SetUnitFacingTimed(u, generator.SpawnDirection, 0)
+				// call SetUnitAnimation(u, "walk")
+				
+				//TODO replace walk animation hard code and move speed hard code with lookups for all EDW units
+				call SetUnitAnimationByIndex(u, GetWalkAnimationIndex(GetUnitTypeId(u)))
+				call SetUnitTimeScale(u, generator.MoveSpeed / MOVEMENT_UPDATE_TIMESTEP / GetDefaultMoveSpeed(GetUnitTypeId(u)))
+			call GroupAddUnit(tempGroup, u)
+			call GroupRemoveUnit(g, u)
+			endloop
+			
+			call ReleaseGroup(g)
+			set g = tempGroup
+		endif
+		
+		
+        call MergeGroups(generator.SpawnedUnits, g)
+		
+		call ReleaseGroup(g)
+		set g = null
     endmethod
     
 	//TODO could support any angle by using sin/cos
@@ -123,6 +156,10 @@ struct SimpleGenerator extends IStartable
         call ReleaseGroup(this.SpawnedUnits)
         set this.SpawnTimer = null
         
+		if this.SpawnPattern != 0 then
+			call this.SpawnPattern.Reset()
+		endif
+		
         if thistype.ActiveWidgets.count == 0 then
             call PauseTimer(thistype.MoveTimer)
         endif
@@ -165,6 +202,10 @@ struct SimpleGenerator extends IStartable
         set new.SpawnTimeStep = spawnTimestep
         set new.SpawnDirection = spawnDirection
         set new.MoveSpeed = movespeed * MOVEMENT_UPDATE_TIMESTEP
+		
+		//defaults
+		set new.AnimateMovement = false
+		set new.SpawnPattern = 0
         
         //set new.EndArea = Rect(GetRectMinX(spawn) - BUFFER + xOffset, GetRectMinY(spawn) - BUFFER + yOffset, GetRectMaxX(spawn) + BUFFER + xOffset, GetRectMaxY(spawn) + BUFFER + yOffset)
         
