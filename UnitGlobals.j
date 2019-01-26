@@ -10,6 +10,10 @@ library UnitGlobals
         constant integer GUARD = 'e000'
         
         constant integer ICETROLL = 'n002'
+		
+		constant integer SPIRITWALKER = 'o002'
+		
+		constant integer CLAWMAN = 'e00U'
         
         //attacking units
         //should be filtered out (not collide)

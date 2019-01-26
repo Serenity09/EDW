@@ -94,7 +94,7 @@ library EDWLevelContent requires SimpleList, Teams, Levels, EDWPatternSpawnDefin
 		call l.AddStartable(MortarNTarget.create(SMLMORT, SMLTARG, Player(8), gg_rct_IW3_Mortar1 , gg_rct_IW3_Target1))
 		call l.AddStartable(MortarNTarget.create(SMLMORT, SMLTARG, Player(8), gg_rct_IW3_Mortar1 , gg_rct_IW3_Target1))
 		
-		call l.AddStartable(Blackhole.create(15000, 3330))
+		call l.AddStartable(Blackhole.create(15000, 3330, true))
 		
         call l.AddStartable(DrunkWalker_DrunkWalkerSpawn.create(gg_rct_IW3_Drunks_1, 6, 5, LGUARD, 24))
         call l.AddStartable(DrunkWalker_DrunkWalkerSpawn.create(gg_rct_IW3_Drunks_2, 8, 6, LGUARD, 16))
@@ -106,7 +106,7 @@ library EDWLevelContent requires SimpleList, Teams, Levels, EDWPatternSpawnDefin
         call l.AddCheckpoint(gg_rct_IWCP_4_2, gg_rct_IWR_4_3)
         
         call l.AddStartable(DrunkWalker_DrunkWalkerSpawn.create(gg_rct_IW4_Drunks, 6, 5, LGUARD, 24))
-        call l.AddStartable(Blackhole.create(8958, 6400))
+        call l.AddStartable(Blackhole.create(8958, 6400, true))
         //
         set rg = RelayGenerator.create(5373, 9984, 3, 6, 270, 0, LGUARD, 2.)
         call rg.AddTurnSimple(0, 6)
@@ -161,65 +161,108 @@ library EDWLevelContent requires SimpleList, Teams, Levels, EDWPatternSpawnDefin
 		//LAND WORLD A
 		//LEVEL 1
 		set l = Levels_Level.create(5, "Need For Speed", 3, 3, "LW1Start", "LW1Stop", gg_rct_LWR_1_1, gg_rct_LW1_Vision, gg_rct_LW1_End, 0)
-        //call l.AddCheckpoint(gg_rct_LWCP_1_1, gg_rct_LWR_1_2)
+        call l.AddCheckpoint(gg_rct_LWCP_1_1, gg_rct_LWR_1_2)
 		
-		/*
+		//outer sync group
 		set nsync = SynchronizedGroup.create()
-		set jtimber = nsync.AddUnit(ICETROLL)
-		call jtimber.AllOrders.addEnd(GetTerrainCenterpoint(-15000, -8962))
-		call jtimber.AllOrders.addEnd(GetTerrainCenterpoint(-15500, -8962))
-		call jtimber.AllOrders.addEnd(GetTerrainCenterpoint(-15500, -8432))
-		call jtimber.AllOrders.addEnd(GetTerrainCenterpoint(-15000, -8432))
-		set jtimber.AllOrders.last.next = jtimber.AllOrders.first
-		
-		set jtimber = nsync.AddUnit(ICETROLL)
-		call jtimber.AllOrders.addEnd(GetTerrainCenterpoint(-15500, -8962))
-		call jtimber.AllOrders.addEnd(GetTerrainCenterpoint(-15500, -8432))
-		call jtimber.AllOrders.addEnd(GetTerrainCenterpoint(-15000, -8432))
-		call jtimber.AllOrders.addEnd(GetTerrainCenterpoint(-15000, -8962))
-		set jtimber.AllOrders.last.next = jtimber.AllOrders.first
-		
-		set jtimber = nsync.AddUnit(ICETROLL)
-		call jtimber.AllOrders.addEnd(GetTerrainCenterpoint(-15500, -8432))
-		call jtimber.AllOrders.addEnd(GetTerrainCenterpoint(-15000, -8432))
-		call jtimber.AllOrders.addEnd(GetTerrainCenterpoint(-15000, -8962))
-		call jtimber.AllOrders.addEnd(GetTerrainCenterpoint(-15500, -8962))
-		set jtimber.AllOrders.last.next = jtimber.AllOrders.first
-		
-		set jtimber = nsync.AddUnit(ICETROLL)
-		call jtimber.AllOrders.addEnd(GetTerrainCenterpoint(-15000, -8432))
-		call jtimber.AllOrders.addEnd(GetTerrainCenterpoint(-15000, -8962))
-		call jtimber.AllOrders.addEnd(GetTerrainCenterpoint(-15500, -8962))
-		call jtimber.AllOrders.addEnd(GetTerrainCenterpoint(-15500, -8432))
-		set jtimber.AllOrders.last.next = jtimber.AllOrders.first
-		
 		call l.AddStartable(nsync)
-		*/
-		call l.AddStartable(RespawningGateway.create(RFIRE, -4725, -15735, -5900, -13810, 3*60))
-		call l.AddStartable(RespawningGateway.create(BFIRE, -4629, -15735, -4881, -13567, 3*60))
-		call l.AddStartable(RespawningGateway.create(RFIRE, -4533, -15735, -6015, -15612, 3*60))
-		call l.AddStartable(RespawningGateway.create(BFIRE, -4437, -15735, -5122, -15095, 3*60))
+		
+		set jtimber = nsync.AddUnit(CLAWMAN)
+		call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_Rect_229))
+		call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_Rect_230))
+		call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_Rect_231))
+		call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_Rect_232))
+		set jtimber.AllOrders.last.next = jtimber.AllOrders.first
+		
+		set jtimber = nsync.AddUnit(CLAWMAN)
+		call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_Rect_231))
+		call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_Rect_232))
+		call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_Rect_229))
+		call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_Rect_230))
+		set jtimber.AllOrders.last.next = jtimber.AllOrders.first
+		
+		set jtimber = nsync.AddUnit(CLAWMAN)
+		call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_Region_246))
+		call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_Rect_232))
+		call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_Region_445))
+		call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_Region_247))
+		set jtimber.AllOrders.last.next = jtimber.AllOrders.first
+		
+		set jtimber = nsync.AddUnit(CLAWMAN)
+		call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_Region_445))
+		call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_Region_247))
+		call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_Region_246))
+		call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_Rect_232))
+		set jtimber.AllOrders.last.next = jtimber.AllOrders.first
+		
+		//inner sync group A
+		set nsync = SynchronizedGroup.create()
+		call l.AddStartable(nsync)
+		set jtimber = nsync.AddUnit(ICETROLL)
+		call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_Rect_233))
+		call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_Rect_234))
+		call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_Rect_235))
+		call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_Rect_236))
+		set jtimber.AllOrders.last.next = jtimber.AllOrders.first
+		
+		set jtimber = nsync.AddUnit(ICETROLL)
+		call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_Rect_235))
+		call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_Rect_236))
+		call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_Rect_233))
+		call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_Rect_234))
+		set jtimber.AllOrders.last.next = jtimber.AllOrders.first
+		
+		//inner sync group B
+		set nsync = SynchronizedGroup.create()
+		call l.AddStartable(nsync)
+		set jtimber = nsync.AddUnit(ICETROLL)
+		call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_Region_442))
+		call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_Region_441))
+		call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_Region_440))
+		call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_Region_439))
+		set jtimber.AllOrders.last.next = jtimber.AllOrders.first
+		
+		set jtimber = nsync.AddUnit(ICETROLL)
+		call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_Region_440))
+		call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_Region_439))
+		call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_Region_442))
+		call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_Region_441))
+		set jtimber.AllOrders.last.next = jtimber.AllOrders.first
 		
 		//width 3 behavior diagonal cross
-		set sg = SimpleGenerator.create(gg_rct_LW1_Generator1, ICETROLL, 2., 270, 12, 150)
+		set sg = SimpleGenerator.create(gg_rct_LW1_Generator1, ICETROLL, 2., 270, 21, 150)
 		set sg.AnimateMovement = true
 		
-		set pattern = LinePatternSpawn.create(DiagonalCrossSpawn, 4, GetTerrainCenterpoint(-8320, -14318), 0, 3*TERRAIN_TILE_SIZE, TERRAIN_TILE_SIZE)
+		set pattern = LinePatternSpawn.create(DiagonalCrossSpawn, 4, GetTerrainCenterpoint(-8320, -13055), 0, 3*TERRAIN_TILE_SIZE, TERRAIN_TILE_SIZE)
 		set pattern.Data = ICETROLL
 		set sg.SpawnPattern = pattern
 		call l.AddStartable(sg)
 		
+		//gateways
+		call l.AddStartable(RespawningGateway.CreateFromVectors(RFIRE, vector2.createFromRect(gg_rct_Region_451), vector2.createFromRect(gg_rct_Region_446), 1*60))
+		call l.AddStartable(RespawningGateway.CreateFromVectors(RFIRE, vector2.createFromRect(gg_rct_Region_452), vector2.createFromRect(gg_rct_Region_447), 10*60))
+		call l.AddStartable(RespawningGateway.CreateFromVectors(BFIRE, vector2.createFromRect(gg_rct_Region_453), vector2.createFromRect(gg_rct_Region_448), 10*60))
+		call l.AddStartable(RespawningGateway.CreateFromVectors(RFIRE, vector2.createFromRect(gg_rct_Region_454), vector2.createFromRect(gg_rct_Region_449), 10*60))
+		call l.AddStartable(RespawningGateway.CreateFromVectors(BFIRE, vector2.createFromRect(gg_rct_Region_455), vector2.createFromRect(gg_rct_Region_450), 10*60))
+		
+		//********checkpoint 2
+		call l.AddStartable(RespawningGateway.CreateFromVectors(RFIRE, vector2.createFromRect(gg_rct_Region_483), vector2.createFromRect(gg_rct_Region_438), 5*60))
+		call l.AddStartable(RespawningGateway.CreateFromVectors(BFIRE, vector2.createFromRect(gg_rct_Region_484), vector2.createFromRect(gg_rct_Region_479), 5*60))
+		call l.AddStartable(RespawningGateway.CreateFromVectors(RFIRE, vector2.createFromRect(gg_rct_Region_485), vector2.createFromRect(gg_rct_Region_480), 5*60))
+		call l.AddStartable(RespawningGateway.CreateFromVectors(BFIRE, vector2.createFromRect(gg_rct_Region_486), vector2.createFromRect(gg_rct_Region_481), 5*60))
+		call l.AddStartable(RespawningGateway.CreateFromVectors(RFIRE, vector2.createFromRect(gg_rct_Region_487), vector2.createFromRect(gg_rct_Region_482), 5*60))
+		
 		//width 4 behavior A spawn
-		set sg = SimpleGenerator.create(gg_rct_LW1_Generator2, ICETROLL, 1.35, 270, 23, 175)
+		set sg = SimpleGenerator.create(gg_rct_LW1_Generator2, ICETROLL, 1.8, 90, 22, 175)
 		set sg.AnimateMovement = true
 		
-		set pattern = LinePatternSpawn.create(W4APatternSpawn, 5, GetTerrainCenterpoint(-6784, -12924), 0, 4*TERRAIN_TILE_SIZE, TERRAIN_TILE_SIZE)
+		set pattern = LinePatternSpawn.create(W4APatternSpawn, 5, GetTerrainCenterpoint(-6784, -15742), 0, 4*TERRAIN_TILE_SIZE, TERRAIN_TILE_SIZE)
 		set pattern.CycleVariations = 3
 		set sg.SpawnPattern = pattern
 		call l.AddStartable(sg)
 		
 		//width 3 behavior A spawn
-		set sg = SimpleGenerator.create(gg_rct_LW1_Generator3, ICETROLL, 1.35, 270, 23, 175)
+		set sg = SimpleGenerator.create(gg_rct_LW1_Generator3, ICETROLL, 1.4, 270, 16, 350)
 		set sg.AnimateMovement = true
 		
 		set pattern = LinePatternSpawn.create(W3APatternSpawn, 3, GetTerrainCenterpoint(-6153, -12924), 0, 3*TERRAIN_TILE_SIZE, TERRAIN_TILE_SIZE)
@@ -228,25 +271,109 @@ library EDWLevelContent requires SimpleList, Teams, Levels, EDWPatternSpawnDefin
 		call l.AddStartable(sg)
 		
 		//standard simple generators
-		set sg = SimpleGenerator.create(gg_rct_LW1_Generator4, ICETROLL, 4, 270, 23, 350)
+		set sg = SimpleGenerator.create(gg_rct_LW1_Generator4, SPIRITWALKER, 4, 270, 18, 250)
 		set sg.AnimateMovement = true
 		call l.AddStartable(sg)
 		
-		set sg = SimpleGenerator.create(gg_rct_LW1_Generator5, ICETROLL, 1.73, 270, 23, 175)
+		set sg = SimpleGenerator.create(gg_rct_LW1_Generator5, SPIRITWALKER, 8, 270, 23, 250)
 		set sg.AnimateMovement = true
 		call l.AddStartable(sg)
 		
-		set sg = SimpleGenerator.create(gg_rct_LW1_Generator6, ICETROLL, 4., 270, 23, 350)
+		set sg = SimpleGenerator.create(gg_rct_LW1_Generator6, SPIRITWALKER, 3.5, 270, 23, 200)
 		set sg.AnimateMovement = true
 		call l.AddStartable(sg)
 		
-		// set rg = RelayGenerator.create(-5948, 10836, 4, 4, 270, 0, ICETROLL, 2.)
-        // call rg.AddTurnSimple(0, 12)
-        // call rg.AddTurnSimple(90, 11)
-        // call rg.EndTurns(90)
-		        
-        // call l.AddStartable(rg)
-				
+		//sync movement near teleport area
+		//left sync group
+		set nsync = SynchronizedGroup.create()
+		call l.AddStartable(nsync)
+		set jtimber = nsync.AddUnit(CLAWMAN)
+		call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_Region_456))
+		call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_Region_457))
+		call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_Region_458))
+		call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_Region_459))
+		set jtimber.AllOrders.last.next = jtimber.AllOrders.first
+		
+		//top sync group
+		set nsync = SynchronizedGroup.create()
+		call l.AddStartable(nsync)
+		set jtimber = nsync.AddUnit(ICETROLL)
+		call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_Region_467))
+		call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_Region_457))
+		call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_Region_465))
+		call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_Region_466))
+		set jtimber.AllOrders.last.next = jtimber.AllOrders.first
+		
+		//right sync group
+		set nsync = SynchronizedGroup.create()
+		call l.AddStartable(nsync)
+		set jtimber = nsync.AddUnit(CLAWMAN)
+		call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_Region_463))
+		call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_Region_460))
+		call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_Region_465))
+		call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_Region_464))
+		set jtimber.AllOrders.last.next = jtimber.AllOrders.first
+		
+		//bottom sync group
+		set nsync = SynchronizedGroup.create()
+		call l.AddStartable(nsync)
+		set jtimber = nsync.AddUnit(ICETROLL)
+		call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_Region_461))
+		call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_Region_460))
+		call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_Region_458))
+		call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_Region_462))
+		
+		
+		set jtimber.AllOrders.last.next = jtimber.AllOrders.first
+		
+		//sync movement near gate
+		//outer sync group
+		set nsync = SynchronizedGroup.create()
+		call l.AddStartable(nsync)
+		set jtimber = nsync.AddUnit(CLAWMAN)
+		call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_Region_476))
+		call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_Region_477))
+		call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_Region_478))
+		call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_Region_479))
+		set jtimber.AllOrders.last.next = jtimber.AllOrders.first
+		
+		set jtimber = nsync.AddUnit(CLAWMAN)
+		call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_Region_478))
+		call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_Region_479))
+		call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_Region_476))
+		call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_Region_477))
+		set jtimber.AllOrders.last.next = jtimber.AllOrders.first
+		
+		//inner sync group A
+		set nsync = SynchronizedGroup.create()
+		call l.AddStartable(nsync)
+		set jtimber = nsync.AddUnit(ICETROLL)
+		call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_Region_469))
+		call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_Region_468))
+		call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_Region_471))
+		call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_Region_470))
+		set jtimber.AllOrders.last.next = jtimber.AllOrders.first
+		
+		//inner sync group B
+		set nsync = SynchronizedGroup.create()
+		call l.AddStartable(nsync)
+		set jtimber = nsync.AddUnit(ICETROLL)
+		call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_Region_472))
+		call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_Region_473))
+		call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_Region_469))
+		call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_Region_468))
+		set jtimber.AllOrders.last.next = jtimber.AllOrders.first
+		
+		//inner sync group C
+		set nsync = SynchronizedGroup.create()
+		call l.AddStartable(nsync)
+		set jtimber = nsync.AddUnit(ICETROLL)
+		call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_Region_474))
+		call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_Region_475))
+		call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_Region_472))
+		call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_Region_473))
+		set jtimber.AllOrders.last.next = jtimber.AllOrders.first
+		
         //PRIDE WORLD / PLATFORMING
         //LEVEL 1
         set l = Levels_Level.create(9, "Perspective", 4, 2, "PW1Start", "PW1Stop", gg_rct_PWR_1_1, gg_rct_PW1_Vision, gg_rct_PW1_End, 0) //gg_rct_PW1_Vision

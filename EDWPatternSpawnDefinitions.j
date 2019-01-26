@@ -58,7 +58,7 @@ library EDWPatternSpawnDefinitions requires PatternSpawn, Recycle
 	function BlackholeSpawn takes PatternSpawn spawn, Levels_Level parentLevel returns group
 		local group g = NewGroup()
 		local vector2 spawnPosition = LinePatternSpawn(spawn).GetSpawnPosition(0)
-		local Blackhole bhole = Blackhole.create(spawnPosition.x, spawnPosition.y)
+		local Blackhole bhole = Blackhole.create(spawnPosition.x, spawnPosition.y, false)
 		set bhole.ParentLevel = parentLevel
 		
 		call DisposableUnit.register(bhole.BlackholeUnit, bhole)
@@ -114,7 +114,7 @@ library EDWPatternSpawnDefinitions requires PatternSpawn, Recycle
 				//TODO make some sort of IDisposable interface / Using-like wrapper that can interact with Recycle_ReleaseUnit
 				set spawnPosition = LinePatternSpawn(spawn).GetSpawnPosition(GetRandomInt(0, 2))
 				
-				set bhole = Blackhole.create(spawnPosition.x, spawnPosition.y)
+				set bhole = Blackhole.create(spawnPosition.x, spawnPosition.y, false)
 				set bhole.ParentLevel = parentLevel
 				call DisposableUnit.register(bhole.BlackholeUnit, bhole)
 				call bhole.Start()

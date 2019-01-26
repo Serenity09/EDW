@@ -155,7 +155,14 @@ private function CollisionMediumIter takes nothing returns nothing
                 set mu = null
                 set cu = null
                 return
-            elseif cuTypeID == ICETROLL and dist < 60 and not MobImmune[pID] then  //TERRAIN_QUADRANT_SIZE - 4
+            elseif cuTypeID == ICETROLL and dist < 58 and not MobImmune[pID] then  //TERRAIN_QUADRANT_SIZE - 4
+                call CollisionDeathEffect(mu)
+                
+                call User(pID).SwitchGameModesDefaultLocation(Teams_GAMEMODE_DYING)
+                set mu = null
+                set cu = null
+                return
+			elseif cuTypeID == SPIRITWALKER and dist < 60 and not MobImmune[pID] then  //TERRAIN_QUADRANT_SIZE - 4
                 call CollisionDeathEffect(mu)
                 
                 call User(pID).SwitchGameModesDefaultLocation(Teams_GAMEMODE_DYING)
@@ -170,6 +177,13 @@ private function CollisionMediumIter takes nothing returns nothing
                 
                 call TimerStart(NewTimerEx(pID), COLLISION_TIME, false, function AfterCollisionCB)
                 //debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "Finished colliding")
+                set mu = null
+                set cu = null
+                return
+			elseif cuTypeID == CLAWMAN and dist < 68 and not MobImmune[pID] then
+				call CollisionDeathEffect(mu)
+                
+                call User(pID).SwitchGameModesDefaultLocation(Teams_GAMEMODE_DYING)
                 set mu = null
                 set cu = null
                 return

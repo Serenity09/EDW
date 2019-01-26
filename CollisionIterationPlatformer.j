@@ -246,7 +246,15 @@ private function CollisionIter2 takes nothing returns nothing
                 set pu = null
                 set cu = null
                 return
-            elseif cuID == ICETROLL and dist < 56 and not MobImmune[p.PID] then
+            elseif cuID == ICETROLL and dist < 54 and not MobImmune[p.PID] then
+                call CollisionDeathEffect(pu)
+                
+                call p.KillPlatformer()
+                call GroupClear(pCollisionGroup)
+                set pu = null
+                set cu = null
+                return
+			elseif cuID == SPIRITWALKER and dist < 56 and not MobImmune[p.PID] then
                 call CollisionDeathEffect(pu)
                 
                 call p.KillPlatformer()
@@ -262,6 +270,14 @@ private function CollisionIter2 takes nothing returns nothing
 				//no need to clear last collision unit from powerup, will never be able to interact with it again anyways
                 //call TimerStart(NewTimerEx(p.PID), COLLISION_TIME, false, function IsCollidingCallback)
                 //debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "Finished colliding")
+                set pu = null
+                set cu = null
+                return
+			elseif cuID == CLAWMAN and dist < 64 and not MobImmune[p.PID] then
+				call CollisionDeathEffect(pu)
+                
+                call p.KillPlatformer()
+                call GroupClear(pCollisionGroup)
                 set pu = null
                 set cu = null
                 return

@@ -268,11 +268,11 @@ library Blackhole requires ListModule, SimpleList, User, locust, MazerGlobals, I
 			call .deallocate()
         endmethod
     
-        static method create takes real x, real y returns thistype
+        static method create takes real x, real y, boolean persist returns thistype
             local thistype new = thistype.allocate()
             
 			//TODO add persist param
-			if true then
+			if persist then
 				set new.BlackholeUnit = CreateUnit(BLACKHOLE_PLAYER, BLACKHOLE, x, y, 0)
 			else
 				set new.BlackholeUnit = Recycle_MakeUnit(BLACKHOLE, x, y)
