@@ -72,6 +72,9 @@ library Vector2
 			//debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "Created vector2, current usage" + I2S(.calculateMemoryUsage()))
             return v
         endmethod
+		static method createFromRect takes rect r returns vector2
+			return vector2.create(GetRectCenterX(r), GetRectCenterY(r))
+		endmethod
         
         public method destroy takes nothing returns nothing
             //add to recycle stack
@@ -156,6 +159,6 @@ library Vector2
 				endif
 			endif
             return Acos((a.x*b.x+a.y*b.y)/l) //angle is returned in radians
-        endmethod		
+        endmethod
     endstruct
 endlibrary

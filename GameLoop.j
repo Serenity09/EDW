@@ -8,18 +8,20 @@ library StandardGameLoop requires Effects, IceMovement
 	if $TType$ == ABYSS or $TType$ == LRGBRICKS or $TType$ == RTILE then
 		set $TPriority$ = 0
 	elseif $TType$ == LAVA then
-		set $TPriority$ = 1		
-	elseif $TType$ == GRASS or $TType$ == SNOW then
+		set $TPriority$ = 1
+	elseif $TType$ == NOEFFECT then
 		set $TPriority$ = 3
-	elseif $TType$ == D_GRASS or $TType$ == SLOWICE then
+	elseif $TType$ == GRASS or $TType$ == SNOW then
 		set $TPriority$ = 4
-	elseif $TType$ == LEAVES or $TType$ == MEDIUMICE then
+	elseif $TType$ == D_GRASS or $TType$ == SLOWICE then
 		set $TPriority$ = 5
-	elseif $TType$ == FASTICE then
+	elseif $TType$ == LEAVES or $TType$ == MEDIUMICE then
 		set $TPriority$ = 6
-	elseif $TType$ == RUNEBRICKS then
+	elseif $TType$ == FASTICE then
 		set $TPriority$ = 7
-	else //if $TType$ == NOEFFECT or $TType$ == VINES or $TType$ == SAND or $TType$ == RSNOW then
+	elseif $TType$ == RUNEBRICKS then
+		set $TPriority$ = 8
+	else //if $TType$ == VINES or $TType$ == SAND or $TType$ == RSNOW then
 		set $TPriority$ = 2
 	endif
 //! endtextmacro

@@ -199,7 +199,7 @@ library Levels requires SimpleList, Teams, GameModesGlobals, Cinema, User, IStar
             elseif onWorld == 6 then
                 return "Gluttony"
             else//if onWorld == 7
-                return "of " + ColorMessage("2.5 Dimensions", HAPPY_TEXT_COLOR)
+                return ColorMessage("2.5 Dimensions", HAPPY_TEXT_COLOR)
             endif
         endmethod
         

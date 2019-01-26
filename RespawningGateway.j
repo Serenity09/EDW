@@ -23,11 +23,15 @@ struct RespawningGateway extends IStartable
 	private static timer ActiveGatewayTimer
 	
 	private method UpdateTimeRemainingDisplay takes nothing returns nothing
-		call SetTextTagText(.RespawnTimeTag, I2S(R2I(.RespawnTimeRemaining * GATEWAY_RESPAWN_UPDATE_INTERVAL / 60)) + " minutes", TextTagSize2Height(RESPAWN_TEXTTAG_FONT_SIZE))
+		local string timeTagLabel = " minute"
 		
 		if .RespawnTimeRemaining == 1 then
 			call SetTextTagColor(.RespawnTimeTag, 255, 0, 0, 1)
+		else
+			set timeTagLabel = timeTagLabel + "s"
 		endif
+		
+		call SetTextTagText(.RespawnTimeTag, I2S(R2I(.RespawnTimeRemaining * GATEWAY_RESPAWN_UPDATE_INTERVAL / 60)) + timeTagLabel, TextTagSize2Height(RESPAWN_TEXTTAG_FONT_SIZE))
 	endmethod
 	
 	private static method OnGatewayRespawnTick takes nothing returns nothing
@@ -131,6 +135,9 @@ struct RespawningGateway extends IStartable
 		set new.RespawnTime = R2I(respawnTime / GATEWAY_RESPAWN_UPDATE_INTERVAL + .5)
 		
 		return new
+	endmethod
+	public static method CreateFromVectors takes integer wallUnitID, vector2 wallPosition, vector2 activationPosition, real respawnTime returns thistype
+		return thistype.create(wallUnitID, wallPosition.x, wallPosition.y, activationPosition.x, activationPosition.y, respawnTime)
 	endmethod
 	
 	private static method onInit takes nothing returns nothing
