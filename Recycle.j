@@ -5,7 +5,7 @@ library Recycle requires UnitGlobals, DisposableUnit
         public constant real SAFE_Y = 15000
 		private constant real SAFE_TYPE_OFFSET = 64.
 		
-		public constant integer BUFFER_UNIT_COUNT = 5 //whenever an existing recycler calls make with 0 units on the stack, this is the number of units that will be simulataneously preloaded
+		public constant integer BUFFER_UNIT_COUNT = 5 //whenever an existing recycler calls make with 0 units in the collection, this is the number of units that will be simulataneously preloaded
 		private constant boolean HIDE_RECYCLED_UNITS = true
 	endglobals
     
@@ -16,17 +16,17 @@ library Recycle requires UnitGlobals, DisposableUnit
 	* The recycler is compatible with temporary IStartable structures, via the DisposableUnit struct. This is useful for dynamic content
 	*/
 	
+	
+	//API for Recycle struct
 	public function MakeUnit takes integer uID, real x, real y returns unit
-        return Recycle_UnitRecycler(LoadInteger(Recycle_UnitRecycler.Recyclers, 0, uID)).Make(x, y)
+        return Recycle_UnitRecycler.GetRecycler(uID).Make(x, y)
     endfunction
-    
     public function MakeUnitWithFacing takes integer uID, real x, real y, real angle returns unit
-        return Recycle_UnitRecycler(LoadInteger(Recycle_UnitRecycler.Recyclers, 0, uID)).MakeWithFacing(x, y, angle)
+        return Recycle_UnitRecycler.GetRecycler(uID).MakeWithFacing(x, y, angle)
     endfunction
-    
-	//TODO remove, basically useless
+	//TODO remove, basically useless, leaks when as useful as it can be
     public function MakeUnitForPlayer takes integer uID, real x, real y, player p returns unit
-        local Recycle_UnitRecycler r = Recycle_UnitRecycler(LoadInteger(Recycle_UnitRecycler.Recyclers, 0, uID))
+        local Recycle_UnitRecycler r = Recycle_UnitRecycler.GetRecycler(uID)
         local unit u
         
         if r.defaultOwner == p then
@@ -37,19 +37,17 @@ library Recycle requires UnitGlobals, DisposableUnit
             return u
         endif
     endfunction
-    
+	
     public function ReleaseUnit takes unit u returns nothing
-        call Recycle_UnitRecycler(LoadInteger(Recycle_UnitRecycler.Recyclers, 0, GetUnitTypeId(u))).Release(u)
+        call Recycle_UnitRecycler.GetRecycler(GetUnitTypeId(u)).Release(u)
     endfunction
     
     public function MakeUnitAndPatrol takes integer uID, real x1, real y1, real x2, real y2 returns nothing        
         call IssuePointOrder(MakeUnit(uID, x1, y1), "patrol", x2, y2)
     endfunction
-    
     public function MakeUnitAndPatrolRect takes integer uID, rect r1, rect r2 returns nothing
         call IssuePointOrder(MakeUnit(uID, GetRectCenterX(r1), GetRectCenterY(r1)), "patrol", GetRectCenterX(r2), GetRectCenterY(r2))
     endfunction
-    
     public function MakeUnitAndProjectRandom takes integer uID, rect create, real angle, real dist returns nothing
         local real x = GetRandomReal(GetRectMinX(create), GetRectMaxX(create))
         local real y = GetRandomReal(GetRectMinY(create), GetRectMaxY(create))
@@ -59,15 +57,18 @@ library Recycle requires UnitGlobals, DisposableUnit
         call IssuePointOrder(MakeUnitWithFacing(uID, x, y, angle + 180), "move", x + dist * Cos(moveAngleRad), y + dist * Sin(moveAngleRad))
     endfunction
     
-    public struct UnitRecycler
+    public struct UnitRecycler extends array
         readonly integer uID
-        readonly unit array uStack[MAX_SINGLE_INSTANCE_COUNT]
+        private group uStack
         readonly integer count
-        public player defaultOwner
-        public real facing
-        readonly static hashtable Recyclers = InitHashtable()
-        readonly static unit MostRecent //"static" may be removed with no issues -- unless later functionality uses UnitRecycler.MostRecent
-                
+        readonly player defaultOwner
+        readonly real facing
+		
+        private static hashtable Recyclers = InitHashtable()
+        private static unit MostRecent //"static" may be removed with no issues -- unless later functionality uses UnitRecycler.MostRecent
+        
+		private static integer c = 1
+		
         public method Preload takes integer count returns nothing
             local unit u
             local integer i = 0
@@ -84,7 +85,7 @@ library Recycle requires UnitGlobals, DisposableUnit
 					call ShowUnit(u, true)
 				endif
 				
-				set this.uStack[this.count] = u
+				call GroupAddUnit(this.uStack, u)
 				set this.count = this.count + 1
             set i = i + 1
             endloop
@@ -100,9 +101,11 @@ library Recycle requires UnitGlobals, DisposableUnit
 			//call this.deallocate()
         endmethod
         public static method create takes integer UID, real DefaultFacing, player Owner returns thistype
-            local thistype new = thistype.allocate()
+            local thistype new = c
+			set c = c + 1
             
             set new.count = 0
+			set new.uStack = CreateGroup()
             set new.uID = UID
             set new.facing = DefaultFacing
             set new.defaultOwner = Owner
@@ -113,34 +116,44 @@ library Recycle requires UnitGlobals, DisposableUnit
 		
 		//ONLY WORKS FOR STATIC UNITS, IE PLACED AND THEN NEVER ORDERED
 		public method MakeWithFacing takes real x, real y, real angle returns unit
+			local unit u
+			
 			if this.count == 0 then
 				call this.Preload(BUFFER_UNIT_COUNT)
 			endif
 			
-			set this.count = this.count - 1 //pop the top unit off stack
+			//pop the top unit off stack
+			set u = FirstOfGroup(this.uStack)
+			call GroupRemoveUnit(this.uStack, u)
+			set this.count = this.count - 1
 			
 			static if HIDE_RECYCLED_UNITS then
-				call ShowUnit(this.uStack[this.count], true)
+				call ShowUnit(u, true)
 			endif
-			call SetUnitPosition(this.uStack[this.count], x, y)
-			call SetUnitFacing(this.uStack[this.count], angle)
+			call SetUnitPosition(u, x, y)
+			call SetUnitFacing(u, angle)
 			
 			//call DisplayTextToForce(bj_FORCE_PLAYER[0], "recycling with n left:" + I2S(r.count))
-			return this.uStack[this.count]
+			return u
         endmethod
         public method Make takes real x, real y returns unit
-            if this.count == 0 then //either no recycler for unit type or no units in stack
+            local unit u
+			
+			if this.count == 0 then //either no recycler for unit type or no units in stack
                 call this.Preload(BUFFER_UNIT_COUNT)
 			endif
 			
-			set this.count = this.count - 1 //pop the top unit off stack
+			//pop the top unit off stack
+			set u = FirstOfGroup(this.uStack)
+			call GroupRemoveUnit(this.uStack, u)
+			set this.count = this.count - 1
 			
 			static if HIDE_RECYCLED_UNITS then
-				call ShowUnit(this.uStack[this.count], true)
+				call ShowUnit(u, true)
 			endif
-			call SetUnitPosition(this.uStack[this.count], x, y)
+			call SetUnitPosition(u, x, y)
 			
-			return this.uStack[this.count]
+			return u
         endmethod
 		
         public method Release takes unit u returns nothing
@@ -153,7 +166,8 @@ library Recycle requires UnitGlobals, DisposableUnit
                 call RemoveUnit(u)
             else
                 //call DisplayTextToForce(bj_FORCE_PLAYER[0], "releasing total stack size: " + I2S(r.count + 1) + " key: " + I2S(Levels_ticker))
-                set this.uStack[this.count] = u
+				call GroupAddUnit(this.uStack, u)
+				set this.count = this.count + 1
                 
 				//to trust that blizzard setters check for a different value before setting...
 				if GetOwningPlayer(u) != this.defaultOwner then
@@ -170,11 +184,13 @@ library Recycle requires UnitGlobals, DisposableUnit
                 endif
 				
                 //this function is safe for recycling
-                call SetUnitPosition(this.uStack[this.count], SAFE_X + this.count, SAFE_Y + this*SAFE_TYPE_OFFSET + this.count)
-                
-                set this.count = this.count + 1
+                call SetUnitPosition(u, SAFE_X + this.count, SAFE_Y + this*SAFE_TYPE_OFFSET + this.count)
             endif
         endmethod
+		
+		public static method GetRecycler takes integer unitTypeID returns thistype
+			return LoadInteger(thistype.Recyclers, 0, unitTypeID)
+		endmethod
 		
 		private static method onInit takes nothing returns nothing
             call thistype.create(LGUARD, 0, Player(10)).Preload(25)

@@ -1,4 +1,4 @@
-library PatternSpawn
+library PatternSpawn requires Draw
 	globals
 		private constant boolean DEBUG_PATTERN = false
 	endglobals
@@ -9,6 +9,7 @@ library PatternSpawn
 		private IPatternSpawn SpawnCB
 		private integer CycleCount
 		
+		//assumes every variation has the same number of cycles
 		public integer CurrentCycle
 		public integer CycleVariations
 		
@@ -85,13 +86,21 @@ library PatternSpawn
 			return new
 		endmethod
 	endstruct
+	
+	struct PointPatternSpawn extends array
+		public vector2 SpawnOrigin
+		
+		public method GetSpawnPosition takes integer spawnIndex returns vector2
+			return .SpawnOrigin
+		endmethod
+	endstruct
 	*/
 	
 	struct LinePatternSpawn extends array
-		private vector2 SpawnOrigin
-		private real SpawnLineAngle
-		private real SpawnLineLength
-		private real SpawnOffset
+		public vector2 SpawnOrigin
+		public real SpawnLineAngle
+		public real SpawnLineLength
+		public real SpawnOffset
 				
 		private delegate PatternSpawn PatternSpawn
 		
@@ -99,7 +108,11 @@ library PatternSpawn
 			return R2I(.SpawnLineLength / .SpawnOffset)
 		endmethod
 		public method GetSpawnPosition takes integer spawnIndex returns vector2
-			return vector2.create(.SpawnOrigin.x + Cos(.SpawnLineAngle)*.SpawnOffset*spawnIndex, .SpawnOrigin.y + Sin(.SpawnLineAngle)*.SpawnOffset*spawnIndex)
+			return vector2.create(.SpawnOrigin.x + Cos(.SpawnLineAngle*bj_DEGTORAD)*.SpawnOffset*spawnIndex, .SpawnOrigin.y + Sin(.SpawnLineAngle*bj_DEGTORAD)*.SpawnOffset*spawnIndex)
+		endmethod
+		
+		public method DrawOrigin takes nothing returns nothing
+			call Draw_DrawLine(.SpawnOrigin.x, .SpawnOrigin.y, .SpawnOrigin.x + Cos(.SpawnLineAngle*bj_DEGTORAD)*.SpawnLineLength, .SpawnOrigin.y + Sin(.SpawnLineAngle*bj_DEGTORAD)*.SpawnLineLength, 0)
 		endmethod
 		
 		public static method create takes IPatternSpawn spawnCB, integer cycleCount, vector2 spawnOrigin, real spawnLineAngle, real spawnLineLength, real spawnLineOffset returns LinePatternSpawn
@@ -113,6 +126,35 @@ library PatternSpawn
 			set new.SpawnOffset = spawnLineOffset
 			
 			return new
+		endmethod
+		
+		//hack helper for avoiding a vJASS abstract class / interface that defines GetSpawnPosition for override by its children
+		public static method createFromPoint takes IPatternSpawn spawnCB, integer cycleCount, rect spawnRectPoint returns LinePatternSpawn
+			return LinePatternSpawn.create(spawnCB,cycleCount, vector2.create(GetRectCenterX(spawnRectPoint), GetRectCenterY(spawnRectPoint)), 0, 0, 0)
+		endmethod
+		//nice helper for creating a pattern spawn area from a WE rect
+		public static method createFromRect takes IPatternSpawn spawnCB, integer cycleCount, rect spawnRect, real spawnLineOffset returns LinePatternSpawn
+			local vector2 spawnOrigin
+			local real spawnLineAngle
+			local real spawnLineLength
+						
+			if GetRectMaxX(spawnRect) - GetRectMinX(spawnRect) >= GetRectMaxY(spawnRect) - GetRectMinY(spawnRect) then
+				set spawnLineLength = GetRectMaxX(spawnRect) - GetRectMinX(spawnRect)
+				set spawnLineAngle = 0 //auto create from rect always starts position index on left side and moves right
+				set spawnOrigin = vector2.create(GetRectMinX(spawnRect), GetRectMinY(spawnRect) + ((GetRectMaxY(spawnRect) - GetRectMinY(spawnRect)) / 2.))
+			else
+				set spawnLineLength = GetRectMaxY(spawnRect) - GetRectMinY(spawnRect)
+				set spawnLineAngle = 90 //auto create from rect always starts position index on bottom side and moves up
+				set spawnOrigin = vector2.create(GetRectMinX(spawnRect) + ((GetRectMaxX(spawnRect) - GetRectMinX(spawnRect)) / 2.), GetRectMinY(spawnRect))
+			endif
+			
+			//bound spawnLineLength to include at least a single location
+			//allows tiny rects that define position accurately to also define a single spawn location
+			if spawnLineLength < spawnLineOffset then
+				set spawnLineLength = spawnLineOffset
+			endif
+			
+			return LinePatternSpawn.create(spawnCB, cycleCount, spawnOrigin, spawnLineAngle, spawnLineLength, spawnLineOffset)
 		endmethod
 	endstruct
 endlibrary

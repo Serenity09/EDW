@@ -30,7 +30,12 @@ library EDWLevelContent requires SimpleList, Teams, Levels, EDWPatternSpawnDefin
         call l.AddCheckpoint(gg_rct_IntroWorldCP_1_1, gg_rct_IntroWorld_R2)
         call l.AddCheckpoint(gg_rct_IntroWorldCP_1_2a, gg_rct_IntroWorld_R3a)
         call l.AddCheckpoint(gg_rct_IntroWorldCP_1_2, gg_rct_IntroWorld_R3)
-		        
+		
+		set pattern = LinePatternSpawn.createFromRect(IntroPatternSpawn, 1, gg_rct_Rect_052, TERRAIN_TILE_SIZE)
+		set sg = SimpleGenerator.create(pattern, .75, 270, 16, 200)
+		set sg.AnimateMovement = true
+        call l.AddStartable(sg)
+		
         set boundedSpoke = BoundedSpoke.create(11970, 14465)
         set boundedSpoke.InitialOffset = 1*TERRAIN_TILE_SIZE
         set boundedSpoke.LayerOffset = 2.25*TERRAIN_QUADRANT_SIZE
@@ -72,6 +77,11 @@ library EDWLevelContent requires SimpleList, Teams, Levels, EDWPatternSpawnDefin
         call l.AddCheckpoint(gg_rct_IWCP_2_1, gg_rct_IWR_2_2)
         call l.AddCheckpoint(gg_rct_IWCP_2_2, gg_rct_IWR_2_3)
         
+		set pattern = LinePatternSpawn.createFromRect(IW2PatternSpawn, 1, gg_rct_Rect_092, TERRAIN_TILE_SIZE)
+		set sg = SimpleGenerator.create(pattern, 1.9, 0, 22, 200)
+		set sg.AnimateMovement = true
+        call l.AddStartable(sg)
+		
         call l.AddStartable(MortarNTarget.create(SMLMORT, SMLTARG, Player(8), gg_rct_IW2_Mortar1 , gg_rct_IW2_Target1))
         call l.AddStartable(MortarNTarget.create(SMLMORT, SMLTARG, Player(8), gg_rct_IW2_Mortar2 , gg_rct_IW2_Target2))
         call l.AddStartable(MortarNTarget.create(SMLMORT, SMLTARG, Player(8), gg_rct_IW2_Mortar1 , gg_rct_IW2_Target1))
@@ -230,12 +240,10 @@ library EDWLevelContent requires SimpleList, Teams, Levels, EDWPatternSpawnDefin
 		set jtimber.AllOrders.last.next = jtimber.AllOrders.first
 		
 		//width 3 behavior diagonal cross
-		set sg = SimpleGenerator.create(gg_rct_LW1_Generator1, ICETROLL, 2., 270, 21, 150)
-		set sg.AnimateMovement = true
-		
 		set pattern = LinePatternSpawn.create(DiagonalCrossSpawn, 4, GetTerrainCenterpoint(-8320, -13055), 0, 3*TERRAIN_TILE_SIZE, TERRAIN_TILE_SIZE)
 		set pattern.Data = ICETROLL
-		set sg.SpawnPattern = pattern
+		set sg = SimpleGenerator.create(pattern, 2., 270, 21, 150)
+		set sg.AnimateMovement = true
 		call l.AddStartable(sg)
 		
 		//gateways
@@ -253,33 +261,35 @@ library EDWLevelContent requires SimpleList, Teams, Levels, EDWPatternSpawnDefin
 		call l.AddStartable(RespawningGateway.CreateFromVectors(RFIRE, vector2.createFromRect(gg_rct_Region_487), vector2.createFromRect(gg_rct_Region_482), 5*60))
 		
 		//width 4 behavior A spawn
-		set sg = SimpleGenerator.create(gg_rct_LW1_Generator2, ICETROLL, 1.8, 90, 22, 175)
-		set sg.AnimateMovement = true
-		
 		set pattern = LinePatternSpawn.create(W4APatternSpawn, 5, GetTerrainCenterpoint(-6784, -15742), 0, 4*TERRAIN_TILE_SIZE, TERRAIN_TILE_SIZE)
 		set pattern.CycleVariations = 3
-		set sg.SpawnPattern = pattern
+		set sg = SimpleGenerator.create(pattern, 1.8, 90, 22, 175)
+		set sg.AnimateMovement = true
 		call l.AddStartable(sg)
 		
 		//width 3 behavior A spawn
-		set sg = SimpleGenerator.create(gg_rct_LW1_Generator3, ICETROLL, 1.4, 270, 16, 350)
-		set sg.AnimateMovement = true
-		
 		set pattern = LinePatternSpawn.create(W3APatternSpawn, 3, GetTerrainCenterpoint(-6153, -12924), 0, 3*TERRAIN_TILE_SIZE, TERRAIN_TILE_SIZE)
 		set pattern.CycleVariations = 4
-		set sg.SpawnPattern = pattern
+		set sg = SimpleGenerator.create(pattern, 1.4, 270, 16, 350)
+		set sg.AnimateMovement = true
 		call l.AddStartable(sg)
 		
 		//standard simple generators
-		set sg = SimpleGenerator.create(gg_rct_LW1_Generator4, SPIRITWALKER, 4, 270, 18, 250)
+		set pattern = LinePatternSpawn.createFromPoint(OriginSpawn, 1, gg_rct_LW1_Generator4)
+		set pattern.Data = SPIRITWALKER
+		set sg = SimpleGenerator.create(pattern, 4, 270, 18, 250)
 		set sg.AnimateMovement = true
 		call l.AddStartable(sg)
 		
-		set sg = SimpleGenerator.create(gg_rct_LW1_Generator5, SPIRITWALKER, 8, 270, 23, 250)
+		set pattern = LinePatternSpawn.createFromPoint(OriginSpawn, 1, gg_rct_LW1_Generator5)
+		set pattern.Data = SPIRITWALKER
+		set sg = SimpleGenerator.create(pattern, 8, 270, 22, 250)
 		set sg.AnimateMovement = true
 		call l.AddStartable(sg)
 		
-		set sg = SimpleGenerator.create(gg_rct_LW1_Generator6, SPIRITWALKER, 3.5, 270, 23, 200)
+		set pattern = LinePatternSpawn.createFromPoint(OriginSpawn, 1, gg_rct_LW1_Generator6)
+		set pattern.Data = SPIRITWALKER
+		set sg = SimpleGenerator.create(pattern, 3.5, 270, 22, 200)
 		set sg.AnimateMovement = true
 		call l.AddStartable(sg)
 		
@@ -454,8 +464,11 @@ library EDWLevelContent requires SimpleList, Teams, Levels, EDWPatternSpawnDefin
         
 		set cp = l.AddCheckpoint(gg_rct_PWCP_3_3, gg_rct_PWR_3_4)
         set cp.DefaultGameMode = Teams_GAMEMODE_PLATFORMING
-                
-        call l.AddStartable(SimpleGenerator.create(gg_rct_PW3_MassCreate, 'e00K', 1.5, 180, 17, 100))
+        
+		set pattern = LinePatternSpawn.createFromRect(RandomLineSlotSpawn, 1, gg_rct_PW3_MassCreate, TERRAIN_TILE_SIZE)
+		set pattern.Data = BOUNCER
+		set sg = SimpleGenerator.create(pattern, 1.5, 180, 19, 100)
+        call l.AddStartable(sg)
         
         /*
         set wheel = Wheel.create(-2904, -6765)

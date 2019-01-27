@@ -67,6 +67,7 @@ library SynchronizedGroup requires Alloc, SimpleList, Vector2, Recycle
 				loop
 				exitwhen curUnit == 0
 					if not SynchronizedUnit(curUnit.value).Ready then
+						//GetUnitCurrentOrder(u) == OrderId("none") or GetUnitCurrentOrder(u) == OrderId("stop")
 						if SynchronizedUnit(curUnit.value).CurrentOrder.value == 0 or ((RAbsBJ(vector2(SynchronizedUnit(curUnit.value).CurrentOrder.value).x - GetUnitX(SynchronizedUnit(curUnit.value).Unit)) < DESTINATION_TOLERANCE) and (RAbsBJ(vector2(SynchronizedUnit(curUnit.value).CurrentOrder.value).y - GetUnitY(SynchronizedUnit(curUnit.value).Unit)) < DESTINATION_TOLERANCE)) then
 							set SynchronizedUnit(curUnit.value).Ready = true
 						else

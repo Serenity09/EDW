@@ -16,10 +16,7 @@ endglobals
 
 struct SimpleGenerator extends IStartable
     public LinePatternSpawn SpawnPattern
-	
-	public rect SpawnArea
-    public integer SpawnUnit
-	
+		
     public real SpawnDirection
     public real EndCoordinate
     
@@ -36,22 +33,14 @@ struct SimpleGenerator extends IStartable
     
     public static method PeriodicSpawn takes nothing returns nothing
         local thistype generator = GetTimerData(GetExpiredTimer())
-		local group spawnGroup
+		local group spawnGroup = generator.SpawnPattern.Spawn(generator.ParentLevel)
 		local group tempGroup
 		local unit u
 		
 		static if DEBUG_SPAWN_LOOP then
 			call DisplayTextToForce(bj_FORCE_PLAYER[0], "Spawning for generator " + I2S(generator))
 		endif
-		
-		//might as well keep this optimization/default implementation, since it's already built
-		if generator.SpawnPattern == 0 then					
-			set spawnGroup = NewGroup()
-			call GroupAddUnit(spawnGroup, Recycle_MakeUnit(generator.SpawnUnit, GetRandomReal(GetRectMinX(generator.SpawnArea), GetRectMaxX(generator.SpawnArea)), GetRandomReal(GetRectMinY(generator.SpawnArea), GetRectMaxY(generator.SpawnArea))))
-		else
-			set spawnGroup = generator.SpawnPattern.Spawn(generator.ParentLevel)
-		endif
-		
+				
 		if generator.AnimateMovement then
 			set tempGroup = NewGroup()
 			
@@ -61,7 +50,7 @@ struct SimpleGenerator extends IStartable
 				call SetUnitFacingTimed(u, generator.SpawnDirection, 0)
 				
 				call SetUnitAnimationByIndex(u, GetWalkAnimationIndex(GetUnitTypeId(u)))
-				call SetUnitTimeScale(u, generator.MoveSpeed / MOVEMENT_UPDATE_TIMESTEP / (GetDefaultMoveSpeed(GetUnitTypeId(u)) + MOVEMENT_ANIMATION_EXTRASLOW))
+				call SetUnitTimeScale(u, RAbsBJ(generator.MoveSpeed) / MOVEMENT_UPDATE_TIMESTEP / (GetDefaultMoveSpeed(GetUnitTypeId(u)) + MOVEMENT_ANIMATION_EXTRASLOW))
 			call GroupAddUnit(tempGroup, u)
 			call GroupRemoveUnit(spawnGroup, u)
 			endloop
@@ -90,10 +79,7 @@ struct SimpleGenerator extends IStartable
         local group swapGroup
         local thistype curActiveWidget
         local unit curUnit
-        
-        local integer xDirection
-        local integer yDirection
-        
+                
         local real destinationCoordinate
         
         loop
@@ -103,62 +89,48 @@ struct SimpleGenerator extends IStartable
 			static if DEBUG_MOVE_LOOP then
 				call DisplayTextToForce(bj_FORCE_PLAYER[0], "Started generator update for " + I2S(curActiveWidget))
 			endif
-            
-            if curActiveWidget.SpawnDirection == 0 then
-                set xDirection = 1
-                set yDirection = 0
-            elseif curActiveWidget.SpawnDirection == 180 then
-                set xDirection = -1
-                set yDirection = 0
-            elseif curActiveWidget.SpawnDirection == 90 then
-                set xDirection = 0
-                set yDirection = 1
-            elseif curActiveWidget.SpawnDirection == 270 then
-                set xDirection = 0
-                set yDirection = -1
-            endif
-            
+                        
 			set swapGroup = NewGroup()
             loop
             set curUnit = FirstOfGroup(curActiveWidget.SpawnedUnits)
 			exitwhen curUnit == null
-                if xDirection != 0 then
-                    set destinationCoordinate = GetUnitX(curUnit) + xDirection * curActiveWidget.MoveSpeed
-                    
-                    //debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "end: " + R2S(curActiveWidget.EndCoordinate) + ", cur: " + R2S(destinationCoordinate))
-                    if (curActiveWidget.EndCoordinate >= 0 and destinationCoordinate >= curActiveWidget.EndCoordinate) or (curActiveWidget.EndCoordinate < 0 and destinationCoordinate <= curActiveWidget.EndCoordinate) then
-                        //unit has gone past end
+                //evaluate cos/sin functions for 90 degree angles
+				//would otherwise be x = x + Cos(.SpawnDirection)*.MoveSpeed
+				if curActiveWidget.SpawnDirection == 0 or curActiveWidget.SpawnDirection == 180 then
+					set destinationCoordinate = GetUnitX(curUnit) + curActiveWidget.MoveSpeed
+					
+					//solve change vs destination for easy perpendiculars
+					if (curActiveWidget.SpawnDirection == 0 and destinationCoordinate >= curActiveWidget.EndCoordinate) or (curActiveWidget.SpawnDirection == 180 and destinationCoordinate <= curActiveWidget.EndCoordinate) then
 						call GroupRemoveUnit(curActiveWidget.SpawnedUnits, curUnit)
-                        call Recycle_ReleaseUnit(curUnit)
+						call Recycle_ReleaseUnit(curUnit)
 						
 						static if DEBUG_MOVE_LOOP then
 							call DisplayTextToForce(bj_FORCE_PLAYER[0], "Removed unit from movement")
 						endif
-                    else
-                        call SetUnitX(curUnit, destinationCoordinate)
-						
+					else
+						call SetUnitX(curUnit, destinationCoordinate)
+					
 						call GroupRemoveUnit(curActiveWidget.SpawnedUnits, curUnit)
-                        call GroupAddUnit(swapGroup, curUnit)
-                    endif
-                else //yDirection != 0
-                    set destinationCoordinate = GetUnitY(curUnit) + yDirection * curActiveWidget.MoveSpeed
-                    
-                    //debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "end: " + R2S(curActiveWidget.EndCoordinate) + ", cur: " + R2S(destinationCoordinate))
-                    if (curActiveWidget.EndCoordinate >= 0 and destinationCoordinate >= curActiveWidget.EndCoordinate) or (curActiveWidget.EndCoordinate < 0 and destinationCoordinate <= curActiveWidget.EndCoordinate) then
-                        //unit has gone past end
+						call GroupAddUnit(swapGroup, curUnit)
+					endif
+				else//if curActiveWidget.SpawnDirection == 90 or curActiveWidget.SpawnDirection == 270 then
+					set destinationCoordinate = GetUnitY(curUnit) + curActiveWidget.MoveSpeed
+					
+					//solve change vs destination for easy perpendiculars
+					if (curActiveWidget.SpawnDirection == 90 and destinationCoordinate >= curActiveWidget.EndCoordinate) or (curActiveWidget.SpawnDirection == 270 and destinationCoordinate <= curActiveWidget.EndCoordinate) then
 						call GroupRemoveUnit(curActiveWidget.SpawnedUnits, curUnit)
-                        call Recycle_ReleaseUnit(curUnit)
+						call Recycle_ReleaseUnit(curUnit)
 						
 						static if DEBUG_MOVE_LOOP then
 							call DisplayTextToForce(bj_FORCE_PLAYER[0], "Removed unit from movement")
 						endif
-                    else
-                        call SetUnitY(curUnit, destinationCoordinate)
-						
+					else
+						call SetUnitY(curUnit, destinationCoordinate)
+					
 						call GroupRemoveUnit(curActiveWidget.SpawnedUnits, curUnit)
-                        call GroupAddUnit(swapGroup, curUnit)
-                    endif
-                endif
+						call GroupAddUnit(swapGroup, curUnit)
+					endif
+				endif
             endloop
 			
 			static if DEBUG_MOVE_LOOP then
@@ -218,52 +190,52 @@ struct SimpleGenerator extends IStartable
 		if .SpawnPattern != 0 then
 			//TODO
 			//call .SpawnPattern.destroy()
-		endif
-		
-		call RemoveRect(.SpawnArea)
-		set .SpawnArea = null
+		endif		
 	endmethod
-    public static method create takes rect spawn, integer spawnUnitID, real spawnTimestep, real spawnDirection, integer spawnLength, real movespeed returns thistype
+    public static method create takes LinePatternSpawn spawnPattern, real spawnTimestep, real spawnDirection, integer spawnLength, real movespeed returns thistype
         local thistype new = thistype.allocate()
         
         local real xOffset
         local real yOffset
+		
+		static if DEBUG_MODE then
+			if spawnPattern == 0 then
+				call DisplayTextToForce(bj_FORCE_PLAYER[0], "Creating SimpleGenerator with null spawnPattern, spawnPattern is required!")
+			endif
+		endif
         
+		set new.SpawnPattern = spawnPattern
+		
+        set new.SpawnTimeStep = spawnTimestep
+        set new.SpawnDirection = spawnDirection
+        set new.MoveSpeed = movespeed * MOVEMENT_UPDATE_TIMESTEP
+		
         if spawnDirection == 0 then
             set xOffset = spawnLength * TERRAIN_TILE_SIZE
-            set yOffset = 0
             
-            set new.EndCoordinate = GetRectMaxX(spawn) + xOffset
+            set new.EndCoordinate = spawnPattern.SpawnOrigin.x + xOffset
         elseif spawnDirection == 180 then
             set xOffset = -spawnLength * TERRAIN_TILE_SIZE
-            set yOffset = 0
             
-            set new.EndCoordinate = GetRectMinX(spawn) + xOffset
+            set new.EndCoordinate = spawnPattern.SpawnOrigin.x + xOffset
+			set new.MoveSpeed = -new.MoveSpeed
         elseif spawnDirection == 90 then
-            set xOffset = 0
             set yOffset = spawnLength * TERRAIN_TILE_SIZE
             
-            set new.EndCoordinate = GetRectMaxY(spawn) + yOffset
+            set new.EndCoordinate = spawnPattern.SpawnOrigin.y + yOffset
         elseif spawnDirection == 270 then
-            set xOffset = 0
             set yOffset = -spawnLength * TERRAIN_TILE_SIZE
             
-            set new.EndCoordinate = GetRectMinY(spawn) + yOffset
+            set new.EndCoordinate = spawnPattern.SpawnOrigin.y + yOffset
+			set new.MoveSpeed = -new.MoveSpeed
         else
             //error
             debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "Invalid spawn direction for mass create!! Must use either 0, 90, 180, or 270")
             return 0/0
         endif
-        
-        set new.SpawnArea = spawn
-        set new.SpawnUnit = spawnUnitID
-        set new.SpawnTimeStep = spawnTimestep
-        set new.SpawnDirection = spawnDirection
-        set new.MoveSpeed = movespeed * MOVEMENT_UPDATE_TIMESTEP
 		
 		//defaults
 		set new.AnimateMovement = false
-		set new.SpawnPattern = 0
         
         //set new.EndArea = Rect(GetRectMinX(spawn) - BUFFER + xOffset, GetRectMinY(spawn) - BUFFER + yOffset, GetRectMaxX(spawn) + BUFFER + xOffset, GetRectMaxY(spawn) + BUFFER + yOffset)
         

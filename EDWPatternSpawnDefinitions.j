@@ -55,6 +55,29 @@ library EDWPatternSpawnDefinitions requires PatternSpawn, Recycle
 		return g
 	endfunction
 	
+	//basic spawns for basic bitches
+	function OriginSpawn takes PatternSpawn spawn, Levels_Level parentLevel returns group
+		local group g = NewGroup()
+		call GroupAddUnit(g, Recycle_MakeUnit(spawn.Data, LinePatternSpawn(spawn).SpawnOrigin.x, LinePatternSpawn(spawn).SpawnOrigin.y))
+		return g
+	endfunction
+	function RandomLineSpawn takes PatternSpawn spawn, Levels_Level parentLevel returns group
+		local group g = NewGroup()
+		
+		call GroupAddUnit(g, Recycle_MakeUnit(spawn.Data, LinePatternSpawn(spawn).SpawnOrigin.x + Cos(LinePatternSpawn(spawn).SpawnLineAngle) * GetRandomReal(0, LinePatternSpawn(spawn).SpawnLineLength), LinePatternSpawn(spawn).SpawnOrigin.y + Sin(LinePatternSpawn(spawn).SpawnLineAngle) * GetRandomReal(0, LinePatternSpawn(spawn).SpawnLineLength)))
+		
+		return g
+	endfunction
+	function RandomLineSlotSpawn takes PatternSpawn spawn, Levels_Level parentLevel returns group
+		local group g = NewGroup()
+		local vector2 spawnPosition = LinePatternSpawn(spawn).GetSpawnPosition(GetRandomInt(0, LinePatternSpawn(spawn).GetSpawnPositionCount() - 1))
+		
+		call GroupAddUnit(g, Recycle_MakeUnit(spawn.Data, spawnPosition.x, spawnPosition.y))
+		
+		call spawnPosition.deallocate()
+		return g
+	endfunction
+	
 	function BlackholeSpawn takes PatternSpawn spawn, Levels_Level parentLevel returns group
 		local group g = NewGroup()
 		local vector2 spawnPosition = LinePatternSpawn(spawn).GetSpawnPosition(0)
@@ -67,6 +90,27 @@ library EDWPatternSpawnDefinitions requires PatternSpawn, Recycle
 		call GroupAddUnit(g, bhole.BlackholeUnit)
 		
 		call spawnPosition.deallocate()
+		
+		return g
+	endfunction
+	
+	function IntroPatternSpawn takes PatternSpawn spawn, Levels_Level parentLevel returns group
+		local group g = NewGroup()
+		//local integer cycle = spawn.CurrentCycle
+		
+		call GroupAddUnit(g, Recycle_MakeUnit(GUARD, LinePatternSpawn(spawn).SpawnOrigin.x + GetRandomReal(0, LinePatternSpawn(spawn).SpawnLineLength), LinePatternSpawn(spawn).SpawnOrigin.y))
+		
+		return g
+	endfunction
+	
+	function IW2PatternSpawn takes PatternSpawn spawn, Levels_Level parentLevel returns group
+		local group g = NewGroup()
+		//local integer cycle = spawn.CurrentCycle
+		
+		call GroupAddUnit(g, Recycle_MakeUnit(LGUARD, LinePatternSpawn(spawn).SpawnOrigin.x, LinePatternSpawn(spawn).SpawnOrigin.y + GetRandomReal(0, LinePatternSpawn(spawn).SpawnLineLength)))
+		if GetRandomInt(0, 1) == 0 then
+			call GroupAddUnit(g, Recycle_MakeUnit(ICETROLL, LinePatternSpawn(spawn).SpawnOrigin.x, LinePatternSpawn(spawn).SpawnOrigin.y + GetRandomReal(0, LinePatternSpawn(spawn).SpawnLineLength)))
+		endif
 		
 		return g
 	endfunction
