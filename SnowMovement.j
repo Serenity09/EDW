@@ -1,4 +1,4 @@
-library SnowMovement requires MazerGlobals, SkatingGlobals, GroupUtils
+library SnowMovement requires MazerGlobals, SkatingGlobals, TimerUtils, GroupUtils
 
 globals
     private constant real TIMESTEP = 0.035
@@ -13,10 +13,9 @@ struct SnowMovement extends array
 	
 	private static method SnowMove takes nothing returns nothing
 		local group swap = NewGroup()
-		local unit u = GetEnumUnit()
+		local unit u
 		
 		local integer i
-		local real facingRad
 		local real x
 		local real y
 		
@@ -24,9 +23,8 @@ struct SnowMovement extends array
 		set u = FirstOfGroup(g)
 		exitwhen u == null
 			set i = GetPlayerId(GetOwningPlayer(u))
-			set facingRad = (GetUnitFacing(u)/180)*bj_PI
-			set x = Cos(facingRad)
-			set y = Sin(facingRad)
+			set x = Cos(GetUnitFacing(u)*bj_DEGTORAD)
+			set y = Sin(GetUnitFacing(u)*bj_DEGTORAD)
 			
 			if (x > 0 and VelocityX[i] < 0) or (x < 0 and VelocityX[i] > 0) then
 				set x = x * OPPOSITION_BONUS * ACCELERATION

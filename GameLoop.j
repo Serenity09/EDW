@@ -1,7 +1,10 @@
-library StandardGameLoop requires Effects, IceMovement
+library StandardGameLoop initializer init requires Effects, LavaDamage, IceMovement, SuperFastMovement, RSnowMovement, SnowMovement, SandMovement
 	globals
 		private constant real STD_TERRAIN_OFFSET = 32.
 		private constant real STD_DIAGONAL_TERRAIN_OFFSET = 32. * SIN_45
+		
+		public timer GameLoopTimer = CreateTimer()
+		private constant real TIMESTEP = .05
 	endglobals
 
 //! textmacro GetTerrainPriority takes TType, TPriority
@@ -190,12 +193,7 @@ function GameLoopRemoveTerrainAction takes unit u, integer i, integer oldterrain
     elseif (oldterrain == RSNOW) then
         set CanSteer[i] = false
         
-        call GroupRemoveUnit(OnRSnowGroup, u)
-        set NumberOnRSnow = NumberOnRSnow - 1
-        
-        if NumberOnRSnow == 0 then
-            call DisableTrigger(gg_trg_RSnow_Movement)
-        endif
+        call RSnowMovement.Remove(u)
         
         if (curterrain == SAND or curterrain == SNOW or curterrain == SLOWICE or curterrain == MEDIUMICE or curterrain == FASTICE) then
             //velocity carries over to sand/snow, so do nothing
@@ -207,20 +205,9 @@ function GameLoopRemoveTerrainAction takes unit u, integer i, integer oldterrain
         //call DisplayTextToForce(bj_FORCE_PLAYER[i], "P" + I2S(i) + "X: " + R2S(VelocityX[i]))
         //call DisplayTextToForce(bj_FORCE_PLAYER[i], "Y: " + R2S(VelocityY[i]))
     elseif (oldterrain == LAVA) then
-        call GroupRemoveUnit(OnLavaGroup, u)
-        set NumberOnLava = NumberOnLava - 1
-        
-        if NumberOnLava == 0 then
-            call DisableTrigger(gg_trg_Lava_Damage)
-        endif
+        call LavaDamage.Remove(u)
     elseif (oldterrain == LEAVES) then
-        call GroupRemoveUnit(SuperFastGroup, u)
-        call GroupRemoveUnit(DestinationGroup, u)
-        set NumberOnSuperFast = NumberOnSuperFast - 1
-        
-        if NumberOnSuperFast == 0 then
-            call DisableTrigger(gg_trg_Super_Fast_Movement)
-        endif
+        call SuperFastMovement.Remove(u)
         
         call SetUnitMoveSpeed(u, DefaultMoveSpeed)
     elseif (oldterrain == LRGBRICKS) then
@@ -439,18 +426,9 @@ function GameLoopNewTerrainAction takes nothing returns nothing
         set PreviousTerrainTypedx[i] = basicterrain
     elseif basicterrain == RSNOW then
         //call DisplayTextToForce(bj_FORCE_PLAYER[i], "On RSnow")
-        set RSFacing[i] = (GetUnitFacing(u)/180) * bj_PI
-        
         set CanSteer[i] = true
         
-        //if the sand movement trigger was previously off, turn it on
-        if NumberOnRSnow == 0 then
-            call EnableTrigger(gg_trg_RSnow_Movement)
-        endif
-        
-        //add unit to the group of units definitely on sand
-        call GroupAddUnit(OnRSnowGroup, u)
-        set NumberOnRSnow = NumberOnRSnow + 1
+        call RSnowMovement.Add(u)
         
         //momentum going onto sand from regular ice (do momentum ice later)
         if previousterrain == FASTICE or previousterrain == MEDIUMICE or previousterrain == SLOWICE then
@@ -464,32 +442,14 @@ function GameLoopNewTerrainAction takes nothing returns nothing
         set PreviousTerrainTypedx[i] = basicterrain
     elseif basicterrain == LAVA then
         //call DisplayTextToForce(bj_FORCE_PLAYER[i], "Lava")
-        if NumberOnLava == 0 then
-            call EnableTrigger(gg_trg_Lava_Damage)
-        endif
-        
-        call GroupAddUnit(OnLavaGroup, u)
-        set NumberOnLava = NumberOnLava + 1
+        call LavaDamage.Add(u)
         
         set TerrainOffset[i] = LAVAOFFSET
         set PreviousTerrainTypedx[i] = basicterrain
     elseif basicterrain == LEAVES then        
         call SetUnitMoveSpeed(u, FastGrassSpeed)
         
-        //check if unit is moving currently, otherwise set isMoving appropriately
-        if GetUnitCurrentOrder(u) == OrderId("none") or GetUnitCurrentOrder(u) == OrderId("stop") then
-            set isMoving[i] = false
-        else
-            set isMoving[i] = true
-        endif
-        
-        if NumberOnSuperFast == 0 then
-            call EnableTrigger(gg_trg_Super_Fast_Movement)
-        endif
-        
-        call GroupAddUnit(SuperFastGroup, u)
-        call GroupAddUnit(DestinationGroup, u)
-        set NumberOnSuperFast = NumberOnSuperFast + 1
+        call SuperFastMovement.Add(u)
         
         set TerrainOffset[i] = LEAVESOFFSET
         set PreviousTerrainTypedx[i] = basicterrain
@@ -515,10 +475,9 @@ endfunction
 
 
 //===========================================================================
-function InitTrig_Game_Loop_With_Effects takes nothing returns nothing
-    set gg_trg_Game_Loop_With_Effects = CreateTrigger(  )
-    call TriggerRegisterTimerEvent(gg_trg_Game_Loop_With_Effects, .05, true)
-    call TriggerAddAction( gg_trg_Game_Loop_With_Effects, function GameLoop )
+
+private function init takes nothing returns nothing
+	call TimerStart(GameLoopTimer, TIMESTEP, true, function GameLoop)
 endfunction
 
 endlibrary

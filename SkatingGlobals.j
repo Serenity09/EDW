@@ -9,26 +9,14 @@ library SkatingGlobals requires GameGlobalConstants
         //this must be greater than 1, the larger it is the quicker the return to normal speed
         constant real SkateFallOff = 1.01
         
-        //for RSnow
-        constant real VelocityAcceleration2 = .3
-        
         //the factor of speed to carry over from any icetype to sand
         constant real ICE2MOMENTUMFACTOR = .5
 
-        
         real array SkateSpeed[NumberPlayers]
         real array VelocityX[NumberPlayers]
         real array VelocityY[NumberPlayers]
-        
-        //for Rocky Snow
-        real array RSFacing[NumberPlayers]
-        constant real MAXRSVELOCITY = 10
-        constant real MAXVELOCITY = 15
                 
         boolean array CanSteer[NumberPlayers]
-        
-        group OnRSnowGroup = CreateGroup()        
-        integer NumberOnRSnow = 0
     endglobals
 endlibrary
 

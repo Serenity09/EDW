@@ -55,12 +55,7 @@ library TerrainGlobals initializer initTerrainGlobals requires GameGlobalConstan
         constant real RUNEBRICKSOFFSET = 40
 
         real array TerrainOffset[NumberPlayers]
-        
-        //the rate at which lava deals damage
-        constant real LAVARATE = 175
-        group OnLavaGroup = CreateGroup()
-        integer NumberOnLava = 0
-        
+                
         constant integer TERRAIN_QUADRANT_SIZE  = 64
         constant integer TERRAIN_TILE_SIZE      = 128
         
