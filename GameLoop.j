@@ -205,7 +205,7 @@ function GameLoopRemoveTerrainAction takes unit u, integer i, integer oldterrain
         //call DisplayTextToForce(bj_FORCE_PLAYER[i], "P" + I2S(i) + "X: " + R2S(VelocityX[i]))
         //call DisplayTextToForce(bj_FORCE_PLAYER[i], "Y: " + R2S(VelocityY[i]))
     elseif (oldterrain == LAVA) then
-        call LavaDamage.Remove(u)
+        call LavaDamage.Remove(i)
     elseif (oldterrain == LEAVES) then
         call SuperFastMovement.Remove(u)
         
@@ -442,7 +442,7 @@ function GameLoopNewTerrainAction takes nothing returns nothing
         set PreviousTerrainTypedx[i] = basicterrain
     elseif basicterrain == LAVA then
         //call DisplayTextToForce(bj_FORCE_PLAYER[i], "Lava")
-        call LavaDamage.Add(u)
+        call LavaDamage.Add(i)
         
         set TerrainOffset[i] = LAVAOFFSET
         set PreviousTerrainTypedx[i] = basicterrain
