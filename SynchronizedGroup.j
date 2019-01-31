@@ -7,6 +7,7 @@ library SynchronizedGroup requires Alloc, SimpleList, Vector2, Recycle
 	struct SynchronizedUnit extends array
 		public unit Unit
 		readonly integer UnitID
+		public real MoveSpeed
 		public boolean Ready
 				
 		public SimpleList_ListNode CurrentOrder
@@ -26,6 +27,7 @@ library SynchronizedGroup requires Alloc, SimpleList, Vector2, Recycle
 				set .CurrentOrder = .AllOrders.first
 				
 				set .Unit = Recycle_MakeUnit(.UnitID, vector2(.CurrentOrder.value).x, vector2(.CurrentOrder.value).y)
+				call SetUnitMoveSpeed(.Unit, .MoveSpeed)
 				set .Ready = false
 				set .CurrentOrder = .CurrentOrder.next
 				
@@ -39,10 +41,13 @@ library SynchronizedGroup requires Alloc, SimpleList, Vector2, Recycle
 			set new.UnitID = unitID
 			set new.ParentGroup = parent
 			
+			//defaults
+			set new.MoveSpeed = GetDefaultMoveSpeed(unitID)
+			
+			//predefined inits
 			set new.Ready = false
 			set new.CurrentOrder = 0
 			set new.AllOrders = SimpleList_List.create()
-			
 			
 			return new
 		endmethod
