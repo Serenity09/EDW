@@ -96,6 +96,16 @@ library EDWGameStart initializer Init requires Levels, EDWVisualVote, UnitGlobal
         //use single players when in debug mode, now that menu is functional
         call EDWVisualVote_CreateMenu()
         
+		//theres no way to detect the game paused / resumed event, so all other events cannot be unhooked during that state
+		//some of those events, such as platforming arrow keys, can be abused
+		//waste all 3 pauses
+		call PauseGame(true)
+		call PauseGame(false)
+		call PauseGame(true)
+		call PauseGame(false)
+		call PauseGame(true)
+		call PauseGame(false)
+		
 		static if DEBUG_MODE then
 			set FinishedPostLoad = true
 		endif

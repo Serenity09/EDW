@@ -23,7 +23,7 @@ struct SandMovement extends array
 		set u = FirstOfGroup(g)
 		exitwhen u == null
 			set i = GetPlayerId(GetOwningPlayer(u))
-			set facingRad = (GetUnitFacing(u)/180)*bj_PI
+			set facingRad = GetUnitFacing(u) * bj_DEGTORAD
 			
 			if isMoving[i] then
 				set VelocityX[i] = VelocityX[i] + Cos(facingRad) * ACCELERATION
