@@ -310,8 +310,8 @@ library EDWLevelContent requires SimpleList, Teams, Levels, EDWPatternSpawnDefin
 		set jtimber = nsync.AddUnit(ICETROLL)
 		set jtimber.MoveSpeed = 180
 		call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_Region_456))
-		call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_Region_457))
-		call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_Region_458))
+		call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_Region_464))
+		call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_Region_463))
 		call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_Region_459))
 		set jtimber.AllOrders.last.next = jtimber.AllOrders.first
 		
@@ -319,8 +319,8 @@ library EDWLevelContent requires SimpleList, Teams, Levels, EDWPatternSpawnDefin
 		set jtimber = nsync.AddUnit(ICETROLL)
 		set jtimber.MoveSpeed = 180
 		call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_Region_463))
-		call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_Region_460))
-		call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_Region_465))
+		call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_Region_459))
+		call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_Region_456))
 		call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_Region_464))
 		set jtimber.AllOrders.last.next = jtimber.AllOrders.first
 		
@@ -332,8 +332,8 @@ library EDWLevelContent requires SimpleList, Teams, Levels, EDWPatternSpawnDefin
 		set jtimber = nsync.AddUnit(CLAWMAN)
 		set jtimber.MoveSpeed = 360
 		call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_Region_467))
-		call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_Region_457))
-		call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_Region_465))
+		call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_Region_462))
+		call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_Region_461))
 		call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_Region_466))
 		set jtimber.AllOrders.last.next = jtimber.AllOrders.first
 				
@@ -341,8 +341,8 @@ library EDWLevelContent requires SimpleList, Teams, Levels, EDWPatternSpawnDefin
 		set jtimber = nsync.AddUnit(CLAWMAN)
 		set jtimber.MoveSpeed = 360
 		call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_Region_461))
-		call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_Region_460))
-		call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_Region_458))
+		call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_Region_466))
+		call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_Region_467))
 		call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_Region_462))
 		
 		set jtimber.AllOrders.last.next = jtimber.AllOrders.first
