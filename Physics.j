@@ -107,7 +107,7 @@ endglobals
         public boolean     OnDiagonal                   //set by physics loop
         public ComplexTerrainPathingResult     DiagonalPathing   //set by physics loop
         
-		private real		PhysicsLoopDelta //prevEffect * (timer timestep - time remaining on timer) / timer timestep
+		private real		PhysicsLoopDeltaApplied //prevEffect * (timer timestep - time remaining on timer) / timer timestep
 		
         //static properties shared among all platformers/players (1:1 platformer per player)
         //static integer ActivePlatformers //same as List's .count, with how it's used
@@ -1087,48 +1087,31 @@ endglobals
             
             //apply constant Y forces
              
-             //apply y velocity
-             set newY = newY + .YVelocity
+            //apply y velocity
+            set newY = newY + .YVelocity
 			 
-			 //apply newX and newY based on % of current timestep fulfilled
-			 //this is relevant because apply physics is called after keyboard events, in order to maximize reactivity
-			 //to render apply physics properly over multiple, variable-length frames we need to keep track of % of physics to render per frame
-			 if TimerGetRemaining(.GameloopTimer) != 0 then
-				set distance = .PhysicsLoopDelta * (PlatformerGlobals_GAMELOOP_TIMESTEP - TimerGetRemaining(.GameloopTimer)) / PlatformerGlobals_GAMELOOP_TIMESTEP
-				//TODO remove hack fix once other events overriding physics are fixed
-				//don't let it buffer over tiny frames, half the point is that this solves other events happening before physics can
-				if distance < .5 then
-					set distance = .5
-					static if DEBUG_PHYSICS_LOOP_DELTA then
-						call DisplayTextToForce(bj_FORCE_PLAYER[0], "Physics delta set to minimum allowed: " + R2S(distance))
-					endif
-				endif
+			//update newX and newY based on % of current timestep fulfilled
+			//this is relevant because apply physics is called after keyboard events, in order to maximize reactivity
+			//to render apply physics properly over multiple, variable-length frames we need to keep track of % of physics to render per apply call for a single timer tick
+			set distance = TimerGetElapsed(.GameloopTimer) / PlatformerGlobals_GAMELOOP_TIMESTEP - .PhysicsLoopDeltaApplied
+			
+			static if DEBUG_PHYSICS_LOOP_DELTA then
+				call DisplayTextToForce(bj_FORCE_PLAYER[0], "Applied Delta: " + R2S(distance))
+				call DisplayTextToForce(bj_FORCE_PLAYER[0], "Elapsed time: " + R2S(TimerGetElapsed(.GameloopTimer)) + ", already applied time (%): " + R2S(.PhysicsLoopDeltaApplied))
+			endif
+			
+			set newX = newX * distance
+			set newY = newY * distance
+			
+			if TimerGetElapsed(.GameloopTimer) == PlatformerGlobals_GAMELOOP_TIMESTEP then
+				set .PhysicsLoopDeltaApplied = 0.
 				
 				static if DEBUG_PHYSICS_LOOP_DELTA then
-					call DisplayTextToForce(bj_FORCE_PLAYER[0], "Physics applied with time still on timer. Time left: " + R2S(TimerGetRemaining(.GameloopTimer)) + ", Delta applied: " + R2S(distance))
+					call DisplayTextToForce(bj_FORCE_PLAYER[0], "Reset delta")
 				endif
-				
-				set newX = newX * distance
-				set newY = newY * distance
-				
-				set .PhysicsLoopDelta = 1 - distance
-				
-				//TODO replace with this after hack is gone
-				//set distance = .PhysicsLoopDelta * (PlatformerGlobals_GAMELOOP_TIMESTEP - TimerGetRemaining(.GameloopTimer)) / PlatformerGlobals_GAMELOOP_TIMESTEP
-				// set newX = newX * distance
-				// set newY = newY * distance
-				
-				// set .PhysicsLoopDelta = 1 - distance				
-			 elseif .PhysicsLoopDelta != 1 then
-				static if DEBUG_PHYSICS_LOOP_DELTA then
-					call DisplayTextToForce(bj_FORCE_PLAYER[0], "Physics applied with delta debt. Time left: " + R2S(TimerGetRemaining(.GameloopTimer)) + ", Delta applied: " + R2S(.PhysicsLoopDelta))
-				endif
-				
-				set newX = newX * .PhysicsLoopDelta
-				set newY = newY * .PhysicsLoopDelta
-				
-				set .PhysicsLoopDelta = 1
-			 endif
+			else
+				set .PhysicsLoopDeltaApplied = .PhysicsLoopDeltaApplied + distance
+			endif
 
             //check new x and/or y position for pathability and apply it dependingly
             if newX != 0 or newY != 0 then
@@ -1146,7 +1129,7 @@ endglobals
                     //debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "On diagonal") 
                     
                     //step 1: check if newX / newY escape the current diagonal
-                    if DoesPointEscapeDiagonal(.DiagonalPathing.TerrainPathingForPoint, newX, newY, DIAGONAL_ESCAPEDISTANCE) then
+                    if DoesPointEscapeDiagonal(.DiagonalPathing.TerrainPathingForPoint, newX, newY, DIAGONAL_ESCAPEDISTANCE * distance) then
                         //bound newX and newY if they're too big -- this needs to occur AFTER checking if point escapes diagonal, or else the result may be skewed towards any much larger value
 						set distance = SquareRoot(newX * newX + newY * newY)
 						if distance > PLATFORMING_MAXCHANGE then
@@ -3125,7 +3108,7 @@ endglobals
                 set .YVelocity = 0
                 set .XVelocity = 0
 				
-				set .PhysicsLoopDelta = 1
+				set .PhysicsLoopDeltaApplied = 0.
                 
                 call SetPhysicsToProfile()
                 
