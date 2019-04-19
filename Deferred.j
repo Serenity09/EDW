@@ -1,13 +1,16 @@
 library Deferred requires Alloc, SimpleList
-	function interface DeferredCallback takes integer result returns integer
+	function interface DeferredCallback takes integer result, integer callbackData returns integer
 	
 	struct DeferredAwaiter extends array
+		private Deferred Parent
+		
 		public DeferredCallback Success
 		//JASS does not implement error handling, no good way to offer failure
 		//public DeferredCallback Failure
 		public DeferredCallback Progress
 		
-		private Deferred Parent
+		public integer CallbackData
+		
 		public Deferred Promise
 		
 		implement Alloc
@@ -16,12 +19,14 @@ library Deferred requires Alloc, SimpleList
 			call this.Parent.Remove(this)
 		endmethod
 		
-		public static method create takes Deferred parent returns thistype
+		public static method create takes Deferred parent, integer callbackData returns thistype
 			local thistype new = thistype.allocate()
 			
 			set new.Parent = parent
+			set new.CallbackData = callbackData
+			
 			set new.Promise = Deferred.create()
-						
+			
 			return new
 		endmethod
 		public method destroy takes nothing returns nothing
@@ -36,19 +41,21 @@ library Deferred requires Alloc, SimpleList
 		readonly boolean Resolved
 		public SimpleList_List Waiting
 		public integer Result
-		//public Deferred ResultPromise
 		
 		implement Alloc
 		
 		public method Progress takes integer progress returns nothing
 			local SimpleList_ListNode curAwaiter
+			local integer awaiterResult
 			
 			if not this.Resolved then
 				set curAwaiter = this.Waiting.first
 				loop
 				exitwhen curAwaiter == 0
 					if DeferredAwaiter(curAwaiter.value).Progress != 0 then
-						call DeferredAwaiter(curAwaiter.value).Progress.evaluate(progress)
+						set awaiterResult = DeferredAwaiter(curAwaiter.value).Progress.evaluate(progress, DeferredAwaiter(curAwaiter.value).CallbackData)
+						
+						call DeferredAwaiter(curAwaiter.value).Promise.Progress(awaiterResult)
 					endif
 				set curAwaiter = curAwaiter.next
 				endloop
@@ -66,9 +73,11 @@ library Deferred requires Alloc, SimpleList
 				set curAwaiter = this.Waiting.pop()
 				exitwhen curAwaiter == 0
 					if DeferredAwaiter(curAwaiter.value).Success != 0 then
-						set awaiterResult = DeferredAwaiter(curAwaiter.value).Success.evaluate(result)
+						set awaiterResult = DeferredAwaiter(curAwaiter.value).Success.evaluate(result, DeferredAwaiter(curAwaiter.value).CallbackData)
 						
-						//check if awaiterResult is a Deferred and chain it if it is
+						//TODO check if awaiterResult is a Deferred and chain it if it is
+						
+						call DeferredAwaiter(curAwaiter.value).Promise.Resolve(awaiterResult)
 					endif
 					
 					call DeferredAwaiter(curAwaiter.value).destroy()
@@ -77,18 +86,18 @@ library Deferred requires Alloc, SimpleList
 			endif
 		endmethod
 		
-		public method Then takes DeferredCallback success /*, DeferredCallback failure */, DeferredCallback progress returns DeferredAwaiter
+		public method Then takes DeferredCallback success /*, DeferredCallback failure */, DeferredCallback progress, integer callbackData returns DeferredAwaiter
 			local DeferredAwaiter awaiter
 			
 			if this.Resolved then
-				call success.evaluate(this.Result)
+				call success.evaluate(this.Result, callbackData)
 				
 				return 0
 			else
-				set awaiter = DeferredAwaiter.create(this)
+				set awaiter = DeferredAwaiter.create(this, callbackData)
 				set awaiter.Success = success
 				//set awaiter.Failure = failure
-				set awaiter.Progress = progress
+				set awaiter.Progress = progress				
 				
 				call this.Waiting.addEnd(awaiter)
 				
