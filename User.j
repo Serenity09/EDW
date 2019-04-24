@@ -1,4 +1,4 @@
-library User requires MazerGlobals, Platformer, TerrainHelpers, Cinema
+library User requires GetUnitDefaultRadius, MazerGlobals, Platformer, TerrainHelpers, Cinema
 
 globals
 	User TriggerUser //used with events
@@ -10,6 +10,7 @@ struct User extends array
     public boolean IsAlive
     public integer Deaths
     public unit ActiveUnit
+	public real ActiveUnitRadius
     public Platformer Platformer
     public integer GameMode //0: regular DH mazing, 1: wisp platforming, 9: mini-games?
     public integer PreviousGameMode //only standard or platforming
@@ -580,14 +581,18 @@ struct User extends array
 			
             if newGameMode == Teams_GAMEMODE_STANDARD or newGameMode == Teams_GAMEMODE_STANDARD_PAUSED then
                 set .ActiveUnit = MazersArray[this]
+				set .ActiveUnitRadius = GetUnitDefaultRadius(GetUnitTypeId(.ActiveUnit))
             elseif newGameMode == Teams_GAMEMODE_PLATFORMING or newGameMode == Teams_GAMEMODE_PLATFORMING_PAUSED then
                 set .ActiveUnit = .Platformer.Unit
+				set .ActiveUnitRadius = GetUnitDefaultRadius(GetUnitTypeId(.ActiveUnit))
             elseif newGameMode == Teams_GAMEMODE_DEAD then
                 //this may be problematic
                 if RespawnASAPMode then
                     set .ActiveUnit = null
+					set .ActiveUnitRadius = 0.
                 else
                     set .ActiveUnit = PlayerReviveCircles[this]
+					set .ActiveUnitRadius = GetUnitDefaultRadius(GetUnitTypeId(.ActiveUnit))
                 endif
             endif
         endif

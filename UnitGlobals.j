@@ -24,6 +24,8 @@ library UnitGlobals
         constant integer REGRET = 'e003'
         constant integer LMEMORY = 'e004'
         constant integer GUILT = 'e005'
+		
+		constant integer FROG = 'n003'
         
         //mortars
         //should be filtered out (not collide)

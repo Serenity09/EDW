@@ -1,4 +1,4 @@
-library Teams requires MazerGlobals, User
+library Teams requires MazerGlobals, User, SetUnitLocallyVisible
 globals
     private constant real VOTE_TOP_LEFT_X = -15000
 	private constant real VOTE_TOP_LEFT_Y = -4220
@@ -669,7 +669,7 @@ public struct MazingTeam
                 set .AllTeams[i].Weight = 1.
             endif
             
-            debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "team: " + I2S(i) + ", weight: " + R2S(.AllTeams[i].Weight))
+            //debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "team: " + I2S(i) + ", weight: " + R2S(.AllTeams[i].Weight))
             
             set i = i + 1
         endloop
@@ -896,6 +896,16 @@ public struct MazingTeam
 			
             set i = i + 1
         endloop
+	endmethod
+	
+	public method TeamSetUnitLocallyVisible takes unit u, boolean visible returns nothing
+		local SimpleList_ListNode curPlayerNode = .FirstUser
+		
+		loop
+		exitwhen curPlayerNode == 0
+			call SetUnitLocallyVisible(u, curPlayerNode.value, visible)
+		set curPlayerNode = curPlayerNode.next
+		endloop
 	endmethod
     
     public static method create takes integer teamID returns thistype
