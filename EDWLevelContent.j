@@ -1,6 +1,22 @@
-library EDWLevelContent requires SimpleList, Teams, Levels, EDWPatternSpawnDefinitions
+library EDWLevelContent requires SimpleList, Teams, Levels, EDWPatternSpawnDefinitions, Collectible
 	private function FinishedIntro takes nothing returns nothing
 		call TrackGameTime()
+	endfunction
+	
+	private function DefaultCollectibleResolve takes integer result, CollectibleTeam activeTeam returns integer
+		local Levels_Level nextLevel
+		
+		//call DisplayTextToPlayer(Player(0), 0, 0, "Default all collectibles resolved by active team " + I2S(activeTeam))
+		
+		if activeTeam.Team.OnLevel.NextLevel == 0 then
+			set nextLevel = Levels_Level(Levels_DOORS_LEVEL_ID)
+		else
+			set nextLevel = activeTeam.Team.OnLevel.NextLevel
+		endif
+		
+		call activeTeam.Team.OnLevel.SwitchLevels(activeTeam.Team, nextLevel)
+		
+		return 0
 	endfunction
 	
 	public function Initialize takes nothing returns nothing
@@ -20,6 +36,9 @@ library EDWLevelContent requires SimpleList, Teams, Levels, EDWPatternSpawnDefin
 		local SynchronizedUnit jtimber
 		
 		local PatternSpawn pattern
+		
+		local CollectibleSet collectibleSet
+		local Collectible collectible
 		
 		local integer i
 		
@@ -392,6 +411,19 @@ library EDWLevelContent requires SimpleList, Teams, Levels, EDWPatternSpawnDefin
 		call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_Region_473))
 		set jtimber.AllOrders.last.next = jtimber.AllOrders.first
 		
+		
+		//LEVEL 2
+		set l = Levels_Level.create(12, "Catch 'Em All", 3, 3, "LW2Start", "LW2Stop", gg_rct_LWR_2_1, gg_rct_LW2_Vision, gg_rct_LW2_End, l)
+        //call l.AddCheckpoint(gg_rct_LWCP_2_1, gg_rct_LWR_2_2)
+		
+		set collectibleSet = CollectibleSet.create(l, DefaultCollectibleResolve)
+		call collectibleSet.AddCollectible(Collectible.create(FROG, WWWISP, -11364, -12828, 270))
+		call collectibleSet.AddCollectible(Collectible.create(FROG, WWWISP, -11564, -12828, 270))
+		call collectibleSet.AddCollectible(Collectible.create(FROG, WWWISP, -11764, -12828, 270))
+		
+		set collectibleSet = CollectibleSet.create(l, DefaultCollectibleResolve)
+		call collectibleSet.AddCollectible(Collectible.create(FROG, WWWISP, -11364, -13028, 270))
+		
         //PRIDE WORLD / PLATFORMING
         //LEVEL 1
         set l = Levels_Level.create(9, "Perspective", 4, 2, "PW1Start", "PW1Stop", gg_rct_PWR_1_1, gg_rct_PW1_Vision, gg_rct_PW1_End, 0) //gg_rct_PW1_Vision
@@ -430,7 +462,7 @@ library EDWLevelContent requires SimpleList, Teams, Levels, EDWPatternSpawnDefin
         call l.AddStartable(MortarNTarget.create(SMLMORT, SMLTARG, Player(8), gg_rct_PW2_Mortar , gg_rct_PW2_Target))
         
         //public static method create takes rect spawn, real spawntimeout, real walktimeout, integer uid, real lifespan returns thistype
-        call l.AddStartable(DrunkWalker_DrunkWalkerSpawn.create(gg_rct_PW2_Drunks_1, 4, 3, LGUARD, 17))
+        call l.AddStartable(DrunkWalker_DrunkWalkerSpawn.create(gg_rct_PW2_Drunks_1, 6, 3, LGUARD, 14))
         call l.AddStartable(DrunkWalker_DrunkWalkerSpawn.create(gg_rct_PW2_Drunks_1, 10, 3, GUARD, 8))
         call l.AddStartable(DrunkWalker_DrunkWalkerSpawn.create(gg_rct_PW2_Drunks_2, 6, 3, LGUARD, 8))
         call l.AddStartable(DrunkWalker_DrunkWalkerSpawn.create(gg_rct_PW2_Drunks_3, 5, 2.5, LGUARD, 14))
