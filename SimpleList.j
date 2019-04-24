@@ -51,19 +51,24 @@ library SimpleList requires Alloc
         endmethod
         
         //remove the first node and return it
+		//remember to store or destroy the node when finished with it
         public method pop takes nothing returns ListNode
             //store the node that's being popped
             local ListNode pop = .first
             
-            //update the first node to the second node
-            set .first = .first.next
-            set .first.prev = 0
-            set .count = .count - 1
-            
-            if .count == 0 then
-                set .last = 0
-            endif
-            
+            //check if popping an empty list
+			if pop != 0 then
+				//update the first node to the second node
+				set .first = pop.next
+				set .count = .count - 1
+				
+				if .count == 0 then
+					set .last = 0
+				else
+					set .first.prev = 0
+				endif
+			endif
+                        
             return pop
         endmethod
 		public method get takes integer index returns ListNode

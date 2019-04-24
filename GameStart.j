@@ -109,7 +109,7 @@ library EDWGameStart initializer Init requires Levels, EDWVisualVote, UnitGlobal
 		static if DEBUG_MODE then
 			set FinishedPostLoad = true
 		endif
-        debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "Finished Game Start 0 second callback")
+        // debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "Finished Game Start 0 second callback")
     endfunction	
             
     private function Init takes nothing returns nothing

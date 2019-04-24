@@ -967,6 +967,7 @@ endglobals
             debug local real curYVelocity = .YVelocity
             debug local real curXVelocity = .XVelocity
             
+			local real applyTimeDelta
             local real distance
             //local real angle
             
@@ -986,8 +987,27 @@ endglobals
 				call DisplayTextToForce(bj_FORCE_PLAYER[0], "Before Position: " + R2S(.XPosition) + "," + R2S(.YPosition))
 			endif
 			
+			//to apply physics properly over multiple, variable-length frames we need to keep track of % of physics already rendered during a single timer tick
+			//the % of a single tick that should be applied in the current call, applyTimeDelta, should be factored once into all physical forces that are applied over time
+			set applyTimeDelta = TimerGetElapsed(.GameloopTimer) / PlatformerGlobals_GAMELOOP_TIMESTEP - .PhysicsLoopDeltaApplied
+			
+			static if DEBUG_PHYSICS_LOOP_DELTA then
+				call DisplayTextToForce(bj_FORCE_PLAYER[0], "Applied Delta: " + R2S(applyTimeDelta))
+				call DisplayTextToForce(bj_FORCE_PLAYER[0], "Elapsed time: " + R2S(TimerGetElapsed(.GameloopTimer)) + ", already applied time (%): " + R2S(.PhysicsLoopDeltaApplied))
+			endif
+			
+			if TimerGetElapsed(.GameloopTimer) == PlatformerGlobals_GAMELOOP_TIMESTEP then
+				set .PhysicsLoopDeltaApplied = 0.
+				
+				static if DEBUG_PHYSICS_LOOP_DELTA then
+					call DisplayTextToForce(bj_FORCE_PLAYER[0], "Reset delta")
+				endif
+			else
+				set .PhysicsLoopDeltaApplied = .PhysicsLoopDeltaApplied + applyTimeDelta
+			endif
+			
             //Handle forces that affect the x and/or y direction and need to be as accurate as possible
-            //apply constant forces
+            //apply constant forces -- forces applied into newX and newY do not need to factor applyTimeDelta in, since it can be factored in once at the end to cover all individual forces (F = D*f1 + D*f2 ... => F = D*(f1+ f2 +...))
             //apply horizontal key state
             if .HorizontalAxisState != 0 then
                 if .OnDiagonal then
@@ -1045,18 +1065,18 @@ endglobals
 						if .GravitationalAccel > 0 then //gravity up
 							if .YVelocity > 0 then //also going up
 								if .GravitationalAccel + .YVelocity < .TerminalVelocityY then //will adding gravity exceed terminal velocity
-									set .YVelocity = .YVelocity + .GravitationalAccel
+									set .YVelocity = .YVelocity + .GravitationalAccel * applyTimeDelta
 								endif
 							else //gravity going up but velocity down
-								set .YVelocity = .YVelocity + .GravitationalAccel
+								set .YVelocity = .YVelocity + .GravitationalAccel * applyTimeDelta
 							endif
 						else
 							if .YVelocity < 0 then //velocity also down
 								if .GravitationalAccel + .YVelocity > -.TerminalVelocityY then //will adding gravity exceed terminal velocity
-									set .YVelocity = .YVelocity + .GravitationalAccel
+									set .YVelocity = .YVelocity + .GravitationalAccel * applyTimeDelta
 								endif
 							else
-								set .YVelocity = .YVelocity + .GravitationalAccel
+								set .YVelocity = .YVelocity + .GravitationalAccel * applyTimeDelta
 							endif
 						endif
 					endif					
@@ -1064,18 +1084,18 @@ endglobals
 					if .GravitationalAccel > 0 then //gravity up
 						if .YVelocity > 0 then //also going up
 							if .GravitationalAccel + .YVelocity < .TerminalVelocityY then //will adding gravity exceed terminal velocity
-								set .YVelocity = .YVelocity + .GravitationalAccel
+								set .YVelocity = .YVelocity + .GravitationalAccel * applyTimeDelta
 							endif
 						else //gravity going up but velocity down
-							set .YVelocity = .YVelocity + .GravitationalAccel
+							set .YVelocity = .YVelocity + .GravitationalAccel * applyTimeDelta
 						endif
 					elseif .GravitationalAccel < 0 then //gravity down
 						if .YVelocity < 0 then //velocity also down
 							if .GravitationalAccel + .YVelocity > -.TerminalVelocityY then //will adding gravity exceed terminal velocity
-								set .YVelocity = .YVelocity + .GravitationalAccel
+								set .YVelocity = .YVelocity + .GravitationalAccel * applyTimeDelta
 							endif
 						else
-							set .YVelocity = .YVelocity + .GravitationalAccel
+							set .YVelocity = .YVelocity + .GravitationalAccel * applyTimeDelta
 						endif
 					endif
 				endif
@@ -1092,27 +1112,9 @@ endglobals
 			 
 			//update newX and newY based on % of current timestep fulfilled
 			//this is relevant because apply physics is called after keyboard events, in order to maximize reactivity
-			//to render apply physics properly over multiple, variable-length frames we need to keep track of % of physics to render per apply call for a single timer tick
-			set distance = TimerGetElapsed(.GameloopTimer) / PlatformerGlobals_GAMELOOP_TIMESTEP - .PhysicsLoopDeltaApplied
+			set newX = newX * applyTimeDelta
+			set newY = newY * applyTimeDelta
 			
-			static if DEBUG_PHYSICS_LOOP_DELTA then
-				call DisplayTextToForce(bj_FORCE_PLAYER[0], "Applied Delta: " + R2S(distance))
-				call DisplayTextToForce(bj_FORCE_PLAYER[0], "Elapsed time: " + R2S(TimerGetElapsed(.GameloopTimer)) + ", already applied time (%): " + R2S(.PhysicsLoopDeltaApplied))
-			endif
-			
-			set newX = newX * distance
-			set newY = newY * distance
-			
-			if TimerGetElapsed(.GameloopTimer) == PlatformerGlobals_GAMELOOP_TIMESTEP then
-				set .PhysicsLoopDeltaApplied = 0.
-				
-				static if DEBUG_PHYSICS_LOOP_DELTA then
-					call DisplayTextToForce(bj_FORCE_PLAYER[0], "Reset delta")
-				endif
-			else
-				set .PhysicsLoopDeltaApplied = .PhysicsLoopDeltaApplied + distance
-			endif
-
             //check new x and/or y position for pathability and apply it dependingly
             if newX != 0 or newY != 0 then
                 //debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "Change in position")
@@ -1129,7 +1131,7 @@ endglobals
                     //debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "On diagonal") 
                     
                     //step 1: check if newX / newY escape the current diagonal
-                    if DoesPointEscapeDiagonal(.DiagonalPathing.TerrainPathingForPoint, newX, newY, DIAGONAL_ESCAPEDISTANCE * distance) then
+                    if DoesPointEscapeDiagonal(.DiagonalPathing.TerrainPathingForPoint, newX, newY, DIAGONAL_ESCAPEDISTANCE * applyTimeDelta) then
                         //bound newX and newY if they're too big -- this needs to occur AFTER checking if point escapes diagonal, or else the result may be skewed towards any much larger value
 						set distance = SquareRoot(newX * newX + newY * newY)
 						if distance > PLATFORMING_MAXCHANGE then
@@ -2352,12 +2354,12 @@ endglobals
 					*/
                     //TODO replace with 2nd power easing
                     else //anywhere inbetween
-                        set .XVelocity = .XVelocity - .XFalloff
+                        set .XVelocity = .XVelocity - .XFalloff * applyTimeDelta
                     endif
                     
                     //TODO this doesn't work with diagonals when you're on an actual diagonal slant
                     if .MoveSpeedVelOffset != 0 and .HorizontalAxisState == -1 then //left key down in opposite direction as XVelocity -- decrement XVelocity extra
-                        set .XVelocity = .XVelocity - .MoveSpeed * .MoveSpeedVelOffset
+                        set .XVelocity = .XVelocity - .MoveSpeed * .MoveSpeedVelOffset * applyTimeDelta
                     endif
                 else //velocity going left
                     if .XVelocity > -xMINVELOCITY then
@@ -2368,12 +2370,12 @@ endglobals
                         set .XVelocity = .XVelocity + .XFalloff * XFalloff
 					*/
                     else
-                        set .XVelocity = .XVelocity + .XFalloff
+                        set .XVelocity = .XVelocity + .XFalloff * applyTimeDelta
                     endif
                     
                     //TODO this doesn't work with diagonals when you're on an actual diagonal slant
                      if .MoveSpeedVelOffset != 0 and .HorizontalAxisState == 1 then //right key down in opposite direction as XVelocity -- decrement XVelocity extra
-                        set .XVelocity = .XVelocity + .MoveSpeed * .MoveSpeedVelOffset
+                        set .XVelocity = .XVelocity + .MoveSpeed * .MoveSpeedVelOffset * applyTimeDelta
                     endif
                 endif
             endif
@@ -2383,14 +2385,14 @@ endglobals
                 //decrement YVelocity if over terminal velocity
 				if .YVelocity > .TerminalVelocityY then
                     //todo replace with a smoothing function
-                    set .YVelocity = .YVelocity - .YFalloff
+                    set .YVelocity = .YVelocity - .YFalloff * applyTimeDelta
                 endif
 				//set .YVelocity = .YVelocity - .YFalloff
             elseif .YVelocity < 0 then
                 //decrement YVelocity if over terminal velocity
 				if .YVelocity < -.TerminalVelocityY then
                     //todo replace with a easing function
-                    set .YVelocity = .YVelocity + .YFalloff
+                    set .YVelocity = .YVelocity + .YFalloff * applyTimeDelta
                 endif
 				//set .YVelocity = .YVelocity + .YFalloff
             endif

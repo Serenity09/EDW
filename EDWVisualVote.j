@@ -346,7 +346,7 @@ library EDWVisualVote requires VisualVote, ContinueGlobals, Teams, PlayerUtils, 
 			
 			call firstLevel.SetCheckpointForTeam(team[i], 0)
 			
-            debug call DisplayTextToPlayer(Player(0), 0, 0, "Team " + I2S(team[i]) + " on level: " + I2S(team[i].OnLevel))
+            //debug call DisplayTextToPlayer(Player(0), 0, 0, "Team " + I2S(team[i]) + " on level: " + I2S(team[i].OnLevel))
         set i = i + 1
         exitwhen i >= teamCount
         endloop
@@ -452,7 +452,9 @@ library EDWVisualVote requires VisualVote, ContinueGlobals, Teams, PlayerUtils, 
 			
 			call MultiboardMinimize(Teams_MazingTeam.PlayerStats, true)
 			
-			call TrackGameTime()
+			if GetFirstLevel() != Levels_Level(1) then
+				call TrackGameTime()
+			endif
 		elseif GetHumanPlayersCount() == 1 then
 			set GameMode = GameModesGlobals_SOLO
 			set RespawnASAPMode = true
