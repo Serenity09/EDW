@@ -1,4 +1,4 @@
-library Teams requires MazerGlobals, User, SetUnitLocallyVisible
+library Teams requires MazerGlobals, User, UnitLocalVisibility
 globals
     private constant real VOTE_TOP_LEFT_X = -15000
 	private constant real VOTE_TOP_LEFT_Y = -4220
@@ -898,12 +898,12 @@ public struct MazingTeam
         endloop
 	endmethod
 	
-	public method TeamSetUnitLocallyVisible takes unit u, boolean visible returns nothing
+	public method SetUnitLocalVisibilityForTeam takes unit u, boolean visible returns nothing
 		local SimpleList_ListNode curPlayerNode = .FirstUser
 		
 		loop
 		exitwhen curPlayerNode == 0
-			call SetUnitLocallyVisible(u, curPlayerNode.value, visible)
+			call SetUnitLocalVisibility(u, curPlayerNode.value, visible)
 		set curPlayerNode = curPlayerNode.next
 		endloop
 	endmethod

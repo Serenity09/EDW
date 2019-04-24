@@ -1,4 +1,4 @@
-library Collectible requires Alloc, PermanentAlloc, SimpleList, Teams, IStartable, Levels, Deferred, All, TimerUtils, locust, SetUnitLocallyVisible, GetUnitDefaultRadius
+library Collectible requires Alloc, PermanentAlloc, SimpleList, Teams, IStartable, Levels, Deferred, All, TimerUtils, locust, GetUnitDefaultRadius
 	globals
 		private constant real COLLECTIBLE_COLLISION_TIMEOUT = .15
 		private constant player COLLECTIBLE_PLAYER = Player(9)
@@ -68,11 +68,11 @@ library Collectible requires Alloc, PermanentAlloc, SimpleList, Teams, IStartabl
 			loop
 			exitwhen curCollectibleNode == 0
 				//show uncollected unit for local team only
-				call mt.TeamSetUnitLocallyVisible(Collectible(curCollectibleNode.value).UncollectedUnit, true)
+				call mt.SetUnitLocalVisibilityForTeam(Collectible(curCollectibleNode.value).UncollectedUnit, true)
 				
 				//if exists, hide collected unit for local team only
 				if Collectible(curCollectibleNode.value).CollectedUnit != null then
-					call mt.TeamSetUnitLocallyVisible(Collectible(curCollectibleNode.value).CollectedUnit, false)
+					call mt.SetUnitLocalVisibilityForTeam(Collectible(curCollectibleNode.value).CollectedUnit, false)
 				endif
 				
 				//create a deferred to track collection state
@@ -191,10 +191,10 @@ library Collectible requires Alloc, PermanentAlloc, SimpleList, Teams, IStartabl
 								//set distance = SquareRoot(deltaX*deltaX + deltaY*deltaY)
 								
 								if SquareRoot(deltaX*deltaX + deltaY*deltaY) <= Collectible(curCollectibleNode.value).UncollectedUnitRadius + User(curPlayerNode.value).ActiveUnitRadius then
-									call CollectibleTeam(curTeamNode.value).Team.TeamSetUnitLocallyVisible(Collectible(curCollectibleNode.value).UncollectedUnit, false)
+									call CollectibleTeam(curTeamNode.value).Team.SetUnitLocalVisibilityForTeam(Collectible(curCollectibleNode.value).UncollectedUnit, false)
 									
 									if Collectible(curCollectibleNode.value).CollectedUnit != null then
-										call CollectibleTeam(curTeamNode.value).Team.TeamSetUnitLocallyVisible(Collectible(curCollectibleNode.value).CollectedUnit, true)
+										call CollectibleTeam(curTeamNode.value).Team.SetUnitLocalVisibilityForTeam(Collectible(curCollectibleNode.value).CollectedUnit, true)
 									endif
 									
 									call curCollectibleDeferred.Resolve(curPlayerNode.value)

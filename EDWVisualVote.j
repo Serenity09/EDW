@@ -19,6 +19,13 @@ library EDWVisualVote requires VisualVote, ContinueGlobals, Teams, PlayerUtils, 
             return Levels_Level(1)
         endif
     endfunction
+	public function GetFirstCheckpoint takes nothing returns integer
+		if DEBUG_MODE or CONFIGURATION_PROFILE != RELEASE then
+            return 1
+        else
+            return 0
+        endif
+	endfunction
         
     public function GameModeSolo takes nothing returns nothing
         //call DisplayTextToPlayer(Player(0), 0, 0, "solo")
@@ -334,9 +341,7 @@ library EDWVisualVote requires VisualVote, ContinueGlobals, Teams, PlayerUtils, 
             //call team[i].SwitchTeamGameMode(team[i].DefaultGameMode, GetRandomReal(GetRectMinX(team[i].Revive), GetRectMaxX(team[i].Revive)), GetRandomReal(GetRectMinY(team[i].Revive), GetRectMaxY(team[i].Revive)))
             
             call team[i].ApplyTeamDefaultCameras()
-            call team[i].AddTeamVision(firstLevel.Vision)
-			
-			
+            call team[i].AddTeamVision(firstLevel.Vision)			
 			
 			static if not DEBUG_MODE then
 				call team[i].AddTeamCinema(welcomeCine, team[i].FirstUser.value)
@@ -344,8 +349,8 @@ library EDWVisualVote requires VisualVote, ContinueGlobals, Teams, PlayerUtils, 
 			
             call firstLevel.ActiveTeams.add(team[i])
 			
-			call firstLevel.SetCheckpointForTeam(team[i], 0)
-			
+			//call firstLevel.SetCheckpointForTeam(team[i], 0)
+			call firstLevel.SetCheckpointForTeam(team[i], GetFirstCheckpoint())
             //debug call DisplayTextToPlayer(Player(0), 0, 0, "Team " + I2S(team[i]) + " on level: " + I2S(team[i].OnLevel))
         set i = i + 1
         exitwhen i >= teamCount
