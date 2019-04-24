@@ -91,7 +91,7 @@ library DeferredUnitTests initializer init requires Deferred, Any, All
 		
 		return 0
 	endfunction
-	
+		
 	//tests null/0 callbacks
 	private function testNullCallback takes nothing returns nothing
 		set Defer1 = Deferred.create()
@@ -162,11 +162,23 @@ library DeferredUnitTests initializer init requires Deferred, Any, All
 		
 		call promiseList.destroy()
 	endfunction
+	
+	private function testDestroyChain takes nothing returns nothing
+		local Deferred rootDeferred
+		local Deferred deferred
+		
+		set rootDeferred = Deferred.create()
+		set deferred = rootDeferred.Then(0, 0, 0)
+		set deferred = deferred.Then(0, 0, 0)
+		
+		call rootDeferred.destroy()
+	endfunction
 	private function init takes nothing returns nothing
 		//call testNullCallback()
 		//call testSimpleChain()
 		//call testComplexChain()
 		//call testAll()
-		call testAny()
+		//call testAny()
+		call testDestroyChain()
 	endfunction
 endlibrary
