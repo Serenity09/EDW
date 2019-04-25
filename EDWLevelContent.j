@@ -137,14 +137,17 @@ library EDWLevelContent requires SimpleList, Teams, Levels, EDWPatternSpawnDefin
         call l.AddStartable(DrunkWalker_DrunkWalkerSpawn.create(gg_rct_IW4_Drunks, 6, 5, LGUARD, 24))
         call l.AddStartable(Blackhole.create(8958, 6400, true))
         //
-        set rg = RelayGenerator.create(5373, 9984, 3, 6, 270, 0, LGUARD, 2.)
+		
+        set rg = RelayGenerator.create(5373, 9984, 3, 6, 270, 0, 2., RelayGeneratorRandomSpawn, 1)
+		set rg.SpawnPattern.Data = LGUARD
         call rg.AddTurnSimple(0, 6)
         call rg.AddTurnSimple(90, 0)
         call rg.EndTurns(90)
         
         call l.AddStartable(rg)
         //
-        set rg = RelayGenerator.create(6654, 6528, 3, 6, 90, 7, LGUARD, 1.5)
+        set rg = RelayGenerator.create(6654, 6528, 3, 6, 90, 7, 1.5, RelayGeneratorRandomSpawn, 1)
+		set rg.SpawnPattern.Data = LGUARD
         call rg.AddTurnSimple(180, 7)
         call rg.AddTurnSimple(270, 1)
         call rg.AddTurnSimple(0, 13)
@@ -158,7 +161,8 @@ library EDWLevelContent requires SimpleList, Teams, Levels, EDWPatternSpawnDefin
         
         call l.AddStartable(rg)
         //
-        set rg = RelayGenerator.create(3830, 6278, 3, 6, 90, 3, GUARD, 3.)
+        set rg = RelayGenerator.create(3830, 6278, 3, 6, 90, 3, 3., RelayGeneratorRandomSpawn, 1)
+		set rg.SpawnPattern.Data = GUARD
         call rg.AddTurnSimple(0, 1)
         call rg.AddTurnSimple(270, 3)
         call rg.EndTurns(270)
@@ -180,7 +184,8 @@ library EDWLevelContent requires SimpleList, Teams, Levels, EDWPatternSpawnDefin
 		set l = Levels_Level.create(4, "Training Wheels", 4, 2, "IWB1Start", "IWB1Stop", gg_rct_EIWR_1_1, gg_rct_EIW1_Vision, gg_rct_EIW1_End, 0)
         call l.AddCheckpoint(gg_rct_EIWCP_1_1, gg_rct_EIWR_1_2)
 				
-		set rg = RelayGenerator.create(-5948, 10836, 4, 4, 270, 0, ICETROLL, 2.)
+		set rg = RelayGenerator.create(-5948, 10836, 4, 4, 270, 0, 2., RelayGeneratorRandomSpawn, 1)
+		set rg.SpawnPattern.Data = ICETROLL
         call rg.AddTurnSimple(0, 12)
         call rg.AddTurnSimple(90, 11)
         call rg.EndTurns(90)
@@ -468,7 +473,8 @@ library EDWLevelContent requires SimpleList, Teams, Levels, EDWPatternSpawnDefin
         call l.AddStartable(DrunkWalker_DrunkWalkerSpawn.create(gg_rct_PW2_Drunks_3, 5, 2.5, LGUARD, 14))
         call l.AddStartable(DrunkWalker_DrunkWalkerSpawn.create(gg_rct_PW2_Drunks_4, 4, 6, LGUARD, 10))
         
-        set rg = RelayGenerator.create(8186, -3191, 3, 3, 0, 0, ICETROLL, 2.)
+        set rg = RelayGenerator.create(8186, -3191, 3, 3, 0, 0, 2.5, PW2PatternSpawn, 4)
+		set rg.SpawnPattern.Data = ICETROLL
         call rg.AddTurnSimple(90, 4)
         call rg.AddTurnSimple(180, 1)
         call rg.AddTurnSimple(270, 0)
@@ -480,11 +486,11 @@ library EDWLevelContent requires SimpleList, Teams, Levels, EDWPatternSpawnDefin
         call rg.AddTurnSimple(270, 0)
         call rg.AddTurnSimple(180, 3)
         call rg.AddTurnSimple(90, 8)
-        call rg.AddTurnSimple(0, 5)
+        call rg.AddTurnSimple(0, 3)
         call rg.AddTurnSimple(270, 0)
         call rg.AddTurnSimple(0, 3)
         call rg.AddTurnSimple(90, 0)
-        call rg.AddTurnSimple(0, 12)
+		call rg.AddTurnSimple(0, 14)
         call rg.EndTurns(0)
         
         //debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "PW2 RG: " + rg.ToString())

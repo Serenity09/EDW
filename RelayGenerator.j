@@ -4,7 +4,7 @@ library RelayGenerator requires GameGlobalConstants, SimpleList, Table, Vector2,
         
         private constant integer RELAY_PLAYER = 10
         
-        //this have to be opposite for functionality to work, and it'll be faster if they're set this way to make computations off of (always interested in inverse)
+        //these have to be opposite for functionality to work, and it'll be faster if they're set this way to make computations off of (always interested in inverse)
         private constant integer LEFT = 1
         private constant integer RIGHT = -1
         private constant integer DOWN = 1
@@ -107,11 +107,11 @@ library RelayGenerator requires GameGlobalConstants, SimpleList, Table, Vector2,
     endstruct
     
     struct RelayGenerator extends IStartable
-        public vector2 SpawnCenter
+        public RelayPatternSpawn SpawnPattern
+		public vector2 SpawnCenter
 		public integer Diameter
         //public real Radius //in whole tile units
         
-        public integer UnitTypeID
         public real UnitLaneSize
         public static integer array UnitIDToRelayUnitID //links unit ID to RelayUnit struct ID (UnitIDToRelayUnitID[UnitID] = RelayUnit struct ID)
         private real UnitTimeout
@@ -148,6 +148,15 @@ library RelayGenerator requires GameGlobalConstants, SimpleList, Table, Vector2,
             return "Unit Lane Size: " + R2S(.UnitLaneSize) + ", radius: " + R2S(.GetRadius()) + ", number lanes: " + I2S(.GetNumberLanes())
         endmethod
         
+		public method GetNumberLanes takes nothing returns integer
+            //number lanes in a single tile = tile-size / lane-offset
+            //number lanes total = lanes-single * spawn-diameter
+            return R2I(this.Diameter*TERRAIN_TILE_SIZE/.UnitLaneSize) - UNIT_SIDE_BUFFER*2
+        endmethod
+		public method GetRadius takes nothing returns integer
+			return R2I(this.Diameter / 2.)
+		endmethod
+		
         //register the rect that matches the final turn's destination under a remove unit timer event
         public method EndTurns takes integer endDirection returns nothing
             call this.AddTurnSimple(endDirection, 0)
@@ -345,46 +354,47 @@ library RelayGenerator requires GameGlobalConstants, SimpleList, Table, Vector2,
 			
 			return GetTurnDestination(turnUnit.CurrentTurn, turnUnit.LaneNumber)
         endmethod
-        
-        public method GetNumberLanes takes nothing returns integer
-            //number lanes in a single tile = tile-size / lane-offset
-            //number lanes total = lanes-single * spawn-diameter
-            return R2I(this.Diameter*TERRAIN_TILE_SIZE/.UnitLaneSize) - UNIT_SIDE_BUFFER*2
-        endmethod
-		public method GetRadius takes nothing returns integer
-			return R2I(this.Diameter / 2.)
-		endmethod
-        
+        		
         private static method CreateUnitCB takes nothing returns nothing
             local RelayGenerator generator = GetTimerData(GetExpiredTimer())
-            local RelayTurn firstTurn = RelayTurn(generator.Turns.first.value)
-            
-            local integer lane = GetRandomInt(0, generator.GetNumberLanes() - 1)
-            local unit u 
+			local RelayTurn spawnTurn = generator.Turns.first.value
+			
+			local group g
+            local unit u
+			local integer lane
             local vector2 destination
             
-            //debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "Creating unit in lane " + I2S(lane))
+            set g = generator.SpawnPattern.Spawn(generator.ParentLevel)
+			loop
+			set u = FirstOfGroup(g)
+			exitwhen u == null
+				if spawnTurn.Direction == 90 or spawnTurn.Direction == 270 then
+					//GetUnitX(u) = spawnTurn.FirstLane.x + spawnTurn.FirstLaneX*lane*generator.UnitLaneSize
+					//GetUnitX(u) - spawnTurn.FirstLane.x = spawnTurn.FirstLaneX*lane*generator.UnitLaneSize
+					//(GetUnitX(u) - spawnTurn.FirstLane.x) / (spawnTurn.FirstLaneX * generator.UnitLaneSize) = lane
+					set lane = R2I((GetUnitX(u) - spawnTurn.FirstLane.x) / (spawnTurn.FirstLaneX * generator.UnitLaneSize))
+				else
+					set lane = R2I((GetUnitY(u) - spawnTurn.FirstLane.y) / (spawnTurn.FirstLaneY * generator.UnitLaneSize))
+				endif
+				
+				//debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "Creating unit in lane " + I2S(lane))
+				
+				call IndexUnit(u)
+				call GroupAddUnit(generator.Units, u)
+				set UnitIDToRelayUnitID[GetUnitId(u)] = RelayUnit.create(lane, generator.Turns.first)
+				
+				//send unit to first destination
+				set destination = generator.GetNextTurnDestination(UnitIDToRelayUnitID[GetUnitId(u)])
+				call IssuePointOrder(u, "move", destination.x, destination.y)
+				
+				set RelayUnit(UnitIDToRelayUnitID[GetUnitId(u)]).CurrentTurn = generator.Turns.first.next
+				
+				call destination.deallocate()
+			call GroupRemoveUnit(g, u)
+			endloop
             
-            if firstTurn.Direction == 90 or firstTurn.Direction == 270 then
-                //sending up/down
-                set u = Recycle_MakeUnit(generator.UnitTypeID, firstTurn.FirstLane.x + firstTurn.FirstLaneX*lane*generator.UnitLaneSize, firstTurn.FirstLane.y)
-            else
-                //sending left/right
-                set u = Recycle_MakeUnit(generator.UnitTypeID, firstTurn.FirstLane.x, firstTurn.FirstLane.y + firstTurn.FirstLaneY*lane*generator.UnitLaneSize)
-            endif
-            
-            call IndexUnit(u)
-			call GroupAddUnit(generator.Units, u)
-            set UnitIDToRelayUnitID[GetUnitId(u)] = RelayUnit.create(lane, generator.Turns.first)
-            
-            //send unit to first destination
-            set destination = generator.GetNextTurnDestination(UnitIDToRelayUnitID[GetUnitId(u)])
-            call IssuePointOrder(u, "move", destination.x, destination.y)
-            
-            set RelayUnit(UnitIDToRelayUnitID[GetUnitId(u)]).CurrentTurn = generator.Turns.first.next
-            
-            set u = null
-            call destination.deallocate()
+			call ReleaseGroup(g)
+			set g = null
         endmethod
 		
 		private method ReleaseUnit takes unit u returns nothing
@@ -497,7 +507,7 @@ library RelayGenerator requires GameGlobalConstants, SimpleList, Table, Vector2,
         //real centerY
         //integer spawnDiameter -- # of full tiles this spawn is in both length and width directions. all spawns are squares
         //integer laneCount -- # of lanes in relay
-        public static method create takes real centerX, real centerY, integer spawnDiameter, integer laneCount, integer direction, integer tilesToTravel, integer unitTypeID, real unitSpawnTimeout returns thistype
+        public static method create takes real centerX, real centerY, integer spawnDiameter, integer laneCount, integer direction, integer tilesToTravel, real unitSpawnTimeout, IPatternSpawn spawnCB, integer cycleCount returns thistype
             local thistype new
             local real spawnRadius = spawnDiameter / 2. * TERRAIN_TILE_SIZE
 			local vector2 testCenter
@@ -508,7 +518,6 @@ library RelayGenerator requires GameGlobalConstants, SimpleList, Table, Vector2,
             if ModuloInteger(direction, 90) == 0 then
                 set new = thistype.allocate()
                 
-                set new.UnitTypeID = unitTypeID
                 set new.UnitTimeout = unitSpawnTimeout
                 
 				if ModuloInteger(spawnDiameter, 2) == 0 then
@@ -558,6 +567,8 @@ library RelayGenerator requires GameGlobalConstants, SimpleList, Table, Vector2,
                     //sending down
                     call new.Turns.add(RelayTurn.create(Rect(spawnCenter.x - spawnRadius - new.UnitLaneSize, spawnCenter.y + spawnRadius - TERRAIN_TILE_SIZE - new.UnitLaneSize, spawnCenter.x + spawnRadius + new.UnitLaneSize, spawnCenter.y + spawnRadius + new.UnitLaneSize), spawnCenter, new, direction, spawnDiameter*TERRAIN_TILE_SIZE + tilesToTravel*TERRAIN_TILE_SIZE, LEFT, UP))
                 endif
+				
+				set new.SpawnPattern = RelayPatternSpawn.create(spawnCB, cycleCount, new)
                 
                 //don't deallocate spawn center, it's re-used by the generator
                 
