@@ -96,25 +96,40 @@ library EDWPatternSpawnDefinitions requires PatternSpawn, Recycle
 	
 	function IntroPatternSpawn takes PatternSpawn spawn, Levels_Level parentLevel returns group
 		local group g = NewGroup()
-		//local integer cycle = spawn.CurrentCycle
+		//local unit u = Recycle_MakeUnit(LGUARD, LinePatternSpawn(spawn).SpawnOrigin.x + GetRandomReal(0, LinePatternSpawn(spawn).SpawnLineLength), LinePatternSpawn(spawn).SpawnOrigin.y)
+		//call SetUnitMoveSpeed(u, 200.)
 		
-		call GroupAddUnit(g, Recycle_MakeUnit(GUARD, LinePatternSpawn(spawn).SpawnOrigin.x + GetRandomReal(0, LinePatternSpawn(spawn).SpawnLineLength), LinePatternSpawn(spawn).SpawnOrigin.y))
+		call GroupAddUnit(g, Recycle_MakeUnit(LGUARD, LinePatternSpawn(spawn).SpawnOrigin.x + GetRandomReal(0, LinePatternSpawn(spawn).SpawnLineLength), LinePatternSpawn(spawn).SpawnOrigin.y))
 		
 		return g
 	endfunction
 	
 	function IW2PatternSpawn takes PatternSpawn spawn, Levels_Level parentLevel returns group
 		local group g = NewGroup()
-		//local integer cycle = spawn.CurrentCycle
 		
-		call GroupAddUnit(g, Recycle_MakeUnit(LGUARD, LinePatternSpawn(spawn).SpawnOrigin.x, LinePatternSpawn(spawn).SpawnOrigin.y + GetRandomReal(0, LinePatternSpawn(spawn).SpawnLineLength)))
+		local unit u = Recycle_MakeUnit(LGUARD, LinePatternSpawn(spawn).SpawnOrigin.x, LinePatternSpawn(spawn).SpawnOrigin.y + GetRandomReal(0, LinePatternSpawn(spawn).SpawnLineLength))
+		call SetUnitMoveSpeed(u, 200.)
+		call GroupAddUnit(g, u)
+		
 		if GetRandomInt(0, 1) == 0 then
-			call GroupAddUnit(g, Recycle_MakeUnit(ICETROLL, LinePatternSpawn(spawn).SpawnOrigin.x, LinePatternSpawn(spawn).SpawnOrigin.y + GetRandomReal(0, LinePatternSpawn(spawn).SpawnLineLength)))
+			set u = Recycle_MakeUnit(ICETROLL, LinePatternSpawn(spawn).SpawnOrigin.x, LinePatternSpawn(spawn).SpawnOrigin.y + GetRandomReal(0, LinePatternSpawn(spawn).SpawnLineLength))
+			call SetUnitMoveSpeed(u, 300.)
+			call GroupAddUnit(g, u)
 		endif
 		
 		return g
 	endfunction
 	
+	function LW1PatternSpawn1 takes LinePatternSpawn spawn, Levels_Level parentLevel returns group
+		local group g = NewGroup()
+		local vector2 spawnPosition
+		
+		//! runtextmacro DiagonalCrossSpawn("spawn", "g", "spawn.CurrentCycle", "2", "spawnPosition", "spawn.Data")
+		
+		//call SetUnitMoveSpeed(bj_lastCreatedUnit, 150.)
+		
+		return g
+	endfunction
 	function W3APatternSpawn takes PatternSpawn spawn, Levels_Level parentLevel returns group
 		local group g = NewGroup()
 		local integer variation = spawn.GetVariation()

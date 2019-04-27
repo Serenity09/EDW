@@ -113,6 +113,7 @@ library RelayGenerator requires GameGlobalConstants, SimpleList, Table, Vector2,
         //public real Radius //in whole tile units
         
         public real UnitLaneSize
+		//TODO refactor to just extend a units indexed ID
         public static integer array UnitIDToRelayUnitID //links unit ID to RelayUnit struct ID (UnitIDToRelayUnitID[UnitID] = RelayUnit struct ID)
         private real UnitTimeout
         private timer UnitTimer

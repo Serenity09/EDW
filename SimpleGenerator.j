@@ -1,4 +1,4 @@
-library SimpleGenerator requires TimerUtils, SimpleList, Recycle, GroupUtils, PatternSpawn
+library SimpleGenerator requires TimerUtils, SimpleList, Recycle, GroupUtils, PatternSpawn, MovementSpeedHelpers
 
 globals
     private constant real BUFFER = 64
@@ -22,16 +22,21 @@ struct SimpleGenerator extends IStartable
     
     private timer SpawnTimer
     private real SpawnTimeStep
-	
     private group SpawnedUnits
-    private real MoveSpeed
-	
-	public boolean AnimateMovement
+	private real SpawnMoveSpeed
     
     private static timer MoveTimer
     private static SimpleList_List ActiveWidgets
     
-    public static method PeriodicSpawn takes nothing returns nothing
+	public method SetMoveSpeed takes real movespeed returns nothing
+		set this.SpawnMoveSpeed = movespeed * MOVEMENT_UPDATE_TIMESTEP
+		
+		if this.SpawnDirection == 180 or this.SpawnDirection == 270 then
+			set this.SpawnMoveSpeed = -this.SpawnMoveSpeed
+		endif
+	endmethod
+	
+    private static method PeriodicSpawn takes nothing returns nothing
         local thistype generator = GetTimerData(GetExpiredTimer())
 		local group spawnGroup = generator.SpawnPattern.Spawn(generator.ParentLevel)
 		local group tempGroup
@@ -41,40 +46,31 @@ struct SimpleGenerator extends IStartable
 			call DisplayTextToForce(bj_FORCE_PLAYER[0], "Spawning for generator " + I2S(generator))
 		endif
 				
-		if generator.AnimateMovement then
-			set tempGroup = NewGroup()
-			
-			loop
-			set u = FirstOfGroup(spawnGroup)
-			exitwhen u == null
+		loop
+		set u = FirstOfGroup(spawnGroup)
+		exitwhen u == null
+			if IsUnitAnimated(GetUnitTypeId(u)) then
 				call SetUnitFacingTimed(u, generator.SpawnDirection, 0)
 				
 				call SetUnitAnimationByIndex(u, GetWalkAnimationIndex(GetUnitTypeId(u)))
-				call SetUnitTimeScale(u, RAbsBJ(generator.MoveSpeed) / MOVEMENT_UPDATE_TIMESTEP / (GetDefaultMoveSpeed(GetUnitTypeId(u)) + MOVEMENT_ANIMATION_EXTRASLOW))
-			call GroupAddUnit(tempGroup, u)
-			call GroupRemoveUnit(spawnGroup, u)
-			endloop
-			
-			call ReleaseGroup(spawnGroup)
-			set spawnGroup = tempGroup
-		endif
-		
+				call SetUnitTimeScale(u, GetUnitMoveSpeed(u) / GetUnitDefaultMoveSpeed(u))
+			endif
+		call GroupAddUnit(generator.SpawnedUnits, u)
+		call GroupRemoveUnit(spawnGroup, u)
+		endloop
+					
 		static if DEBUG_SPAWN_LOOP then
 			call DisplayTextToForce(bj_FORCE_PLAYER[0], "Spawning " + I2S(CountUnitsInGroup(spawnGroup)) + " new units")
 		endif
-		
-		//! runtextmacro MergeGroups("generator.SpawnedUnits", "spawnGroup", "u", "tempGroup")
-		
+				
 		call ReleaseGroup(spawnGroup)
 		set spawnGroup = null
 				
 		static if DEBUG_SPAWN_LOOP then
 			call DisplayTextToForce(bj_FORCE_PLAYER[0], "Finished spawning with " + I2S(CountUnitsInGroup(generator.SpawnedUnits)) + " total units")
 		endif
-    endmethod
-    
-	//TODO could support any angle by using sin/cos
-    public static method PeriodicMove takes nothing returns nothing
+    endmethod    
+    private static method PeriodicMove takes nothing returns nothing
         local SimpleList_ListNode curActiveWidgetNode = thistype.ActiveWidgets.first
         local group swapGroup
         local thistype curActiveWidget
@@ -97,7 +93,15 @@ struct SimpleGenerator extends IStartable
                 //evaluate cos/sin functions for 90 degree angles
 				//would otherwise be x = x + Cos(.SpawnDirection)*.MoveSpeed
 				if curActiveWidget.SpawnDirection == 0 or curActiveWidget.SpawnDirection == 180 then
-					set destinationCoordinate = GetUnitX(curUnit) + curActiveWidget.MoveSpeed
+					if curActiveWidget.SpawnMoveSpeed == 0 then
+						if curActiveWidget.SpawnDirection == 0 then
+							set destinationCoordinate = GetUnitX(curUnit) + GetUnitMoveSpeed(curUnit) * MOVEMENT_UPDATE_TIMESTEP
+						else
+							set destinationCoordinate = GetUnitX(curUnit) - GetUnitMoveSpeed(curUnit) * MOVEMENT_UPDATE_TIMESTEP
+						endif
+					else
+						set destinationCoordinate = GetUnitX(curUnit) + curActiveWidget.SpawnMoveSpeed
+					endif
 					
 					//solve change vs destination for easy perpendiculars
 					if (curActiveWidget.SpawnDirection == 0 and destinationCoordinate >= curActiveWidget.EndCoordinate) or (curActiveWidget.SpawnDirection == 180 and destinationCoordinate <= curActiveWidget.EndCoordinate) then
@@ -114,7 +118,15 @@ struct SimpleGenerator extends IStartable
 						call GroupAddUnit(swapGroup, curUnit)
 					endif
 				else//if curActiveWidget.SpawnDirection == 90 or curActiveWidget.SpawnDirection == 270 then
-					set destinationCoordinate = GetUnitY(curUnit) + curActiveWidget.MoveSpeed
+					if curActiveWidget.SpawnMoveSpeed == 0 then
+						if curActiveWidget.SpawnDirection == 90 then
+							set destinationCoordinate = GetUnitY(curUnit) + GetUnitMoveSpeed(curUnit) * MOVEMENT_UPDATE_TIMESTEP
+						else
+							set destinationCoordinate = GetUnitY(curUnit) - GetUnitMoveSpeed(curUnit) * MOVEMENT_UPDATE_TIMESTEP
+						endif
+					else
+						set destinationCoordinate = GetUnitY(curUnit) + curActiveWidget.SpawnMoveSpeed
+					endif
 					
 					//solve change vs destination for easy perpendiculars
 					if (curActiveWidget.SpawnDirection == 90 and destinationCoordinate >= curActiveWidget.EndCoordinate) or (curActiveWidget.SpawnDirection == 270 and destinationCoordinate <= curActiveWidget.EndCoordinate) then
@@ -163,7 +175,6 @@ struct SimpleGenerator extends IStartable
 		
         call TimerStart(this.SpawnTimer, this.SpawnTimeStep, true, function thistype.PeriodicSpawn)
     endmethod
-    
     public method Stop takes nothing returns nothing
         call thistype.ActiveWidgets.remove(this)
 		
@@ -192,7 +203,7 @@ struct SimpleGenerator extends IStartable
 			//call .SpawnPattern.destroy()
 		endif		
 	endmethod
-    public static method create takes LinePatternSpawn spawnPattern, real spawnTimestep, real spawnDirection, integer spawnLength, real movespeed returns thistype
+    public static method create takes LinePatternSpawn spawnPattern, real spawnTimestep, real spawnDirection, integer spawnLength returns thistype
         local thistype new = thistype.allocate()
         
         local real xOffset
@@ -208,7 +219,6 @@ struct SimpleGenerator extends IStartable
 		
         set new.SpawnTimeStep = spawnTimestep
         set new.SpawnDirection = spawnDirection
-        set new.MoveSpeed = movespeed * MOVEMENT_UPDATE_TIMESTEP
 		
         if spawnDirection == 0 then
             set xOffset = spawnLength * TERRAIN_TILE_SIZE
@@ -218,7 +228,6 @@ struct SimpleGenerator extends IStartable
             set xOffset = -spawnLength * TERRAIN_TILE_SIZE
             
             set new.EndCoordinate = spawnPattern.SpawnOrigin.x + xOffset
-			set new.MoveSpeed = -new.MoveSpeed
         elseif spawnDirection == 90 then
             set yOffset = spawnLength * TERRAIN_TILE_SIZE
             
@@ -227,7 +236,6 @@ struct SimpleGenerator extends IStartable
             set yOffset = -spawnLength * TERRAIN_TILE_SIZE
             
             set new.EndCoordinate = spawnPattern.SpawnOrigin.y + yOffset
-			set new.MoveSpeed = -new.MoveSpeed
         else
             //error
             debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "Invalid spawn direction for mass create!! Must use either 0, 90, 180, or 270")
@@ -235,10 +243,8 @@ struct SimpleGenerator extends IStartable
         endif
 		
 		//defaults
-		set new.AnimateMovement = false
-        
-        //set new.EndArea = Rect(GetRectMinX(spawn) - BUFFER + xOffset, GetRectMinY(spawn) - BUFFER + yOffset, GetRectMaxX(spawn) + BUFFER + xOffset, GetRectMaxY(spawn) + BUFFER + yOffset)
-        
+		set new.SpawnMoveSpeed = 0.
+		
         return new
     endmethod
     
