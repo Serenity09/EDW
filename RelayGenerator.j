@@ -379,15 +379,15 @@ library RelayGenerator requires GameGlobalConstants, SimpleList, Table, Vector2,
 				
 				//debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "Creating unit in lane " + I2S(lane))
 				
-				call IndexUnit(u)
+				call IndexedUnit.create(u)
 				call GroupAddUnit(generator.Units, u)
-				set UnitIDToRelayUnitID[GetUnitId(u)] = RelayUnit.create(lane, generator.Turns.first)
+				set UnitIDToRelayUnitID[GetUnitUserData(u)] = RelayUnit.create(lane, generator.Turns.first)
 				
 				//send unit to first destination
-				set destination = generator.GetNextTurnDestination(UnitIDToRelayUnitID[GetUnitId(u)])
+				set destination = generator.GetNextTurnDestination(UnitIDToRelayUnitID[GetUnitUserData(u)])
 				call IssuePointOrder(u, "move", destination.x, destination.y)
 				
-				set RelayUnit(UnitIDToRelayUnitID[GetUnitId(u)]).CurrentTurn = generator.Turns.first.next
+				set RelayUnit(UnitIDToRelayUnitID[GetUnitUserData(u)]).CurrentTurn = generator.Turns.first.next
 				
 				call destination.deallocate()
 			call GroupRemoveUnit(g, u)
@@ -398,10 +398,10 @@ library RelayGenerator requires GameGlobalConstants, SimpleList, Table, Vector2,
         endmethod
 		
 		private method ReleaseUnit takes unit u returns nothing
-			call RelayUnit(UnitIDToRelayUnitID[GetUnitId(u)]).deallocate()
+			call RelayUnit(UnitIDToRelayUnitID[GetUnitUserData(u)]).deallocate()
 			call GroupRemoveUnit(.Units, u)
 			
-			call DeindexUnit(u)
+			call IndexedUnit(GetUnitUserData(u)).destroy()
 			call Recycle_ReleaseUnit(u)
 		endmethod
         
@@ -418,7 +418,7 @@ library RelayGenerator requires GameGlobalConstants, SimpleList, Table, Vector2,
 			set turnUnit = FirstOfGroup(.Units)
 			exitwhen turnUnit == null
 				//see if unit is being watched, returns 0 if unwatched / not part of a relay
-				set turnUnitInfo = UnitIDToRelayUnitID[GetUnitId(turnUnit)]
+				set turnUnitInfo = UnitIDToRelayUnitID[GetUnitUserData(turnUnit)]
 				
 				//check if unit is part of this relay, and on the turn we're enumerating the rect for, and if they've made it past where they need to go (for their lane) --- turns can only belong to 1 relay, so if the turn matches then so does the relay
 				if IsUnitAtNextDestination(turnUnit, turnUnitInfo) then

@@ -1,4 +1,4 @@
-library InGameCommands initializer init requires MazerGlobals, Platformer, RelayGenerator
+library InGameCommands initializer init requires MazerGlobals, Platformer, RelayGenerator, Deferred
 globals
 
 endglobals
@@ -78,16 +78,16 @@ function PrintMemoryAnalysis takes integer pID returns nothing
     debug call DisplayTextToForce(bj_FORCE_PLAYER[pID], "SimpleListNode: " + I2S(SimpleList_ListNode.calculateMemoryUsage()))
     debug call DisplayTextToForce(bj_FORCE_PLAYER[pID], "PlatformerPropertyEquation: " + I2S(PlatformerPropertyEquation.calculateMemoryUsage()))
     debug call DisplayTextToForce(bj_FORCE_PLAYER[pID], "PlatformerPropertyAdjustment: " + I2S(PlatformerPropertyAdjustment.calculateMemoryUsage()))
-    debug call DisplayTextToForce(bj_FORCE_PLAYER[pID], "RelayUnit: " + I2S(RelayUnit.calculateMemoryUsage()))    
-    
-    debug call DisplayTextToForce(bj_FORCE_PLAYER[pID], "IndexedUnit_AutoId: " + I2S(IndexedUnit_GetAutoId()))
-    debug call DisplayTextToForce(bj_FORCE_PLAYER[pID], "IndexedUnit_RecycleCount: " + I2S(IndexedUnit_GetRecycleCount()))
+    debug call DisplayTextToForce(bj_FORCE_PLAYER[pID], "RelayUnit: " + I2S(RelayUnit.calculateMemoryUsage()))
+    debug call DisplayTextToForce(bj_FORCE_PLAYER[pID], "Deferred: " + I2S(Deferred.calculateMemoryUsage()))
+	debug call DisplayTextToForce(bj_FORCE_PLAYER[pID], "Deferred Awaiter: " + I2S(DeferredAwaiter.calculateMemoryUsage()))
+	debug call DisplayTextToForce(bj_FORCE_PLAYER[pID], "IndexedUnit: " + I2S(IndexedUnit.calculateMemoryUsage()))
 endfunction
 
 function RelayCallback takes nothing returns nothing
     local unit selectedUnit = GetEnumUnit()
     local integer pID = GetPlayerId(GetTriggerPlayer())
-    local RelayUnit turnUnitInfo = RelayGenerator.UnitIDToRelayUnitID[GetUnitId(selectedUnit)]
+    local RelayUnit turnUnitInfo = RelayGenerator.UnitIDToRelayUnitID[GetUnitUserData(selectedUnit)]
     
     call DisplayTextToForce(bj_FORCE_PLAYER[pID], "Lane: " + I2S(turnUnitInfo.LaneNumber))
     call DisplayTextToForce(bj_FORCE_PLAYER[pID], "Turn center: " + RelayTurn(turnUnitInfo.CurrentTurn.value).Center.toString())

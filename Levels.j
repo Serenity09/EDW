@@ -111,7 +111,7 @@ library Levels requires SimpleList, Teams, GameModesGlobals, Cinema, User, IStar
 		endmethod
     endstruct
     
-    public struct Level extends array //extends IStartable
+	public struct Level extends array //extends IStartable
         public string      Name            //a levels name, only used in the multiboard
         public integer     RawContinues      //refers to the difficulty of a level
         public integer     RawScore
@@ -230,7 +230,9 @@ library Levels requires SimpleList, Teams, GameModesGlobals, Cinema, User, IStar
                 //reset unit to default stats based on what can currently change... at some point find a better way to unload modified units (and only them)
                 call SetUnitVertexColor(u, 255, 255, 255, 255)
                 call SetUnitMoveSpeed(u, GetUnitDefaultMoveSpeed(u))
-                call DeindexUnit(u)
+				if GetUnitUserData(u) != 0 then
+					call IndexedUnit(GetUnitUserData(u)).destroy()
+				endif
                 call Recycle_ReleaseUnit(u)
             call GroupRemoveUnit(TempGroup, u)
             set u = FirstOfGroup(TempGroup)
@@ -244,6 +246,9 @@ library Levels requires SimpleList, Teams, GameModesGlobals, Cinema, User, IStar
 			
 			if cp != 0 then
 				set EventCheckpoint = cp
+				set EventCurrentLevel = this
+				set this.CBTeam = mt
+				
                 //call DisplayTextToForce(bj_FORCE_PLAYER[0], "Started setting CP for team " + I2S(mt) + ", index " + I2S(cpID) + ", cp " + I2S(cp))
 				set mt.OnCheckpoint = cpID
                 
@@ -574,8 +579,10 @@ library Levels requires SimpleList, Teams, GameModesGlobals, Cinema, User, IStar
             set new.ActiveTeams = SimpleList_List.create()
 			
 			set DoorRects[0] = gg_rct_IW_Entrance
-			//set DoorRects[1] = gg_rct_LW_Entrance
-			set DoorRects[6] = gg_rct_PW_Entrance
+			set DoorRects[1] = gg_rct_EIW_Entrance
+			set DoorRects[2] = gg_rct_LW_Entrance
+			set DoorRects[5] = gg_rct_PW_Entrance
+			set DoorRects[6] = gg_rct_FS_Entrance
 
             //call DisplayTextToForce(bj_FORCE_PLAYER[0], "Created doors")
             

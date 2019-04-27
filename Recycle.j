@@ -157,8 +157,8 @@ library Recycle requires UnitGlobals, DisposableUnit
         endmethod
 		
         public method Release takes unit u returns nothing
-			if GetUnitId(u) != 0 and DisposableUnit.IsUnitDisposable(u) then
-				call DisposableUnit(GetUnitId(u)).dispose()
+			if GetUnitUserData(u) != 0 and DisposableUnit.IsUnitDisposable(u) then
+				call DisposableUnit(GetUnitUserData(u)).dispose()
 			endif
 			
 			if this == 0 or this.count == MAX_SINGLE_INSTANCE_COUNT then
@@ -173,9 +173,10 @@ library Recycle requires UnitGlobals, DisposableUnit
 				if GetOwningPlayer(u) != this.defaultOwner then
 					call SetUnitOwner(u, this.defaultOwner, true)
 				endif
-				if GetUnitMoveSpeed(u) != GetDefaultMoveSpeed(GetUnitTypeId(u)) then
-					call SetUnitMoveSpeed(u, GetDefaultMoveSpeed(GetUnitTypeId(u)))
-				endif
+				// if GetUnitMoveSpeed(u) != GetDefaultMoveSpeed(GetUnitTypeId(u)) then
+					// call SetUnitMoveSpeed(u, GetDefaultMoveSpeed(GetUnitTypeId(u)))
+				// endif
+				call SetUnitMoveSpeed(u, GetUnitDefaultMoveSpeed(u))
 				//moving/hiding units via these functions results in buggy recycles
                 //call SetUnitX(u, SAFE_X + r.count)
                 //call SetUnitY(u, SAFE_Y + r.count)
