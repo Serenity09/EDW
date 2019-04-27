@@ -309,19 +309,13 @@ library EDWLevelContent requires SimpleList, Teams, Levels, EDWPatternSpawnDefin
 		//standard simple generators
 		set pattern = LinePatternSpawn.createFromPoint(OriginSpawn, 1, gg_rct_LW1_Generator4)
 		set pattern.Data = SPIRITWALKER
-		set sg = SimpleGenerator.create(pattern, 4, 270, 18, 250)
+		set sg = SimpleGenerator.create(pattern, 5, 270, 18, 250)
 		set sg.AnimateMovement = true
 		call l.AddStartable(sg)
-		
-		set pattern = LinePatternSpawn.createFromPoint(OriginSpawn, 1, gg_rct_LW1_Generator5)
-		set pattern.Data = SPIRITWALKER
-		set sg = SimpleGenerator.create(pattern, 8, 270, 12, 250)
-		set sg.AnimateMovement = true
-		call l.AddStartable(sg)
-		
+				
 		set pattern = LinePatternSpawn.createFromPoint(OriginSpawn, 1, gg_rct_LW1_Generator6)
 		set pattern.Data = SPIRITWALKER
-		set sg = SimpleGenerator.create(pattern, 3.5, 270, 22, 200)
+		set sg = SimpleGenerator.create(pattern, 5, 270, 22, 200)
 		set sg.AnimateMovement = true
 		call l.AddStartable(sg)
 		
@@ -421,13 +415,54 @@ library EDWLevelContent requires SimpleList, Teams, Levels, EDWPatternSpawnDefin
 		set l = Levels_Level.create(12, "Catch 'Em All", 3, 3, "LW2Start", "LW2Stop", gg_rct_LWR_2_1, gg_rct_LW2_Vision, gg_rct_LW2_End, l)
         //call l.AddCheckpoint(gg_rct_LWCP_2_1, gg_rct_LWR_2_2)
 		
+		//collect all 3 to beat the level
 		set collectibleSet = CollectibleSet.create(l, DefaultCollectibleResolve)
-		call collectibleSet.AddCollectible(Collectible.create(FROG, WWWISP, -11364, -12828, 270))
-		call collectibleSet.AddCollectible(Collectible.create(FROG, WWWISP, -11564, -12828, 270))
-		call collectibleSet.AddCollectible(Collectible.create(FROG, WWWISP, -11764, -12828, 270))
 		
-		set collectibleSet = CollectibleSet.create(l, DefaultCollectibleResolve)
-		call collectibleSet.AddCollectible(Collectible.create(FROG, WWWISP, -11364, -13028, 270))
+		set collectible = Collectible.createFromPoint(FROG, 0, gg_rct_LW2_C1, 90)
+		call collectibleSet.AddCollectible(collectible)
+		
+		set collectible = Collectible.createFromPoint(FROG, 0, gg_rct_LW2_C2, 90)
+		set collectible.ReturnToCheckpoint = true
+		call collectibleSet.AddCollectible(collectible)
+		
+		set collectible = Collectible.createFromPoint(FROG, 0, gg_rct_LW2_C3, 270)
+		set collectible.ReturnToCheckpoint = true
+		call collectibleSet.AddCollectible(collectible)
+		
+		set rg = RelayGenerator.createFromPoint(gg_rct_LW2_RG1, 4, 4, 180, -2, 2., RelayGeneratorRandomSpawn, 1)
+		set rg.SpawnPattern.Data = ICETROLL
+		call rg.AddTurnSimple(90, 7)
+		call rg.AddTurnSimple(180, 1)
+		//call rg.AddTurnSimple(270, 22)
+		call rg.AddTurnSimple(270, 4)
+		call rg.AddTurnSimple(270, 5)
+		call rg.AddTurnSimple(270, 5)
+		call rg.EndTurns(270)
+		call l.AddStartable(rg)
+		//debug call rg.DrawTurns()
+		
+		set rg = RelayGenerator.createFromPoint(gg_rct_LW2_RG2, 4, 4, 180, -1, 2., RelayGeneratorRandomSpawn, 1)
+		set rg.SpawnPattern.Data = ICETROLL
+		call rg.AddTurnSimple(90, 20)
+		call rg.AddTurnSimple(180, 12)
+		//call rg.AddTurnSimple(270, 26)
+		call rg.AddTurnSimple(270, 6)
+		call rg.AddTurnSimple(270, 6)
+		call rg.AddTurnSimple(270, 6)
+		call rg.EndTurns(270)
+		call l.AddStartable(rg)
+		
+		set rg = RelayGenerator.createFromPoint(gg_rct_LW2_RG3, 5, 5, 180, -2, 2., RelayGeneratorRandomSpawn, 1)
+		set rg.SpawnPattern.Data = ICETROLL
+		call rg.AddTurnSimple(270, 16)
+		call rg.AddTurnSimple(0, 13)
+		//call rg.AddTurnSimple(90, 28)
+		call rg.AddTurnSimple(90, 4)
+		call rg.AddTurnSimple(90, 4)
+		call rg.AddTurnSimple(90, 5)
+		call rg.EndTurns(90)
+		call l.AddStartable(rg)
+		//debug call rg.DrawTurns()
 		
         //PRIDE WORLD / PLATFORMING
         //LEVEL 1

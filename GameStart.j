@@ -6,6 +6,9 @@ library EDWGameStart initializer Init requires Levels, EDWVisualVote, UnitGlobal
 		
 		private boolean FinishedPreLoad = false
 		private boolean FinishedPostLoad = false
+		
+		private constant boolean DEBUG_PRELOAD = true
+		private constant boolean DEBUG_POSTLOAD = true
     endglobals
     
     private function PlayerInit takes nothing returns nothing
@@ -109,7 +112,9 @@ library EDWGameStart initializer Init requires Levels, EDWVisualVote, UnitGlobal
 		static if DEBUG_MODE then
 			set FinishedPostLoad = true
 		endif
-        // debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "Finished Game Start 0 second callback")
+		static if DEBUG_POSTLOAD then
+			call DisplayTextToForce(bj_FORCE_PLAYER[0], "Finished Game Start postload callback")
+		endif
     endfunction	
             
     private function Init takes nothing returns nothing
@@ -129,6 +134,8 @@ library EDWGameStart initializer Init requires Levels, EDWVisualVote, UnitGlobal
 		static if DEBUG_MODE then
 			set FinishedPreLoad = true
 		endif
-		debug 
+		static if DEBUG_PRELOAD then
+			call DisplayTextToForce(bj_FORCE_PLAYER[0], "Finished Game Start preload callback")
+		endif
     endfunction
 endlibrary

@@ -581,6 +581,9 @@ library RelayGenerator requires GameGlobalConstants, SimpleList, Table, Vector2,
             
             return new
         endmethod
+		public static method createFromPoint takes rect centerPoint, integer spawnDiameter, integer laneCount, integer direction, integer tilesToTravel, real unitSpawnTimeout, IPatternSpawn spawnCB, integer cycleCount returns thistype
+			return thistype.create(GetRectCenterX(centerPoint), GetRectCenterY(centerPoint), spawnDiameter, laneCount, direction, tilesToTravel, unitSpawnTimeout, spawnCB, cycleCount)
+		endmethod
         
         public static method onInit takes nothing returns nothing
             set ActiveRelays = SimpleList_List.create()

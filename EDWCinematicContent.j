@@ -65,7 +65,7 @@ library EDWCinematicContent requires EDWLevelContent, Cinema, EDWGameTime
         set cine = Cinematic.create(gg_rct_SargeIntro2, true, false, cineMsg)
         //call cine.AddMessage(null, GetEDWSpeakerMessage(PRIMARY_SPEAKER_NAME, "Oh man, I think I mighta had one too many last night", DEFAULT_TEXT_COLOR), DEFAULT_SHORT_TEXT_SPEED)
 		call cine.AddMessage(null, GetEDWSpeakerMessage(PRIMARY_SPEAKER_NAME, "Wait...", DEFAULT_TEXT_COLOR), DEFAULT_TINY_TEXT_SPEED)
-		call cine.AddMessage(null, GetEDWSpeakerMessage(PRIMARY_SPEAKER_NAME, "I'm remembering something...", DEFAULT_TEXT_COLOR), DEFAULT_TINY_TEXT_SPEED)
+		call cine.AddMessage(null, GetEDWSpeakerMessage(PRIMARY_SPEAKER_NAME, "I'm remembering something...", DEFAULT_TEXT_COLOR), DEFAULT_SHORT_TEXT_SPEED)
         call cine.AddMessage(null, GetEDWSpeakerMessage(PRIMARY_SPEAKER_NAME, "Yeah, okay. You probably shouldn't get near those colorful dragons", DEFAULT_TEXT_COLOR), DEFAULT_SHORT_TEXT_SPEED)
         //call cine.AddMessage(null, GetEDWSpeakerMessage(PRIMARY_SPEAKER_NAME, "...I don't want to talk about it", SAD_TEXT_COLOR), DEFAULT_TINY_TEXT_SPEED)
         call cine.SetLastMessageBuffer(-1)
@@ -74,7 +74,8 @@ library EDWCinematicContent requires EDWLevelContent, Cinema, EDWGameTime
         set cineMsg = CinemaMessage.create(null, GetEDWSpeakerMessage(PRIMARY_SPEAKER_NAME, "Whoa!", ANGRY_TEXT_COLOR), DEFAULT_TINY_TEXT_SPEED)
         set cine = Cinematic.create(gg_rct_SargeFireWarning, true, false, cineMsg)
         set cine.ActivationCondition = IsUserNotRed
-        call cine.AddMessage(null, GetEDWSpeakerMessage(PRIMARY_SPEAKER_NAME, "Better stay clear of that fire, I don't think it likes the look of you", DEFAULT_TEXT_COLOR), DEFAULT_MEDIUM_TEXT_SPEED)
+        call cine.AddMessage(null, GetEDWSpeakerMessage(PRIMARY_SPEAKER_NAME, "Better stay clear of that fire", DEFAULT_TEXT_COLOR), DEFAULT_SHORT_TEXT_SPEED)
+		call cine.AddMessage(null, GetEDWSpeakerMessage(PRIMARY_SPEAKER_NAME, "I don't think it likes how you look", DEFAULT_TEXT_COLOR), DEFAULT_SHORT_TEXT_SPEED)
         call cine.SetLastMessageBuffer(-1)
 		call Levels_Level(1).AddCinematic(cine)
                 
@@ -110,7 +111,7 @@ library EDWCinematicContent requires EDWLevelContent, Cinema, EDWGameTime
         
         set cineMsg = CinemaMessage.create(null, GetEDWSpeakerMessage(PRIMARY_SPEAKER_NAME, "Another one of these shimmering portals...", DEFAULT_TEXT_COLOR), DEFAULT_SHORT_TEXT_SPEED)
         set cine = Cinematic.create(gg_rct_SargeCheckpoint, true, false, cineMsg)
-        call cine.AddMessage(null, GetEDWSpeakerMessage(PRIMARY_SPEAKER_NAME, "Stepping over them seems to give you a checkpoint, and bring back the souls of your friends", DEFAULT_TEXT_COLOR), DEFAULT_MEDIUM_TEXT_SPEED)
+        call cine.AddMessage(null, GetEDWSpeakerMessage(PRIMARY_SPEAKER_NAME, "Stepping over them seems to give you a checkpoint, and brings your friends back to life", DEFAULT_TEXT_COLOR), DEFAULT_MEDIUM_TEXT_SPEED)
         call cine.AddMessage(null, GetEDWSpeakerMessage(PRIMARY_SPEAKER_NAME, "But are they the same friends?", DEFAULT_TEXT_COLOR), DEFAULT_SHORT_TEXT_SPEED)
         call cine.SetLastMessageDefaults()
 		call Levels_Level(1).AddCinematic(cine)
@@ -157,6 +158,10 @@ library EDWCinematicContent requires EDWLevelContent, Cinema, EDWGameTime
         //DOORS HARD CODED
         //currently no start or stop logic
         //call Levels_Level.CreateDoors(l, null, null, gg_rct_HubWorld_R, gg_rct_HubWorld_Vision)
+		set cineMsg = CinemaMessage.create(null, GetEDWSpeakerMessage(PRIMARY_SPEAKER_NAME, "Love hurts, son", DEFAULT_TEXT_COLOR), DEFAULT_MEDIUM_TEXT_SPEED)
+        set cine = Cinematic.create(gg_rct_SargeHeart, true, false, cineMsg)
+		call cine.SetLastMessageDefaults()
+		call Levels_Level(2).AddCinematic(cine)
         
         //REMAINING LEVELS
         //takes integer levelID, trigger start, trigger stop, trigger preload, trigger unload, boolean haspreload, rect startspawn, rect vision, rect tothislevel, Level previouslevel returns Level
