@@ -27,7 +27,9 @@ library SynchronizedGroup requires Alloc, SimpleList, Vector2, Recycle
 				set .CurrentOrder = .AllOrders.first
 				
 				set .Unit = Recycle_MakeUnit(.UnitID, vector2(.CurrentOrder.value).x, vector2(.CurrentOrder.value).y)
-				call SetUnitMoveSpeed(.Unit, .MoveSpeed)
+				if .MoveSpeed != 0 then
+					call SetUnitMoveSpeed(.Unit, .MoveSpeed)
+				endif
 				set .Ready = false
 				set .CurrentOrder = .CurrentOrder.next
 				
@@ -42,7 +44,7 @@ library SynchronizedGroup requires Alloc, SimpleList, Vector2, Recycle
 			set new.ParentGroup = parent
 			
 			//defaults
-			set new.MoveSpeed = GetDefaultMoveSpeed(unitID)
+			set new.MoveSpeed = 0
 			
 			//predefined inits
 			set new.Ready = false

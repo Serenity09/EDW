@@ -85,7 +85,7 @@ library DrunkWalker requires Recycle, TimerUtils, IStartable
 			endif
 			
 			call SetUnitVertexColor(.Walker, 255, 255, 255, 255)
-			call SetUnitMoveSpeed(.Walker, GetDefaultMoveSpeed(GetUnitTypeId(.Walker)))
+			//call SetUnitMoveSpeed(.Walker, GetUnitDefaultMoveSpeed(.Walker))
 			
 			call Recycle_ReleaseUnit(.Walker)
 			set .Walker = null
