@@ -35,6 +35,9 @@ library Collectible requires Alloc, PermanentAlloc, SimpleList, Teams, IStartabl
 						
 			return new
 		endmethod
+		public static method createFromPoint takes integer uncollectedUnitID, integer collectedUnitID, rect loc, real facing returns thistype
+			return thistype.create(uncollectedUnitID, collectedUnitID, GetRectCenterX(loc), GetRectCenterY(loc), facing)
+		endmethod
 	endstruct
 	
 	//consists of:
@@ -184,13 +187,12 @@ library Collectible requires Alloc, PermanentAlloc, SimpleList, Teams, IStartabl
 						loop
 						exitwhen curCollectibleNode == 0
 							set curCollectibleDeferred = Deferred(CollectibleTeam(curTeamNode.value).CollectibleDeferreds.get(curCollectibleIndex).value)
+							set deltaX = GetUnitX(User(curPlayerNode.value).ActiveUnit) - GetUnitX(Collectible(curCollectibleNode.value).UncollectedUnit)
+							set deltaY = GetUnitY(User(curPlayerNode.value).ActiveUnit) - GetUnitY(Collectible(curCollectibleNode.value).UncollectedUnit)
+							//set distance = SquareRoot(deltaX*deltaX + deltaY*deltaY)
 							
-							if not curCollectibleDeferred.Resolved then
-								set deltaX = GetUnitX(User(curPlayerNode.value).ActiveUnit) - GetUnitX(Collectible(curCollectibleNode.value).UncollectedUnit)
-								set deltaY = GetUnitY(User(curPlayerNode.value).ActiveUnit) - GetUnitY(Collectible(curCollectibleNode.value).UncollectedUnit)
-								//set distance = SquareRoot(deltaX*deltaX + deltaY*deltaY)
-								
-								if SquareRoot(deltaX*deltaX + deltaY*deltaY) <= Collectible(curCollectibleNode.value).UncollectedUnitRadius + User(curPlayerNode.value).ActiveUnitRadius then
+							if SquareRoot(deltaX*deltaX + deltaY*deltaY) <= Collectible(curCollectibleNode.value).UncollectedUnitRadius + User(curPlayerNode.value).ActiveUnitRadius then
+								if not curCollectibleDeferred.Resolved then
 									call CollectibleTeam(curTeamNode.value).Team.SetUnitLocalVisibilityForTeam(Collectible(curCollectibleNode.value).UncollectedUnit, false)
 									
 									if Collectible(curCollectibleNode.value).CollectedUnit != null then
@@ -198,9 +200,9 @@ library Collectible requires Alloc, PermanentAlloc, SimpleList, Teams, IStartabl
 									endif
 									
 									call curCollectibleDeferred.Resolve(curPlayerNode.value)
+								elseif Collectible(curCollectibleNode.value).ReturnToCheckpoint then
+									call User(curPlayerNode.value).RespawnAtRect(CollectibleTeam(curTeamNode.value).Team.Revive, true)
 								endif
-							elseif Collectible(curCollectibleNode.value).ReturnToCheckpoint then
-								call User(curPlayerNode.value).RespawnAtRect(CollectibleTeam(curTeamNode.value).Team.Revive, true)
 							endif
 						
 						set curCollectibleNode = curCollectibleNode.next

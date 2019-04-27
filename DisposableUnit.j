@@ -10,10 +10,10 @@ library DisposableUnit requires IndexedUnit, IStartable
 			call IStartable(TrackedUnits[this]).destroy()
 			
 			set TrackedUnits[this] = 0
-			call DeindexUnit(GetUnitFromId(this))
+			call IndexedUnit(this).destroy()
 		endmethod
 		public static method register takes unit u, IStartable disposable returns thistype
-			local thistype new = IndexUnit(u)
+			local thistype new = IndexedUnit.create(u)
 			
 			set thistype.TrackedUnits[new] = disposable
 			
