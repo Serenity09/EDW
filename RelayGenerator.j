@@ -23,6 +23,7 @@ library RelayGenerator requires GameGlobalConstants, SimpleList, Table, Vector2,
         //public RelayGenerator Parent
         public integer LaneNumber
         public SimpleList_ListNode CurrentTurn
+		public vector2 CurrentDestination
         
         implement Alloc
         
@@ -121,6 +122,7 @@ library RelayGenerator requires GameGlobalConstants, SimpleList, Table, Vector2,
 		private group Units
         
         public SimpleList_List Turns
+		public IndexedList CachedTurnDestinations //dont need super efficient access, would rather save on overhead and share a list
         
         public static SimpleList_List ActiveRelays
         
@@ -158,10 +160,7 @@ library RelayGenerator requires GameGlobalConstants, SimpleList, Table, Vector2,
 			return R2I(this.Diameter / 2.)
 		endmethod
 		
-        //register the rect that matches the final turn's destination under a remove unit timer event
-        public method EndTurns takes integer endDirection returns nothing
-            call this.AddTurnSimple(endDirection, 0)
-        endmethod
+        
         
         //rect area needs to be in a legal position relative to the last turn's center, and combination of newDirection and newDistance needs to get a unit from their last rect to this one
         public method AddTurn takes rect area, vector2 center, integer newDirection, real newDistance returns nothing
@@ -300,29 +299,13 @@ library RelayGenerator requires GameGlobalConstants, SimpleList, Table, Vector2,
             endif
         endmethod
         
-        public method IsUnitAtNextDestination takes unit u, RelayUnit turnUnit returns boolean
-            local real x = GetUnitX(u)
-            local real y = GetUnitY(u)
-            local boolean atDestination
-            
-            local vector2 destination = this.GetTurnDestination(turnUnit.CurrentTurn.prev, turnUnit.LaneNumber)
-            
-            //debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "Cur x, y " + R2S(x) + ", " + R2S(y) + " destination " + destination.toString())
-            
-            //check if unit within box formed around destination using UNIT_DESTINATION_BUFFER as radius
-            set atDestination = (x >= destination.x - UNIT_DESTINATION_BUFFER and x <= destination.x + UNIT_DESTINATION_BUFFER) and (y >= destination.y - UNIT_DESTINATION_BUFFER and y <= destination.y + UNIT_DESTINATION_BUFFER)
-            
-            call destination.deallocate()
-            return atDestination
-        endmethod
-        
         public method GetTurnDestination takes SimpleList_ListNode currentTurn, integer lane returns vector2
             local RelayTurn nextTurn = RelayTurn(currentTurn.next.value)
             
             //get the location of the first lane
             //check if corner
             if ((RelayTurn(currentTurn.value).Direction == 0 or RelayTurn(currentTurn.value).Direction == 180) and (nextTurn.Direction == 90 or nextTurn.Direction == 270)) or ((RelayTurn(currentTurn.value).Direction == 90 or RelayTurn(currentTurn.value).Direction == 270) and (nextTurn.Direction == 0 or nextTurn.Direction == 180)) then
-                //get this units lane using firstLane
+				//get this units lane using firstLane
                 return vector2.create(nextTurn.FirstLane.x + nextTurn.FirstLaneX*.UnitLaneSize*lane, nextTurn.FirstLane.y + nextTurn.FirstLaneY*.UnitLaneSize*lane)
             else //straight of some sorts
                 if nextTurn.Direction == 90 or nextTurn.Direction == 270 then
@@ -332,33 +315,71 @@ library RelayGenerator requires GameGlobalConstants, SimpleList, Table, Vector2,
                 endif
             endif
         endmethod
-        
-        public method GetNextTurnDestination takes RelayUnit turnUnit returns vector2
-            /*
-			local vector2 destination = GetTurnDestination(turnUnit.CurrentTurn, turnUnit.LaneNumber)
-			local RelayTurn turn = turnUnit.CurrentTurn.value
+		// public method GetNextTurnDestination takes RelayUnit turnUnit returns vector2
+			// return GetTurnDestination(turnUnit.CurrentTurn, turnUnit.LaneNumber)
+        // endmethod
+		
+		public method GetCachedTurnDestination takes SimpleList_ListNode currentTurn, integer lane returns vector2
+			// debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "Current turn: " + I2S(currentTurn) + ", current turn index: " + I2S(IndexedListNode(currentTurn).index) + ", lane: " + I2S(lane))
+			// debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "Cached index: " + I2S(IndexedListNode(currentTurn).index*this.GetNumberLanes() + lane))
+			return this.CachedTurnDestinations[IndexedListNode(currentTurn).index*this.GetNumberLanes() + lane].value
+		endmethod
+		public method GetCachedNextTurnDestination takes RelayUnit turnUnit returns vector2
+			// debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "Turn Unit: " + I2S(turnUnit) + ", cached destination: " + this.GetCachedTurnDestination(turnUnit.CurrentTurn, turnUnit.LaneNumber).toString())
+			return this.GetCachedTurnDestination(turnUnit.CurrentTurn, turnUnit.LaneNumber)
+		endmethod
+		private method InitTurnDestinationCache takes nothing returns nothing
+			local SimpleList_ListNode curTurnNode = this.Turns.first
+			local integer curTurnIndex = 0
+			local integer curLane
+			local integer numberLanes = this.GetNumberLanes()
+			local SimpleList_List turnDestinationCache = SimpleList_List.create()
 			
-			//call DisplayTextToForce(bj_FORCE_PLAYER[0], "Cur destination " + destination.toString())
-			if turn.Direction == 0 then 
-				set destination.x = destination.x + UNIT_DESTINATION_BUFFER
-			elseif turn.Direction == 90 then
-				set destination.y = destination.y + UNIT_DESTINATION_BUFFER
-			elseif turn.Direction == 180 then
-				set destination.x = destination.x - UNIT_DESTINATION_BUFFER
-			elseif turn.Direction == 270 then
-				set destination.y = destination.y - UNIT_DESTINATION_BUFFER
-			endif
-			//call DisplayTextToForce(bj_FORCE_PLAYER[0], "Buffered destination " + destination.toString())
+			//debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "Initializing destination cache for relay: " + I2S(this))
 			
-			return destination
-			*/
+			loop
+			exitwhen curTurnNode == 0
+				set curLane = 0
+				loop
+				exitwhen curLane >= numberLanes
+					 call turnDestinationCache.addEnd(GetTurnDestination(curTurnNode, curLane))
+				set curLane = curLane + 1
+				endloop
+				
+			set curTurnNode = curTurnNode.next
+			set curTurnIndex = curTurnIndex + 1
+			endloop
 			
-			return GetTurnDestination(turnUnit.CurrentTurn, turnUnit.LaneNumber)
+			set this.CachedTurnDestinations = IndexedList.create(turnDestinationCache)
+		endmethod
+        		
+		//register the rect that matches the final turn's destination under a remove unit timer event
+        public method EndTurns takes integer endDirection returns nothing
+            call this.AddTurnSimple(endDirection, 0)
+			
+			call IndexedList.create(this.Turns)
+			call this.InitTurnDestinationCache()
+        endmethod
+		
+		public method IsUnitAtNextDestination takes unit u, RelayUnit turnUnit returns boolean
+            local real x = GetUnitX(u)
+            local real y = GetUnitY(u)
+            local boolean atDestination
+            
+            local vector2 destination = turnUnit.CurrentDestination
+            
+            //debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "Cur x, y " + R2S(x) + ", " + R2S(y) + " destination " + destination.toString())
+            
+            //check if unit within box formed around destination using UNIT_DESTINATION_BUFFER as radius
+            set atDestination = (x >= destination.x - UNIT_DESTINATION_BUFFER and x <= destination.x + UNIT_DESTINATION_BUFFER) and (y >= destination.y - UNIT_DESTINATION_BUFFER and y <= destination.y + UNIT_DESTINATION_BUFFER)
+			
+            return atDestination
         endmethod
         		
         private static method CreateUnitCB takes nothing returns nothing
             local RelayGenerator generator = GetTimerData(GetExpiredTimer())
 			local RelayTurn spawnTurn = generator.Turns.first.value
+			local RelayUnit spawnUnit
 			
 			local group g
             local unit u
@@ -382,15 +403,15 @@ library RelayGenerator requires GameGlobalConstants, SimpleList, Table, Vector2,
 				
 				call IndexedUnit.create(u)
 				call GroupAddUnit(generator.Units, u)
-				set UnitIDToRelayUnitID[GetUnitUserData(u)] = RelayUnit.create(lane, generator.Turns.first)
+				set spawnUnit = RelayUnit.create(lane, generator.Turns.first)
+				set UnitIDToRelayUnitID[GetUnitUserData(u)] = spawnUnit
 				
 				//send unit to first destination
-				set destination = generator.GetNextTurnDestination(UnitIDToRelayUnitID[GetUnitUserData(u)])
+				set destination = generator.GetCachedNextTurnDestination(spawnUnit)
 				call IssuePointOrder(u, "move", destination.x, destination.y)
 				
-				set RelayUnit(UnitIDToRelayUnitID[GetUnitUserData(u)]).CurrentTurn = generator.Turns.first.next
-				
-				call destination.deallocate()
+				set spawnUnit.CurrentTurn = generator.Turns.first.next
+				set spawnUnit.CurrentDestination = destination
 			call GroupRemoveUnit(g, u)
 			endloop
             
@@ -425,11 +446,11 @@ library RelayGenerator requires GameGlobalConstants, SimpleList, Table, Vector2,
 				if IsUnitAtNextDestination(turnUnit, turnUnitInfo) then
 					if turnUnitInfo.CurrentTurn.next != 0 then
 						//send unit a bit past their next destination
-						set destination = GetNextTurnDestination(turnUnitInfo)
+						set destination = GetCachedNextTurnDestination(turnUnitInfo)
 						call IssuePointOrder(turnUnit, "move", destination.x, destination.y)
-						call destination.deallocate()
 						
 						set turnUnitInfo.CurrentTurn = turnUnitInfo.CurrentTurn.next
+						set turnUnitInfo.CurrentDestination = destination
 						
 						call GroupAddUnit(tempGroup, turnUnit)
 						call GroupRemoveUnit(.Units, turnUnit)

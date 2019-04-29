@@ -1,4 +1,4 @@
-library SimpleList requires Alloc
+library SimpleList requires Alloc, Table
     public struct ListNode extends array
         public integer value
         
@@ -246,4 +246,63 @@ library SimpleList requires Alloc
             return new
         endmethod
     endstruct
+	
+	
+	//Used to cache a stable-state list into something that can be accessed by index in constant time
+	//this is a fragile design
+	//indexes a list's state on create. does NOT update index as the list changes, since i can't imagine needing a dynamic indexed list for my scope -- its pretty much only useful for optimizing stable-state lists into something cacheable
+	//because this extends the base lists ID, you can only have one index per list. creating more will just leak the originals
+	struct IndexedListNode extends array
+		public integer index
+		private delegate ListNode base
+
+		public static method create takes ListNode node, integer dex returns thistype
+			set IndexedListNode(node).index = dex
+			set IndexedListNode(node).base = node
+			
+			return node
+		endmethod
+	endstruct
+	public function IndexList takes List list returns Table
+		local ListNode curNode = list.first
+		local integer curNodeIndex = 0
+		local Table indexedList = Table.create()
+		
+		loop
+		exitwhen curNode == 0
+			set indexedList[curNodeIndex] = IndexedListNode.create(curNode, curNodeIndex)
+		set curNodeIndex = curNodeIndex + 1
+		set curNode = curNode.next
+		endloop
+		
+		return indexedList
+	endfunction
+	struct IndexedList extends array
+		public Table indexedNodes
+		private delegate List base
+		
+		public method operator [] takes integer index returns IndexedListNode
+			return this.indexedNodes[index]
+		endmethod
+		
+		static if DEBUG_MODE then
+        public method print takes integer pID returns nothing
+            call DisplayTextToPlayer(Player(0), 0, 0, "Indexed List with ID " + I2S(this))
+			call List(this).print(pID)
+        endmethod
+        endif
+		
+		public static method create takes List list returns thistype
+			local thistype new = list			
+			set new.indexedNodes = IndexList(list)
+			set new.base = list
+			
+			return new
+		endmethod
+		public method destroy takes nothing returns nothing
+			call this.indexedNodes.destroy()
+			
+			call List(this).destroy()
+		endmethod
+	endstruct
 endlibrary
