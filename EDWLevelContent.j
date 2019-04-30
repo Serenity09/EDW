@@ -1,4 +1,4 @@
-library EDWLevelContent requires SimpleList, Teams, Levels, EDWPatternSpawnDefinitions, Collectible
+library EDWLevelContent requires SimpleList, Teams, Levels, EDWPatternSpawnDefinitions, Collectible, FastLoad
 	private function FinishedIntro takes nothing returns nothing
 		call TrackGameTime()
 	endfunction
@@ -40,7 +40,10 @@ library EDWLevelContent requires SimpleList, Teams, Levels, EDWPatternSpawnDefin
 		local CollectibleSet collectibleSet
 		local Collectible collectible
 		
+		local FastLoad fastLoad
+		
 		local integer i
+		local real overclockFactor
 		
 		//FIRST LEVEL INITS HARD CODED
         set l = Levels_Level.create(1, "???", 0, 0, "IntroWorldLevelStart", "IntroWorldLevelStop", gg_rct_IntroWorld_R1, gg_rct_IntroWorld_Vision, gg_rct_IntroWorld_End, 0)
@@ -411,7 +414,7 @@ library EDWLevelContent requires SimpleList, Teams, Levels, EDWPatternSpawnDefin
 		
 		
 		//LEVEL 2
-		set l = Levels_Level.create(12, "Catch 'Em All", 3, 3, "LW2Start", "LW2Stop", gg_rct_LWR_2_1, gg_rct_LW2_Vision, gg_rct_LW2_End, l)
+		set l = Levels_Level.create(12, "Monday Commute", 3, 3, "LW2Start", "LW2Stop", gg_rct_LWR_2_1, gg_rct_LW2_Vision, gg_rct_LW2_End, l)
         //call l.AddCheckpoint(gg_rct_LWCP_2_1, gg_rct_LWR_2_2)
 		
 		//collect all 3 to beat the level
@@ -428,40 +431,43 @@ library EDWLevelContent requires SimpleList, Teams, Levels, EDWPatternSpawnDefin
 		set collectible.ReturnToCheckpoint = true
 		call collectibleSet.AddCollectible(collectible)
 		
+		set overclockFactor = 1.
+		
+		set fastLoad = FastLoad.create(l, l.Checkpoints.first.value, 10., 3.)
+		call l.AddStartable(fastLoad)
+		
 		set rg = RelayGenerator.createFromPoint(gg_rct_LW2_RG1, 4, 4, 180, -2, 2., RelayGeneratorRandomSpawn, 1)
+		call rg.SetOverclockFactor(overclockFactor)
 		set rg.SpawnPattern.Data = ICETROLL
 		call rg.AddTurnSimple(90, 7)
 		call rg.AddTurnSimple(180, 1)
 		call rg.AddTurnSimple(270, 22)
-		// call rg.AddTurnSimple(270, 4)
-		// call rg.AddTurnSimple(270, 5)
-		// call rg.AddTurnSimple(270, 5)
 		call rg.EndTurns(270)
+		
 		call l.AddStartable(rg)
-		//debug call rg.DrawTurns()
+		call fastLoad.AddRelayGenerator(rg)
 		
 		set rg = RelayGenerator.createFromPoint(gg_rct_LW2_RG2, 4, 4, 180, -1, 2., RelayGeneratorRandomSpawn, 1)
+		call rg.SetOverclockFactor(overclockFactor)
 		set rg.SpawnPattern.Data = ICETROLL
 		call rg.AddTurnSimple(90, 20)
 		call rg.AddTurnSimple(180, 12)
 		call rg.AddTurnSimple(270, 26)
-		// call rg.AddTurnSimple(270, 6)
-		// call rg.AddTurnSimple(270, 6)
-		// call rg.AddTurnSimple(270, 6)
 		call rg.EndTurns(270)
+		
 		call l.AddStartable(rg)
+		call fastLoad.AddRelayGenerator(rg)
 		
 		set rg = RelayGenerator.createFromPoint(gg_rct_LW2_RG3, 5, 5, 180, -2, 2., RelayGeneratorRandomSpawn, 1)
+		call rg.SetOverclockFactor(overclockFactor)
 		set rg.SpawnPattern.Data = ICETROLL
 		call rg.AddTurnSimple(270, 16)
 		call rg.AddTurnSimple(0, 13)
 		call rg.AddTurnSimple(90, 23)
-		// call rg.AddTurnSimple(90, 4)
-		// call rg.AddTurnSimple(90, 4)
-		// call rg.AddTurnSimple(90, 5)
 		call rg.EndTurns(90)
+		
 		call l.AddStartable(rg)
-		//debug call rg.DrawTurns()
+		call fastLoad.AddRelayGenerator(rg)
 		
         //PRIDE WORLD / PLATFORMING
         //LEVEL 1

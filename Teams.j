@@ -205,7 +205,7 @@ public struct MazingTeam
         call ReleaseTimer(t)
         set t = null
     endmethod
-    
+	
     public method ApplyTeamDefaultCameras takes nothing returns nothing
         local SimpleList_ListNode fp = .FirstUser
         local User u
@@ -929,6 +929,16 @@ public struct MazingTeam
 		loop
 		exitwhen curPlayerNode == 0
 			call SetUnitLocalVisibility(u, curPlayerNode.value, visible)
+		set curPlayerNode = curPlayerNode.next
+		endloop
+	endmethod
+	
+	public method PauseTeam takes boolean flag returns nothing
+		local SimpleList_ListNode curPlayerNode = .FirstUser
+		
+		loop
+		exitwhen curPlayerNode == 0
+			call User(curPlayerNode.value).Pause(flag)
 		set curPlayerNode = curPlayerNode.next
 		endloop
 	endmethod

@@ -498,7 +498,7 @@ library Levels requires SimpleList, Teams, GameModesGlobals, Cinema, User, IStar
 			if .Content.Startables == 0 then
 				set .Content.Startables = SimpleList_List.create()
 			endif
-			call .Content.Startables.add(startable)
+			call .Content.Startables.addEnd(startable)
 		endmethod
         
         public method AddCinematic takes Cinematic cinema returns nothing

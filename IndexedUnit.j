@@ -2,6 +2,7 @@ library IndexedUnit
 	struct IndexedUnit extends array
 		public unit Unit
 		public IStartable ParentStartable
+		readonly real MoveSpeed //can be any real, max value depends on the struct using the custom movespeed
 		
 		implement Alloc
 		
@@ -23,8 +24,17 @@ library IndexedUnit
 			set new.Unit = u
 			call SetUnitUserData(u, new)
 			
+			//set new.MoveSpeed = GetUnitMoveSpeed(u)
+			
 			return new
 		endmethod
+		
+		
+		public method SetMoveSpeed takes real movespeed returns nothing
+			set this.MoveSpeed = movespeed
+			call SetUnitMoveSpeed(this.Unit, movespeed)
+		endmethod
+		
 		public method destroy takes nothing returns nothing
 			call SetUnitUserData(this.Unit, 0)
 			set this.Unit = null
