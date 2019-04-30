@@ -1,7 +1,7 @@
 library RelayGenerator requires GameGlobalConstants, SimpleList, Table, Vector2, TimerUtils, Recycle, locust, Alloc, Draw, IStartable
     globals
-        private constant real RELAY_TURN_CHECK_TIMESTEP = .1
-        
+        private constant real RELAY_MOVEMENT_TIMESTEP = .03500
+		
         private constant integer RELAY_PLAYER = 10
         
         //these have to be opposite for functionality to work, and it'll be faster if they're set this way to make computations off of (always interested in inverse)
@@ -114,7 +114,6 @@ library RelayGenerator requires GameGlobalConstants, SimpleList, Table, Vector2,
         //public real Radius //in whole tile units
         
         public real UnitLaneSize
-		//TODO refactor to just extend a units indexed ID
         public static integer array UnitIDToRelayUnitID //links unit ID to RelayUnit struct ID (UnitIDToRelayUnitID[UnitID] = RelayUnit struct ID)
         private real UnitTimeout
         private timer UnitTimer
@@ -126,7 +125,7 @@ library RelayGenerator requires GameGlobalConstants, SimpleList, Table, Vector2,
         
         public static SimpleList_List ActiveRelays
         
-        private static timer TurnTimer
+		private static timer MovementTimer
         
         //implement Alloc
         
@@ -315,9 +314,6 @@ library RelayGenerator requires GameGlobalConstants, SimpleList, Table, Vector2,
                 endif
             endif
         endmethod
-		// public method GetNextTurnDestination takes RelayUnit turnUnit returns vector2
-			// return GetTurnDestination(turnUnit.CurrentTurn, turnUnit.LaneNumber)
-        // endmethod
 		
 		public method GetCachedTurnDestination takes SimpleList_ListNode currentTurn, integer lane returns vector2
 			// debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "Current turn: " + I2S(currentTurn) + ", current turn index: " + I2S(IndexedListNode(currentTurn).index) + ", lane: " + I2S(lane))
@@ -360,22 +356,7 @@ library RelayGenerator requires GameGlobalConstants, SimpleList, Table, Vector2,
 			call IndexedList.create(this.Turns)
 			call this.InitTurnDestinationCache()
         endmethod
-		
-		public method IsUnitAtNextDestination takes unit u, RelayUnit turnUnit returns boolean
-            local real x = GetUnitX(u)
-            local real y = GetUnitY(u)
-            local boolean atDestination
-            
-            local vector2 destination = turnUnit.CurrentDestination
-            
-            //debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "Cur x, y " + R2S(x) + ", " + R2S(y) + " destination " + destination.toString())
-            
-            //check if unit within box formed around destination using UNIT_DESTINATION_BUFFER as radius
-            set atDestination = (x >= destination.x - UNIT_DESTINATION_BUFFER and x <= destination.x + UNIT_DESTINATION_BUFFER) and (y >= destination.y - UNIT_DESTINATION_BUFFER and y <= destination.y + UNIT_DESTINATION_BUFFER)
-			
-            return atDestination
-        endmethod
-        		
+		        		
         private static method CreateUnitCB takes nothing returns nothing
             local RelayGenerator generator = GetTimerData(GetExpiredTimer())
 			local RelayTurn spawnTurn = generator.Turns.first.value
@@ -408,7 +389,13 @@ library RelayGenerator requires GameGlobalConstants, SimpleList, Table, Vector2,
 				
 				//send unit to first destination
 				set destination = generator.GetCachedNextTurnDestination(spawnUnit)
-				call IssuePointOrder(u, "move", destination.x, destination.y)
+				//call IssuePointOrder(u, "move", destination.x, destination.y)
+				call SetUnitFacingTimed(u, RelayTurn(generator.Turns.first.value).Direction, 0)
+				
+				if IsUnitAnimated(GetUnitTypeId(u)) then
+					call SetUnitAnimationByIndex(u, GetWalkAnimationIndex(GetUnitTypeId(u)))
+					call SetUnitTimeScale(u, GetUnitMoveSpeed(u) / GetUnitDefaultMoveSpeed(u))
+				endif
 				
 				set spawnUnit.CurrentTurn = generator.Turns.first.next
 				set spawnUnit.CurrentDestination = destination
@@ -426,60 +413,135 @@ library RelayGenerator requires GameGlobalConstants, SimpleList, Table, Vector2,
 			call IndexedUnit(GetUnitUserData(u)).destroy()
 			call Recycle_ReleaseUnit(u)
 		endmethod
-        
-        private method CheckRelay takes nothing returns nothing
-            //local SimpleList_ListNode turn = this.Turns.first
-            local unit turnUnit
-			local group tempGroup = NewGroup()
-            local RelayUnit turnUnitInfo
-            
-            local vector2 destination
-            
-			//first of group loop, with group swap at the end to restore original state
+		
+		private static method UpdateRelays takes nothing returns nothing
+			local SimpleList_ListNode activeRelayNode = ActiveRelays.first
+			local RelayGenerator activeRelay
+			local group tempGroup
+			
+			local unit turnUnit
+			local RelayUnit turnUnitInfo
+			local integer turnUnitDirection
+			local real updateCoordinate
+			
 			loop
-			set turnUnit = FirstOfGroup(.Units)
-			exitwhen turnUnit == null
-				//see if unit is being watched, returns 0 if unwatched / not part of a relay
-				set turnUnitInfo = UnitIDToRelayUnitID[GetUnitUserData(turnUnit)]
+            exitwhen activeRelayNode == 0
+                set activeRelay = RelayGenerator(activeRelayNode.value)
+				//call DisplayTextToForce(bj_FORCE_PLAYER[0], "Checking turns for generator " + I2S(activeRelay))
 				
-				//check if unit is part of this relay, and on the turn we're enumerating the rect for, and if they've made it past where they need to go (for their lane) --- turns can only belong to 1 relay, so if the turn matches then so does the relay
-				if IsUnitAtNextDestination(turnUnit, turnUnitInfo) then
-					if turnUnitInfo.CurrentTurn.next != 0 then
-						//send unit a bit past their next destination
-						set destination = GetCachedNextTurnDestination(turnUnitInfo)
-						call IssuePointOrder(turnUnit, "move", destination.x, destination.y)
+				set tempGroup = NewGroup()
+				
+                loop
+				set turnUnit = FirstOfGroup(activeRelay.Units)
+				exitwhen turnUnit == null
+					set turnUnitInfo = UnitIDToRelayUnitID[GetUnitUserData(turnUnit)]
+					
+					set turnUnitDirection = RelayTurn(turnUnitInfo.CurrentTurn.prev.value).Direction
+				
+					if turnUnitDirection == 0 then
+						set updateCoordinate = GetUnitX(turnUnit) + GetUnitMoveSpeed(turnUnit) * RELAY_MOVEMENT_TIMESTEP
 						
-						set turnUnitInfo.CurrentTurn = turnUnitInfo.CurrentTurn.next
-						set turnUnitInfo.CurrentDestination = destination
+						if updateCoordinate >= turnUnitInfo.CurrentDestination.x then
+							if turnUnitInfo.CurrentTurn.next != 0 then
+								call SetUnitX(turnUnit, turnUnitInfo.CurrentDestination.x)
+								
+								set turnUnitInfo.CurrentDestination = activeRelay.GetCachedNextTurnDestination(turnUnitInfo)
+								set turnUnitInfo.CurrentTurn = turnUnitInfo.CurrentTurn.next
+								
+								//call IssuePointOrder(turnUnit, "move", turnUnitInfo.CurrentDestination.x, turnUnitInfo.CurrentDestination.y)
+								call SetUnitFacingTimed(turnUnit, RelayTurn(turnUnitInfo.CurrentTurn.prev.value).Direction, 0)
+								
+								call GroupAddUnit(tempGroup, turnUnit)
+								call GroupRemoveUnit(activeRelay.Units, turnUnit)
+							else
+								call activeRelay.ReleaseUnit(turnUnit)
+							endif							
+						else
+							call SetUnitX(turnUnit, updateCoordinate)
+					
+							call GroupRemoveUnit(activeRelay.Units, turnUnit)
+							call GroupAddUnit(tempGroup, turnUnit)
+						endif
+					elseif turnUnitDirection == 180 then
+						set updateCoordinate = GetUnitX(turnUnit) - GetUnitMoveSpeed(turnUnit) * RELAY_MOVEMENT_TIMESTEP
 						
-						call GroupAddUnit(tempGroup, turnUnit)
-						call GroupRemoveUnit(.Units, turnUnit)
-					else //finished all turns
-						call .ReleaseUnit(turnUnit)
+						if updateCoordinate <= turnUnitInfo.CurrentDestination.x then
+							if turnUnitInfo.CurrentTurn.next != 0 then
+								call SetUnitX(turnUnit, turnUnitInfo.CurrentDestination.x)
+								
+								set turnUnitInfo.CurrentDestination = activeRelay.GetCachedNextTurnDestination(turnUnitInfo)
+								set turnUnitInfo.CurrentTurn = turnUnitInfo.CurrentTurn.next
+								
+								//call IssuePointOrder(turnUnit, "move", turnUnitInfo.CurrentDestination.x, turnUnitInfo.CurrentDestination.y)
+								call SetUnitFacingTimed(turnUnit, RelayTurn(turnUnitInfo.CurrentTurn.prev.value).Direction, 0)
+								
+								call GroupAddUnit(tempGroup, turnUnit)
+								call GroupRemoveUnit(activeRelay.Units, turnUnit)
+							else
+								call activeRelay.ReleaseUnit(turnUnit)
+							endif	
+						else
+							call SetUnitX(turnUnit, updateCoordinate)
+					
+							call GroupRemoveUnit(activeRelay.Units, turnUnit)
+							call GroupAddUnit(tempGroup, turnUnit)
+						endif
+					elseif turnUnitDirection == 90 then
+						set updateCoordinate = GetUnitY(turnUnit) + GetUnitMoveSpeed(turnUnit) * RELAY_MOVEMENT_TIMESTEP
+						
+						if updateCoordinate >= turnUnitInfo.CurrentDestination.y then
+							if turnUnitInfo.CurrentTurn.next != 0 then
+								call SetUnitY(turnUnit, turnUnitInfo.CurrentDestination.y)
+								
+								set turnUnitInfo.CurrentDestination = activeRelay.GetCachedNextTurnDestination(turnUnitInfo)
+								set turnUnitInfo.CurrentTurn = turnUnitInfo.CurrentTurn.next
+								
+								//call IssuePointOrder(turnUnit, "move", turnUnitInfo.CurrentDestination.x, turnUnitInfo.CurrentDestination.y)
+								call SetUnitFacingTimed(turnUnit, RelayTurn(turnUnitInfo.CurrentTurn.prev.value).Direction, 0)
+								
+								call GroupAddUnit(tempGroup, turnUnit)
+								call GroupRemoveUnit(activeRelay.Units, turnUnit)
+							else
+								call activeRelay.ReleaseUnit(turnUnit)
+							endif	
+						else
+							call SetUnitY(turnUnit, updateCoordinate)
+						
+							call GroupRemoveUnit(activeRelay.Units, turnUnit)
+							call GroupAddUnit(tempGroup, turnUnit)
+						endif
+					else
+						set updateCoordinate = GetUnitY(turnUnit) - GetUnitMoveSpeed(turnUnit) * RELAY_MOVEMENT_TIMESTEP
+						
+						if updateCoordinate <= turnUnitInfo.CurrentDestination.y then
+							if turnUnitInfo.CurrentTurn.next != 0 then
+								call SetUnitY(turnUnit, turnUnitInfo.CurrentDestination.y)
+								
+								set turnUnitInfo.CurrentDestination = activeRelay.GetCachedNextTurnDestination(turnUnitInfo)
+								set turnUnitInfo.CurrentTurn = turnUnitInfo.CurrentTurn.next
+								
+								//call IssuePointOrder(turnUnit, "move", turnUnitInfo.CurrentDestination.x, turnUnitInfo.CurrentDestination.y)
+								call SetUnitFacingTimed(turnUnit, RelayTurn(turnUnitInfo.CurrentTurn.prev.value).Direction, 0)
+								
+								call GroupAddUnit(tempGroup, turnUnit)
+								call GroupRemoveUnit(activeRelay.Units, turnUnit)
+							else
+								call activeRelay.ReleaseUnit(turnUnit)
+							endif	
+						else
+							call SetUnitY(turnUnit, updateCoordinate)
+						
+							call GroupRemoveUnit(activeRelay.Units, turnUnit)
+							call GroupAddUnit(tempGroup, turnUnit)
+						endif
 					endif
-				else
-					call GroupAddUnit(tempGroup, turnUnit)
-					call GroupRemoveUnit(.Units, turnUnit)
-				endif
-			endloop
-			
-			call ReleaseGroup(.Units)
-			set .Units = tempGroup
-        endmethod
-        
-        private static method CheckRelayInit takes nothing returns nothing
-            local SimpleList_ListNode activeRelay = ActiveRelays.first
-            //local integer stopwatch = StopWatchCreate()
-			
-            loop
-            exitwhen activeRelay == 0
-                //call DisplayTextToForce(bj_FORCE_PLAYER[0], "Checking turns for generator " + I2S(activeRelay.value))
-                call RelayGenerator(activeRelay.value).CheckRelay()
-            set activeRelay = activeRelay.next
+				endloop
+				
+				call ReleaseGroup(activeRelay.Units)
+				set activeRelay.Units = tempGroup
+            set activeRelayNode = activeRelayNode.next
             endloop
-			
-			//call DisplayTextToForce(bj_FORCE_PLAYER[0], "Stop watch ticks: " + I2S(StopWatchMark(stopwatch)))
-        endmethod
+		endmethod
         
         public method Start takes nothing returns nothing
             if not ActiveRelays.contains(this) then
@@ -493,7 +555,7 @@ library RelayGenerator requires GameGlobalConstants, SimpleList, Table, Vector2,
                 //call DisplayTextToForce(bj_FORCE_PLAYER[0], "Count relays on " + I2S(ActiveRelays.count))
                 
                 if ActiveRelays.count == 1 then
-                    call TimerStart(TurnTimer, RELAY_TURN_CHECK_TIMESTEP, true, function RelayGenerator.CheckRelayInit)
+                    call TimerStart(MovementTimer, RELAY_MOVEMENT_TIMESTEP, true, function RelayGenerator.UpdateRelays)
                     //call DisplayTextToForce(bj_FORCE_PLAYER[0], "Started turn check timer")
                 endif
             endif
@@ -519,7 +581,7 @@ library RelayGenerator requires GameGlobalConstants, SimpleList, Table, Vector2,
                 call ReleaseTimer(this.UnitTimer)
                 
                 if ActiveRelays.count == 0 then
-                    call PauseTimer(TurnTimer)
+                    call PauseTimer(MovementTimer)
                 endif
             endif
         endmethod
@@ -609,7 +671,7 @@ library RelayGenerator requires GameGlobalConstants, SimpleList, Table, Vector2,
         
         public static method onInit takes nothing returns nothing
             set ActiveRelays = SimpleList_List.create()
-            set TurnTimer = CreateTimer()
+            set MovementTimer = CreateTimer()
             set UnitIDToRelayUnitID[0] = 0
             //set UnitTable = Table.create()
         endmethod

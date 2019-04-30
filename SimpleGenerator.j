@@ -92,57 +92,108 @@ struct SimpleGenerator extends IStartable
 			exitwhen curUnit == null
                 //evaluate cos/sin functions for 90 degree angles
 				//would otherwise be x = x + Cos(.SpawnDirection)*.MoveSpeed
-				if curActiveWidget.SpawnDirection == 0 or curActiveWidget.SpawnDirection == 180 then
-					if curActiveWidget.SpawnMoveSpeed == 0 then
-						if curActiveWidget.SpawnDirection == 0 then
-							set destinationCoordinate = GetUnitX(curUnit) + GetUnitMoveSpeed(curUnit) * MOVEMENT_UPDATE_TIMESTEP
-						else
-							set destinationCoordinate = GetUnitX(curUnit) - GetUnitMoveSpeed(curUnit) * MOVEMENT_UPDATE_TIMESTEP
-						endif
-					else
-						set destinationCoordinate = GetUnitX(curUnit) + curActiveWidget.SpawnMoveSpeed
-					endif
-					
-					//solve change vs destination for easy perpendiculars
-					if (curActiveWidget.SpawnDirection == 0 and destinationCoordinate >= curActiveWidget.EndCoordinate) or (curActiveWidget.SpawnDirection == 180 and destinationCoordinate <= curActiveWidget.EndCoordinate) then
-						call GroupRemoveUnit(curActiveWidget.SpawnedUnits, curUnit)
-						call Recycle_ReleaseUnit(curUnit)
+				
+				if curActiveWidget.SpawnMoveSpeed == 0 then
+					if curActiveWidget.SpawnDirection == 0 then
+						set destinationCoordinate = GetUnitX(curUnit) + GetUnitMoveSpeed(curUnit) * MOVEMENT_UPDATE_TIMESTEP
 						
-						static if DEBUG_MOVE_LOOP then
-							call DisplayTextToForce(bj_FORCE_PLAYER[0], "Removed unit from movement")
+						if destinationCoordinate >= curActiveWidget.EndCoordinate then
+							call GroupRemoveUnit(curActiveWidget.SpawnedUnits, curUnit)
+							call Recycle_ReleaseUnit(curUnit)
+							
+							static if DEBUG_MOVE_LOOP then
+								call DisplayTextToForce(bj_FORCE_PLAYER[0], "Removed unit from movement")
+							endif
+						else
+							call SetUnitX(curUnit, destinationCoordinate)
+					
+							call GroupRemoveUnit(curActiveWidget.SpawnedUnits, curUnit)
+							call GroupAddUnit(swapGroup, curUnit)
+						endif
+					elseif curActiveWidget.SpawnDirection == 180 then
+						set destinationCoordinate = GetUnitX(curUnit) - GetUnitMoveSpeed(curUnit) * MOVEMENT_UPDATE_TIMESTEP
+						
+						if destinationCoordinate <= curActiveWidget.EndCoordinate then
+							call GroupRemoveUnit(curActiveWidget.SpawnedUnits, curUnit)
+							call Recycle_ReleaseUnit(curUnit)
+							
+							static if DEBUG_MOVE_LOOP then
+								call DisplayTextToForce(bj_FORCE_PLAYER[0], "Removed unit from movement")
+							endif
+						else
+							call SetUnitX(curUnit, destinationCoordinate)
+					
+							call GroupRemoveUnit(curActiveWidget.SpawnedUnits, curUnit)
+							call GroupAddUnit(swapGroup, curUnit)
+						endif
+					elseif curActiveWidget.SpawnDirection == 90 then
+						set destinationCoordinate = GetUnitY(curUnit) + GetUnitMoveSpeed(curUnit) * MOVEMENT_UPDATE_TIMESTEP
+						
+						if destinationCoordinate >= curActiveWidget.EndCoordinate then
+							call GroupRemoveUnit(curActiveWidget.SpawnedUnits, curUnit)
+							call Recycle_ReleaseUnit(curUnit)
+							
+							static if DEBUG_MOVE_LOOP then
+								call DisplayTextToForce(bj_FORCE_PLAYER[0], "Removed unit from movement")
+							endif
+						else
+							call SetUnitY(curUnit, destinationCoordinate)
+						
+							call GroupRemoveUnit(curActiveWidget.SpawnedUnits, curUnit)
+							call GroupAddUnit(swapGroup, curUnit)
 						endif
 					else
-						call SetUnitX(curUnit, destinationCoordinate)
-					
-						call GroupRemoveUnit(curActiveWidget.SpawnedUnits, curUnit)
-						call GroupAddUnit(swapGroup, curUnit)
-					endif
-				else//if curActiveWidget.SpawnDirection == 90 or curActiveWidget.SpawnDirection == 270 then
-					if curActiveWidget.SpawnMoveSpeed == 0 then
-						if curActiveWidget.SpawnDirection == 90 then
-							set destinationCoordinate = GetUnitY(curUnit) + GetUnitMoveSpeed(curUnit) * MOVEMENT_UPDATE_TIMESTEP
+						set destinationCoordinate = GetUnitY(curUnit) - GetUnitMoveSpeed(curUnit) * MOVEMENT_UPDATE_TIMESTEP
+						
+						if destinationCoordinate <= curActiveWidget.EndCoordinate then
+							call GroupRemoveUnit(curActiveWidget.SpawnedUnits, curUnit)
+							call Recycle_ReleaseUnit(curUnit)
+							
+							static if DEBUG_MOVE_LOOP then
+								call DisplayTextToForce(bj_FORCE_PLAYER[0], "Removed unit from movement")
+							endif
 						else
-							set destinationCoordinate = GetUnitY(curUnit) - GetUnitMoveSpeed(curUnit) * MOVEMENT_UPDATE_TIMESTEP
+							call SetUnitY(curUnit, destinationCoordinate)
+						
+							call GroupRemoveUnit(curActiveWidget.SpawnedUnits, curUnit)
+							call GroupAddUnit(swapGroup, curUnit)
+						endif
+					endif
+				else
+					if curActiveWidget.SpawnDirection == 0 or curActiveWidget.SpawnDirection == 180 then
+						set destinationCoordinate = GetUnitX(curUnit) + curActiveWidget.SpawnMoveSpeed
+						
+						if (curActiveWidget.SpawnDirection == 0 and destinationCoordinate >= curActiveWidget.EndCoordinate) or (curActiveWidget.SpawnDirection == 180 and destinationCoordinate <= curActiveWidget.EndCoordinate) then
+							call GroupRemoveUnit(curActiveWidget.SpawnedUnits, curUnit)
+							call Recycle_ReleaseUnit(curUnit)
+							
+							static if DEBUG_MOVE_LOOP then
+								call DisplayTextToForce(bj_FORCE_PLAYER[0], "Removed unit from movement")
+							endif
+						else
+							call SetUnitX(curUnit, destinationCoordinate)
+						
+							call GroupRemoveUnit(curActiveWidget.SpawnedUnits, curUnit)
+							call GroupAddUnit(swapGroup, curUnit)
 						endif
 					else
 						set destinationCoordinate = GetUnitY(curUnit) + curActiveWidget.SpawnMoveSpeed
-					endif
-					
-					//solve change vs destination for easy perpendiculars
-					if (curActiveWidget.SpawnDirection == 90 and destinationCoordinate >= curActiveWidget.EndCoordinate) or (curActiveWidget.SpawnDirection == 270 and destinationCoordinate <= curActiveWidget.EndCoordinate) then
-						call GroupRemoveUnit(curActiveWidget.SpawnedUnits, curUnit)
-						call Recycle_ReleaseUnit(curUnit)
 						
-						static if DEBUG_MOVE_LOOP then
-							call DisplayTextToForce(bj_FORCE_PLAYER[0], "Removed unit from movement")
+						if (curActiveWidget.SpawnDirection == 90 and destinationCoordinate >= curActiveWidget.EndCoordinate) or (curActiveWidget.SpawnDirection == 270 and destinationCoordinate <= curActiveWidget.EndCoordinate) then
+							call GroupRemoveUnit(curActiveWidget.SpawnedUnits, curUnit)
+							call Recycle_ReleaseUnit(curUnit)
+							
+							static if DEBUG_MOVE_LOOP then
+								call DisplayTextToForce(bj_FORCE_PLAYER[0], "Removed unit from movement")
+							endif
+						else
+							call SetUnitY(curUnit, destinationCoordinate)
+						
+							call GroupRemoveUnit(curActiveWidget.SpawnedUnits, curUnit)
+							call GroupAddUnit(swapGroup, curUnit)
 						endif
-					else
-						call SetUnitY(curUnit, destinationCoordinate)
-					
-						call GroupRemoveUnit(curActiveWidget.SpawnedUnits, curUnit)
-						call GroupAddUnit(swapGroup, curUnit)
 					endif
-				endif
+				endif				
             endloop
 			
 			static if DEBUG_MOVE_LOOP then
