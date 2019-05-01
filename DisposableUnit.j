@@ -29,7 +29,12 @@ library DisposableUnit requires IndexedUnit, IStartable
 			endif
 		endmethod
 		public static method register takes unit u, IStartable disposable returns thistype
-			local thistype new = IndexedUnit.create(u)
+			local thistype new
+			if GetUnitUserData(u) == 0 then
+				set new = IndexedUnit.create(u)
+			else
+				set new = GetUnitUserData(u)
+			endif
 			
 			set new.TrackedStartable = disposable
 			
