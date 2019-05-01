@@ -1,6 +1,7 @@
 library RelayGenerator requires GameGlobalConstants, SimpleList, Table, Vector2, TimerUtils, Recycle, locust, Alloc, Draw, IStartable
     globals
         private constant real RELAY_MOVEMENT_TIMESTEP = .03500
+		private constant real OVERCLOCK_RESTART_BUFFER = 0.0
 		
         private constant integer RELAY_PLAYER = 10
         
@@ -357,10 +358,10 @@ library RelayGenerator requires GameGlobalConstants, SimpleList, Table, Vector2,
 			call IndexedList.create(this.Turns)
 			call this.InitTurnDestinationCache()
         endmethod
-		        		
+		        
         private static method CreateUnitCB takes nothing returns nothing
-            local RelayGenerator generator = GetTimerData(GetExpiredTimer())
-			local RelayTurn spawnTurn = generator.Turns.first.value
+            local RelayGenerator this = GetTimerData(GetExpiredTimer())
+			local RelayTurn spawnTurn = this.Turns.first.value
 			local RelayUnit spawnUnit
 			
 			local group g
@@ -368,37 +369,37 @@ library RelayGenerator requires GameGlobalConstants, SimpleList, Table, Vector2,
 			local integer lane
             local vector2 destination
             
-            set g = generator.SpawnPattern.Spawn(generator.ParentLevel)
+            set g = this.SpawnPattern.Spawn(this.ParentLevel)
 			loop
 			set u = FirstOfGroup(g)
 			exitwhen u == null
 				if spawnTurn.Direction == 90 or spawnTurn.Direction == 270 then
-					//GetUnitX(u) = spawnTurn.FirstLane.x + spawnTurn.FirstLaneX*lane*generator.UnitLaneSize
-					//GetUnitX(u) - spawnTurn.FirstLane.x = spawnTurn.FirstLaneX*lane*generator.UnitLaneSize
-					//(GetUnitX(u) - spawnTurn.FirstLane.x) / (spawnTurn.FirstLaneX * generator.UnitLaneSize) = lane
-					set lane = R2I((GetUnitX(u) - spawnTurn.FirstLane.x) / (spawnTurn.FirstLaneX * generator.UnitLaneSize))
+					//GetUnitX(u) = spawnTurn.FirstLane.x + spawnTurn.FirstLaneX*lane*this.UnitLaneSize
+					//GetUnitX(u) - spawnTurn.FirstLane.x = spawnTurn.FirstLaneX*lane*this.UnitLaneSize
+					//(GetUnitX(u) - spawnTurn.FirstLane.x) / (spawnTurn.FirstLaneX * this.UnitLaneSize) = lane
+					set lane = R2I((GetUnitX(u) - spawnTurn.FirstLane.x) / (spawnTurn.FirstLaneX * this.UnitLaneSize))
 				else
-					set lane = R2I((GetUnitY(u) - spawnTurn.FirstLane.y) / (spawnTurn.FirstLaneY * generator.UnitLaneSize))
+					set lane = R2I((GetUnitY(u) - spawnTurn.FirstLane.y) / (spawnTurn.FirstLaneY * this.UnitLaneSize))
 				endif
 				
 				//debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "Creating unit in lane " + I2S(lane))
 				
 				//call IndexedUnit.create(u)
-				call GroupAddUnit(generator.Units, u)
-				set spawnUnit = RelayUnit.create(lane, generator.Turns.first)
+				call GroupAddUnit(this.Units, u)
+				set spawnUnit = RelayUnit.create(lane, this.Turns.first)
 				set UnitIDToRelayUnitID[GetUnitUserData(u)] = spawnUnit
 				
 				//send unit to first destination
-				set destination = generator.GetCachedNextTurnDestination(spawnUnit)
+				set destination = this.GetCachedNextTurnDestination(spawnUnit)
 				//call IssuePointOrder(u, "move", destination.x, destination.y)
-				call SetUnitFacingTimed(u, RelayTurn(generator.Turns.first.value).Direction, 0)
+				call SetUnitFacingTimed(u, RelayTurn(this.Turns.first.value).Direction, 0)
 				
 				if IsUnitAnimated(GetUnitTypeId(u)) then
 					call SetUnitAnimationByIndex(u, GetWalkAnimationIndex(GetUnitTypeId(u)))
 					call SetUnitTimeScale(u, GetUnitMoveSpeed(u) / GetUnitDefaultMoveSpeed(u))
 				endif
 				
-				set spawnUnit.CurrentTurn = generator.Turns.first.next
+				set spawnUnit.CurrentTurn = this.Turns.first.next
 				set spawnUnit.CurrentDestination = destination
 			call GroupRemoveUnit(g, u)
 			endloop
@@ -425,6 +426,8 @@ library RelayGenerator requires GameGlobalConstants, SimpleList, Table, Vector2,
 			local integer turnUnitDirection
 			local real updateCoordinate
 			
+			local real updateSpillover
+			
 			loop
             exitwhen activeRelayNode == 0
                 set activeRelay = RelayGenerator(activeRelayNode.value)
@@ -444,7 +447,22 @@ library RelayGenerator requires GameGlobalConstants, SimpleList, Table, Vector2,
 						
 						if updateCoordinate >= turnUnitInfo.CurrentDestination.x then
 							if turnUnitInfo.CurrentTurn.next != 0 then
-								call SetUnitX(turnUnit, turnUnitInfo.CurrentDestination.x)
+								set turnUnitDirection = RelayTurn(turnUnitInfo.CurrentTurn.value).Direction
+								set updateSpillover = updateCoordinate - turnUnitInfo.CurrentDestination.x
+								
+								if turnUnitDirection == 0 then
+									call SetUnitX(turnUnit, updateCoordinate)
+								elseif turnUnitDirection == 180 then
+									call SetUnitX(turnUnit, turnUnitInfo.CurrentDestination.x - updateSpillover)
+								else
+									call SetUnitX(turnUnit, turnUnitInfo.CurrentDestination.x)
+									
+									if turnUnitDirection == 90 then
+										call SetUnitY(turnUnit, turnUnitInfo.CurrentDestination.y + updateSpillover)
+									else
+										call SetUnitY(turnUnit, turnUnitInfo.CurrentDestination.y - updateSpillover)
+									endif
+								endif
 								
 								set turnUnitInfo.CurrentDestination = activeRelay.GetCachedNextTurnDestination(turnUnitInfo)
 								set turnUnitInfo.CurrentTurn = turnUnitInfo.CurrentTurn.next
@@ -468,7 +486,22 @@ library RelayGenerator requires GameGlobalConstants, SimpleList, Table, Vector2,
 						
 						if updateCoordinate <= turnUnitInfo.CurrentDestination.x then
 							if turnUnitInfo.CurrentTurn.next != 0 then
-								call SetUnitX(turnUnit, turnUnitInfo.CurrentDestination.x)
+								set turnUnitDirection = RelayTurn(turnUnitInfo.CurrentTurn.value).Direction
+								set updateSpillover = turnUnitInfo.CurrentDestination.x - updateCoordinate
+								
+								if turnUnitDirection == 0 then
+									call SetUnitX(turnUnit, turnUnitInfo.CurrentDestination.x + updateSpillover)
+								elseif turnUnitDirection == 180 then
+									call SetUnitX(turnUnit, updateCoordinate)
+								else
+									call SetUnitX(turnUnit, turnUnitInfo.CurrentDestination.x)
+									
+									if turnUnitDirection == 90 then
+										call SetUnitY(turnUnit, turnUnitInfo.CurrentDestination.y + updateSpillover)
+									else
+										call SetUnitY(turnUnit, turnUnitInfo.CurrentDestination.y - updateSpillover)
+									endif
+								endif
 								
 								set turnUnitInfo.CurrentDestination = activeRelay.GetCachedNextTurnDestination(turnUnitInfo)
 								set turnUnitInfo.CurrentTurn = turnUnitInfo.CurrentTurn.next
@@ -492,7 +525,22 @@ library RelayGenerator requires GameGlobalConstants, SimpleList, Table, Vector2,
 						
 						if updateCoordinate >= turnUnitInfo.CurrentDestination.y then
 							if turnUnitInfo.CurrentTurn.next != 0 then
-								call SetUnitY(turnUnit, turnUnitInfo.CurrentDestination.y)
+								set turnUnitDirection = RelayTurn(turnUnitInfo.CurrentTurn.value).Direction
+								set updateSpillover = updateCoordinate - turnUnitInfo.CurrentDestination.y
+								
+								if turnUnitDirection == 90 then
+									call SetUnitY(turnUnit, updateCoordinate)
+								elseif turnUnitDirection == 270 then
+									call SetUnitY(turnUnit, turnUnitInfo.CurrentDestination.y - updateSpillover)
+								else
+									if turnUnitDirection == 0 then
+										call SetUnitX(turnUnit, turnUnitInfo.CurrentDestination.x + updateSpillover)
+									else
+										call SetUnitX(turnUnit, turnUnitInfo.CurrentDestination.x - updateSpillover)
+									endif
+									
+									call SetUnitY(turnUnit, turnUnitInfo.CurrentDestination.y)
+								endif
 								
 								set turnUnitInfo.CurrentDestination = activeRelay.GetCachedNextTurnDestination(turnUnitInfo)
 								set turnUnitInfo.CurrentTurn = turnUnitInfo.CurrentTurn.next
@@ -516,7 +564,22 @@ library RelayGenerator requires GameGlobalConstants, SimpleList, Table, Vector2,
 						
 						if updateCoordinate <= turnUnitInfo.CurrentDestination.y then
 							if turnUnitInfo.CurrentTurn.next != 0 then
-								call SetUnitY(turnUnit, turnUnitInfo.CurrentDestination.y)
+								set turnUnitDirection = RelayTurn(turnUnitInfo.CurrentTurn.value).Direction
+								set updateSpillover = turnUnitInfo.CurrentDestination.y - updateCoordinate
+								
+								if turnUnitDirection == 90 then
+									call SetUnitY(turnUnit, updateCoordinate)
+								elseif turnUnitDirection == 270 then
+									call SetUnitY(turnUnit, turnUnitInfo.CurrentDestination.y - updateSpillover)
+								else
+									if turnUnitDirection == 0 then
+										call SetUnitX(turnUnit, turnUnitInfo.CurrentDestination.x + updateSpillover)
+									else
+										call SetUnitX(turnUnit, turnUnitInfo.CurrentDestination.x - updateSpillover)
+									endif
+									
+									call SetUnitY(turnUnit, turnUnitInfo.CurrentDestination.y)
+								endif
 								
 								set turnUnitInfo.CurrentDestination = activeRelay.GetCachedNextTurnDestination(turnUnitInfo)
 								set turnUnitInfo.CurrentTurn = turnUnitInfo.CurrentTurn.next
@@ -544,29 +607,19 @@ library RelayGenerator requires GameGlobalConstants, SimpleList, Table, Vector2,
             endloop
 		endmethod
 		
-		private static method SetOverclockFactorCB takes nothing returns nothing
-			local timer t = GetExpiredTimer()
-			local RelayGenerator relay = GetTimerData(t)
-			
-			static if DEBUG_MODE then
-				if relay.UnitTimeout / relay.OverclockFactor < .03500 then
-					call DisplayTextToForce(bj_FORCE_PLAYER[0], "Warning: overclocking relay generator " + I2S(this) + " further than WC3 can support!")
-				endif
-			endif
-			
-			//debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "Restarting timer at new clock speed: " + R2S(relay.UnitTimeout / relay.OverclockFactor))
-			//TODO should immediately call create function, otherwise there will be a gap of 1 spawn
-			call TimerStart(relay.UnitTimer, relay.UnitTimeout / relay.OverclockFactor, true, function RelayGenerator.CreateUnitCB)
-			
-			call ReleaseTimer(t)
-			set t = null
-		endmethod
 		public method SetOverclockFactor takes real factor returns nothing
 			local real oldFactor
 			local group tempGroup
 			local unit turnUnit
+			local real timeout
 			
 			if factor != this.OverclockFactor then
+				static if DEBUG_MODE then
+					if this.UnitTimeout / this.OverclockFactor < .03500 then
+						call DisplayTextToForce(bj_FORCE_PLAYER[0], "Warning: overclocking relay generator " + I2S(this) + " further than WC3 can support!")
+					endif
+				endif
+				
 				set oldFactor = this.OverclockFactor
 				set this.OverclockFactor = factor
 				
@@ -588,8 +641,14 @@ library RelayGenerator requires GameGlobalConstants, SimpleList, Table, Vector2,
 					call ReleaseGroup(this.Units)
 					set this.Units = tempGroup
 					
-					call TimerStart(NewTimerEx(this), TimerGetRemaining(this.UnitTimer), false, function RelayGenerator.SetOverclockFactorCB)
+					if TimerGetRemaining(this.UnitTimer) + OVERCLOCK_RESTART_BUFFER < .035 then
+						set timeout = .035
+					else
+						set timeout = TimerGetRemaining(this.UnitTimer) + OVERCLOCK_RESTART_BUFFER
+					endif
+					
 					call PauseTimer(this.UnitTimer)
+					call TimerStart(this.UnitTimer, this.UnitTimeout / this.OverclockFactor, true, function RelayGenerator.CreateUnitCB)
 				endif
 			endif
 		endmethod
