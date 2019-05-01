@@ -122,7 +122,7 @@ library Collectible requires Alloc, PermanentAlloc, SimpleList, Teams, IStartabl
 		endmethod
 		
 		private static method InitializeTeam takes nothing returns nothing
-			local SimpleList_ListNode curStartableNode = EventCurrentLevel.Content.Startables.first
+			local SimpleList_ListNode curStartableNode = EventCurrentLevel.Startables.first
 			
 			loop
 			exitwhen curStartableNode == 0
@@ -133,7 +133,7 @@ library Collectible requires Alloc, PermanentAlloc, SimpleList, Teams, IStartabl
 			endloop
 		endmethod
 		private static method DeinitializeTeam takes nothing returns nothing
-			local SimpleList_ListNode curStartableNode = EventPreviousLevel.Content.Startables.first
+			local SimpleList_ListNode curStartableNode = EventPreviousLevel.Startables.first
 			local SimpleList_ListNode curActiveTeamNode
 			local CollectibleTeam removedTeam
 			
@@ -236,7 +236,7 @@ library Collectible requires Alloc, PermanentAlloc, SimpleList, Teams, IStartabl
 		
 		public static method create takes Levels_Level parentLevel, DeferredCallback onAllCollected returns thistype
 			local integer tcsCountOnLevel = 0
-			local SimpleList_ListNode curStartableNode = parentLevel.Content.Startables.first
+			local SimpleList_ListNode curStartableNode = parentLevel.Startables.first
 			local thistype new = thistype.allocate()
 			
 			set new.OnAllCollected = onAllCollected

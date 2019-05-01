@@ -107,6 +107,55 @@ function DistanceCallback takes nothing returns nothing
     set playerUnit = null
 endfunction
 
+function DebugRelay takes integer pID returns nothing
+	local Levels_Level platformerLevel = User(pID).Team.OnLevel
+	local SimpleList_ListNode curNode = platformerLevel.Startables.first
+	local integer curIndex
+	local RelayGenerator relay = 0
+	
+	loop
+	exitwhen curNode == 0 or relay != 0
+		if IStartable(curNode.value).getType() == RelayGenerator.typeid then
+			set relay = curNode.value
+		endif
+	set curNode = curNode.next
+	endloop
+	
+	call DisplayTextToForce(bj_FORCE_PLAYER[pID], "Relay ID: " + I2S(relay))
+	
+	if relay != 0 then
+		call relay.CachedTurnDestinations.print(pID)
+		
+		call DisplayTextToForce(bj_FORCE_PLAYER[pID], "Printing destinations")
+		set curNode = relay.CachedTurnDestinations.first
+		set curIndex = 0
+		loop
+		exitwhen curNode == 0
+			call DisplayTextToForce(bj_FORCE_PLAYER[pID], "Destination index: " + I2S(curIndex) + ", destination: " + vector2(curNode.value).toString())
+		set curNode = curNode.next
+		set curIndex = curIndex + 1
+		endloop
+	endif
+endfunction
+
+function OverclockRelays takes integer pID, real overclock returns nothing
+	local Levels_Level level = User(pID).Team.OnLevel
+	local SimpleList_ListNode curNode = level.Startables.first
+	local integer curIndex
+	local RelayGenerator relay = 0
+	
+	loop
+	exitwhen curNode == 0
+		if IStartable(curNode.value).getType() == RelayGenerator.typeid then
+			set relay = curNode.value
+			call DisplayTextToForce(bj_FORCE_PLAYER[pID], "Overclocking relay: " + I2S(relay))
+			
+			call relay.SetOverclockFactor(overclock)
+		endif
+	set curNode = curNode.next
+	endloop	
+endfunction
+
 function ParseCommand takes nothing returns nothing
     local string msg = GetEventPlayerChatString()
     local integer pID = GetPlayerId(GetTriggerPlayer())
@@ -195,6 +244,11 @@ function ParseCommand takes nothing returns nothing
 			call ExportPlatformingVariables(p)
 		elseif msg == "-mem" or cmd == "mem" then
 			call PrintMemoryAnalysis(p.PID)
+		elseif msg == "-debugrelay" then
+			call DebugRelay(pID)
+		elseif msg == "-overclock" or cmd == "overclock" or cmd == "clock" then
+			call DisplayTextToForce(bj_FORCE_PLAYER[pID], "Overclocking relay for player: " + I2S(pID) + ", val: " + R2S(val))
+			call OverclockRelays(pID, val)
 		elseif cmd == "testpocean" or cmd == "tpo" then
 			call team.MoveRevive(gg_rct_Region_380)
 			set team.DefaultGameMode = Teams_GAMEMODE_PLATFORMING

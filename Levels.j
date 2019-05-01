@@ -27,64 +27,6 @@ library Levels requires SimpleList, Teams, GameModesGlobals, Cinema, User, IStar
 		Checkpoint EventCheckpoint
     endglobals
     
-	//TODO this struct turned into just an extension of Level -- refactor back into level
-    struct LevelContent extends array //extends IStartable		
-		private string StartFunction
-        private string StopFunction
-                
-        public SimpleList_List Startables
-        		
-        public method Start takes nothing returns nothing
-            local SimpleList_ListNode startableNode
-            
-            if .StartFunction != null then
-                call ExecuteFunc(.StartFunction)
-			endif
-                
-			if .Startables != 0 then
-				//debug call .Startables.print(0)
-				set startableNode = .Startables.first
-				
-				loop
-				exitwhen startableNode == 0
-					call IStartable(startableNode.value).Start()
-				set startableNode = startableNode.next
-				endloop
-			endif
-        endmethod
-        
-        public method Stop takes nothing returns nothing
-            local SimpleList_ListNode startableNode
-            
-            if .StopFunction != null then
-                call ExecuteFunc(.StopFunction)
-            endif
-			
-			if .Startables != 0 then
-				//debug call .Startables.print(0)
-				set startableNode = .Startables.first
-				
-				loop
-				exitwhen startableNode == 0
-					call IStartable(startableNode.value).Stop()
-				set startableNode = startableNode.next
-				endloop
-			endif
-        endmethod
-        
-        public static method create takes Levels_Level parent, string startFunction, string stopFunction returns thistype
-            //struct extends from parent
-			local thistype new = parent
-            
-            set new.StartFunction = startFunction
-            set new.StopFunction = stopFunction
-            
-            set new.Startables = 0
-            
-            return new
-        endmethod
-    endstruct
-    
     struct Checkpoint extends array
         //struct does not support recycling
 		private static integer c = 0
@@ -116,7 +58,10 @@ library Levels requires SimpleList, Teams, GameModesGlobals, Cinema, User, IStar
         public integer     RawContinues      //refers to the difficulty of a level
         public integer     RawScore
         
-		public LevelContent Content          //all the stuff to fill a level with when turned on/off
+		private string StartFunction
+        private string StopFunction
+                
+        public SimpleList_List Startables
         
         public rect        Vision          //the bounds placed on a player's vision
         public rect LevelEnd				//rect that marks the end of this level
@@ -140,15 +85,30 @@ library Levels requires SimpleList, Teams, GameModesGlobals, Cinema, User, IStar
 		//private static Event OnCheckpointChange
                         
         public method Start takes nothing returns nothing
-            static if DEBUG_START_STOP then
+            local SimpleList_ListNode startableNode
+			
+			static if DEBUG_START_STOP then
 				call DisplayTextToForce(bj_FORCE_PLAYER[0], "Trying to start level " + I2S(this) + ", count: " + I2S(Teams_MazingTeam.GetCountOnLevel(this)))
             endif
 			
             if Teams_MazingTeam.GetCountOnLevel(this) == 0 then
                 call .ActiveLevels.add(this)
                 
-                call .Content.Start()
-                
+                if .StartFunction != null then
+					call ExecuteFunc(.StartFunction)
+				endif
+					
+				if .Startables != 0 then
+					//debug call .Startables.print(0)
+					set startableNode = .Startables.first
+					
+					loop
+					exitwhen startableNode == 0
+						call IStartable(startableNode.value).Start()
+					set startableNode = startableNode.next
+					endloop
+				endif
+				
                 //debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "Started level " + I2S(this))
             endif
         endmethod
@@ -157,7 +117,8 @@ library Levels requires SimpleList, Teams, GameModesGlobals, Cinema, User, IStar
         //removes units from whatever .Vision is currently set to!
         public method Stop takes nothing returns nothing
             local integer countprev = Teams_MazingTeam.GetCountOnLevel(this)
-            
+            local SimpleList_ListNode startableNode
+			
 			static if DEBUG_START_STOP then
 				call DisplayTextToForce(bj_FORCE_PLAYER[0], "Trying to stop level " + I2S(this) + ", count: " + I2S(countprev))
             endif
@@ -165,7 +126,23 @@ library Levels requires SimpleList, Teams, GameModesGlobals, Cinema, User, IStar
             if countprev == 0 then
                 call .ActiveLevels.remove(this)
                 
-                call .Content.Stop()
+                if .StopFunction != null then
+					call ExecuteFunc(.StopFunction)
+				endif
+				
+				if .Startables != 0 then
+					//debug call .Startables.print(0)
+					set startableNode = .Startables.first
+					
+					loop
+					exitwhen startableNode == 0
+						call IStartable(startableNode.value).Stop()
+					set startableNode = startableNode.next
+					endloop
+				endif
+				
+				//cleans up unregistered content
+				//MUST fire after IStartable.Stop to make sure IStartables are cleaned up correctly
                 call .RemoveGreenFromLevel()
                 
                 //debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "Stopped level " + I2S(this))
@@ -244,24 +221,25 @@ library Levels requires SimpleList, Teams, GameModesGlobals, Cinema, User, IStar
         public method SetCheckpointForTeam takes Teams_MazingTeam mt, integer cpID returns nothing
             local Checkpoint cp = Checkpoint(.Checkpoints.get(cpID).value)
 			
+			//call DisplayTextToForce(bj_FORCE_PLAYER[0], "Started setting CP for team " + I2S(mt) + ", index " + I2S(cpID) + ", cp " + I2S(cp))
+			
 			if cp != 0 then
 				set EventCheckpoint = cp
 				set EventCurrentLevel = this
 				set this.CBTeam = mt
 				
-                //call DisplayTextToForce(bj_FORCE_PLAYER[0], "Started setting CP for team " + I2S(mt) + ", index " + I2S(cpID) + ", cp " + I2S(cp))
 				set mt.OnCheckpoint = cpID
                 
                 set mt.DefaultGameMode = cp.DefaultGameMode
-                //call mt.SwitchGameModeContinuous(mt.DefaultGameMode)
                 
                 call mt.MoveRevive(cp.ReviveCenter)
                 call mt.RespawnTeamAtRect(cp.ReviveCenter, true)
                 call mt.ApplyKeyToTeam(cp.DefaultColor)
                 
                 call mt.UpdateMultiboard()
-
+				
 				if this.OnCheckpointChange != 0 then
+					//debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "Firing checkpoint event for: " + I2S(this.OnCheckpointChange))
 					call this.OnCheckpointChange.fire()
 				endif
 				//call DisplayTextToForce(bj_FORCE_PLAYER[0], "Finished setting CP for team " + I2S(mt))				
@@ -339,45 +317,47 @@ library Levels requires SimpleList, Teams, GameModesGlobals, Cinema, User, IStar
 			endif
 		endmethod
 		
+		public method StopLevelForTeam takes Teams_MazingTeam mt returns nothing
+			set EventPreviousLevel = this
+			set this.CBTeam = mt
+			
+			call mt.ClearCinematicQueue()
+            call this.ActiveTeams.remove(mt)
+			
+			set mt.OnLevel = TEMP_LEVEL_ID
+            call this.Stop() //only stops the level if no ones on it
+			if this.OnLevelStop != 0 then
+				call this.OnLevelStop.fire()
+			endif
+		endmethod
+		public method StartLevelForTeam takes Teams_MazingTeam mt returns nothing
+			set EventCurrentLevel = this
+            set this.CBTeam = mt
+			
+			call this.Start() //only starts the next level if there is one
+			if this.OnLevelStart != 0 then
+				call this.OnLevelStart.fire()
+			endif
+			
+            set mt.OnLevel = this
+            call this.ActiveTeams.add(mt)
+            
+            call mt.AddTeamVision(this.Vision)
+			
+            //debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "Started")
+            //team tele, respawn update, vision, pause + unpause
+            call this.SetCheckpointForTeam(mt, 0)
+		endmethod
+		
         //update level continuously or discontinuously from one to the next. IE lvl 1 -> 2 -> 3 -> 4 OR 1 -> 4 -> 2 etc
         public method SwitchLevels takes Teams_MazingTeam mt, Level nextLevel returns nothing			
 			static if DEBUG_LEVEL_CHANGE then
 				call DisplayTextToForce(bj_FORCE_PLAYER[0], "From " + I2S(this) + " To " + I2S(nextLevel))
             endif
 			
-			set EventPreviousLevel = this
-			set EventCurrentLevel = nextLevel
+			call this.StopLevelForTeam(mt)
 			
-            set this.CBTeam = mt
-			
-			call mt.ClearCinematicQueue()
-            call this.ActiveTeams.remove(mt)
-						
-            set mt.OnLevel = TEMP_LEVEL_ID
-            call this.Stop() //only stops the level if no ones on it
-			if this.OnLevelStop != 0 then
-				call this.OnLevelStop.fire()
-			endif
-			
-            //debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "Stopped")
-            call nextLevel.Start() //only starts the next level if there is one
-			if nextLevel.OnLevelStart != 0 then
-				call nextLevel.OnLevelStart.fire()
-			endif
-			
-            set mt.OnLevel = nextLevel
-            call nextLevel.ActiveTeams.add(mt)
-            
-            call mt.AddTeamVision(nextLevel.Vision)
-			
-            //debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "Started")
-            //team tele, respawn update, vision, pause + unpause
-            call nextLevel.SetCheckpointForTeam(mt, 0)
-            //rewards system
-            
-            //Now happens in SetCheckpointForTeam
-            //multiboard update
-            //call mt.UpdateMultiboard()
+			call nextLevel.StartLevelForTeam(mt)
         endmethod
         		
 		private static method CheckTransfers takes nothing returns nothing
@@ -489,16 +469,16 @@ library Levels requires SimpleList, Teams, GameModesGlobals, Cinema, User, IStar
         endmethod        
         
 		public method AddStartable takes IStartable startable returns nothing
-			if startable.ParentLevel != 0 and startable.ParentLevel.Content.Startables != 0 then
-				call startable.ParentLevel.Content.Startables.remove(startable)
+			if startable.ParentLevel != 0 and startable.ParentLevel.Startables != 0 then
+				call startable.ParentLevel.Startables.remove(startable)
 			endif
 			
 			set startable.ParentLevel = this
 			
-			if .Content.Startables == 0 then
-				set .Content.Startables = SimpleList_List.create()
+			if .Startables == 0 then
+				set .Startables = SimpleList_List.create()
 			endif
-			call .Content.Startables.addEnd(startable)
+			call .Startables.addEnd(startable)
 		endmethod
         
         public method AddCinematic takes Cinematic cinema returns nothing
@@ -564,7 +544,9 @@ library Levels requires SimpleList, Teams, GameModesGlobals, Cinema, User, IStar
             set new.RawContinues = 0
             set new.RawScore = 0
 
-            set new.Content = Content.create(new, startFunction, stopFunction)
+			set new.StartFunction = startFunction
+			set new.StopFunction = stopFunction
+			set new.Startables = 0
 			
 			set new.Checkpoints = SimpleList_List.create()
             call new.AddCheckpoint(null, startspawn)
@@ -627,7 +609,9 @@ library Levels requires SimpleList, Teams, GameModesGlobals, Cinema, User, IStar
             set new.Stop = stop
             */
             
-			set new.Content = LevelContent.create(new, startFunction, stopFunction)
+			set new.StartFunction = startFunction
+			set new.StopFunction = stopFunction
+			set new.Startables = 0
             //set new.CPToHere = tothislevel
             //set new.StartRect = startspawn
             set new.Vision = vision
