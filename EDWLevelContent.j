@@ -434,9 +434,8 @@ library EDWLevelContent requires SimpleList, Teams, Levels, EDWPatternSpawnDefin
 		set overclockFactor = 1.
 		
 		set fastLoad = FastLoad.create(l, l.Checkpoints.first.value, 10., 3.)
-		call l.AddStartable(fastLoad)
 		
-		set rg = RelayGenerator.createFromPoint(gg_rct_LW2_RG1, 4, 4, 180, -2, 2., RelayGeneratorRandomSpawn, 1)
+		set rg = RelayGenerator.createFromPoint(gg_rct_LW2_RG1, 4, 4, 180, -2, 2., RelayGeneratorFirstSpawn, 1)
 		call rg.SetOverclockFactor(overclockFactor)
 		set rg.SpawnPattern.Data = ICETROLL
 		call rg.AddTurnSimple(90, 7)
@@ -447,7 +446,7 @@ library EDWLevelContent requires SimpleList, Teams, Levels, EDWPatternSpawnDefin
 		call l.AddStartable(rg)
 		call fastLoad.AddRelayGenerator(rg)
 		
-		set rg = RelayGenerator.createFromPoint(gg_rct_LW2_RG2, 4, 4, 180, -1, 2., RelayGeneratorRandomSpawn, 1)
+		set rg = RelayGenerator.createFromPoint(gg_rct_LW2_RG2, 4, 4, 180, -1, 2., RelayGeneratorFirstSpawn, 1)
 		call rg.SetOverclockFactor(overclockFactor)
 		set rg.SpawnPattern.Data = ICETROLL
 		call rg.AddTurnSimple(90, 20)
@@ -458,7 +457,7 @@ library EDWLevelContent requires SimpleList, Teams, Levels, EDWPatternSpawnDefin
 		call l.AddStartable(rg)
 		call fastLoad.AddRelayGenerator(rg)
 		
-		set rg = RelayGenerator.createFromPoint(gg_rct_LW2_RG3, 5, 5, 180, -2, 2., RelayGeneratorRandomSpawn, 1)
+		set rg = RelayGenerator.createFromPoint(gg_rct_LW2_RG3, 5, 5, 180, -2, 2., RelayGeneratorFirstSpawn, 1)
 		call rg.SetOverclockFactor(overclockFactor)
 		set rg.SpawnPattern.Data = ICETROLL
 		call rg.AddTurnSimple(270, 16)

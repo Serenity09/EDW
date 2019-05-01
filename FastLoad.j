@@ -34,21 +34,6 @@ library FastLoad requires IStartable, SimpleList, RelayGenerator, SimpleGenerato
 			call this.SimpleGenerators.addEnd(generator)
 		endmethod
 		
-		public static method GetCheckpointFastLoad takes Levels_Level level, Checkpoint checkpoint returns thistype
-			local SimpleList_ListNode curActiveLoaderNode = thistype.ActiveLoaders.first
-			local thistype fastLoad = 0
-			
-			loop
-			exitwhen curActiveLoaderNode == 0 or fastLoad != 0
-				if thistype(curActiveLoaderNode.value).ParentLevel == level and thistype(curActiveLoaderNode.value).Checkpoint == checkpoint then
-					set fastLoad = curActiveLoaderNode.value
-				endif
-			set curActiveLoaderNode = curActiveLoaderNode.next
-			endloop
-			
-			return fastLoad
-		endmethod
-		
 		private method SetOverclockFactor takes real overclockFactor returns nothing
 			local SimpleList_ListNode curNode
 			
@@ -93,11 +78,27 @@ library FastLoad requires IStartable, SimpleList, RelayGenerator, SimpleGenerato
 			call ReleaseTimer(t)
 			set t = null
 		endmethod
+		
+		private static method GetCheckpointFastLoad takes Levels_Level level, Checkpoint checkpoint returns thistype
+			local SimpleList_ListNode curActiveLoaderNode = thistype.ActiveLoaders.first
+			local thistype fastLoad = 0
+			
+			loop
+			exitwhen curActiveLoaderNode == 0 or fastLoad != 0
+				if thistype(curActiveLoaderNode.value).ParentLevel == level and thistype(curActiveLoaderNode.value).Checkpoint == checkpoint then
+					set fastLoad = curActiveLoaderNode.value
+				endif
+			set curActiveLoaderNode = curActiveLoaderNode.next
+			endloop
+			
+			return fastLoad
+		endmethod
 		private static method CheckpointChangeCB takes nothing returns nothing
 			local thistype fastLoad = thistype.GetCheckpointFastLoad(EventCurrentLevel, EventCheckpoint)
 			local SimpleList_ListNode curNode
-			
+						
 			if fastLoad != 0 and fastLoad.LoadState != LOADED then
+				call Levels_Level.CBTeam.CancelAutoUnpauseForTeam()
 				call Levels_Level.CBTeam.PauseTeam(true)
 			endif
 		endmethod
@@ -128,7 +129,7 @@ library FastLoad requires IStartable, SimpleList, RelayGenerator, SimpleGenerato
 		//registers a fast load event
 		public static method create takes Levels_Level parentLevel, Checkpoint checkpoint, real overclockFactor, real fastLoadTime returns thistype
 			local thistype new = thistype.allocate()
-			
+			call parentLevel.AddStartable(new)
 			//TODO check that no other fast loads already exist in this level. ONE PER LEVEL
 			
 			set new.Checkpoint = checkpoint
