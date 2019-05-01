@@ -1,4 +1,4 @@
-library EDWVisualVote requires VisualVote, ContinueGlobals, Teams, PlayerUtils, MazerGlobals
+library EDWVisualVote requires VisualVote, ContinueGlobals, Teams, PlayerUtils, MazerGlobals, EDWPlayerStart
     globals
         //public VisualVote_voteMenu MyMenu
         
@@ -6,26 +6,6 @@ library EDWVisualVote requires VisualVote, ContinueGlobals, Teams, PlayerUtils, 
 		private constant real VOTE_TIME_ROUND_TWO = 10
 		private constant boolean FORCE_MENU = false
     endglobals
-    
-    public function GetFirstLevel takes nothing returns Levels_Level
-        if DEBUG_MODE or CONFIGURATION_PROFILE != RELEASE then
-            //3 == first ice level
-            //24/31 == last ice levels
-            //9 == first platforming level
-            
-            //66 == debug platform testing
-            return Levels_Level(1)
-        else
-            return Levels_Level(1)
-        endif
-    endfunction
-	public function GetFirstCheckpoint takes nothing returns integer
-		if DEBUG_MODE or CONFIGURATION_PROFILE != RELEASE then
-            return 1
-        else
-            return 0
-        endif
-	endfunction
         
     public function GameModeSolo takes nothing returns nothing
         //call DisplayTextToPlayer(Player(0), 0, 0, "solo")
@@ -139,7 +119,9 @@ library EDWVisualVote requires VisualVote, ContinueGlobals, Teams, PlayerUtils, 
         
         local integer rand
         local boolean flag
-        local Levels_Level firstLevel
+		
+		//get first level -- mostly for debugging, should always be 0 in release
+        local Levels_Level firstLevel = GetFirstLevel()
 		
 		local real welcomeCineTime = 0
 		local Cinematic welcomeCine
@@ -290,14 +272,13 @@ library EDWVisualVote requires VisualVote, ContinueGlobals, Teams, PlayerUtils, 
         
         //determine starting continues
         call Teams_MazingTeam.ComputeTeamWeights()
-                
-        //get first level -- mostly for debugging, should always be 0 in release
-        set firstLevel = GetFirstLevel()
-        call firstLevel.Start()
-        
-        //debug call DisplayTextToPlayer(Player(0), 0, 0, "Team count " + I2S(teamCount))
 		
-        
+		//initialize multiboard
+		call Teams_MazingTeam.MultiboardSetupInit()
+		
+        //debug call DisplayTextToPlayer(Player(0), 0, 0, "Team count " + I2S(teamCount))
+        //call firstLevel.Start()
+		
 		if GameMode == GameModesGlobals_SOLO then
 			set cineMsg = CinemaMessage.create(null, ColorMessage("Solo mode", SPEAKER_COLOR) + " selected. Fend for yourselves", DEFAULT_MEDIUM_TEXT_SPEED)
 			set welcomeCineTime = welcomeCineTime + DEFAULT_MEDIUM_TEXT_SPEED
@@ -333,7 +314,7 @@ library EDWVisualVote requires VisualVote, ContinueGlobals, Teams, PlayerUtils, 
 		
         set i = 0
         loop
-            set team[i].OnLevel = firstLevel
+            // set team[i].OnLevel = firstLevel
             //call team[i].ChangeContinueCount(team[i].GetInitialContinues())
             
             //call team[i].MoveRevive(firstLevel.CPCenters[0])
@@ -341,21 +322,26 @@ library EDWVisualVote requires VisualVote, ContinueGlobals, Teams, PlayerUtils, 
             //call team[i].SwitchTeamGameMode(team[i].DefaultGameMode, GetRandomReal(GetRectMinX(team[i].Revive), GetRectMaxX(team[i].Revive)), GetRandomReal(GetRectMinY(team[i].Revive), GetRectMaxY(team[i].Revive)))
             
             call team[i].ApplyTeamDefaultCameras()
-            call team[i].AddTeamVision(firstLevel.Vision)			
+            //call team[i].AddTeamVision(firstLevel.Vision)			
 			
 			static if not DEBUG_MODE then
 				call team[i].AddTeamCinema(welcomeCine, team[i].FirstUser.value)
 			endif
 			
-            call firstLevel.ActiveTeams.add(team[i])
+            // call firstLevel.ActiveTeams.add(team[i])
+			// if firstLevel.OnLevelStart != 0 then
+				// call firstLevel.OnLevelStart.fire()
+			// endif
 			
-			//call firstLevel.SetCheckpointForTeam(team[i], 0)
-			call firstLevel.SetCheckpointForTeam(team[i], GetFirstCheckpoint())
+			// call firstLevel.SetCheckpointForTeam(team[i], GetFirstCheckpoint())
+			
+			call firstLevel.StartLevelForTeam(team[i])
+			
             //debug call DisplayTextToPlayer(Player(0), 0, 0, "Team " + I2S(team[i]) + " on level: " + I2S(team[i].OnLevel))
         set i = i + 1
         exitwhen i >= teamCount
         endloop
-		
+				
 		static if not DEBUG_MODE then
 			call EnableUserUI(false)
 			call SetCineFilterTexture("ReplaceableTextures\\CameraMasks\\Black_mask.blp")
@@ -381,8 +367,6 @@ library EDWVisualVote requires VisualVote, ContinueGlobals, Teams, PlayerUtils, 
 		
         //apply the player's (custom) Default camerasetup and pan to their default mazer
         //call SelectAndPanAllDefaultUnits()
-        
-        call Teams_MazingTeam.MultiboardSetupInit()
         
 		if RewardMode == GameModesGlobals_CHEAT then
 			set i = 0
