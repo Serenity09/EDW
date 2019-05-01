@@ -1,6 +1,6 @@
 library BoundedSpoke requires Alloc, SimpleList, locust, UnitWrapper
     globals
-        public constant player SPOKE_PLAYER = Player(10)
+        public constant player SPOKE_PLAYER = Player(11)
         
         public constant real TIMESTEP = .1
         private constant real DEFAULT_ROTATION_SPEED = bj_PI / 10 * TIMESTEP //18 degrees per sec
