@@ -942,6 +942,15 @@ public struct MazingTeam
 		set curPlayerNode = curPlayerNode.next
 		endloop
 	endmethod
+	public method CancelAutoUnpauseForTeam takes nothing returns nothing
+		local SimpleList_ListNode curPlayerNode = .FirstUser
+		
+		loop
+		exitwhen curPlayerNode == 0
+			call User(curPlayerNode.value).CancelAutoUnpause()
+		set curPlayerNode = curPlayerNode.next
+		endloop
+	endmethod
     
     public static method create takes integer teamID returns thistype
         local thistype mt = thistype.allocate()

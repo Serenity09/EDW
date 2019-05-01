@@ -18,6 +18,7 @@ struct User extends array
     public Cinematic CinematicPlaying
     public SimpleList_List CinematicQueue //FiFo
 	public effect ActiveEffect
+	public timer UnpauseTimer
     
     public static integer ActivePlayers
 	
@@ -116,6 +117,7 @@ struct User extends array
         if .GameMode == Teams_GAMEMODE_STANDARD then
             call ReviveHero(MazersArray[this], x, y, true)
             call PauseUnit(MazersArray[this], true)
+			call PauseUnit(MazersArray[this], false)
             call SetUnitX(MazersArray[this], x)
             call SetUnitY(MazersArray[this], y)
         elseif .GameMode == Teams_GAMEMODE_PLATFORMING then
@@ -157,7 +159,9 @@ struct User extends array
     public method Pause takes boolean flag returns nothing
         if .IsPlaying and .IsAlive then
             //debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "unpausing " + I2S(u))
-            call PauseUnit(.ActiveUnit, flag)
+            //call PauseUnit(.ActiveUnit, flag)
+			call PauseUnit(MazersArray[this], true)
+			call PauseUnit(MazersArray[this], false)
             call IssueImmediateOrder(.ActiveUnit, "stop")
             
             if flag then
@@ -176,6 +180,12 @@ struct User extends array
         endif
     endmethod
     
+	public method CancelAutoUnpause takes nothing returns nothing
+		if this.UnpauseTimer != null then
+			call ReleaseTimer(this.UnpauseTimer)
+			set this.UnpauseTimer = null
+		endif
+	endmethod
     private static method UnpauseUserCB takes nothing returns nothing
         local timer t = GetExpiredTimer()
         local thistype u = thistype(GetTimerData(t))
@@ -187,11 +197,18 @@ struct User extends array
             
             call u.Pause(false)
         endif
-                
+		
+		static if DEBUG_MODE then
+			if t != u.UnpauseTimer then
+				call DisplayTextToForce(bj_FORCE_PLAYER[0], "Unpause User CB with unidentified timer")
+			endif
+		endif
+        
         call ReleaseTimer(t)
         set t = null
+		set u.UnpauseTimer = null
     endmethod
-    
+	    
     public method RespawnAtRect takes rect r, boolean moveliving returns nothing
         local real x = GetRectMinX(r)
         local real y = GetRectMinY(r)
@@ -221,33 +238,28 @@ struct User extends array
 				// call DisplayTextToForce(bj_FORCE_PLAYER[0], "reviving at x: " + R2S(x) + ", y: " + R2S(y))
 			// endif
 			
+			call .CancelAutoUnpause()
+			set .UnpauseTimer = NewTimerEx(this)
+			
             if .Team.DefaultGameMode == Teams_GAMEMODE_STANDARD or .Team.DefaultGameMode == Teams_GAMEMODE_STANDARD_PAUSED then
                 call this.SwitchGameModes(Teams_GAMEMODE_STANDARD_PAUSED, x, y)
                 
                 if RespawnASAPMode then
-                    call TimerStart(NewTimerEx(this), REVIVE_PAUSE_TIME_ASAP, false, function User.UnpauseUserCB)
+                    call TimerStart(.UnpauseTimer, REVIVE_PAUSE_TIME_ASAP, false, function User.UnpauseUserCB)
                 else
-                    call TimerStart(NewTimerEx(this), REVIVE_PAUSE_TIME_NONASAP, false, function User.UnpauseUserCB)
+                    call TimerStart(.UnpauseTimer, REVIVE_PAUSE_TIME_NONASAP, false, function User.UnpauseUserCB)
                 endif
-			/*
-			if .Team.DefaultGameMode == Teams_GAMEMODE_STANDARD or .Team.DefaultGameMode == Teams_GAMEMODE_STANDARD_PAUSED then
-				call this.SwitchGameModes(Teams_GAMEMODE_STANDARD, x, y)
-			*/
+			elseif .Team.DefaultGameMode == Teams_GAMEMODE_PLATFORMING_PAUSED then
+				call TimerStart(.UnpauseTimer, REVIVE_PAUSE_TIME_NONASAP, false, function User.UnpauseUserCB)
             /*
             elseif .Team.DefaultGameMode == Teams_GAMEMODE_PLATFORMING then
                 call this.SwitchGameModes(Teams_GAMEMODE_PLATFORMING_PAUSED, x, y)
                 
-                call TimerStart(NewTimerEx(this), REVIVE_PAUSE_TIME_PLATFORMING, false, function User.UnpauseUserCB)
+                call TimerStart(.UnpauseTimer, REVIVE_PAUSE_TIME_PLATFORMING, false, function User.UnpauseUserCB)
             */
             else
                 call this.SwitchGameModes(.Team.DefaultGameMode, x, y)
-            endif
-            
-			/*
-            if .Team.DefaultGameMode != Teams_GAMEMODE_DEAD and .Team.DefaultGameMode != Teams_GAMEMODE_DYING then
-                set .IsAlive = true
-            endif
-			*/
+            endif            
         endif
         
 		//it's least jarring to call apply default cameras only when it's extremely important
