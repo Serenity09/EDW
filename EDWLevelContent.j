@@ -274,7 +274,7 @@ library EDWLevelContent requires SimpleList, Teams, Levels, EDWPatternSpawnDefin
 		set jtimber.AllOrders.last.next = jtimber.AllOrders.first
 		
 		//width 3 behavior diagonal cross
-		set pattern = LinePatternSpawn.create(LW1PatternSpawn1, 4, GetTerrainCenterpoint(-8320, -13055), 0, 3*TERRAIN_TILE_SIZE, TERRAIN_TILE_SIZE)
+		set pattern = LinePatternSpawn.createFromRect(LW1PatternSpawn1, 4, gg_rct_LW1_Generator1, TERRAIN_TILE_SIZE)
 		set pattern.Data = ICETROLL
 		set sg = SimpleGenerator.create(pattern, 2., 270, 21)
 		call sg.SetMoveSpeed(150.)
@@ -295,14 +295,14 @@ library EDWLevelContent requires SimpleList, Teams, Levels, EDWPatternSpawnDefin
 		call l.AddStartable(RespawningGateway.CreateFromVectors(RFIRE, vector2.createFromRect(gg_rct_Region_487), vector2.createFromRect(gg_rct_Region_482), 5*60))
 		
 		//width 4 behavior A spawn
-		set pattern = LinePatternSpawn.create(W4APatternSpawn, 5, GetTerrainCenterpoint(-6784, -15742), 0, 4*TERRAIN_TILE_SIZE, TERRAIN_TILE_SIZE)
+		set pattern = LinePatternSpawn.createFromRect(W4APatternSpawn, 5, gg_rct_LW1_Generator2, TERRAIN_TILE_SIZE)
 		set pattern.CycleVariations = 3
 		set sg = SimpleGenerator.create(pattern, 1.8, 90, 22)
 		call sg.SetMoveSpeed(175.)
 		call l.AddStartable(sg)
 		
 		//width 3 behavior A spawn
-		set pattern = LinePatternSpawn.create(W3APatternSpawn, 3, GetTerrainCenterpoint(-6153, -12924), 0, 3*TERRAIN_TILE_SIZE, TERRAIN_TILE_SIZE)
+		set pattern = LinePatternSpawn.createFromRect(W3APatternSpawn, 3, gg_rct_LW1_Generator3, TERRAIN_TILE_SIZE)
 		set pattern.CycleVariations = 4
 		set sg = SimpleGenerator.create(pattern, 1.4, 270, 16)
 		call sg.SetMoveSpeed(350.)
