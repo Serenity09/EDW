@@ -745,7 +745,7 @@ public struct MazingTeam
 		if continueOffset != 0 then
 			if .ContinueCount + continueOffset < 0 then
 				call .PrintMessage("Your team ran out of lives!")
-				call .OnLevel.SwitchLevels(this, Levels_Level(Levels_DOORS_LEVEL_ID))
+				call .OnLevel.SwitchLevels(this, Levels_Level(DOORS_LEVEL_ID))
 				
 				//if not in 99 and none mode, reset continues
 				if RewardMode == 0 or RewardMode == 1 then //standard mode or challenge mode
@@ -961,7 +961,7 @@ public struct MazingTeam
             set mt.RecentlyTransferred = false //used to make sure triggers aren't run multiple times / no interrupts
             set mt.LastTransferTime = -50 //has never transferred
             //set mt.DefaultGameMode = GAMEMODE_STANDARD
-            set mt.OnLevel = Levels_TEMP_LEVEL_ID
+            set mt.OnLevel = TEMP_LEVEL_ID
             set mt.OnCheckpoint = -1
             set mt.Revive = Rect(0, 0, 200, 200)
             call mt.MoveRevive(gg_rct_IntroWorld_R1)

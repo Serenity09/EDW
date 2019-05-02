@@ -1,4 +1,4 @@
-library MazerGlobals initializer Init requires GameGlobalConstants, ContinueGlobals, LevelGlobals, PlayerUtils, SimpleList
+library MazerGlobals initializer Init requires GameGlobalConstants, ContinueGlobals, PlayerUtils, SimpleList
     globals
         //group of the playing mazers
         group MazersGroup = CreateGroup()

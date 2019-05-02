@@ -19,7 +19,7 @@ public function onPlayerUnitDiedCB takes nothing returns nothing
 		call user.SwitchGameModesDefaultLocation(Teams_GAMEMODE_DEAD)
 		
 		//can't lose continues in starting worlds
-		if (level == Levels_INTRO_LEVEL_ID or level == Levels_DOORS_LEVEL_ID) then
+		if (level == INTRO_LEVEL_ID or level == DOORS_LEVEL_ID) then
 			//debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "no continues lost")
 			//respawn players immediately if on intro or doors levels, regardless of other settings
 			

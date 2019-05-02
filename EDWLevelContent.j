@@ -1,4 +1,4 @@
-library EDWLevelContent requires SimpleList, Teams, Levels, EDWPatternSpawnDefinitions, Collectible, FastLoad
+library EDWLevelContent requires LevelIDGlobals, SimpleList, Teams, Levels, EDWPatternSpawnDefinitions, Collectible, FastLoad
 	private function FinishedIntro takes nothing returns nothing
 		call TrackGameTime()
 	endfunction
@@ -9,7 +9,7 @@ library EDWLevelContent requires SimpleList, Teams, Levels, EDWPatternSpawnDefin
 		//call DisplayTextToPlayer(Player(0), 0, 0, "Default all collectibles resolved by active team " + I2S(activeTeam))
 		
 		if activeTeam.Team.OnLevel.NextLevel == 0 then
-			set nextLevel = Levels_Level(Levels_DOORS_LEVEL_ID)
+			set nextLevel = Levels_Level(DOORS_LEVEL_ID)
 		else
 			set nextLevel = activeTeam.Team.OnLevel.NextLevel
 		endif
@@ -43,10 +43,9 @@ library EDWLevelContent requires SimpleList, Teams, Levels, EDWPatternSpawnDefin
 		local FastLoad fastLoad
 		
 		local integer i
-		local real overclockFactor
 		
 		//FIRST LEVEL INITS HARD CODED
-        set l = Levels_Level.create(1, "???", 0, 0, "IntroWorldLevelStart", "IntroWorldLevelStop", gg_rct_IntroWorld_R1, gg_rct_IntroWorld_Vision, gg_rct_IntroWorld_End, 0)
+        set l = Levels_Level.create(INTRO_LEVEL_ID, "???", 0, 0, "IntroWorldLevelStart", "IntroWorldLevelStop", gg_rct_IntroWorld_R1, gg_rct_IntroWorld_Vision, gg_rct_IntroWorld_End, 0)
         //1st level is now handled in EDWVisualVote vote finish callback
         //call l.StartLevel() //just start it, intro level vision handled by Reveal Intro World... i like the reveal effect
         call l.AddCheckpoint(gg_rct_IntroWorldCP_1_1, gg_rct_IntroWorld_R2)
@@ -80,7 +79,7 @@ library EDWLevelContent requires SimpleList, Teams, Levels, EDWPatternSpawnDefin
         //.setPreload(trigger preload, trigger unload) returns Levels_Level
         //ICE WORLD TECH / ENVY WORLD
         //LEVEL 1
-        set l = Levels_Level.create(3, "Cruise Control", 3, 2, "IW1Start", "IW1Stop", gg_rct_IWR_1_1, gg_rct_IW1_Vision, gg_rct_IW1_End, 0)
+        set l = Levels_Level.create(IW1_LEVEL_ID, "Cruise Control", 3, 2, "IW1Start", "IW1Stop", gg_rct_IWR_1_1, gg_rct_IW1_Vision, gg_rct_IW1_End, 0)
         call l.AddCheckpoint(gg_rct_IWCP_1_1, gg_rct_IWR_1_2)
         
         call l.AddStartable(MortarNTarget.create(SMLMORT, SMLTARG, Player(8), gg_rct_IW1_Mortar1 , gg_rct_IW1_Target1))
@@ -95,7 +94,7 @@ library EDWLevelContent requires SimpleList, Teams, Levels, EDWPatternSpawnDefin
         //call l.SetStartables(startables)
         
         //LEVEL 2
-        set l = Levels_Level.create(10, "Jesus on Wheel", 4, 3, "IW2Start", "IW2Stop", gg_rct_IWR_2_1, gg_rct_IW2_Vision, gg_rct_IW2_End, l)
+        set l = Levels_Level.create(IW2_LEVEL_ID, "Jesus on Wheel", 4, 3, "IW2Start", "IW2Stop", gg_rct_IWR_2_1, gg_rct_IW2_Vision, gg_rct_IW2_End, l)
         call l.AddCheckpoint(gg_rct_IWCP_2_1, gg_rct_IWR_2_2)
         call l.AddCheckpoint(gg_rct_IWCP_2_2, gg_rct_IWR_2_3)
         
@@ -115,7 +114,7 @@ library EDWLevelContent requires SimpleList, Teams, Levels, EDWPatternSpawnDefin
         call l.AddStartable(MortarNTarget.create(SMLMORT, SMLTARG, Player(8), gg_rct_IW2_Mortar2 , gg_rct_IW2_Target2))
         
         //LEVEL 3
-        set l = Levels_Level.create(17, "Illidan Goes Skiing", 6, 6, "IW3Start", "IW3Stop", gg_rct_IWR_3_1, gg_rct_IW3_Vision, gg_rct_IW3_End, l)
+        set l = Levels_Level.create(IW3_LEVEL_ID, "Illidan Goes Skiing", 6, 6, "IW3Start", "IW3Stop", gg_rct_IWR_3_1, gg_rct_IW3_Vision, gg_rct_IW3_End, l)
         call l.AddCheckpoint(gg_rct_IWCP_3_1, gg_rct_IWR_3_2)
         call l.AddCheckpoint(gg_rct_IWCP_3_2, gg_rct_IWR_3_3)
         call l.AddCheckpoint(gg_rct_IWCP_3_3, gg_rct_IWR_3_4)
@@ -131,7 +130,7 @@ library EDWLevelContent requires SimpleList, Teams, Levels, EDWPatternSpawnDefin
         call l.AddStartable(DrunkWalker_DrunkWalkerSpawn.create(gg_rct_IW3_Drunks_2, 8, 6, LGUARD, 16))
         
         //LEVEL 4
-        set l = Levels_Level.create(24, "Hard Angles", 6, 4, "IW4Start", "IW4Stop", gg_rct_IWR_4_1, gg_rct_IW4_Vision, gg_rct_IW4_End, l)
+        set l = Levels_Level.create(IW4_LEVEL_ID, "Hard Angles", 6, 4, "IW4Start", "IW4Stop", gg_rct_IWR_4_1, gg_rct_IW4_Vision, gg_rct_IW4_End, l)
         set cp = l.AddCheckpoint(gg_rct_IWCP_4_1, gg_rct_IWR_4_2)
         set cp.DefaultColor = KEY_RED
         call l.AddCheckpoint(gg_rct_IWCP_4_2, gg_rct_IWR_4_3)
@@ -173,7 +172,7 @@ library EDWLevelContent requires SimpleList, Teams, Levels, EDWPatternSpawnDefin
                 
         //LEVEL 5
 		if CONFIGURATION_PROFILE != RELEASE then
-			set l = Levels_Level.create(31, "Frosty", 4, 4, "IW5Start", "IW5Stop", gg_rct_IWR_5_1, gg_rct_IW5_Vision, gg_rct_IW5_End, l)
+			set l = Levels_Level.create(IW5_LEVEL_ID, "Frosty", 4, 4, "IW5Start", "IW5Stop", gg_rct_IWR_5_1, gg_rct_IW5_Vision, gg_rct_IW5_End, l)
 			call l.AddCheckpoint(gg_rct_IWCP_5_1, gg_rct_IWR_5_2)
 						
 			call l.AddStartable(DrunkWalker_DrunkWalkerSpawn.create(gg_rct_IW5_Drunks_3, 2, 2, GUARD, 12))
@@ -183,7 +182,7 @@ library EDWLevelContent requires SimpleList, Teams, Levels, EDWPatternSpawnDefin
 		
 		//ICE WORLD B
 		//LEVEL 1
-		set l = Levels_Level.create(4, "Training Wheels", 4, 2, "IWB1Start", "IWB1Stop", gg_rct_EIWR_1_1, gg_rct_EIW1_Vision, gg_rct_EIW1_End, 0)
+		set l = Levels_Level.create(IWB1_LEVEL_ID, "Training Wheels", 4, 2, "IWB1Start", "IWB1Stop", gg_rct_EIWR_1_1, gg_rct_EIW1_Vision, gg_rct_EIW1_End, 0)
         call l.AddCheckpoint(gg_rct_EIWCP_1_1, gg_rct_EIWR_1_2)
 				
 		set rg = RelayGenerator.create(-5948, 10836, 4, 4, 270, 0, 2., RelayGeneratorRandomSpawn, 1)
@@ -196,7 +195,7 @@ library EDWLevelContent requires SimpleList, Teams, Levels, EDWPatternSpawnDefin
 				
 		//LAND WORLD A
 		//LEVEL 1
-		set l = Levels_Level.create(5, "Need For Speed", 3, 3, "LW1Start", "LW1Stop", gg_rct_LWR_1_1, gg_rct_LW1_Vision, gg_rct_LW1_End, 0)
+		set l = Levels_Level.create(LW1_LEVEL_ID, "Need For Speed", 3, 3, "LW1Start", "LW1Stop", gg_rct_LWR_1_1, gg_rct_LW1_Vision, gg_rct_LW1_End, 0)
         call l.AddCheckpoint(gg_rct_LWCP_1_1, gg_rct_LWR_1_2)
 		
 		//outer sync group
@@ -414,7 +413,7 @@ library EDWLevelContent requires SimpleList, Teams, Levels, EDWPatternSpawnDefin
 		
 		
 		//LEVEL 2
-		set l = Levels_Level.create(12, "Monday Commute", 3, 3, "LW2Start", "LW2Stop", gg_rct_LWR_2_1, gg_rct_LW2_Vision, gg_rct_LW2_End, l)
+		set l = Levels_Level.create(LW2_LEVEL_ID, "Monday Commute", 3, 3, "LW2Start", "LW2Stop", gg_rct_LWR_2_1, gg_rct_LW2_Vision, gg_rct_LW2_End, l)
         //call l.AddCheckpoint(gg_rct_LWCP_2_1, gg_rct_LWR_2_2)
 		
 		//collect all 3 to beat the level
@@ -430,13 +429,10 @@ library EDWLevelContent requires SimpleList, Teams, Levels, EDWPatternSpawnDefin
 		set collectible = Collectible.createFromPoint(FROG, 0, gg_rct_LW2_C3, 270)
 		set collectible.ReturnToCheckpoint = true
 		call collectibleSet.AddCollectible(collectible)
-		
-		set overclockFactor = 1.
-		
+				
 		set fastLoad = FastLoad.create(l, l.Checkpoints.first.value, 10., 3.)
 		
 		set rg = RelayGenerator.createFromPoint(gg_rct_LW2_RG1, 4, 4, 180, -2, 2., RelayGeneratorFirstSpawn, 1)
-		call rg.SetOverclockFactor(overclockFactor)
 		set rg.SpawnPattern.Data = ICETROLL
 		call rg.AddTurnSimple(90, 7)
 		call rg.AddTurnSimple(180, 1)
@@ -447,7 +443,6 @@ library EDWLevelContent requires SimpleList, Teams, Levels, EDWPatternSpawnDefin
 		call fastLoad.AddRelayGenerator(rg)
 		
 		set rg = RelayGenerator.createFromPoint(gg_rct_LW2_RG2, 4, 4, 180, -1, 2., RelayGeneratorFirstSpawn, 1)
-		call rg.SetOverclockFactor(overclockFactor)
 		set rg.SpawnPattern.Data = ICETROLL
 		call rg.AddTurnSimple(90, 20)
 		call rg.AddTurnSimple(180, 12)
@@ -458,7 +453,6 @@ library EDWLevelContent requires SimpleList, Teams, Levels, EDWPatternSpawnDefin
 		call fastLoad.AddRelayGenerator(rg)
 		
 		set rg = RelayGenerator.createFromPoint(gg_rct_LW2_RG3, 5, 5, 180, -2, 2., RelayGeneratorFirstSpawn, 1)
-		call rg.SetOverclockFactor(overclockFactor)
 		set rg.SpawnPattern.Data = ICETROLL
 		call rg.AddTurnSimple(270, 16)
 		call rg.AddTurnSimple(0, 13)
@@ -470,7 +464,7 @@ library EDWLevelContent requires SimpleList, Teams, Levels, EDWPatternSpawnDefin
 		
         //PRIDE WORLD / PLATFORMING
         //LEVEL 1
-        set l = Levels_Level.create(9, "Perspective", 4, 2, "PW1Start", "PW1Stop", gg_rct_PWR_1_1, gg_rct_PW1_Vision, gg_rct_PW1_End, 0) //gg_rct_PW1_Vision
+        set l = Levels_Level.create(PW1_LEVEL_ID, "Perspective", 4, 2, "PW1Start", "PW1Stop", gg_rct_PWR_1_1, gg_rct_PW1_Vision, gg_rct_PW1_End, 0) //gg_rct_PW1_Vision
         set cp = l.AddCheckpoint(gg_rct_PWCP_1_1, gg_rct_PWR_1_2)
 		set cp.DefaultGameMode = Teams_GAMEMODE_PLATFORMING
 		
@@ -487,7 +481,7 @@ library EDWLevelContent requires SimpleList, Teams, Levels, EDWPatternSpawnDefin
         
         
         //LEVEL 2
-        set l = Levels_Level.create(16, "Palindrome", 5, 5, "PW2Start", "PW2Stop", gg_rct_PWR_2_1, gg_rct_PW2_Vision, gg_rct_PW2_End, l) //gg_rct_PW1_Vision
+        set l = Levels_Level.create(PW2_LEVEL_ID, "Palindrome", 5, 5, "PW2Start", "PW2Stop", gg_rct_PWR_2_1, gg_rct_PW2_Vision, gg_rct_PW2_End, l) //gg_rct_PW1_Vision
         //set cpID = l.AddCheckpoint(gg_rct_PWCP_2_1, gg_rct_PWR_2_2)
         call l.AddCheckpoint(gg_rct_PWCP_2_2, gg_rct_PWR_2_3)
         
@@ -538,7 +532,7 @@ library EDWLevelContent requires SimpleList, Teams, Levels, EDWPatternSpawnDefin
         call l.AddStartable(rg)
         
         //LEVEL 3
-        set l = Levels_Level.create(23, "Playground", 5, 4, "PW3Start", "PW3Stop", gg_rct_PWR_3_1, gg_rct_PW3_Vision, gg_rct_PW3_End, l) //gg_rct_PW1_Vision
+        set l = Levels_Level.create(PW3_LEVEL_ID, "Playground", 5, 4, "PW3Start", "PW3Stop", gg_rct_PWR_3_1, gg_rct_PW3_Vision, gg_rct_PW3_End, l) //gg_rct_PW1_Vision
         set Checkpoint(l.Checkpoints.first.value).DefaultGameMode = Teams_GAMEMODE_PLATFORMING
         
 		set cp = l.AddCheckpoint(gg_rct_PWCP_3_1, gg_rct_PWR_3_2)
@@ -631,7 +625,7 @@ library EDWLevelContent requires SimpleList, Teams, Levels, EDWPatternSpawnDefin
         
 		//LEVEL 4
 		if CONFIGURATION_PROFILE != RELEASE then
-			set l = Levels_Level.create(30, "Moon", 5, 4, "PW4Start", "PW4Stop", gg_rct_PWR_4_1, gg_rct_PW4_Vision, gg_rct_PW4_End, l) //gg_rct_PW1_Vision
+			set l = Levels_Level.create(PW4_LEVEL_ID, "Moon", 5, 4, "PW4Start", "PW4Stop", gg_rct_PWR_4_1, gg_rct_PW4_Vision, gg_rct_PW4_End, l) //gg_rct_PW1_Vision
 			set Checkpoint(l.Checkpoints.first.value).DefaultGameMode = Teams_GAMEMODE_PLATFORMING
 			call l.AddLevelStartCB(Condition(function PW4TeamStart))
 			call l.AddLevelStopCB(Condition(function PW4TeamStop))
@@ -659,19 +653,18 @@ library EDWLevelContent requires SimpleList, Teams, Levels, EDWPatternSpawnDefin
 		endif
 		
         //Justine's Four Seasons
-		set l = Levels_Level.create(7, "Spring", 3, 2, "FourSeason1Start", "FourSeason1Stop", gg_rct_FSR_1_1, gg_rct_FS1_Vision, gg_rct_FS1_End, 0)
+		set l = Levels_Level.create(FS1_LEVEL_ID, "Spring", 3, 2, "FourSeason1Start", "FourSeason1Stop", gg_rct_FSR_1_1, gg_rct_FS1_Vision, gg_rct_FS1_End, 0)
 		
 		call l.AddCheckpoint(gg_rct_FSCP_1_1, gg_rct_FSR_1_2)
 		
 		call l.AddStartable(DrunkWalker_DrunkWalkerSpawn.create(gg_rct_FS_1_Drunks, 3, 4, LGUARD, 16))
-	
-        //LANDWORLD / LUSTWORLD
-        
+	        
 		
-        //Testing world / secret world
-        set l = Levels_Level.create(66, "Test Platforming", 0, 0, null, null, gg_rct_SWR_1_1, null, null, 0)
+        //Testing worlds
+        set l = Levels_Level.create(TESTDH_LEVEL_ID, "Test Standard", 0, 0, null, null, gg_rct_SWR_2_1, null, null, 0)
+		
+		set l = Levels_Level.create(TESTP_LEVEL_ID, "Test Platforming", 0, 0, null, null, gg_rct_SWR_1_1, null, null, 0)
         set Checkpoint(l.Checkpoints.first.value).DefaultGameMode = Teams_GAMEMODE_PLATFORMING
         
-        set l = Levels_Level.create(67, "Test Standard", 0, 0, null, null, gg_rct_SWR_2_1, null, null, l)
 	endfunction
 endlibrary

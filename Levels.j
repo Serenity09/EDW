@@ -1,8 +1,5 @@
-library Levels requires SimpleList, Teams, GameModesGlobals, Cinema, User, IStartable
+library Levels requires SimpleList, Teams, GameModesGlobals, LevelIDGlobals, EDW, Cinema, User, IStartable
     globals
-        public constant integer     INTRO_LEVEL_ID = 1
-        public constant integer     DOORS_LEVEL_ID = 2
-        public constant integer     TEMP_LEVEL_ID = 1000
 		
 		constant integer WorldCount = 7
 		private rect array DoorRects[WorldCount]
