@@ -124,17 +124,19 @@ function DebugRelay takes integer pID returns nothing
 	call DisplayTextToForce(bj_FORCE_PLAYER[pID], "Relay ID: " + I2S(relay))
 	
 	if relay != 0 then
-		call relay.CachedTurnDestinations.print(pID)
+		static if DEBUG_MODE then
+			call relay.CachedTurnDestinations.print(pID)
 		
-		call DisplayTextToForce(bj_FORCE_PLAYER[pID], "Printing destinations")
-		set curNode = relay.CachedTurnDestinations.first
-		set curIndex = 0
-		loop
-		exitwhen curNode == 0
-			call DisplayTextToForce(bj_FORCE_PLAYER[pID], "Destination index: " + I2S(curIndex) + ", destination: " + vector2(curNode.value).toString())
-		set curNode = curNode.next
-		set curIndex = curIndex + 1
-		endloop
+			call DisplayTextToForce(bj_FORCE_PLAYER[pID], "Printing destinations")
+			set curNode = relay.CachedTurnDestinations.first
+			set curIndex = 0
+			loop
+			exitwhen curNode == 0
+				call DisplayTextToForce(bj_FORCE_PLAYER[pID], "Destination index: " + I2S(curIndex) + ", destination: " + vector2(curNode.value).toString())
+			set curNode = curNode.next
+			set curIndex = curIndex + 1
+			endloop
+		endif
 	endif
 endfunction
 
