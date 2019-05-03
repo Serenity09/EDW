@@ -58,6 +58,7 @@ library PlayerUtils requires SimpleList, GameGlobalConstants
             set ACTIVE_HUMAN_PLAYERS_COUNT=ACTIVE_HUMAN_PLAYERS_COUNT-1
             
             call PlayerList.remove(pID)
+			set FirstPlayer = PlayerList.first
         endfunction
         
     //=======================================================================

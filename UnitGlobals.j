@@ -15,6 +15,8 @@ library UnitGlobals
 		
 		constant integer CLAWMAN = 'e00U'
         
+		constant integer TANK = 'h001'
+		
         //attacking units
         //should be filtered out (not collide)
         constant integer ROGTHT = 'n000'

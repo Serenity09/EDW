@@ -1,10 +1,9 @@
-library MazingCollision initializer Init requires MazerGlobals, DummyCaster
+library MazingCollision initializer Init requires MazerGlobals, DummyCaster, PlayerUtils, SimpleList
 
 globals
     //private timer tc
     private unit CollidingMazer
     private group NearbyUnits = CreateGroup()
-    private boolean array IsNotColliding[NumberPlayers]
     private unit array LastCollidedUnit[NumberPlayers]
     
     private constant real COLLISION_TIME = 1.0000
@@ -26,327 +25,21 @@ globals
     constant real CollisMedRadius = 80.00
     constant real CollisLrgRadius = 135.00
     
-    private constant real COLLISION_RADIUS_BUFFER = 5
-    private constant real COLLISION_SMALL_TIMESTEP = .075
-    private constant real COLLISION_MEDIUM_TIMESTEP = .15
-    private constant real COLLISION_LARGE_TIMESTEP = .25
+	private constant real COLLISION_TIMESTEP = .05
+		
+	private constant boolean DEBUG_RECTANGLE_COLLISION = false
+	private constant boolean DEBUG_UNMATCHED_ID = false
 endglobals
 
 private function AfterCollisionCB takes nothing returns nothing
     local timer t = GetExpiredTimer()
     local integer pID = GetTimerData(t)
     
-    set IsNotColliding[pID] = true
     set LastCollidedUnit[pID] = null
     
     call ReleaseTimer(t)
     set t = null
 endfunction
-
-private function CollisionSmallIter takes nothing returns nothing
-    local unit mu = GetEnumUnit()
-    local unit cu
-    
-    local integer pID = GetPlayerId(GetOwningPlayer(mu))
-    
-    local integer cuTypeID
-    
-    local real dx
-    local real dy
-    local real dist
-    
-    call GroupEnumUnitsInRange(NearbyUnits, GetUnitX(mu), GetUnitY(mu), CollisSmlRadius + COLLISION_RADIUS_BUFFER, GreenOrBrown)
-    
-    set cu = FirstOfGroup(NearbyUnits)
-    loop
-    exitwhen cu == null
-        //check that we aren't currently colliding with a unit or that this is a different unit entirely
-        if IsNotColliding[pID] or LastCollidedUnit[pID] != cu then
-            set cuTypeID = GetUnitTypeId(cu)
-        
-            //computes the distance between the mazer and the colliding unit
-            set dx = GetUnitX(mu) - GetUnitX(cu)
-            set dy = GetUnitY(mu) - GetUnitY(cu)
-            set dist = SquareRoot(dx * dx + dy * dy)
-            
-            if dist < 39 and (cuTypeID == GUARD or cuTypeID == LGUARD) and not MobImmune[pID] then
-                call CollisionDeathEffect(mu)
-                
-                call User(pID).SwitchGameModesDefaultLocation(Teams_GAMEMODE_DYING)
-                set mu = null
-                set cu = null
-                return
-            elseif cuTypeID == WWWISP and dist < 40 then
-                call CollisionDeathEffect(mu)
-                
-                call User(pID).SwitchGameModesDefaultLocation(Teams_GAMEMODE_DYING)
-                set mu = null
-                set cu = null
-                return
-            elseif cuTypeID == WWSKUL and dist < 40 then
-                call CollisionDeathEffect(mu)
-                
-                call User(pID).SwitchGameModesDefaultLocation(Teams_GAMEMODE_DYING)
-                set mu = null
-                set cu = null
-                return
-            elseif cuTypeID == REGRET and dist < 42 then
-                call CollisionDeathEffect(mu)
-                
-                call User(pID).SwitchGameModesDefaultLocation(Teams_GAMEMODE_DYING)
-                set mu = null
-                set cu = null
-                return
-            endif
-        endif
-        
-    call GroupRemoveUnit(NearbyUnits, cu)
-    set cu = FirstOfGroup(NearbyUnits)
-    endloop
-    
-    call GroupClear(NearbyUnits)
-        
-    set mu = null
-    set cu = null
-endfunction
-
-public function CollisionSmallIterInit takes nothing returns nothing
-    //Group PlayingMazers is declared and set in trigger SetGlobals in Initialization folder
-    call ForGroup(MazersGroup, function CollisionSmallIter)
-endfunction
-
-private function CollisionMediumIter takes nothing returns nothing
-    local unit mu = GetEnumUnit()
-    local unit cu
-    
-    local integer pID = GetPlayerId(GetOwningPlayer(mu))
-    
-    local integer cuTypeID
-    
-    local real dx
-    local real dy
-    local real dist
-    
-    call GroupEnumUnitsInRange(NearbyUnits, GetUnitX(mu), GetUnitY(mu), CollisMedRadius + COLLISION_RADIUS_BUFFER, GreenOrBrown)
-    
-    set cu = FirstOfGroup(NearbyUnits)
-    loop
-    exitwhen cu == null
-        //check that we aren't currently colliding with a unit or that this is a different unit entirely
-        if IsNotColliding[pID] or LastCollidedUnit[pID] != cu then
-            set cuTypeID = GetUnitTypeId(cu)
-        
-            //computes the distance between the mazer and the colliding unit
-            set dx = GetUnitX(mu) - GetUnitX(cu)
-            set dy = GetUnitY(mu) - GetUnitY(cu)
-            set dist = SquareRoot(dx*dx + dy*dy)
-        
-            if cuTypeID == LMEMORY and dist < 57 then
-                call CollisionDeathEffect(mu)
-                
-                call User(pID).SwitchGameModesDefaultLocation(Teams_GAMEMODE_DYING)
-                set mu = null
-                set cu = null
-                return
-            elseif cuTypeID == ROGTHT and dist < 55 then
-                call CollisionDeathEffect(mu)
-                
-                call User(pID).SwitchGameModesDefaultLocation(Teams_GAMEMODE_DYING)
-                set mu = null
-                set cu = null
-                return
-            elseif cuTypeID == ICETROLL and dist < 58 and not MobImmune[pID] then  //TERRAIN_QUADRANT_SIZE - 4
-                call CollisionDeathEffect(mu)
-                
-                call User(pID).SwitchGameModesDefaultLocation(Teams_GAMEMODE_DYING)
-                set mu = null
-                set cu = null
-                return
-			elseif cuTypeID == SPIRITWALKER and dist < 60 and not MobImmune[pID] then  //TERRAIN_QUADRANT_SIZE - 4
-                call CollisionDeathEffect(mu)
-                
-                call User(pID).SwitchGameModesDefaultLocation(Teams_GAMEMODE_DYING)
-                set mu = null
-                set cu = null
-                return
-            elseif InWorldPowerup.IsPowerupUnit(cuTypeID) and dist < 65 then
-                set IsNotColliding[pID] = false
-                set LastCollidedUnit[pID] = cu
-                //debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "Colliding with powerup")
-                call InWorldPowerup.GetFromUnit(cu).OnUserAcquire(pID)
-                
-                call TimerStart(NewTimerEx(pID), COLLISION_TIME, false, function AfterCollisionCB)
-                //debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "Finished colliding")
-                set mu = null
-                set cu = null
-                return
-			elseif cuTypeID == CLAWMAN and dist < 68 and not MobImmune[pID] then
-				call CollisionDeathEffect(mu)
-                
-                call User(pID).SwitchGameModesDefaultLocation(Teams_GAMEMODE_DYING)
-                set mu = null
-                set cu = null
-                return
-            //keys and doors
-            elseif dist < 80 and cuTypeID == RFIRE then
-                if (MazerColor[pID] != KEY_RED) then
-                    call User(pID).SwitchGameModesDefaultLocation(Teams_GAMEMODE_DYING)
-                else
-                    set IsNotColliding[pID] = false
-                    set LastCollidedUnit[pID] = cu
-                    
-                    call TimerStart(NewTimerEx(pID), COLLISION_TIME, false, function AfterCollisionCB)
-                endif
-                
-                set mu = null
-                set cu = null
-                return
-            elseif dist < 65 and cuTypeID == RKEY then
-                set IsNotColliding[pID] = false
-                set LastCollidedUnit[pID] = cu
-                
-                call RShieldEffect(mu)
-                set MazerColor[pID] = KEY_RED
-                call SetUnitVertexColor(mu, 255, 0, 0, 255)
-                
-                call TimerStart(NewTimerEx(pID), COLLISION_TIME, false, function AfterCollisionCB)
-                
-                set mu = null
-                set cu = null
-                return
-            elseif dist < 80 and cuTypeID == BFIRE then
-                if (MazerColor[pID] != KEY_BLUE) then
-                    call User(pID).SwitchGameModesDefaultLocation(Teams_GAMEMODE_DYING)
-                else
-                    set IsNotColliding[pID] = false
-                    set LastCollidedUnit[pID] = cu
-                    
-                    call TimerStart(NewTimerEx(pID), COLLISION_TIME, false, function AfterCollisionCB)
-                endif
-                
-                set mu = null
-                set cu = null
-                return
-            elseif dist < 65 and cuTypeID == BKEY then
-                set IsNotColliding[pID] = false
-                set LastCollidedUnit[pID] = cu
-                
-                call BShieldEffect(mu)
-                set MazerColor[pID] = KEY_BLUE
-                call SetUnitVertexColor(mu, 0, 0, 255, 255)
-                
-                call TimerStart(NewTimerEx(pID), COLLISION_TIME, false, function AfterCollisionCB)
-                
-                set mu = null
-                set cu = null
-                return
-            elseif dist < 80 and cuTypeID == GFIRE then
-                if (MazerColor[pID] != KEY_GREEN) then
-                    call User(pID).SwitchGameModesDefaultLocation(Teams_GAMEMODE_DYING)
-                else
-                    set IsNotColliding[pID] = false
-                    set LastCollidedUnit[pID] = cu
-                    
-                    call TimerStart(NewTimerEx(pID), COLLISION_TIME, false, function AfterCollisionCB)
-                endif
-                set mu = null
-                set cu = null
-                return
-            elseif dist < 65 and cuTypeID == GKEY then
-                set IsNotColliding[pID] = false
-                set LastCollidedUnit[pID] = cu
-                
-                call GShieldEffect(mu)
-                set MazerColor[pID] = KEY_GREEN
-                call SetUnitVertexColor(mu, 0, 255, 0, 255)
-                
-                call TimerStart(NewTimerEx(pID), COLLISION_TIME, false, function AfterCollisionCB)
-                
-                set mu = null
-                set cu = null
-                return
-            endif
-        endif
-        
-    call GroupRemoveUnit(NearbyUnits, cu)
-    set cu = FirstOfGroup(NearbyUnits)
-    endloop
-    
-    call GroupClear(NearbyUnits)
-        
-    set mu = null
-    set cu = null
-endfunction
-
-public function CollisionMediumIterInit takes nothing returns nothing
-    //Group PlayingMazers is declared and set in trigger SetGlobals in Initialization folder
-    call ForGroup(MazersGroup, function CollisionMediumIter)
-endfunction
-
-private function CollisionLargeIter takes nothing returns nothing
-    local unit mu = GetEnumUnit()
-    local unit cu
-    
-    local integer pID = GetPlayerId(GetOwningPlayer(mu))
-    
-    local integer cuTypeID
-    
-    local real dx
-    local real dy
-    local real dist
-    
-    call GroupEnumUnitsInRange(NearbyUnits, GetUnitX(mu), GetUnitY(mu), CollisLrgRadius + COLLISION_RADIUS_BUFFER, GreenOrBrown)
-    
-    set cu = FirstOfGroup(NearbyUnits)
-    loop
-    exitwhen cu == null
-        //check that we aren't currently colliding with a unit or that this is a different unit entirely
-        if IsNotColliding[pID] or LastCollidedUnit[pID] != cu then
-            set cuTypeID = GetUnitTypeId(cu)
-        
-            //computes the distance between the mazer and the colliding unit
-            set dx = GetUnitX(mu) - GetUnitX(cu)
-            set dy = GetUnitY(mu) - GetUnitY(cu)
-            set dist = SquareRoot(dx*dx + dy*dy)
-        
-            if cuTypeID == GUILT and dist < 120 then
-                call CollisionDeathEffect(mu)
-                
-                call User(pID).SwitchGameModesDefaultLocation(Teams_GAMEMODE_DYING)
-                set mu = null
-                set cu = null
-                return
-            elseif cuTypeID == KEYR and dist < 125 then
-                set IsNotColliding[pID] = false
-                set LastCollidedUnit[pID] = cu
-                
-                call ShieldRemoveEffect(mu)
-                set MazerColor[pID] = KEY_NONE
-                call SetUnitVertexColor(mu, 255, 255, 255, 255)
-                
-                call TimerStart(NewTimerEx(pID), COLLISION_TIME, false, function AfterCollisionCB)
-                
-                set mu = null
-                set cu = null
-                return
-            endif
-        endif
-        
-    call GroupRemoveUnit(NearbyUnits, cu)
-    set cu = FirstOfGroup(NearbyUnits)
-    endloop
-    
-    call GroupClear(NearbyUnits)
-        
-    set mu = null
-    set cu = null
-endfunction
-
-public function CollisionLargeIterInit takes nothing returns nothing
-    //Group PlayingMazers is declared and set in trigger SetGlobals in Initialization folder
-    call ForGroup(MazersGroup, function CollisionLargeIter)
-endfunction
-
 private function AfterMazerInvulnCB takes nothing returns nothing
     local timer t = GetExpiredTimer()
     local integer pID = GetTimerData(t)
@@ -357,7 +50,6 @@ private function AfterMazerInvulnCB takes nothing returns nothing
 	call ReleaseTimer(t)
     set t = null
 endfunction
-
 private function AfterMazerReviveCB takes nothing returns nothing
     local timer t = GetExpiredTimer()
     local integer pID = GetTimerData(t)
@@ -376,58 +68,247 @@ private function AfterMazerReviveCB takes nothing returns nothing
     set t = null
 endfunction
 
-private function P2PCollisionIter takes nothing returns nothing
-    local unit mu = CollidingMazer
-    local unit cu = GetEnumUnit()
-    
-    local integer pID = GetPlayerId(GetOwningPlayer(mu))
-    
-    local integer cuID = GetUnitTypeId(cu)
-    local integer cuPID = GetPlayerId(GetOwningPlayer(cu))
-    
-    //computes the distance between the mazer and the colliding unit
-    //local real dx = GetUnitX(mu) - GetUnitX(cu)
-    //local real dy = GetUnitY(mu) - GetUnitY(cu)
-    //local real dist = SquareRoot(dx * dx + dy * dy)
-    
-    //only thing is revive beacon, so just use the max collis size
-    //if cuID == TEAM_REVIVE_UNIT_ID and dist < 90 then
-    if cuID == TEAM_REVIVE_UNIT_ID then        
-        //colliding mazer will always be in standard gamemode because this collision loop only checks that group
-        //currently you will revive anyone whose circle you hit, this may change how you play
-        if CanReviveOthers[pID] and User(pID).GameMode == Teams_GAMEMODE_STANDARD then            
-            //revive unit at position of mazer to avoid reviving in an illegal position
-            call User(cuPID).SwitchGameModes(Teams_GAMEMODE_STANDARD_PAUSED, GetUnitX(mu), GetUnitY(mu))
-            call SetDefaultCameraForPlayer(cuPID, .5)
-            
-            call TimerStart(NewTimerEx(cuPID), P2P_REVIVE_PAUSE_TIME, false, function AfterMazerReviveCB)
-        else
-            //debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "Non standard unit inside standard collision")
-        endif
-        
-        set mu = null
-        set cu = null
-        return
-    endif
-    
-    set mu = null
-    set cu = null
-endfunction
 
-private function CollisionP2PIter takes nothing returns nothing
-    local unit u = GetEnumUnit()
-    
-    call GroupEnumUnitsInRange(NearbyUnits, GetUnitX(u), GetUnitY(u), P2P_MAX_COLLISION_SIZE, PlayerOwned)
-    set CollidingMazer = u
-    call ForGroup(NearbyUnits, function P2PCollisionIter)
-    call GroupClear(NearbyUnits)
-    
-    set u = null
-endfunction
+//! textmacro IfInAxisRect takes WIDTH, HEIGHT
+	if cuX - $WIDTH$ <= dx and cuX + $WIDTH$ >= dx and cuY - $HEIGHT$ <= dy and cuY + $HEIGHT$ >= dy then
+//! endtextmacro
+//! textmacro IfInAxisRectEx takes LWIDTH, RWIDTH, BHEIGHT, THEIGHT
+	if cuX - $LWIDTH$ <= dx and cuX + $RWIDTH$ >= dx and cuY - $BHEIGHT$ <= dy and cuY + $THEIGHT$ >= dy then
+//! endtextmacro
 
-public function CollisionP2PIterInit takes nothing returns nothing
-    //Group PlayingMazers is declared and set in trigger SetGlobals in Initialization folder
-    call ForGroup(MazersGroup, function CollisionP2PIter)
+private function CollisionIteration takes nothing returns nothing
+	local SimpleList_ListNode curUserNode = PlayerUtils_FirstPlayer
+	
+	//all collision
+	local real muX
+	local real muY
+	
+	local unit cu
+    local integer cuTypeID
+	local real cuX
+	local real cuY
+	
+	local real dx
+    local real dy
+	
+	//circle collision
+    local real dist
+	
+	//rect collision
+	local real cosA
+	local real sinA
+	
+	loop
+	exitwhen curUserNode == 0
+		set muX = GetUnitX(User(curUserNode.value).ActiveUnit)
+		set muY = GetUnitY(User(curUserNode.value).ActiveUnit)
+		call GroupEnumUnitsInRange(NearbyUnits, muX, muY, CollisMaxRadius, null)
+		
+		loop
+		set cu = FirstOfGroup(NearbyUnits)
+		exitwhen cu == null
+			if LastCollidedUnit[curUserNode.value] != cu and (User(curUserNode.value).GameMode == Teams_GAMEMODE_STANDARD or User(curUserNode.value).GameMode == Teams_GAMEMODE_PLATFORMING) then
+				set cuTypeID = GetUnitTypeId(cu)
+				set cuX = GetUnitX(cu)
+				set cuY = GetUnitY(cu)
+				
+				//filter unit type IDs that appear in EDW but do not collide
+				if cuTypeID != MAZER and cuTypeID != FROG and cuTypeID != SMLTARG and cuTypeID != BLACKHOLE then
+					//get collision geometry type
+					//the geometry type could be cached by indexing all collideable units and running the type comparison once on index... consider doing this as rect type list grows beyond 5-7 (cuts runtime performance to two array lookups and a single int equality comparison, but also adds overhead of indexing all units whereas currently only a few are)
+					if cuTypeID == TANK then
+						//*********************
+						//RECTANGULAR COLLISION
+						//*********************
+						set dx = (360. - GetUnitFacing(cu)) * bj_DEGTORAD
+						set cosA = Cos(dx)
+						set sinA = Sin(dx)
+						set dx = cosA * (muX - cuX) - sinA * (muY - cuY) + cuX
+						set dy = sinA * (muX - cuX) + cosA * (muY - cuY) + cuY
+						
+						static if DEBUG_RECTANGLE_COLLISION then
+							call DisplayTextToForce(bj_FORCE_PLAYER[0], "Active unit x: " + R2S(muX) + ", y: " + R2S(muY))
+							call DisplayTextToForce(bj_FORCE_PLAYER[0], "Rotated x: " + R2S(dx) + ", y: " + R2S(dy))
+							call DisplayTextToForce(bj_FORCE_PLAYER[0], "Facing angle: " + R2S(GetUnitFacing(cu)))
+						endif
+						
+						if cuTypeID == TANK then
+							//! runtextmacro IfInAxisRectEx("65.", "115.", "65.", "65.")
+								debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "In tank")
+								
+							endif
+						endif
+					else
+						//******************
+						//CIRCULAR COLLISION
+						//******************
+						set dx = cuX - muX
+						set dy = cuY - muY
+						set dist = SquareRoot(dx*dx + dy*dy)
+						
+						if cuTypeID == GUARD or cuTypeID == LGUARD then
+							if not MobImmune[curUserNode.value] and dist < 39 then
+								call CollisionDeathEffect(User(curUserNode.value).ActiveUnit)
+								
+								call User(curUserNode.value).SwitchGameModesDefaultLocation(Teams_GAMEMODE_DYING)
+							endif
+						elseif cuTypeID == WWWISP then
+							if dist < 40 then
+								call CollisionDeathEffect(User(curUserNode.value).ActiveUnit)
+								
+								call User(curUserNode.value).SwitchGameModesDefaultLocation(Teams_GAMEMODE_DYING)
+							endif
+						elseif cuTypeID == WWSKUL then
+							if dist < 40 then
+								call CollisionDeathEffect(User(curUserNode.value).ActiveUnit)
+								
+								call User(curUserNode.value).SwitchGameModesDefaultLocation(Teams_GAMEMODE_DYING)
+							endif
+						elseif cuTypeID == REGRET then
+							if dist < 42 then
+								call CollisionDeathEffect(User(curUserNode.value).ActiveUnit)
+								
+								call User(curUserNode.value).SwitchGameModesDefaultLocation(Teams_GAMEMODE_DYING)
+							endif
+						elseif cuTypeID == LMEMORY then
+							if dist < 57 then
+								call CollisionDeathEffect(User(curUserNode.value).ActiveUnit)
+								
+								call User(curUserNode.value).SwitchGameModesDefaultLocation(Teams_GAMEMODE_DYING)
+							endif
+						elseif cuTypeID == ROGTHT then
+							if dist < 55 then
+								call CollisionDeathEffect(User(curUserNode.value).ActiveUnit)
+								
+								call User(curUserNode.value).SwitchGameModesDefaultLocation(Teams_GAMEMODE_DYING)
+							endif
+						elseif cuTypeID == ICETROLL then
+							if dist < 58 and not MobImmune[curUserNode.value] then  //TERRAIN_QUADRANT_SIZE - 4
+								call CollisionDeathEffect(User(curUserNode.value).ActiveUnit)
+								
+								call User(curUserNode.value).SwitchGameModesDefaultLocation(Teams_GAMEMODE_DYING)
+							endif
+						elseif cuTypeID == SPIRITWALKER then
+							if dist < 60 and not MobImmune[curUserNode.value] then  //TERRAIN_QUADRANT_SIZE - 4
+								call CollisionDeathEffect(User(curUserNode.value).ActiveUnit)
+								
+								call User(curUserNode.value).SwitchGameModesDefaultLocation(Teams_GAMEMODE_DYING)
+							endif
+						elseif InWorldPowerup.IsPowerupUnit(cuTypeID) then
+							if dist < 65 then
+								set LastCollidedUnit[curUserNode.value] = cu
+								//debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "Colliding with powerup")
+								call InWorldPowerup.GetFromUnit(cu).OnUserAcquire(curUserNode.value)
+								
+								call TimerStart(NewTimerEx(curUserNode.value), COLLISION_TIME, false, function AfterCollisionCB)
+								//debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "Finished colliding")
+							endif
+						elseif cuTypeID == CLAWMAN then
+							if dist < 68 and not MobImmune[curUserNode.value] then
+								call CollisionDeathEffect(User(curUserNode.value).ActiveUnit)
+								
+								call User(curUserNode.value).SwitchGameModesDefaultLocation(Teams_GAMEMODE_DYING)
+							endif
+						//keys and doors
+						elseif cuTypeID == RFIRE then
+							if dist < 80 then
+								if (MazerColor[curUserNode.value] != KEY_RED) then
+									call User(curUserNode.value).SwitchGameModesDefaultLocation(Teams_GAMEMODE_DYING)
+								else
+									set LastCollidedUnit[curUserNode.value] = cu
+									
+									call TimerStart(NewTimerEx(curUserNode.value), COLLISION_TIME, false, function AfterCollisionCB)
+								endif
+							endif
+						elseif cuTypeID == RKEY then
+							if dist < 65 then
+								set LastCollidedUnit[curUserNode.value] = cu
+								
+								call RShieldEffect(User(curUserNode.value).ActiveUnit)
+								set MazerColor[curUserNode.value] = KEY_RED
+								call SetUnitVertexColor(User(curUserNode.value).ActiveUnit, 255, 0, 0, 255)
+								
+								call TimerStart(NewTimerEx(curUserNode.value), COLLISION_TIME, false, function AfterCollisionCB)
+							endif
+						elseif cuTypeID == BFIRE then
+							if dist < 80 then
+								if (MazerColor[curUserNode.value] != KEY_BLUE) then
+									call User(curUserNode.value).SwitchGameModesDefaultLocation(Teams_GAMEMODE_DYING)
+								else
+									set LastCollidedUnit[curUserNode.value] = cu
+									
+									call TimerStart(NewTimerEx(curUserNode.value), COLLISION_TIME, false, function AfterCollisionCB)
+								endif
+							endif
+						elseif cuTypeID == BKEY then
+							if dist < 65 then
+								set LastCollidedUnit[curUserNode.value] = cu
+								
+								call BShieldEffect(User(curUserNode.value).ActiveUnit)
+								set MazerColor[curUserNode.value] = KEY_BLUE
+								call SetUnitVertexColor(User(curUserNode.value).ActiveUnit, 0, 0, 255, 255)
+								
+								call TimerStart(NewTimerEx(curUserNode.value), COLLISION_TIME, false, function AfterCollisionCB)
+							endif
+						elseif cuTypeID == GFIRE then
+							if dist < 80 then
+								if (MazerColor[curUserNode.value] != KEY_GREEN) then
+									call User(curUserNode.value).SwitchGameModesDefaultLocation(Teams_GAMEMODE_DYING)
+								else
+									set LastCollidedUnit[curUserNode.value] = cu
+									
+									call TimerStart(NewTimerEx(curUserNode.value), COLLISION_TIME, false, function AfterCollisionCB)
+								endif
+							endif
+						elseif cuTypeID == GKEY then
+							if dist < 65 then
+								set LastCollidedUnit[curUserNode.value] = cu
+								
+								call GShieldEffect(User(curUserNode.value).ActiveUnit)
+								set MazerColor[curUserNode.value] = KEY_GREEN
+								call SetUnitVertexColor(User(curUserNode.value).ActiveUnit, 0, 255, 0, 255)
+								
+								call TimerStart(NewTimerEx(curUserNode.value), COLLISION_TIME, false, function AfterCollisionCB)
+							endif
+						elseif cuTypeID == TEAM_REVIVE_UNIT_ID then
+							if dist < 90 then        
+								//currently you will revive anyone whose circle you hit, this may change how you play
+								if CanReviveOthers[curUserNode.value] then
+									//revive unit at position of mazer to avoid reviving in an illegal position
+									call User(GetPlayerId(GetOwningPlayer(cu))).SwitchGameModes(Teams_GAMEMODE_STANDARD_PAUSED, GetUnitX(User(curUserNode.value).ActiveUnit), GetUnitY(User(curUserNode.value).ActiveUnit))
+									call SetDefaultCameraForPlayer(GetPlayerId(GetOwningPlayer(cu)), .5)
+									
+									call TimerStart(NewTimerEx(GetPlayerId(GetOwningPlayer(cu))), P2P_REVIVE_PAUSE_TIME, false, function AfterMazerReviveCB)
+								endif
+							endif
+						elseif cuTypeID == GUILT then
+							if dist < 120 then
+								call CollisionDeathEffect(User(curUserNode.value).ActiveUnit)
+								
+								call User(curUserNode.value).SwitchGameModesDefaultLocation(Teams_GAMEMODE_DYING)
+							endif
+						elseif cuTypeID == KEYR then
+							if dist < 125 then
+								set LastCollidedUnit[curUserNode.value] = cu
+								
+								call ShieldRemoveEffect(User(curUserNode.value).ActiveUnit)
+								set MazerColor[curUserNode.value] = KEY_NONE
+								call SetUnitVertexColor(User(curUserNode.value).ActiveUnit, 255, 255, 255, 255)
+								
+								call TimerStart(NewTimerEx(curUserNode.value), COLLISION_TIME, false, function AfterCollisionCB)
+							endif
+							static if DEBUG_UNMATCHED_ID then
+								else
+									call DisplayTextToForce(bj_FORCE_PLAYER[0], "Unmatched unit type ID: " + I2S(cuTypeID) + ", distance: " + R2S(dist))
+							endif
+						endif
+					endif
+				endif
+			endif
+		call GroupRemoveUnit(NearbyUnits, cu)
+		endloop
+	set curUserNode = curUserNode.next
+	endloop
 endfunction
 
 //===========================================================================
@@ -435,10 +316,7 @@ endfunction
 private function Init takes nothing returns nothing
     //set tc = CreateTimer()
     //call TimerStart(tc, TIMESTEP, true, function CollisionIterInit)
-    call TimerStart(CreateTimer(), COLLISION_SMALL_TIMESTEP, true, function CollisionSmallIterInit)
-    call TimerStart(CreateTimer(), COLLISION_MEDIUM_TIMESTEP, true, function CollisionMediumIterInit)
-    call TimerStart(CreateTimer(), COLLISION_LARGE_TIMESTEP, true, function CollisionLargeIterInit)
-    call TimerStart(CreateTimer(), P2P_TIMESTEP, true, function CollisionP2PIterInit)
+    call TimerStart(CreateTimer(), COLLISION_TIMESTEP, true, function CollisionIteration)
 endfunction
 
 endlibrary
