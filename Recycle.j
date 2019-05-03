@@ -202,6 +202,8 @@ library Recycle requires UnitGlobals, DisposableUnit
 			call thistype.create(SPIRITWALKER, 0, Player(10)).Preload(10)
 			call thistype.create(CLAWMAN, 0, Player(10)).Preload(10)
 			
+			call thistype.create(TANK, 0, Player(10)).Preload(15)
+			
             call thistype.create(GRAVITY, 0, Player(10)).Preload(3)
 			
 			call thistype.create(BOUNCER, 0, Player(10)).Preload(10)

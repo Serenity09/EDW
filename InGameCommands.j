@@ -251,6 +251,10 @@ function ParseCommand takes nothing returns nothing
 		elseif msg == "-overclock" or cmd == "overclock" or cmd == "clock" then
 			call DisplayTextToForce(bj_FORCE_PLAYER[pID], "Overclocking relay for player: " + I2S(pID) + ", val: " + R2S(val))
 			call OverclockRelays(pID, val)
+		elseif cmd == "rotate" or cmd == "rot" then
+			set unitgroup = CreateGroup()
+			call GroupEnumUnitsSelected(unitgroup, Player(pID), null)
+			call SetUnitFacing(FirstOfGroup(unitgroup), val)
 		elseif cmd == "testpocean" or cmd == "tpo" then
 			call team.MoveRevive(gg_rct_Region_380)
 			set team.DefaultGameMode = Teams_GAMEMODE_PLATFORMING
