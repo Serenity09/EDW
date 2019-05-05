@@ -1,4 +1,4 @@
-library Platformer requires ListModule, PlatformerGlobals, PlatformerOcean, PlatformerIce, PlatformerProfile, PlatformerPropertyEquation, PlatformingCollision, ComplexTerrainPathing, StandardGameLoop, UnitWrapper, TerrainGlobals
+library Platformer requires ListModule, PlatformerGlobals, PlatformerOcean, PlatformerIce, PlatformerProfile, PlatformerPropertyEquation, ComplexTerrainPathing, StandardGameLoop, UnitWrapper, TerrainGlobals
 
 globals
     private constant integer KEY_UP     = 2
@@ -3118,8 +3118,6 @@ endglobals
                     call TimerStart(.GameloopTimer, PlatformerGlobals_GAMELOOP_TIMESTEP, true, function Platformer.GameloopListIteration)
                     call TimerStart(.TerrainloopTimer, PlatformerGlobals_TERRAINLOOP_TIMESTEP, true, function Platformer.TerrainloopListIteration)
                     call TimerStart(.CameraTimer, CAMERA_APPLY_TIMESTEP, true, function Platformer.ApplyAllCameras)
-					
-                    call TimerStart(PlatformingCollision_CollisionTimer, PLATFORMING_COLLISION_TIMEOUT, true, function PlatformingCollision_CollisionIterInit)
                 endif
                 
                 call SetUnitPosition(.Unit, x, y)
@@ -3163,8 +3161,6 @@ endglobals
                     call PauseTimer(.GameloopTimer)
                     call PauseTimer(.TerrainloopTimer)
 					call PauseTimer(.CameraTimer)
-                    
-                    call PauseTimer(PlatformingCollision_CollisionTimer)
                 endif
                 
                 call User(.PID).ResetDefaultCamera()

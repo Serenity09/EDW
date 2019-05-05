@@ -1,4 +1,4 @@
-library Levels requires SimpleList, Teams, GameModesGlobals, LevelIDGlobals, EDW, Cinema, User, IStartable
+library Levels requires SimpleList, Teams, GameModesGlobals, LevelIDGlobals, Cinema, User, IStartable
     globals
 		
 		constant integer WorldCount = 7
@@ -22,6 +22,8 @@ library Levels requires SimpleList, Teams, GameModesGlobals, LevelIDGlobals, EDW
 		Levels_Level EventPreviousLevel
 		
 		Checkpoint EventCheckpoint
+		
+		private constant real DEFAULT_MAX_COLLISION_SIZE = 137.
     endglobals
     
     struct Checkpoint extends array
@@ -77,6 +79,8 @@ library Levels requires SimpleList, Teams, GameModesGlobals, LevelIDGlobals, EDW
 		private Event OnLevelStart
 		private Event OnLevelStop
 		private Event OnCheckpointChange
+		
+		public real MaxCollisionSize
 		
 		//private static Event OnLevelChange
 		//private static Event OnCheckpointChange
@@ -628,6 +632,7 @@ library Levels requires SimpleList, Teams, GameModesGlobals, LevelIDGlobals, EDW
             //use the checkpoint schema for the first checkpoint. region enter event is handled separately, so use null for the region
             call new.AddCheckpoint(null, startspawn)
             
+			set new.MaxCollisionSize = DEFAULT_MAX_COLLISION_SIZE
 			set new.OnLevelStart = 0
 			set new.OnLevelStop = 0
 			set new.OnCheckpointChange = 0

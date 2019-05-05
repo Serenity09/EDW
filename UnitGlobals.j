@@ -16,6 +16,13 @@ library UnitGlobals
 		constant integer CLAWMAN = 'e00U'
         
 		constant integer TANK = 'h001'
+		constant integer TRUCK = 'h003'
+		constant integer FIRETRUCK = 'h005'
+		constant integer AMBULANCE = 'h006'
+		constant integer JEEP = 'h004'
+		constant integer PASSENGERCAR = 'h007'
+		constant integer CORVETTE = 'h002'
+		
 		
         //attacking units
         //should be filtered out (not collide)

@@ -414,7 +414,8 @@ library EDWLevelContent requires LevelIDGlobals, SimpleList, Teams, Levels, EDWP
 		
 		//LEVEL 2
 		set l = Levels_Level.create(LW2_LEVEL_ID, "Monday Commute", 3, 3, "LW2Start", "LW2Stop", gg_rct_LWR_2_1, gg_rct_LW2_Vision, gg_rct_LW2_End, l)
-        //call l.AddCheckpoint(gg_rct_LWCP_2_1, gg_rct_LWR_2_2)
+		set l.MaxCollisionSize = 300.
+		//call l.AddCheckpoint(gg_rct_LWCP_2_1, gg_rct_LWR_2_2)
 		
 		//collect all 3 to beat the level
 		set collectibleSet = CollectibleSet.create(l, DefaultCollectibleResolve)
@@ -482,7 +483,7 @@ library EDWLevelContent requires LevelIDGlobals, SimpleList, Teams, Levels, EDWP
         
         //LEVEL 2
         set l = Levels_Level.create(PW2_LEVEL_ID, "Palindrome", 5, 5, "PW2Start", "PW2Stop", gg_rct_PWR_2_1, gg_rct_PW2_Vision, gg_rct_PW2_End, l) //gg_rct_PW1_Vision
-        //set cpID = l.AddCheckpoint(gg_rct_PWCP_2_1, gg_rct_PWR_2_2)
+		//set cpID = l.AddCheckpoint(gg_rct_PWCP_2_1, gg_rct_PWR_2_2)
         call l.AddCheckpoint(gg_rct_PWCP_2_2, gg_rct_PWR_2_3)
         
 		set cp = l.AddCheckpoint(gg_rct_PWCP_2_3, gg_rct_PWR_2_4)
