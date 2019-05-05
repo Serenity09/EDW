@@ -151,51 +151,51 @@ private function CollisionIteration takes nothing returns nothing
 								endif
 							elseif cuTypeID == TRUCK then
 								//! runtextmacro IfInAxisRectEx("225.", "240.", "75.", "75.")
-									debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "In truck")
+									// debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "In truck")
 									//TODO special splat if in front
-									// call CollisionDeathEffect(User(curUserNode.value).ActiveUnit)
+									call CollisionDeathEffect(User(curUserNode.value).ActiveUnit)
 									
-									// call User(curUserNode.value).SwitchGameModesDefaultLocation(Teams_GAMEMODE_DYING)
+									call User(curUserNode.value).SwitchGameModesDefaultLocation(Teams_GAMEMODE_DYING)
 								endif
 							elseif cuTypeID == FIRETRUCK then
 								//! runtextmacro IfInAxisRectEx("240.", "215.", "75.", "75.")
-									debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "In firetruck")
+									// debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "In firetruck")
 									//TODO special splat if in front
-									// call CollisionDeathEffect(User(curUserNode.value).ActiveUnit)
+									call CollisionDeathEffect(User(curUserNode.value).ActiveUnit)
 									
-									// call User(curUserNode.value).SwitchGameModesDefaultLocation(Teams_GAMEMODE_DYING)
+									call User(curUserNode.value).SwitchGameModesDefaultLocation(Teams_GAMEMODE_DYING)
 								endif
 							elseif cuTypeID == AMBULANCE then
 								//! runtextmacro IfInAxisRectEx("240.", "175.", "80.", "80.")
-									debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "In ambulance")
+									// debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "In ambulance")
 									//TODO special splat if in front
-									// call CollisionDeathEffect(User(curUserNode.value).ActiveUnit)
+									call CollisionDeathEffect(User(curUserNode.value).ActiveUnit)
 									
-									// call User(curUserNode.value).SwitchGameModesDefaultLocation(Teams_GAMEMODE_DYING)
+									call User(curUserNode.value).SwitchGameModesDefaultLocation(Teams_GAMEMODE_DYING)
 								endif
 							elseif cuTypeID == JEEP then
 								//! runtextmacro IfInAxisRectEx("160.", "150.", "70.", "70.")
-									debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "In jeep")
+									// debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "In jeep")
 									//TODO special splat if in front
-									// call CollisionDeathEffect(User(curUserNode.value).ActiveUnit)
+									call CollisionDeathEffect(User(curUserNode.value).ActiveUnit)
 									
-									// call User(curUserNode.value).SwitchGameModesDefaultLocation(Teams_GAMEMODE_DYING)
+									call User(curUserNode.value).SwitchGameModesDefaultLocation(Teams_GAMEMODE_DYING)
 								endif
 							elseif cuTypeID == CORVETTE then
 								//! runtextmacro IfInAxisRectEx("140.", "140.", "66.", "66.")
-									debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "In vette")
+									// debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "In vette")
 									//TODO special splat if in front
-									// call CollisionDeathEffect(User(curUserNode.value).ActiveUnit)
+									call CollisionDeathEffect(User(curUserNode.value).ActiveUnit)
 									
-									// call User(curUserNode.value).SwitchGameModesDefaultLocation(Teams_GAMEMODE_DYING)
+									call User(curUserNode.value).SwitchGameModesDefaultLocation(Teams_GAMEMODE_DYING)
 								endif
 							elseif cuTypeID == PASSENGERCAR then
 								//! runtextmacro IfInAxisRectEx("150.", "140.", "60.", "60.")
-									debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "In car")
+									// debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "In car")
 									//TODO special splat if in front
-									// call CollisionDeathEffect(User(curUserNode.value).ActiveUnit)
+									call CollisionDeathEffect(User(curUserNode.value).ActiveUnit)
 									
-									// call User(curUserNode.value).SwitchGameModesDefaultLocation(Teams_GAMEMODE_DYING)
+									call User(curUserNode.value).SwitchGameModesDefaultLocation(Teams_GAMEMODE_DYING)
 								endif
 							endif
 						else
