@@ -137,10 +137,10 @@ private function CollisionIteration takes nothing returns nothing
 								call DisplayTextToForce(bj_FORCE_PLAYER[0], "Active unit x: " + R2S(muX) + ", y: " + R2S(muY))
 								call DisplayTextToForce(bj_FORCE_PLAYER[0], "Rotated x: " + R2S(dx) + ", y: " + R2S(dy))
 								call DisplayTextToForce(bj_FORCE_PLAYER[0], "Facing angle: " + R2S(GetUnitFacing(cu)))
+								
+								call DisplayTextToForce(bj_FORCE_PLAYER[0], "Diff x: " + R2S(cuX - dx) + ", y: " + R2S(cuY - dy))
 							endif
-							
-							call DisplayTextToForce(bj_FORCE_PLAYER[0], "Diff x: " + R2S(cuX - dx) + ", y: " + R2S(cuY - dy))
-							
+														
 							if cuTypeID == TANK then
 								//! runtextmacro IfInAxisRectEx("65.", "115.", "65.", "65.")
 									// debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "In tank")
@@ -150,7 +150,7 @@ private function CollisionIteration takes nothing returns nothing
 									call User(curUserNode.value).SwitchGameModesDefaultLocation(Teams_GAMEMODE_DYING)
 								endif
 							elseif cuTypeID == TRUCK then
-								//! runtextmacro IfInAxisRectEx("225.", "240.", "75.", "75.")
+								//! runtextmacro IfInAxisRectEx("205.", "215.", "68.", "68.")
 									// debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "In truck")
 									//TODO special splat if in front
 									call CollisionDeathEffect(User(curUserNode.value).ActiveUnit)
@@ -158,7 +158,7 @@ private function CollisionIteration takes nothing returns nothing
 									call User(curUserNode.value).SwitchGameModesDefaultLocation(Teams_GAMEMODE_DYING)
 								endif
 							elseif cuTypeID == FIRETRUCK then
-								//! runtextmacro IfInAxisRectEx("240.", "215.", "75.", "75.")
+								//! runtextmacro IfInAxisRectEx("215.", "195.", "68.", "68.")
 									// debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "In firetruck")
 									//TODO special splat if in front
 									call CollisionDeathEffect(User(curUserNode.value).ActiveUnit)
@@ -174,7 +174,7 @@ private function CollisionIteration takes nothing returns nothing
 									call User(curUserNode.value).SwitchGameModesDefaultLocation(Teams_GAMEMODE_DYING)
 								endif
 							elseif cuTypeID == JEEP then
-								//! runtextmacro IfInAxisRectEx("160.", "150.", "70.", "70.")
+								//! runtextmacro IfInAxisRectEx("145.", "135.", "64.", "64.")
 									// debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "In jeep")
 									//TODO special splat if in front
 									call CollisionDeathEffect(User(curUserNode.value).ActiveUnit)
@@ -182,7 +182,7 @@ private function CollisionIteration takes nothing returns nothing
 									call User(curUserNode.value).SwitchGameModesDefaultLocation(Teams_GAMEMODE_DYING)
 								endif
 							elseif cuTypeID == CORVETTE then
-								//! runtextmacro IfInAxisRectEx("140.", "140.", "66.", "66.")
+								//! runtextmacro IfInAxisRectEx("140.", "140.", "64.", "64.")
 									// debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "In vette")
 									//TODO special splat if in front
 									call CollisionDeathEffect(User(curUserNode.value).ActiveUnit)

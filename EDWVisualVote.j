@@ -1,4 +1,4 @@
-library EDWVisualVote requires VisualVote, ContinueGlobals, Teams, PlayerUtils, MazerGlobals, EDWPlayerStart
+library EDWVisualVote requires VisualVote, ContinueGlobals, Teams, PlayerUtils, MazerGlobals, EDWPlayerStart, Levels
     globals
         //public VisualVote_voteMenu MyMenu
         

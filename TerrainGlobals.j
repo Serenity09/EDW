@@ -15,7 +15,7 @@ library TerrainGlobals initializer initTerrainGlobals requires GameGlobalConstan
         constant integer RSNOW = 'Nsnr' //northrend rocky snow
         constant integer D_GRASS = 'Lgrd' //lordaron summer dark grass : fast speed boost
         constant integer GRASS = 'cLc1' //lordaeron summer grass (non-cliff) : medium speed boost
-        constant integer RUNEBRICKS = 'cIc2' //Icecrown Runes Bricks (non-cliff) : keeps the effect of last tile
+		constant integer ROAD = 'Nrck' //Northrend Rock (non-cliff): same as no effect, but is visually different
         
         constant integer NOEFFECT = 'Agrd' //Ashenvale Lumpy Grass : NO EFFECT
         
@@ -63,10 +63,10 @@ library TerrainGlobals initializer initTerrainGlobals requires GameGlobalConstan
     endglobals
     
     public function IsTerrainPathable takes integer ttype returns boolean
-        return ttype == DEATH or ttype == PATHABLE or ttype == OCEAN or ttype == PLATFORMING or ttype == VINES or ttype == RTILE or ttype == LEAVES or ttype == RUNEBRICKS
+        return ttype == DEATH or ttype == PATHABLE or ttype == OCEAN or ttype == PLATFORMING or ttype == VINES or ttype == RTILE or ttype == LEAVES
     endfunction
     public function IsTerrainUnpathable takes integer ttype returns boolean
-        return ttype == WALL or ttype == GRASS or ttype == DGRASS or ttype == FASTICE or ttype == SLOWICE or ttype == SAND or ttype == SNOW or ttype == RSNOW 
+        return ttype == WALL or ttype == GRASS or ttype == DGRASS or ttype == FASTICE or ttype == SLOWICE or ttype == SAND or ttype == SNOW or ttype == RSNOW or ttype == ROAD
     endfunction
     
     public function IsTerrainJumpable takes integer ttype returns boolean
@@ -74,13 +74,13 @@ library TerrainGlobals initializer initTerrainGlobals requires GameGlobalConstan
     endfunction
     
     public function IsTerrainWallJumpable takes integer ttype returns boolean
-        return ttype == WALL or ttype == RSNOW or ttype == GRASS or ttype == DGRASS or ttype == SLOWICE or ttype == FASTICE
+        return ttype == WALL or ttype == RSNOW or ttype == GRASS or ttype == DGRASS or ttype == SLOWICE or ttype == FASTICE or ttype == ROAD
     endfunction
 	//relevant to a strict subset of IsTerrainWallJumpable
+	//if the terrain is good footing then the platformer will immediately negate any Y velocity against their jump direction
 	public function IsTerrainGoodFooting takes integer ttype returns boolean
-		return ttype == WALL or ttype == RSNOW or ttype == GRASS or ttype == DGRASS
+		return ttype == WALL or ttype == RSNOW or ttype == GRASS or ttype == DGRASS or ttype == ROAD
 	endfunction
-    
     public function IsTerrainSoft takes integer ttype returns boolean
         return ttype == SAND or ttype == SNOW
     endfunction
@@ -101,7 +101,7 @@ library TerrainGlobals initializer initTerrainGlobals requires GameGlobalConstan
     */
 	
     public function IsTerrainDiagonal takes integer ttype returns boolean
-        return ttype == SLOWICE or ttype == FASTICE or ttype == GRASS or ttype == DGRASS
+        return ttype == SLOWICE or ttype == FASTICE or ttype == GRASS or ttype == DGRASS or ttype == ROAD
     endfunction
     public function IsTerrainSquare takes integer ttype returns boolean
         return ttype == WALL or ttype == SNOW or ttype == SAND or ttype == RSNOW

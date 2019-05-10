@@ -1,7 +1,7 @@
 library StandardGameLoop initializer init requires Effects, LavaDamage, IceMovement, SuperFastMovement, RSnowMovement, SnowMovement, SandMovement
 	globals
 		private constant real STD_TERRAIN_OFFSET = 32.
-		private constant real STD_DIAGONAL_TERRAIN_OFFSET = 32. * SIN_45
+		private constant real STD_DIAGONAL_TERRAIN_OFFSET = 32. * SIN_45 //32. * SIN_45 == 27, 32^2 = 2*a^2 -> a = 22.63
 		
 		public timer GameLoopTimer = CreateTimer()
 		private constant real TIMESTEP = .05
@@ -12,7 +12,7 @@ library StandardGameLoop initializer init requires Effects, LavaDamage, IceMovem
 		set $TPriority$ = 0
 	elseif $TType$ == LAVA then
 		set $TPriority$ = 1
-	elseif $TType$ == NOEFFECT then
+	elseif $TType$ == NOEFFECT or $TType$ == ROAD then
 		set $TPriority$ = 3
 	elseif $TType$ == GRASS or $TType$ == SNOW then
 		set $TPriority$ = 4
@@ -22,8 +22,6 @@ library StandardGameLoop initializer init requires Effects, LavaDamage, IceMovem
 		set $TPriority$ = 6
 	elseif $TType$ == FASTICE then
 		set $TPriority$ = 7
-	elseif $TType$ == RUNEBRICKS then
-		set $TPriority$ = 8
 	else //if $TType$ == VINES or $TType$ == SAND or $TType$ == RSNOW then
 		set $TPriority$ = 2
 	endif
@@ -318,14 +316,10 @@ function GameLoopNewTerrainAction takes nothing returns nothing
     if previousterrain == basicterrain then
         return
     else
-        //RUNEBRICKS keep the effect of whatever terrain type the unit was on previously
-        if (basicterrain == RUNEBRICKS) then
+        //ABYSS keep the effect of whatever terrain type the unit was on previously
+        if (basicterrain == ABYSS) then
             return
-        //ABYSS should be similar to RUNEBRICKS in code but completely different in function
-        elseif (basicterrain == ABYSS) then
-            return
-        //ABYSS/RUNEBRICKS is handled differently and should never be stored as the previous terrain
-        //the above checks makes sure that by this point basic terrain is neither ABYSS nor RUNEBRICKS
+        //ABYSS is handled differently and should never be stored as the previous terrain
         else
             //switch previous terrain types
             //set PreviousTerrainType2[i] = PreviousTerrainType[i]

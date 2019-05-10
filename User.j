@@ -227,9 +227,9 @@ struct User extends array
                 //check these values to see if they're on abyss, redo if so
                 set ttype = GetTerrainType(x, y)
                 if .Team.DefaultGameMode == Teams_GAMEMODE_STANDARD then
-                    exitwhen (ttype != ABYSS and ttype != LAVA and ttype != RUNEBRICKS)
+                    exitwhen (ttype != ABYSS and ttype != LAVA)
                 elseif .Team.DefaultGameMode == Teams_GAMEMODE_PLATFORMING then
-                    exitwhen (ttype != LAVA and ttype != LRGBRICKS and ttype != RUNEBRICKS and TerrainGlobals_IsTerrainPathable(ttype))
+                    exitwhen (ttype != LAVA and ttype != LRGBRICKS and TerrainGlobals_IsTerrainPathable(ttype))
                 endif				
             endloop
 			
@@ -354,7 +354,7 @@ struct User extends array
                 set ttype = GetTerrainType(x, y)
                 
                 if newGameMode == Teams_GAMEMODE_STANDARD or newGameMode == Teams_GAMEMODE_STANDARD_PAUSED then
-                    exitwhen (ttype != ABYSS and ttype != LAVA and ttype != LRGBRICKS and ttype != RUNEBRICKS)
+                    exitwhen (ttype != ABYSS and ttype != LAVA and ttype != LRGBRICKS)
                 elseif newGameMode == Teams_GAMEMODE_PLATFORMING or newGameMode == Teams_GAMEMODE_PLATFORMING_PAUSED then
                     exitwhen (ttype != LAVA and ttype != LRGBRICKS and TerrainGlobals_IsTerrainPathable(ttype))
                 else
@@ -559,17 +559,8 @@ struct User extends array
                 //moves the mazing unit
                 call SetUnitPosition(MazersArray[this], x, y)
             elseif newGameMode == Teams_GAMEMODE_PLATFORMING or newGameMode == Teams_GAMEMODE_PLATFORMING_PAUSED then
-                //call .Platformer.StartPlatforming(x, y)
                 call .Platformer.StopPlatforming()
                 call .Platformer.StartPlatforming(x, y)
-                
-                /*
-                set .Platformer.XPosition = x
-                set .Platformer.YPosition = y
-                set .Platformer.XVelocity = 0
-                set .Platformer.YVelocity = 0
-                call SetUnitPosition(.Platformer.Unit, x, y)
-                */
             endif
         endif
 		
