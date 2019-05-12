@@ -184,35 +184,52 @@ Demo of 2.5D world:
 [2018-12-27] (v15.6) Second online alpha test
 [2018-12-24] (v15.0) First online alpha test
 [/Tab]
-[Tab=Credits]Endless thanks to my partner, who's endured this map's development
+[Tab=Credits]Thanks to my partner, who's endured this map's development.
 
 Shout out to the old WC3 crew: Pat1487, Achilles.42, Mazemasta77, Amazin[G], FFSlayer, Olonavy, hlw_rocer, popartica., Eat_Bacon_Daily, marksoccer, monkeys-forever, DoughnutMuffin, God[A]nt69, Makshak
 To Pat1487 and Anitarf for level ideas and coding help
 
+Programming:
 Pat1487 - OG locust trick
 actboy168 - W3x2Lni (https://www.hiveworkshop.com/threads/w3x2lni-v2-4-6.305201/)
-Vexorian - vJASS, TimerUtils (http://www.wc3c.net/showthread.php?t=101322)
+Vexorian - TimerUtils (http://www.wc3c.net/showthread.php?t=101322)
 Anitarf - vector3 (http://www.wc3c.net/showthread.php?t=87027)
 Bribe - Table (https://www.hiveworkshop.com/threads/snippet-new-table.188084/)
 Alain.Mark - PlayerUtils
 Nestheasarus - Alloc, DummyCaster, Event, Order IDs (https://github.com/nestharus/JASS/tree/master/jass but, realistically, https://github.com/nestharus/JASS/tree/master/lua/wc3%20project/Sample/mapname/src/imports)
 TriggerHappy - PreventSave (https://www.hiveworkshop.com/threads/snippet-preventsave.158048/)
 
-MC ! - Blackhole Model (https://www.hiveworkshop.com/threads/blackhole.48038/#resource-20933)
+Terrain Art:
+MassiveMaster - Road (https://www.hiveworkshop.com/threads/north_rock-blp.143827/)
+
+3D Models:
+MC ! - Blackhole (https://www.hiveworkshop.com/threads/blackhole.48038/#resource-20933)
+Ket - Soviet Truck (https://www.hiveworkshop.com/threads/soviet-truck.220028/), Soviet Car (https://www.hiveworkshop.com/threads/soviet-car.219538/#resource-33052)
+skrab - Firetruck (https://www.hiveworkshop.com/threads/firetruck.112949/#resource-26401), Ambulance (https://www.hiveworkshop.com/threads/ambulance.112740/#resource-26389), Police Car (https://www.hiveworkshop.com/threads/police-car.112571/)
+SD_Ryoko - Corvette (https://www.hiveworkshop.com/threads/vette.47681/#resource-20459)
+Illidan(Evil)X - Jeep (https://www.hiveworkshop.com/threads/jeep.50462/#resource-23707)
+
+2D Art:
 Anonymous author - Anime Sunset loadscreen art (https://www.wallpapervortex.com/wallpaper-38651_anime_scenery_anime_sunset.html)
 
+Warcraft 3 Tools:
+Vexorian - vJASS compiler (http://www.wc3c.net/vexorian/jasshelpermanual.html)
 PipeDream, Vecorian, Cohadar, UMSWE team, Pitzermike, SFilip, Van Damm, Risc, ScorpioT1000, Mc!, Moyack, PurgeAndFire - JNGP World Editor v2.0
 MindWorx & the above - SharpCraft World Editor Extended
 Blizzard - Vanilla World Editor
+Shadow Daemon - BLP Lab (https://www.hiveworkshop.com/threads/blp-lab-v0-5-0.137599/)
+
 
 gameslayer001 - Platform Escape (influenced Platform/2D game mode and levels)
-Mech_1000 - Tricks & Traps (influenced goals for level design)
-nomorholywar - Into the Wild (influenced ice level design), Sliding Murlocs (influenced what I wanted to avoid)
+Mech_1000 - Tricks & Traps (influenced goals for level content)
+nomorholywar - Into the Wild (influenced ice level design), Sliding Murlocs (influenced direction)
 adamt - Maze (influenced land level design)
+Hasbro - Frogger (influenced land level designs)
 
 aznricepuff - The best guide to understanding vJASS's OOP design and intended usage (https://www.hiveworkshop.com/threads/vjass-oop-lesson.128236/#13)
 Nestheasarus - A guide to optimizing vJASS's syntactic sugar (where did you go)
 Codemonkey11 - A guide to scaling group enums in WC3's engine (https://www.hiveworkshop.com/threads/vjass-optimization-using-a-first-of-group-loop-for-enumeration.223140/)
+SD_Ryoko - A guide to creating and importing custom terrain tiles in WC3 (http://world-editor-tutorials.thehelper.net/tilesets.php)
 Jeff Pang - Online vanilla JASS documentation (http://jass.sourceforge.net/index.shtml)
 Dr Super Good - Too many small answers to list all, but among which are tips to generating random points (https://www.hiveworkshop.com/threads/get-evenly-weighted-random-point-in-rectangle.294547/), unit rotation mechanics (https://www.hiveworkshop.com/threads/unit-turning-mechanics.300224/), 
 -Manuel- - Fix to setting unit immobile/mobile (https://www.hiveworkshop.com/threads/prevent-movement.312061/#post-3321807)
