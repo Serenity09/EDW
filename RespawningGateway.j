@@ -1,7 +1,6 @@
 library RespawningGateway requires RespawningUnit
 globals
 	private constant real ACTIVATION_CHECK_TIMESTEP = .2
-	private constant real GATEWAY_RESPAWN_UPDATE_INTERVAL = 60.
 	private constant real REPSAWN_TEXTTAG_VERTICAL_OFFSET = 128.
 	private constant real RESPAWN_TEXTTAG_FONT_SIZE = 24.
 endglobals
@@ -15,30 +14,57 @@ struct RespawningGateway extends IStartable
 	private rect ActivationArea
 	private destructable ActivationDoodad
 	
-	private integer RespawnTime 	//in minutes
-	private integer RespawnTimeRemaining		//in minutes
+	private integer RespawnTime 	//in seconds
+	private integer RespawnTimeRemaining		//in seconds
 	private texttag RespawnTimeTag
 	
 	private static SimpleList_List ActiveGateways
 	private static timer ActiveGatewayTimer
 	
-	private method UpdateTimeRemainingDisplay takes nothing returns nothing
-		local string timeTagLabel = " minute"
-		
-		if .RespawnTimeRemaining == 1 then
-			call SetTextTagColor(.RespawnTimeTag, 255, 0, 0, 1)
+	//keeps respawn update interval consistent throughout respawn timeout
+	public method operator RespawnTimeout takes nothing returns integer
+		if .RespawnTime >= 180 then
+			return 60
+		elseif .RespawnTime >= 60 then
+			return 30
+		elseif .RespawnTime >= 30 then
+			return 15
+		elseif .RespawnTime >= 15 then
+			return 5
 		else
-			set timeTagLabel = timeTagLabel + "s"
+			return 1
+		endif
+	endmethod
+	
+	private method UpdateTimeRemainingDisplay takes nothing returns nothing
+		local string timeTagLabel
+		
+		if .RespawnTimeRemaining == .RespawnTimeout then
+			call SetTextTagColor(.RespawnTimeTag, 255, 0, 0, 1)
 		endif
 		
-		call SetTextTagText(.RespawnTimeTag, I2S(R2I(.RespawnTimeRemaining * GATEWAY_RESPAWN_UPDATE_INTERVAL / 60)) + timeTagLabel, TextTagSize2Height(RESPAWN_TEXTTAG_FONT_SIZE))
+		if .RespawnTimeRemaining >= 60 then
+			set timeTagLabel = I2S(R2I(.RespawnTimeRemaining / 60.)) + " minute"
+			
+			if R2I(.RespawnTimeRemaining / 60.) != 60 then
+				set timeTagLabel = timeTagLabel + "s"
+			endif
+		else
+			set timeTagLabel = I2S(.RespawnTimeRemaining) + " second"
+			
+			if .RespawnTimeRemaining != 1 then
+				set timeTagLabel = timeTagLabel + "s"
+			endif
+		endif
+		
+		call SetTextTagText(.RespawnTimeTag, timeTagLabel, TextTagSize2Height(RESPAWN_TEXTTAG_FONT_SIZE))
 	endmethod
 	
 	private static method OnGatewayRespawnTick takes nothing returns nothing
 		local timer t = GetExpiredTimer()
 		local thistype gateway = GetTimerData(t)
 		
-		set gateway.RespawnTimeRemaining = gateway.RespawnTimeRemaining - 1
+		set gateway.RespawnTimeRemaining = gateway.RespawnTimeRemaining - gateway.RespawnTimeout
 		call gateway.UpdateTimeRemainingDisplay()
 		
 		if gateway.RespawnTimeRemaining == 0 then
@@ -52,8 +78,6 @@ struct RespawningGateway extends IStartable
 			set gateway.RespawnTimeTag = null
 			
 			call ReleaseTimer(t)
-		else
-			call TimerStart(t, GATEWAY_RESPAWN_UPDATE_INTERVAL, false, function thistype.OnGatewayRespawnTick)
 		endif
 		
 		set t = null
@@ -93,7 +117,7 @@ struct RespawningGateway extends IStartable
 							
 							call thistype(curGateway.value).UpdateTimeRemainingDisplay()
 							
-							call TimerStart(NewTimerEx(curGateway.value), GATEWAY_RESPAWN_UPDATE_INTERVAL, false, function thistype.OnGatewayRespawnTick)
+							call TimerStart(NewTimerEx(curGateway.value), thistype(curGateway.value).RespawnTimeout, true, function thistype.OnGatewayRespawnTick)
 						endif
 					set curUser = curUser.next
 					endloop
@@ -122,7 +146,7 @@ struct RespawningGateway extends IStartable
 		endif
 	endmethod
 	
-	public static method create takes integer wallUnitID, real wallX, real wallY, real activationX, real activationY, real respawnTime returns thistype
+	public static method create takes integer wallUnitID, real wallX, real wallY, real activationX, real activationY, integer respawnTime returns thistype
 		local thistype new = thistype.allocate()
 		
 		set new.WallUnitID = wallUnitID
@@ -132,11 +156,12 @@ struct RespawningGateway extends IStartable
 		set new.ActivationDoodad = CreateDestructable(FOOT_SWITCH, activationX, activationY, 270., 1., 0)
 		
 		//set respawn time to the nearest number of update intervals for raw respawn time
-		set new.RespawnTime = R2I(respawnTime / GATEWAY_RESPAWN_UPDATE_INTERVAL + .5)
+		set new.RespawnTime = respawnTime
+		set new.RespawnTime = (new.RespawnTime / new.RespawnTimeout) * new.RespawnTimeout
 		
 		return new
 	endmethod
-	public static method CreateFromVectors takes integer wallUnitID, vector2 wallPosition, vector2 activationPosition, real respawnTime returns thistype
+	public static method CreateFromVectors takes integer wallUnitID, vector2 wallPosition, vector2 activationPosition, integer respawnTime returns thistype
 		return thistype.create(wallUnitID, wallPosition.x, wallPosition.y, activationPosition.x, activationPosition.y, respawnTime)
 	endmethod
 	
