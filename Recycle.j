@@ -7,6 +7,7 @@ library Recycle requires UnitGlobals, DisposableUnit
 		
 		public constant integer BUFFER_UNIT_COUNT = 5 //whenever an existing recycler calls make with 0 units in the collection, this is the number of units that will be simulataneously preloaded
 		private constant boolean HIDE_RECYCLED_UNITS = true
+		private constant boolean MOVE_WITH_SET_POSITION = false //SetUnitPosition seems to have issues with very large units?
 	endglobals
     
     /*
@@ -151,7 +152,12 @@ library Recycle requires UnitGlobals, DisposableUnit
 			static if HIDE_RECYCLED_UNITS then
 				call ShowUnit(u, true)
 			endif
-			call SetUnitPosition(u, x, y)
+			static if MOVE_WITH_SET_POSITION then
+				call SetUnitPosition(u, x, y)
+			else
+				call SetUnitX(u, x)
+				call SetUnitY(u, y)
+			endif
 			
 			return u
         endmethod
@@ -184,8 +190,12 @@ library Recycle requires UnitGlobals, DisposableUnit
 					call ShowUnit(u, false)
                 endif
 				
-                //this function is safe for recycling
-                call SetUnitPosition(u, SAFE_X + this.count, SAFE_Y + this*SAFE_TYPE_OFFSET + this.count)
+				static if MOVE_WITH_SET_POSITION then
+					call SetUnitPosition(u, SAFE_X + this.count, SAFE_Y + this*SAFE_TYPE_OFFSET + this.count)
+				else
+					call SetUnitX(u, SAFE_X + this.count)
+					call SetUnitY(u, SAFE_Y + this*SAFE_TYPE_OFFSET + this.count)
+				endif
             endif
         endmethod
 		
@@ -202,7 +212,14 @@ library Recycle requires UnitGlobals, DisposableUnit
 			call thistype.create(SPIRITWALKER, 0, Player(10)).Preload(10)
 			call thistype.create(CLAWMAN, 0, Player(10)).Preload(10)
 			
-			call thistype.create(TANK, 0, Player(10)).Preload(15)
+			call thistype.create(TANK, 0, Player(10)).Preload(5)
+			call thistype.create(TRUCK, 0, Player(10)).Preload(10)
+			call thistype.create(FIRETRUCK, 0, Player(10)).Preload(10)
+			call thistype.create(AMBULANCE, 0, Player(10)).Preload(10)
+			call thistype.create(CORVETTE, 0, Player(10)).Preload(10)
+			call thistype.create(PASSENGERCAR, 0, Player(10)).Preload(10)
+			call thistype.create(JEEP, 0, Player(10)).Preload(10)
+			call thistype.create(POLICECAR, 0, Player(10)).Preload(10)
 			
             call thistype.create(GRAVITY, 0, Player(10)).Preload(3)
 			

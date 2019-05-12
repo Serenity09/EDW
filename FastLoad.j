@@ -18,42 +18,17 @@ library FastLoad requires IStartable, SimpleList, RelayGenerator, SimpleGenerato
 		private SimpleList_List SimpleGenerators
 		
 		private static SimpleList_List ActiveLoaders
-		
-		public method AddRelayGenerator takes RelayGenerator generator returns nothing
-			if this.RelayGenerators == 0 then
-				set this.RelayGenerators = SimpleList_List.create()
-			endif
-			
-			call this.RelayGenerators.addEnd(generator)
-		endmethod
-		public method AddSimpleGenerator takes SimpleGenerator generator returns nothing
-			if this.SimpleGenerators == 0 then
-				set this.SimpleGenerators = SimpleList_List.create()
-			endif
-			
-			call this.SimpleGenerators.addEnd(generator)
-		endmethod
-		
+				
 		private method SetOverclockFactor takes real overclockFactor returns nothing
-			local SimpleList_ListNode curNode
+			local SimpleList_ListNode curNode = this.ParentLevel.Startables.first
 			
-			if this.RelayGenerators != 0 then
-				set curNode = this.RelayGenerators.first
-				loop
-				exitwhen curNode == 0
+			loop
+			exitwhen curNode == 0
+				if IStartable(curNode.value).getType() == RelayGenerator.typeid then					
 					call RelayGenerator(curNode.value).SetOverclockFactor(overclockFactor)
-				set curNode = curNode.next
-				endloop
-			endif
-			if this.SimpleGenerators != 0 then
-				set curNode = this.SimpleGenerators.first
-				loop
-				exitwhen curNode == 0
-					//TODO
-					//call SimpleGenerators(curNode.value).SetOverclockFactor(overclockFactor)
-				set curNode = curNode.next
-				endloop
-			endif
+				endif
+			set curNode = curNode.next
+			endloop	
 		endmethod
 		private static method OverclockLoadCB takes nothing returns nothing
 			local timer t = GetExpiredTimer()
@@ -110,9 +85,7 @@ library FastLoad requires IStartable, SimpleList, RelayGenerator, SimpleGenerato
 					
 					call this.SetOverclockFactor(this.OverclockFactor)
 					
-					if (this.RelayGenerators != 0 and this.RelayGenerators.count > 0) or (this.SimpleGenerators != 0 and this.SimpleGenerators.count > 0) then
-						call TimerStart(NewTimerEx(this), this.FastLoadTime, false, function thistype.OverclockLoadCB)
-					endif
+					call TimerStart(NewTimerEx(this), this.FastLoadTime, false, function thistype.OverclockLoadCB)
 				endif
 				
 				call thistype.ActiveLoaders.add(this)

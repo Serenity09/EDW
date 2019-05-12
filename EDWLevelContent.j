@@ -2,29 +2,11 @@ library EDWLevelContent requires LevelIDGlobals, SimpleList, Teams, Levels, EDWP
 	private function FinishedIntro takes nothing returns nothing
 		call TrackGameTime()
 	endfunction
-	
-	private function DefaultCollectibleResolve takes integer result, CollectibleTeam activeTeam returns integer
-		local Levels_Level nextLevel
 		
-		//call DisplayTextToPlayer(Player(0), 0, 0, "Default all collectibles resolved by active team " + I2S(activeTeam))
-		
-		if activeTeam.Team.OnLevel.NextLevel == 0 then
-			set nextLevel = Levels_Level(DOORS_LEVEL_ID)
-		else
-			set nextLevel = activeTeam.Team.OnLevel.NextLevel
-		endif
-		
-		call activeTeam.Team.OnLevel.SwitchLevels(activeTeam.Team, nextLevel)
-		
-		return 0
-	endfunction
-	
 	public function Initialize takes nothing returns nothing
 		local Levels_Level l
         local Checkpoint cp
-        
-        local SimpleList_List startables
-        
+                
         local BoundedSpoke boundedSpoke
         local Wheel wheel
         local BoundedWheel boundedWheel
@@ -91,7 +73,6 @@ library EDWLevelContent requires LevelIDGlobals, SimpleList, Teams, Levels, EDWP
         call l.AddStartable(MortarNTarget.create(SMLMORT, SMLTARG, Player(8), gg_rct_IW1_Mortar1 , gg_rct_IW1_Target1))
         call l.AddStartable(MortarNTarget.create(SMLMORT, SMLTARG, Player(8), gg_rct_IW1_Mortar2 , gg_rct_IW1_Target2))
         call l.AddStartable(MortarNTarget.create(SMLMORT, SMLTARG, Player(8), gg_rct_IW1_Mortar3 , gg_rct_IW1_Target3))
-        //call l.SetStartables(startables)
         
         //LEVEL 2
         set l = Levels_Level.create(IW2_LEVEL_ID, "Jesus on Wheel", 4, 3, "IW2Start", "IW2Stop", gg_rct_IWR_2_1, gg_rct_IW2_Vision, gg_rct_IW2_End, l)
@@ -198,270 +179,14 @@ library EDWLevelContent requires LevelIDGlobals, SimpleList, Teams, Levels, EDWP
 		set l = Levels_Level.create(LW1_LEVEL_ID, "Need For Speed", 3, 3, "LW1Start", "LW1Stop", gg_rct_LWR_1_1, gg_rct_LW1_Vision, gg_rct_LW1_End, 0)
         call l.AddCheckpoint(gg_rct_LWCP_1_1, gg_rct_LWR_1_2)
 		
-		//outer sync group
-		set nsync = SynchronizedGroup.create()
-		call l.AddStartable(nsync)
-		
-		set jtimber = nsync.AddUnit(CLAWMAN)
-		set jtimber.MoveSpeed = 200
-		call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_Rect_229))
-		call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_Rect_230))
-		call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_Rect_231))
-		call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_Rect_232))
-		set jtimber.AllOrders.last.next = jtimber.AllOrders.first
-		
-		set jtimber = nsync.AddUnit(CLAWMAN)
-		set jtimber.MoveSpeed = 200
-		call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_Rect_231))
-		call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_Rect_232))
-		call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_Rect_229))
-		call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_Rect_230))
-		set jtimber.AllOrders.last.next = jtimber.AllOrders.first
-		
-		set jtimber = nsync.AddUnit(CLAWMAN)
-		set jtimber.MoveSpeed = 200
-		call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_Region_246))
-		call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_Rect_232))
-		call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_Region_445))
-		call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_Region_247))
-		set jtimber.AllOrders.last.next = jtimber.AllOrders.first
-		
-		set jtimber = nsync.AddUnit(CLAWMAN)
-		set jtimber.MoveSpeed = 200
-		call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_Region_445))
-		call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_Region_247))
-		call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_Region_246))
-		call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_Rect_232))
-		set jtimber.AllOrders.last.next = jtimber.AllOrders.first
-		
-		//inner sync group A
-		set nsync = SynchronizedGroup.create()
-		call l.AddStartable(nsync)
-		set jtimber = nsync.AddUnit(ICETROLL)
-		set jtimber.MoveSpeed = 200
-		call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_Rect_233))
-		call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_Rect_234))
-		call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_Rect_235))
-		call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_Rect_236))
-		set jtimber.AllOrders.last.next = jtimber.AllOrders.first
-		
-		set jtimber = nsync.AddUnit(ICETROLL)
-		set jtimber.MoveSpeed = 200
-		call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_Rect_235))
-		call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_Rect_236))
-		call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_Rect_233))
-		call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_Rect_234))
-		set jtimber.AllOrders.last.next = jtimber.AllOrders.first
-		
-		//inner sync group B
-		set nsync = SynchronizedGroup.create()
-		call l.AddStartable(nsync)
-		set jtimber = nsync.AddUnit(ICETROLL)
-		set jtimber.MoveSpeed = 200
-		call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_Region_442))
-		call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_Region_441))
-		call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_Region_440))
-		call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_Region_439))
-		set jtimber.AllOrders.last.next = jtimber.AllOrders.first
-		
-		set jtimber = nsync.AddUnit(ICETROLL)
-		set jtimber.MoveSpeed = 200
-		call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_Region_440))
-		call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_Region_439))
-		call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_Region_442))
-		call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_Region_441))
-		set jtimber.AllOrders.last.next = jtimber.AllOrders.first
-		
-		//width 3 behavior diagonal cross
-		set pattern = LinePatternSpawn.createFromRect(LW1PatternSpawn1, 4, gg_rct_LW1_Generator1, TERRAIN_TILE_SIZE)
-		set pattern.Data = ICETROLL
-		set sg = SimpleGenerator.create(pattern, 2., 270, 21)
-		call sg.SetMoveSpeed(150.)
-		call l.AddStartable(sg)
-		
-		//gateways
-		call l.AddStartable(RespawningGateway.CreateFromVectors(RFIRE, vector2.createFromRect(gg_rct_Region_451), vector2.createFromRect(gg_rct_Region_446), 1*60))
-		call l.AddStartable(RespawningGateway.CreateFromVectors(RFIRE, vector2.createFromRect(gg_rct_Region_452), vector2.createFromRect(gg_rct_Region_447), 10*60))
-		call l.AddStartable(RespawningGateway.CreateFromVectors(BFIRE, vector2.createFromRect(gg_rct_Region_453), vector2.createFromRect(gg_rct_Region_448), 10*60))
-		call l.AddStartable(RespawningGateway.CreateFromVectors(RFIRE, vector2.createFromRect(gg_rct_Region_454), vector2.createFromRect(gg_rct_Region_449), 10*60))
-		call l.AddStartable(RespawningGateway.CreateFromVectors(BFIRE, vector2.createFromRect(gg_rct_Region_455), vector2.createFromRect(gg_rct_Region_450), 10*60))
-		
-		//********checkpoint 2
-		call l.AddStartable(RespawningGateway.CreateFromVectors(RFIRE, vector2.createFromRect(gg_rct_Region_483), vector2.createFromRect(gg_rct_Region_438), 5*60))
-		call l.AddStartable(RespawningGateway.CreateFromVectors(BFIRE, vector2.createFromRect(gg_rct_Region_484), vector2.createFromRect(gg_rct_Region_479), 5*60))
-		call l.AddStartable(RespawningGateway.CreateFromVectors(RFIRE, vector2.createFromRect(gg_rct_Region_485), vector2.createFromRect(gg_rct_Region_480), 5*60))
-		call l.AddStartable(RespawningGateway.CreateFromVectors(BFIRE, vector2.createFromRect(gg_rct_Region_486), vector2.createFromRect(gg_rct_Region_481), 5*60))
-		call l.AddStartable(RespawningGateway.CreateFromVectors(RFIRE, vector2.createFromRect(gg_rct_Region_487), vector2.createFromRect(gg_rct_Region_482), 5*60))
-		
-		//width 4 behavior A spawn
-		set pattern = LinePatternSpawn.createFromRect(W4APatternSpawn, 5, gg_rct_LW1_Generator2, TERRAIN_TILE_SIZE)
-		set pattern.CycleVariations = 3
-		set sg = SimpleGenerator.create(pattern, 1.8, 90, 22)
-		call sg.SetMoveSpeed(175.)
-		call l.AddStartable(sg)
-		
-		//width 3 behavior A spawn
-		set pattern = LinePatternSpawn.createFromRect(W3APatternSpawn, 3, gg_rct_LW1_Generator3, TERRAIN_TILE_SIZE)
-		set pattern.CycleVariations = 4
-		set sg = SimpleGenerator.create(pattern, 1.4, 270, 16)
-		call sg.SetMoveSpeed(350.)
-		call l.AddStartable(sg)
-		
-		//standard simple generators
-		set pattern = LinePatternSpawn.createFromPoint(OriginSpawn, 1, gg_rct_LW1_Generator4)
-		set pattern.Data = SPIRITWALKER
-		set sg = SimpleGenerator.create(pattern, 5, 270, 18)
-		call sg.SetMoveSpeed(250.)
-		call l.AddStartable(sg)
-				
-		set pattern = LinePatternSpawn.createFromPoint(OriginSpawn, 1, gg_rct_LW1_Generator6)
-		set pattern.Data = SPIRITWALKER
-		set sg = SimpleGenerator.create(pattern, 5, 270, 22)
-		call sg.SetMoveSpeed(200.)
-		call l.AddStartable(sg)
-		
-		//sync movement near teleport area
-		//left & right
-		set nsync = SynchronizedGroup.create()
-		call l.AddStartable(nsync)
-		
-		//left sync group
-		set jtimber = nsync.AddUnit(ICETROLL)
-		set jtimber.MoveSpeed = 180
-		call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_Region_456))
-		call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_Region_464))
-		call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_Region_463))
-		call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_Region_459))
-		set jtimber.AllOrders.last.next = jtimber.AllOrders.first
-		
-		//right sync group		
-		set jtimber = nsync.AddUnit(ICETROLL)
-		set jtimber.MoveSpeed = 180
-		call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_Region_463))
-		call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_Region_459))
-		call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_Region_456))
-		call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_Region_464))
-		set jtimber.AllOrders.last.next = jtimber.AllOrders.first
-		
-		//top & bottom
-		set nsync = SynchronizedGroup.create()
-		call l.AddStartable(nsync)
-		
-		//top sync group
-		set jtimber = nsync.AddUnit(CLAWMAN)
-		set jtimber.MoveSpeed = 360
-		call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_Region_467))
-		call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_Region_462))
-		call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_Region_461))
-		call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_Region_466))
-		set jtimber.AllOrders.last.next = jtimber.AllOrders.first
-				
-		//bottom sync group		
-		set jtimber = nsync.AddUnit(CLAWMAN)
-		set jtimber.MoveSpeed = 360
-		call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_Region_461))
-		call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_Region_466))
-		call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_Region_467))
-		call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_Region_462))
-		
-		set jtimber.AllOrders.last.next = jtimber.AllOrders.first
-		
-		//sync movement near gate
-		//outer sync group
-		set nsync = SynchronizedGroup.create()
-		call l.AddStartable(nsync)
-		set jtimber = nsync.AddUnit(CLAWMAN)
-		call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_Region_476))
-		call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_Region_477))
-		call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_Region_478))
-		call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_Region_479))
-		set jtimber.AllOrders.last.next = jtimber.AllOrders.first
-		
-		set jtimber = nsync.AddUnit(CLAWMAN)
-		call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_Region_478))
-		call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_Region_479))
-		call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_Region_476))
-		call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_Region_477))
-		set jtimber.AllOrders.last.next = jtimber.AllOrders.first
-		
-		//inner sync group
-		//left unit
-		set nsync = SynchronizedGroup.create()
-		call l.AddStartable(nsync)
-		set jtimber = nsync.AddUnit(ICETROLL)
-		call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_Region_469))
-		call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_Region_468))
-		call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_Region_471))
-		call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_Region_470))
-		set jtimber.AllOrders.last.next = jtimber.AllOrders.first
-		
-		//center unit
-		set jtimber = nsync.AddUnit(ICETROLL)
-		call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_Region_472))
-		call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_Region_473))
-		call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_Region_469))
-		call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_Region_468))
-		set jtimber.AllOrders.last.next = jtimber.AllOrders.first
-		
-		//right unit
-		set jtimber = nsync.AddUnit(ICETROLL)
-		call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_Region_474))
-		call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_Region_475))
-		call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_Region_472))
-		call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_Region_473))
-		set jtimber.AllOrders.last.next = jtimber.AllOrders.first
+		call LW1_InitializeStartableContent()
 		
 		
 		//LEVEL 2
 		set l = Levels_Level.create(LW2_LEVEL_ID, "Monday Commute", 3, 3, "LW2Start", "LW2Stop", gg_rct_LWR_2_1, gg_rct_LW2_Vision, gg_rct_LW2_End, l)
 		set l.MaxCollisionSize = 300.
 		//call l.AddCheckpoint(gg_rct_LWCP_2_1, gg_rct_LWR_2_2)
-		
-		//collect all 3 to beat the level
-		set collectibleSet = CollectibleSet.create(l, DefaultCollectibleResolve)
-		
-		set collectible = Collectible.createFromPoint(FROG, 0, gg_rct_LW2_C1, 90)
-		call collectibleSet.AddCollectible(collectible)
-		
-		set collectible = Collectible.createFromPoint(FROG, 0, gg_rct_LW2_C2, 90)
-		set collectible.ReturnToCheckpoint = true
-		call collectibleSet.AddCollectible(collectible)
-		
-		set collectible = Collectible.createFromPoint(FROG, 0, gg_rct_LW2_C3, 270)
-		set collectible.ReturnToCheckpoint = true
-		call collectibleSet.AddCollectible(collectible)
-				
-		set fastLoad = FastLoad.create(l, l.Checkpoints.first.value, 10., 3.)
-		
-		set rg = RelayGenerator.createFromPoint(gg_rct_LW2_RG1, 4, 4, 180, -2, 2., RelayGeneratorFirstSpawn, 1)
-		set rg.SpawnPattern.Data = ICETROLL
-		call rg.AddTurnSimple(90, 7)
-		call rg.AddTurnSimple(180, 1)
-		call rg.AddTurnSimple(270, 22)
-		call rg.EndTurns(270)
-		
-		call l.AddStartable(rg)
-		call fastLoad.AddRelayGenerator(rg)
-		
-		set rg = RelayGenerator.createFromPoint(gg_rct_LW2_RG2, 4, 4, 180, -1, 2., RelayGeneratorFirstSpawn, 1)
-		set rg.SpawnPattern.Data = ICETROLL
-		call rg.AddTurnSimple(90, 20)
-		call rg.AddTurnSimple(180, 12)
-		call rg.AddTurnSimple(270, 26)
-		call rg.EndTurns(270)
-		
-		call l.AddStartable(rg)
-		call fastLoad.AddRelayGenerator(rg)
-		
-		set rg = RelayGenerator.createFromPoint(gg_rct_LW2_RG3, 5, 5, 180, -2, 2., RelayGeneratorFirstSpawn, 1)
-		set rg.SpawnPattern.Data = ICETROLL
-		call rg.AddTurnSimple(270, 16)
-		call rg.AddTurnSimple(0, 13)
-		call rg.AddTurnSimple(90, 23)
-		call rg.EndTurns(90)
-		
-		call l.AddStartable(rg)
-		call fastLoad.AddRelayGenerator(rg)
+		call LW2_InitializeStartableContent()
 		
         //PRIDE WORLD / PLATFORMING
         //LEVEL 1

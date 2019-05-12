@@ -182,5 +182,8 @@ library Wheel requires Alloc, SimpleList, locust, UnitWrapper
             
             return new
         endmethod
+		public static method createFromPoint takes rect point returns thistype
+			return thistype.create(GetRectCenterX(point), GetRectCenterY(point))
+		endmethod
     endstruct
 endlibrary
