@@ -22,6 +22,7 @@ library UnitGlobals
 		constant integer JEEP = 'h004'
 		constant integer PASSENGERCAR = 'h007'
 		constant integer CORVETTE = 'h002'
+		constant integer POLICECAR = 'h008'
 		
 		
         //attacking units
