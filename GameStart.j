@@ -1,4 +1,4 @@
-library EDWGameStart initializer Init requires Levels, EDWVisualVote, UnitGlobals, MazerGlobals, GameMessage, EDWLevelContent, EDWCinematicContent
+library EDWGameStart initializer Init requires Levels, EDWVisualVote, UnitGlobals, MazerGlobals, GameMessage, EDWLevelContent, EDWCinematicContent, Recycle
     globals
         constant real GAME_INIT_TIME_INITIAL = 0.01 //how long into the game before we start
         //constant real GAME_INIT_TIME_STEP = .5
@@ -40,17 +40,23 @@ library EDWGameStart initializer Init requires Levels, EDWVisualVote, UnitGlobal
             if uID == POWERUP_MARKER or InWorldPowerup.IsPowerupUnit(uID) then
 				call InWorldPowerup.CreateFromUnit(u)
             elseif uID == UBOUNCE then
-                call AddUnitLocust(CreateUnit(Player(11), UBOUNCE, GetUnitX(u), GetUnitY(u), 90))
+                //call AddUnitLocust(CreateUnit(Player(11), UBOUNCE, GetUnitX(u), GetUnitY(u), 90))
+				call Recycle_MakeUnit(UBOUNCE, GetUnitX(u), GetUnitY(u))
                 call RemoveUnit(u)
             elseif uID == LBOUNCE then
-                call AddUnitLocust(CreateUnit(Player(11), LBOUNCE, GetUnitX(u), GetUnitY(u), 180))
+                //call AddUnitLocust(CreateUnit(Player(11), LBOUNCE, GetUnitX(u), GetUnitY(u), 180))
+				call Recycle_MakeUnit(LBOUNCE, GetUnitX(u), GetUnitY(u))
                 call RemoveUnit(u)
             elseif uID == DBOUNCE then
-                call AddUnitLocust(CreateUnit(Player(11), DBOUNCE, GetUnitX(u), GetUnitY(u), 270))
+                // call AddUnitLocust(CreateUnit(Player(11), DBOUNCE, GetUnitX(u), GetUnitY(u), 270))
+				call Recycle_MakeUnit(DBOUNCE, GetUnitX(u), GetUnitY(u))
                 call RemoveUnit(u)
             elseif uID == RBOUNCE then
-                call AddUnitLocust(CreateUnit(Player(11), RBOUNCE, GetUnitX(u), GetUnitY(u), 0))
+                // call AddUnitLocust(CreateUnit(Player(11), RBOUNCE, GetUnitX(u), GetUnitY(u), 0))
+				call Recycle_MakeUnit(RBOUNCE, GetUnitX(u), GetUnitY(u))
                 call RemoveUnit(u)
+			elseif GetPlayerId(GetOwningPlayer(u)) == 11 and (uID == BFIRE or uID == BKEY or uID == RFIRE or uID == RKEY or uID == GFIRE or uID == GKEY or uID == KEYR or uID == REGRET or uID == LMEMORY or uID == GUILT or uID == GRAVITY or uID == BOUNCER or uID == SUPERSPEED) then
+				call IndexedUnit.create(u)
             endif            
         call GroupRemoveUnit(TempGroup, u)
         endloop
@@ -91,8 +97,7 @@ library EDWGameStart initializer Init requires Levels, EDWVisualVote, UnitGlobal
         //CALL OTHER INITS
         call EDWPlayerSlotsInit()
 		
-		//connect editor placed units with their needed logic
-        call PreplacedUnitInit()
+		
         
         //GAME MODE INIT
         //Menu should happen after level creation so that it doesn't mess with the number of players on the intro world
@@ -124,6 +129,9 @@ library EDWGameStart initializer Init requires Levels, EDWVisualVote, UnitGlobal
 		static if DEBUG_MODE then
 			call TimerStart(CreateTimer(), 1.0, false, function CheckInitFinished)
 		endif
+		
+		//connect editor placed units with their needed logic
+        call PreplacedUnitInit()
 		
         //call level initalizer
 		call EDWLevelContent_Initialize()

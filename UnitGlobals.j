@@ -35,7 +35,11 @@ library UnitGlobals
         constant integer LMEMORY = 'e004'
         constant integer GUILT = 'e005'
 		
-		constant integer FROG = 'n003'
+		constant integer GREENFROG = 'n003'
+		constant integer ORANGEFROG = 'n007'
+		constant integer PURPLEFROG = 'n006'
+		constant integer TURQOISEFROG = 'n005'
+		constant integer REDFROG = 'n004'
         
         //mortars
         //should be filtered out (not collide)
@@ -53,8 +57,8 @@ library UnitGlobals
         constant integer WWSKUL = 'e00A'
         
         //keys and barriers
-        constant integer KEYR = 'e00D' //red fire key
-        constant integer RKEY = 'e00C' //removes all keys from mazer
+        constant integer KEYR = 'e00D' //removes any key from mazer
+        constant integer RKEY = 'e00C' //red fire key
         constant integer RFIRE = 'e00B' //red fire
         constant integer BKEY = 'e00F' //blue fire key
         constant integer BFIRE = 'e00E' //blue fire

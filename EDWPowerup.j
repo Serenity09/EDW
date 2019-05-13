@@ -161,6 +161,8 @@ library EDWPowerup requires Alloc, MazerGlobals, FilterFuncs, Table, PlayerUtils
 				
 				//create item in game
 				set new.Unit = CreateUnit(POWERUP_PLAYER, unitTypeID, x, y, 0)
+				call IndexedUnit.create(new.Unit)
+				
 				call UnitAddAbility(new.Unit, 'Aloc')
 				call ShowUnit(new.Unit, false)
 				call ShowUnit(new.Unit, true)
@@ -185,6 +187,7 @@ library EDWPowerup requires Alloc, MazerGlobals, FilterFuncs, Table, PlayerUtils
 				set new.TeamsUsed = SimpleList_List.create()
 				
 				set new.Unit = u
+				call IndexedUnit.create(u)
 				call UnitAddAbility(new.Unit, 'Aloc')
 				call ShowUnit(new.Unit, false)
 				call ShowUnit(new.Unit, true)

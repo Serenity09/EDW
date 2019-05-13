@@ -27,6 +27,7 @@ library EDWPlayerSlots requires MazerGlobals, User, PlayerUtils, VisualVote, Tea
 				
 				set PlayerReviveCircles[i] = CreateUnit(Player(i), TEAM_REVIVE_UNIT_ID, MazerGlobals_REVIVE_CIRCLE_SAFE_X, MazerGlobals_REVIVE_CIRCLE_SAFE_Y, 0)
                 call AddUnitLocust(PlayerReviveCircles[i])
+				call IndexedUnit.create(PlayerReviveCircles[i])
 				call ShowUnit(PlayerReviveCircles[i], false)
                 
                 call GroupAddUnit(MazersGroup, MazersArray[i])

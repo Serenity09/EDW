@@ -276,24 +276,6 @@ library EDWLevelContent requires LevelIDGlobals, SimpleList, Teams, Levels, EDWP
 		call sg.SetMoveSpeed(100.)
         call l.AddStartable(sg)
         
-        /*
-        set wheel = Wheel.create(-2904, -6765)
-        set wheel.LayerCount = 3
-        set wheel.SpokeCount = 12
-        set wheel.AngleBetween = 30 * bj_PI / 180
-        set wheel.RotationSpeed = bj_PI / 20 * Wheel_TIMEOUT
-        set wheel.DistanceBetween = 2*TERRAIN_TILE_SIZE
-        set wheel.InitialOffset = 2*TERRAIN_TILE_SIZE
-        
-        call wheel.AddUnits('e00A', 12)
-        call wheel.AddUnits('e00K', 1)
-        call wheel.AddEmptySpace(5)
-        call wheel.AddUnits('e00K', 1)
-        call wheel.AddLayer(0)
-        call wheel.AddUnits('e00J', 12)
-        
-        call l.AddStartable(wheel)
-        */
         //set wheel = Wheel.create(-2694, -9200)
         set boundedWheel = BoundedWheel.create(-2694, -9200)
         set boundedWheel.SpokeCount = 16
@@ -302,51 +284,20 @@ library EDWLevelContent requires LevelIDGlobals, SimpleList, Teams, Levels, EDWP
         set boundedWheel.InitialOffset = 1.5*TERRAIN_TILE_SIZE
         set boundedWheel.DistanceBetween = 1*TERRAIN_QUADRANT_SIZE
         call boundedWheel.SetAngleBounds(bj_PI * 3/6,bj_PI * 5/6)
-        
-        /*
-        call boundedWheel.AddUnits('e00A', 3)
-        call boundedWheel.AddUnits('e00J', 1)
-        call boundedWheel.AddUnits('e00A', 3)
-        call boundedWheel.AddEmptySpace(1)
-        */
         call boundedWheel.AddEmptySpace(1)
         call boundedWheel.AddUnits('e00A', 6)
         call boundedWheel.AddUnits('e00J', 1)
         call boundedWheel.AddUnits('e00A', 6)
         call boundedWheel.AddEmptySpace(2)
-        
-        /*
-        set i = 0
-        loop
-        exitwhen i > 1
-            call wheel.AddUnits('e00A', 3)
-            call wheel.AddUnits('e00J', 1)
-        set i = i + 1
-        endloop
-        */
         call l.AddStartable(boundedWheel)
         
-        call AddUnitLocust(CreateUnit(Player(11), 'e00K', -554, -4840, 0))
+		call Recycle_MakeUnit(BOUNCER, -554, -4840)
         set wheel = Wheel.create(-554, -4840)
         set wheel.SpokeCount = 4
         set wheel.AngleBetween = bj_PI / 2
         set wheel.RotationSpeed = bj_PI / 10 * Wheel_TIMEOUT
         set wheel.DistanceBetween = 2.25*TERRAIN_TILE_SIZE
         call wheel.AddUnits('e00K', 4)
-        /*
-        call wheel.AddUnits('e00K', 1)
-        call wheel.AddEmptySpace(1)
-        call wheel.AddUnits('e00K', 1)
-        call wheel.AddEmptySpace(1)
-        
-        
-        call wheel.AddEmptySpace(1)
-        call wheel.AddUnits('e00K', 1)
-        call wheel.AddEmptySpace(1)
-        call wheel.AddUnits('e00K', 1)
-        
-        call wheel.AddUnits('e00K', 4)
-        */
         call l.AddStartable(wheel)
         
 		//LEVEL 4

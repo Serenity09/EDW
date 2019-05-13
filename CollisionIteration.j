@@ -86,6 +86,7 @@ private function CollisionIteration takes nothing returns nothing
 	
 	local unit cu
     local integer cuTypeID
+	local IndexedUnit cuInfo
 	local real cuX
 	local real cuY
 	
@@ -114,17 +115,21 @@ private function CollisionIteration takes nothing returns nothing
 			set cu = FirstOfGroup(NearbyUnits)
 			exitwhen cu == null
 				if LastCollidedUnit[curUserNode.value] != cu then
+					set cuInfo = IndexedUnit(GetUnitUserData(cu))
 					set cuTypeID = GetUnitTypeId(cu)
 					set cuX = GetUnitX(cu)
 					set cuY = GetUnitY(cu)
 					
 					//filter unit type IDs that appear in EDW but do not collide
-					if cuTypeID != MAZER and cuTypeID != FROG and cuTypeID != SMLTARG and cuTypeID != BLACKHOLE then
+					//full list: cuTypeID != MAZER and cuTypeID != GREENFROG and cuTypeID != ORANGEFROG and cuTypeID != PURPLEFROG and cuTypeID != TURQOISEFROG and cuTypeID != REDFROG and cuTypeID != SMLTARG and cuTypeID != BLACKHOLE
+					if cuInfo != 0 and cuInfo.Collideable then
+					// if cuTypeID != MAZER then
 						//get collision geometry type
 						//the geometry type could be cached by indexing all collideable units and running the type comparison once on index... consider doing this as rect type list grows beyond 5-7 (cuts runtime performance to two array lookups and a single int equality comparison, but also adds overhead of indexing all units whereas currently only a few are)
 						//with the above addition, the radius of circular units could also be cached, which would greatly increase the scalability of adding unit type IDs
 						//same goes for if the unit uses this default collision iteration loop at all (omit vs not)
-						if cuTypeID == TANK or cuTypeID == TRUCK or cuTypeID == FIRETRUCK or cuTypeID == AMBULANCE or cuTypeID == JEEP or cuTypeID == PASSENGERCAR or cuTypeID == CORVETTE or cuTypeID == POLICECAR then
+						if cuInfo.RectangularGeometry then
+						// if cuTypeID == TANK or cuTypeID == TRUCK or cuTypeID == FIRETRUCK or cuTypeID == AMBULANCE or cuTypeID == JEEP or cuTypeID == PASSENGERCAR or cuTypeID == CORVETTE or cuTypeID == POLICECAR then
 							//*********************
 							//RECTANGULAR COLLISION
 							//*********************
@@ -239,6 +244,9 @@ private function CollisionIteration takes nothing returns nothing
 							set dy = cuY - muY
 							set dist = SquareRoot(dx*dx + dy*dy)
 							
+							// if dist <= User(curUserNode.value).ActiveUnitRadius + cuInfo.Radius then
+								
+							// endif
 							
 							if cuTypeID == GUARD or cuTypeID == LGUARD then
 								if not MobImmune[curUserNode.value] and dist < 39 then

@@ -229,12 +229,13 @@ Hasbro - Frogger (influenced land level designs)
 aznricepuff - The best guide to understanding vJASS's OOP design and intended usage (https://www.hiveworkshop.com/threads/vjass-oop-lesson.128236/#13)
 Nestheasarus - A guide to optimizing vJASS's syntactic sugar (where did you go)
 Codemonkey11 - A guide to scaling group enums in WC3's engine (https://www.hiveworkshop.com/threads/vjass-optimization-using-a-first-of-group-loop-for-enumeration.223140/)
+BloodRaven - A guide to WE doodads & terrain (https://www.hiveworkshop.com/threads/advanced-terraining-tutorial.203428/)
 SD_Ryoko - A guide to creating and importing custom terrain tiles in WC3 (http://world-editor-tutorials.thehelper.net/tilesets.php)
 Jeff Pang - Online vanilla JASS documentation (http://jass.sourceforge.net/index.shtml)
 Dr Super Good - Too many small answers to list all, but among which are tips to generating random points (https://www.hiveworkshop.com/threads/get-evenly-weighted-random-point-in-rectangle.294547/), unit rotation mechanics (https://www.hiveworkshop.com/threads/unit-turning-mechanics.300224/), 
 -Manuel- - Fix to setting unit immobile/mobile (https://www.hiveworkshop.com/threads/prevent-movement.312061/#post-3321807)
 Wrda & Pyrogasm - Approach to making units locally visible/invisible (https://www.hiveworkshop.com/threads/make-units-locally-visible.310326/)
-BloodRaven - Advanced WE doodads & terrain (https://www.hiveworkshop.com/threads/advanced-terraining-tutorial.203428/)
+Raen7 - WC3 playercolors to hex codes (https://docs.google.com/spreadsheets/d/1wzWIYzRW9pqpo1ZuEcU-qJTg-H4z5-PaTnHIXPezaRQ/edit#gid=1812483906)
 Rufus - Map Description guide & templates (https://www.hiveworkshop.com/threads/description-guide-maps.287829/)
 [/Tab]
 [Tab=Future releases]The V1 release includes what I consider a fully playable game. To be fair, I think there's often too much going on, and occassionally too little. There's a lot more that I want to add, but I think its time to get some outside feedback. Here are my current priorities, in something like an order

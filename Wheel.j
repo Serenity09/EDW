@@ -132,6 +132,7 @@ library Wheel requires Alloc, SimpleList, locust, UnitWrapper
                 //debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "y: " + R2S(y))
                 
                 set wu.u = CreateUnit(WISP_WHEEL_PLAYER, unitID, x, y, 0)
+				call IndexedUnit.create(wu.u)				
                 call AddUnitLocust(wu.u)
                 
                 call this.Units.addEnd(wu)

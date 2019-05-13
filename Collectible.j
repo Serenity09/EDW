@@ -9,7 +9,7 @@ library Collectible requires Alloc, PermanentAlloc, SimpleList, Teams, IStartabl
 	//needs to use a unit so i can easily change visibility locally
 	struct Collectible extends array
 		readonly unit UncollectedUnit
-		public real UncollectedUnitRadius
+		public real UncollectedUnitRadius //TODO pull from IndexedUnit.Radius
 		readonly unit CollectedUnit
 		public boolean ReturnToCheckpoint
 		
@@ -17,13 +17,20 @@ library Collectible requires Alloc, PermanentAlloc, SimpleList, Teams, IStartabl
 		
 		public static method create takes integer uncollectedUnitID, integer collectedUnitID, real x, real y, real facing returns thistype
 			local thistype new = thistype.allocate()
+			local IndexedUnit uInfo
 						
 			set new.UncollectedUnit = CreateUnit(COLLECTIBLE_PLAYER, uncollectedUnitID, x, y, facing)
+			set uInfo = IndexedUnit.create(new.UncollectedUnit)
+			set uInfo.Collideable = false
+			call uInfo.InitializeVertexColor()
 			call AddUnitLocust(new.UncollectedUnit)
 			set new.UncollectedUnitRadius = GetUnitDefaultRadius(uncollectedUnitID)
 			
 			if collectedUnitID != 0 then
 				set new.CollectedUnit = CreateUnit(COLLECTIBLE_PLAYER, collectedUnitID, x, y, facing)
+				set uInfo = IndexedUnit.create(new.CollectedUnit)
+				set uInfo.Collideable = false
+				call uInfo.InitializeVertexColor()
 				call AddUnitLocust(new.CollectedUnit)
 			else
 				set new.CollectedUnit = null

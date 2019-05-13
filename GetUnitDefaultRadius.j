@@ -20,7 +20,7 @@ library GetUnitDefaultRadius
 			return 60.
 		elseif unitTypeID == GUILT then
 			return 90.
-		elseif unitTypeID == FROG then
+		elseif unitTypeID == GREENFROG or unitTypeID == ORANGEFROG or unitTypeID == PURPLEFROG or unitTypeID == TURQOISEFROG or unitTypeID == REDFROG then
 			return 32.
 		elseif unitTypeID == WWWISP then
 			return 30.

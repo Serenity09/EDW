@@ -208,9 +208,6 @@ library Levels requires SimpleList, Teams, GameModesGlobals, LevelIDGlobals, Cin
                 //reset unit to default stats based on what can currently change... at some point find a better way to unload modified units (and only them)
                 call SetUnitVertexColor(u, 255, 255, 255, 255)
                 call SetUnitMoveSpeed(u, GetUnitDefaultMoveSpeed(u))
-				if GetUnitUserData(u) != 0 then
-					call IndexedUnit(GetUnitUserData(u)).destroy()
-				endif
                 call Recycle_ReleaseUnit(u)
             call GroupRemoveUnit(TempGroup, u)
             set u = FirstOfGroup(TempGroup)
