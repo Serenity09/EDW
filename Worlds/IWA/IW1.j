@@ -8,7 +8,9 @@ library IW1 requires Recycle, Levels
 		call Recycle_MakeUnitAndPatrolRect(GUARD, gg_rct_Rect_060, gg_rct_Rect_061)
 		call Recycle_MakeUnitAndPatrolRect(LGUARD, gg_rct_Rect_062, gg_rct_Rect_063)
 		call Recycle_MakeUnitAndPatrolRect(LGUARD, gg_rct_Rect_064, gg_rct_Rect_065)
-		call Recycle_MakeUnitAndPatrolRect(LGUARD, gg_rct_Rect_066, gg_rct_Rect_067)
+		if RewardMode == GameModesGlobals_HARD then
+			call Recycle_MakeUnitAndPatrolRect(LGUARD, gg_rct_Rect_066, gg_rct_Rect_067)
+		endif
 	endfunction
 
 	function IW1Stop takes nothing returns nothing

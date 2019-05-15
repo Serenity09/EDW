@@ -1,6 +1,6 @@
 library LW1 requires Recycle, Levels 
 	public function InitializeStartableContent takes nothing returns nothing
-		local Levels_Level l = Levels_Level(LW2_LEVEL_ID)
+		local Levels_Level l = Levels_Level(LW1_LEVEL_ID)
 		
 		local SimpleGenerator sg
 		local RelayGenerator rg
