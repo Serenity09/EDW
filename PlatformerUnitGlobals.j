@@ -1,6 +1,8 @@
 library PlatformerUnitGlobals requires PlatformerGlobals
 globals
-    constant integer GRAVITY = 'e00J' //gravity change totem
+    constant integer PLATFORMERWISP = 'ewsp'
+	
+	constant integer GRAVITY = 'e00J' //gravity change totem
     constant integer BOUNCER = 'e00K' //continual bouncing totem
     constant integer UBOUNCE = 'e00L' //single bounce totem
     constant integer RBOUNCE = 'e00M'

@@ -36,7 +36,7 @@ library IndexedUnit
 			
 			//set properties that will be used for any indexed unit
 			//set new.MoveSpeed = GetUnitMoveSpeed(u)
-			set new.Collideable = unitTypeID != MAZER and unitTypeID != GREENFROG and unitTypeID != ORANGEFROG and unitTypeID != PURPLEFROG and unitTypeID != TURQOISEFROG and unitTypeID != REDFROG and unitTypeID != SMLTARG and unitTypeID != BLACKHOLE
+			set new.Collideable = unitTypeID != MAZER and unitTypeID != PLATFORMERWISP and unitTypeID != GREENFROG and unitTypeID != ORANGEFROG and unitTypeID != PURPLEFROG and unitTypeID != TURQOISEFROG and unitTypeID != REDFROG and unitTypeID != SMLTARG and unitTypeID != BLACKHOLE
 			set new.RectangularGeometry = unitTypeID == TANK or unitTypeID == TRUCK or unitTypeID == FIRETRUCK or unitTypeID == AMBULANCE or unitTypeID == JEEP or unitTypeID == PASSENGERCAR or unitTypeID == CORVETTE or unitTypeID == POLICECAR
 			if not new.RectangularGeometry then
 				set new.Radius = GetUnitDefaultRadius(unitTypeID)

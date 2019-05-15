@@ -107,8 +107,7 @@ private function CollisionIteration takes nothing returns nothing
 			set muX = GetUnitX(User(curUserNode.value).ActiveUnit)
 			set muY = GetUnitY(User(curUserNode.value).ActiveUnit)
 						
-			//TODO might need to make this a property of the current level
-			//vehicles are really quite large
+			//max enum range is determined by level to accomodate level's typically having a theme for model size, but that can vary widely for how small/big
 			call GroupEnumUnitsInRange(NearbyUnits, muX, muY, User(curUserNode.value).Team.OnLevel.MaxCollisionSize, null)
 			
 			loop
@@ -120,14 +119,10 @@ private function CollisionIteration takes nothing returns nothing
 					set cuX = GetUnitX(cu)
 					set cuY = GetUnitY(cu)
 					
-					//filter unit type IDs that appear in EDW but do not collide
-					//full list: cuTypeID != MAZER and cuTypeID != GREENFROG and cuTypeID != ORANGEFROG and cuTypeID != PURPLEFROG and cuTypeID != TURQOISEFROG and cuTypeID != REDFROG and cuTypeID != SMLTARG and cuTypeID != BLACKHOLE
+					//filter units that appear in EDW but do not collide
 					if cuInfo != 0 and cuInfo.Collideable then
 					// if cuTypeID != MAZER then
-						//get collision geometry type
-						//the geometry type could be cached by indexing all collideable units and running the type comparison once on index... consider doing this as rect type list grows beyond 5-7 (cuts runtime performance to two array lookups and a single int equality comparison, but also adds overhead of indexing all units whereas currently only a few are)
-						//with the above addition, the radius of circular units could also be cached, which would greatly increase the scalability of adding unit type IDs
-						//same goes for if the unit uses this default collision iteration loop at all (omit vs not)
+						//get collision geometry type from the units indexed property RectangularGeometry
 						if cuInfo.RectangularGeometry then
 						// if cuTypeID == TANK or cuTypeID == TRUCK or cuTypeID == FIRETRUCK or cuTypeID == AMBULANCE or cuTypeID == JEEP or cuTypeID == PASSENGERCAR or cuTypeID == CORVETTE or cuTypeID == POLICECAR then
 							//*********************
@@ -244,76 +239,26 @@ private function CollisionIteration takes nothing returns nothing
 							set dy = cuY - muY
 							set dist = SquareRoot(dx*dx + dy*dy)
 							
-							// if dist <= User(curUserNode.value).ActiveUnitRadius + cuInfo.Radius then
-								
-							// endif
-							
-							if cuTypeID == GUARD or cuTypeID == LGUARD then
-								if not MobImmune[curUserNode.value] and dist < 39 then
+							if dist <= User(curUserNode.value).ActiveUnitRadius + cuInfo.Radius then
+								if not MobImmune[curUserNode.value] and (cuTypeID == GUARD or cuTypeID == LGUARD or cuTypeID == ICETROLL or cuTypeID == SPIRITWALKER or cuTypeID == CLAWMAN or cuTypeID == WWWISP or cuTypeID == WWSKUL/* or (User(curUserNode.value).ActiveUnit != cu and (cuTypeID == MAZER or cuTypeID == PLATFORMERWISP))*/) then
 									call CollisionDeathEffect(User(curUserNode.value).ActiveUnit)
 									
 									call User(curUserNode.value).SwitchGameModesDefaultLocation(Teams_GAMEMODE_DYING)
 								endif
-							elseif cuTypeID == WWWISP then
-								if dist < 40 then
+									
+								if cuTypeID == REGRET or cuTypeID == LMEMORY or cuTypeID == GUILT then
 									call CollisionDeathEffect(User(curUserNode.value).ActiveUnit)
 									
 									call User(curUserNode.value).SwitchGameModesDefaultLocation(Teams_GAMEMODE_DYING)
-								endif
-							elseif cuTypeID == WWSKUL then
-								if dist < 40 then
-									call CollisionDeathEffect(User(curUserNode.value).ActiveUnit)
-									
-									call User(curUserNode.value).SwitchGameModesDefaultLocation(Teams_GAMEMODE_DYING)
-								endif
-							elseif cuTypeID == REGRET then
-								if dist < 42 then
-									call CollisionDeathEffect(User(curUserNode.value).ActiveUnit)
-									
-									call User(curUserNode.value).SwitchGameModesDefaultLocation(Teams_GAMEMODE_DYING)
-								endif
-							elseif cuTypeID == LMEMORY then
-								if dist < 57 then
-									call CollisionDeathEffect(User(curUserNode.value).ActiveUnit)
-									
-									call User(curUserNode.value).SwitchGameModesDefaultLocation(Teams_GAMEMODE_DYING)
-								endif
-							elseif cuTypeID == ROGTHT then
-								if dist < 55 then
-									call CollisionDeathEffect(User(curUserNode.value).ActiveUnit)
-									
-									call User(curUserNode.value).SwitchGameModesDefaultLocation(Teams_GAMEMODE_DYING)
-								endif
-							elseif cuTypeID == ICETROLL then
-								if dist < 58 and not MobImmune[curUserNode.value] then  //TERRAIN_QUADRANT_SIZE - 4
-									call CollisionDeathEffect(User(curUserNode.value).ActiveUnit)
-									
-									call User(curUserNode.value).SwitchGameModesDefaultLocation(Teams_GAMEMODE_DYING)
-								endif
-							elseif cuTypeID == SPIRITWALKER then
-								if dist < 60 and not MobImmune[curUserNode.value] then  //TERRAIN_QUADRANT_SIZE - 4
-									call CollisionDeathEffect(User(curUserNode.value).ActiveUnit)
-									
-									call User(curUserNode.value).SwitchGameModesDefaultLocation(Teams_GAMEMODE_DYING)
-								endif
-							elseif InWorldPowerup.IsPowerupUnit(cuTypeID) then
-								if dist < 65 then
+								elseif InWorldPowerup.IsPowerupUnit(cuTypeID) then
 									set LastCollidedUnit[curUserNode.value] = cu
 									//debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "Colliding with powerup")
 									call InWorldPowerup.GetFromUnit(cu).OnUserAcquire(curUserNode.value)
 									
 									call TimerStart(NewTimerEx(curUserNode.value), COLLISION_TIME, false, function AfterCollisionCB)
 									//debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "Finished colliding")
-								endif
-							elseif cuTypeID == CLAWMAN then
-								if dist < 68 and not MobImmune[curUserNode.value] then
-									call CollisionDeathEffect(User(curUserNode.value).ActiveUnit)
-									
-									call User(curUserNode.value).SwitchGameModesDefaultLocation(Teams_GAMEMODE_DYING)
-								endif
-							//keys
-							elseif cuTypeID == RKEY then
-								if dist < 65 then
+									//keys
+								elseif cuTypeID == RKEY then
 									set LastCollidedUnit[curUserNode.value] = cu
 									
 									call RShieldEffect(User(curUserNode.value).ActiveUnit)
@@ -321,9 +266,7 @@ private function CollisionIteration takes nothing returns nothing
 									call SetUnitVertexColor(MazersArray[curUserNode.value], 255, 0, 0, 255)
 									
 									call TimerStart(NewTimerEx(curUserNode.value), COLLISION_TIME, false, function AfterCollisionCB)
-								endif
-							elseif cuTypeID == BKEY then
-								if dist < 65 then
+								elseif cuTypeID == BKEY then
 									set LastCollidedUnit[curUserNode.value] = cu
 									
 									call BShieldEffect(User(curUserNode.value).ActiveUnit)
@@ -331,10 +274,7 @@ private function CollisionIteration takes nothing returns nothing
 									call SetUnitVertexColor(MazersArray[curUserNode.value], 0, 0, 255, 255)
 									
 									call TimerStart(NewTimerEx(curUserNode.value), COLLISION_TIME, false, function AfterCollisionCB)
-								endif
-							
-							elseif cuTypeID == GKEY then
-								if dist < 65 then
+								elseif cuTypeID == GKEY then
 									set LastCollidedUnit[curUserNode.value] = cu
 									
 									call GShieldEffect(User(curUserNode.value).ActiveUnit)
@@ -342,9 +282,7 @@ private function CollisionIteration takes nothing returns nothing
 									call SetUnitVertexColor(MazersArray[curUserNode.value], 0, 255, 0, 255)
 									
 									call TimerStart(NewTimerEx(curUserNode.value), COLLISION_TIME, false, function AfterCollisionCB)
-								endif
-							elseif cuTypeID == TEAM_REVIVE_UNIT_ID then
-								if dist < 90 then        
+								elseif cuTypeID == TEAM_REVIVE_UNIT_ID then
 									//currently you will revive anyone whose circle you hit, this may change how you play
 									if CanReviveOthers[curUserNode.value] then
 										//revive unit at position of mazer to avoid reviving in an illegal position
@@ -353,15 +291,7 @@ private function CollisionIteration takes nothing returns nothing
 										
 										call TimerStart(NewTimerEx(GetPlayerId(GetOwningPlayer(cu))), P2P_REVIVE_PAUSE_TIME, false, function AfterMazerReviveCB)
 									endif
-								endif
-							elseif cuTypeID == GUILT then
-								if dist < 120 then
-									call CollisionDeathEffect(User(curUserNode.value).ActiveUnit)
-									
-									call User(curUserNode.value).SwitchGameModesDefaultLocation(Teams_GAMEMODE_DYING)
-								endif
-							elseif cuTypeID == KEYR then
-								if dist < 125 then
+								elseif cuTypeID == KEYR then
 									set LastCollidedUnit[curUserNode.value] = cu
 									
 									call ShieldRemoveEffect(User(curUserNode.value).ActiveUnit)
@@ -370,17 +300,11 @@ private function CollisionIteration takes nothing returns nothing
 									
 									call TimerStart(NewTimerEx(curUserNode.value), COLLISION_TIME, false, function AfterCollisionCB)
 								endif
-								// static if DEBUG_UNMATCHED_ID then
-									// else
-										// call DisplayTextToForce(bj_FORCE_PLAYER[0], "Unmatched unit type ID: " + I2S(cuTypeID) + ", distance: " + R2S(dist))
-								// endif
-							endif
-							
-							//check units that only collide with specific game modes / active unit types
-							//if any of the above kill a User, the users gamemode will currently by DYING
-							if User(curUserNode.value).GameMode == Teams_GAMEMODE_STANDARD then
-								if cuTypeID == RFIRE then
-									if dist < 80 then
+								
+								//check units that only collide with specific game modes / active unit types
+								//if any of the above kill a User, the users gamemode will currently by DYING
+								if User(curUserNode.value).GameMode == Teams_GAMEMODE_STANDARD then
+									if cuTypeID == RFIRE then
 										if (MazerColor[curUserNode.value] != KEY_RED) then
 											call User(curUserNode.value).SwitchGameModesDefaultLocation(Teams_GAMEMODE_DYING)
 										else
@@ -388,9 +312,7 @@ private function CollisionIteration takes nothing returns nothing
 											
 											call TimerStart(NewTimerEx(curUserNode.value), COLLISION_TIME, false, function AfterCollisionCB)
 										endif
-									endif
-								elseif cuTypeID == BFIRE then
-									if dist < 80 then
+									elseif cuTypeID == BFIRE then
 										if (MazerColor[curUserNode.value] != KEY_BLUE) then
 											call User(curUserNode.value).SwitchGameModesDefaultLocation(Teams_GAMEMODE_DYING)
 										else
@@ -398,9 +320,7 @@ private function CollisionIteration takes nothing returns nothing
 											
 											call TimerStart(NewTimerEx(curUserNode.value), COLLISION_TIME, false, function AfterCollisionCB)
 										endif
-									endif
-								elseif cuTypeID == GFIRE then
-									if dist < 80 then
+									elseif cuTypeID == GFIRE then
 										if (MazerColor[curUserNode.value] != KEY_GREEN) then
 											call User(curUserNode.value).SwitchGameModesDefaultLocation(Teams_GAMEMODE_DYING)
 										else
@@ -409,10 +329,8 @@ private function CollisionIteration takes nothing returns nothing
 											call TimerStart(NewTimerEx(curUserNode.value), COLLISION_TIME, false, function AfterCollisionCB)
 										endif
 									endif
-								endif
-							elseif User(curUserNode.value).GameMode == Teams_GAMEMODE_PLATFORMING then
-								if cuTypeID == GRAVITY then
-									if dist < 60 then
+								elseif User(curUserNode.value).GameMode == Teams_GAMEMODE_PLATFORMING then
+									if cuTypeID == GRAVITY then
 										if User(curUserNode.value).Platformer.GravityEquation.getAdjustment(PlatformerPropertyEquation_MULTIPLY_ADJUSTMENT, GRAVITY) != 0 then
 											set User(curUserNode.value).Platformer.GravityEquation.getAdjustment(PlatformerPropertyEquation_MULTIPLY_ADJUSTMENT, GRAVITY).Value = -1 * User(curUserNode.value).Platformer.GravityEquation.getAdjustment(PlatformerPropertyEquation_MULTIPLY_ADJUSTMENT, GRAVITY).Value 
 										else
@@ -424,9 +342,7 @@ private function CollisionIteration takes nothing returns nothing
 										
 										set LastCollidedUnit[curUserNode.value] = cu
 										call TimerStart(NewTimerEx(curUserNode.value), .6, false, function AfterCollisionCB)
-									endif
-								elseif cuTypeID == BOUNCER then
-									if dist < 55 then
+									elseif cuTypeID == BOUNCER then
 										if User(curUserNode.value).Platformer.GravitationalAccel >= 0 then
 											if User(curUserNode.value).Platformer.YVelocity > 0 then
 												set User(curUserNode.value).Platformer.YVelocity = -BOUNCER_SPEED
@@ -451,37 +367,27 @@ private function CollisionIteration takes nothing returns nothing
 										
 										set LastCollidedUnit[curUserNode.value] = cu
 										call TimerStart(NewTimerEx(curUserNode.value), .1, false, function AfterCollisionCB)
-									endif
-								elseif cuTypeID == UBOUNCE then
-									if dist < 50 then
+									elseif cuTypeID == UBOUNCE then
 										set User(curUserNode.value).Platformer.YVelocity = User(curUserNode.value).Platformer.YVelocity + DIR_BOUNCER_SPEED
 														
 										call AutoRespawningUnit.create(GetUnitX(cu), GetUnitY(cu), UBOUNCE, 90, DIR_BOUNCER_RESPAWN_TIME)
 										call Recycle_ReleaseUnit(cu)
-									endif
-								elseif cuTypeID == RBOUNCE then
-									if dist < 50 then
+									elseif cuTypeID == RBOUNCE then
 										set User(curUserNode.value).Platformer.XVelocity = User(curUserNode.value).Platformer.XVelocity + DIR_BOUNCER_SPEED
 										
 										call AutoRespawningUnit.create(GetUnitX(cu), GetUnitY(cu), RBOUNCE, 0, DIR_BOUNCER_RESPAWN_TIME)
 										call Recycle_ReleaseUnit(cu)
-									endif
-								elseif cuTypeID == DBOUNCE then
-									if dist < 50 then
+									elseif cuTypeID == DBOUNCE then
 										set User(curUserNode.value).Platformer.YVelocity = User(curUserNode.value).Platformer.YVelocity - DIR_BOUNCER_SPEED
 										
 										call AutoRespawningUnit.create(GetUnitX(cu), GetUnitY(cu), DBOUNCE, 270, DIR_BOUNCER_RESPAWN_TIME)
 										call Recycle_ReleaseUnit(cu)
-									endif
-								elseif cuTypeID == LBOUNCE then
-									if dist < 50 then
+									elseif cuTypeID == LBOUNCE then
 										set User(curUserNode.value).Platformer.XVelocity = User(curUserNode.value).Platformer.XVelocity - DIR_BOUNCER_SPEED
 														
 										call AutoRespawningUnit.create(GetUnitX(cu), GetUnitY(cu), LBOUNCE, 180, DIR_BOUNCER_RESPAWN_TIME)
 										call Recycle_ReleaseUnit(cu)
-									endif
-								elseif cuTypeID == SUPERSPEED then
-									if dist < 100 then
+									elseif cuTypeID == SUPERSPEED then
 										//repurpose var for angle
 										set dx = GetUnitFacing(cu) * bj_DEGTORAD
 										set User(curUserNode.value).Platformer.XVelocity = SUPERSPEED_SPEED * Cos(dx)

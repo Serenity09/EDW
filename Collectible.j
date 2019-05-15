@@ -243,29 +243,32 @@ library Collectible requires Alloc, PermanentAlloc, SimpleList, Teams, IStartabl
 		
 		public static method create takes Levels_Level parentLevel, DeferredCallback onAllCollected returns thistype
 			local integer tcsCountOnLevel = 0
-			local SimpleList_ListNode curStartableNode = parentLevel.Startables.first
+			local SimpleList_ListNode curStartableNode
 			local thistype new = thistype.allocate()
-			
+						
 			set new.OnAllCollected = onAllCollected
 			
 			set new.ActiveTeams = SimpleList_List.create()
 			set new.Collectibles = SimpleList_List.create()
-			
-			loop
-			exitwhen curStartableNode == 0 or tcsCountOnLevel != 0
-				if IStartable(curStartableNode.value).getType() == CollectibleSet.typeid then
-					set tcsCountOnLevel = tcsCountOnLevel + 1
-				endif
-			set curStartableNode = curStartableNode + 1
-			endloop
-			
+						
+			if parentLevel != 0 and parentLevel.Startables != 0 then
+				set curStartableNode = parentLevel.Startables.first
+				loop
+				exitwhen curStartableNode == 0 or tcsCountOnLevel != 0
+					if IStartable(curStartableNode.value).getType() == CollectibleSet.typeid then
+						set tcsCountOnLevel = tcsCountOnLevel + 1
+					endif
+				set curStartableNode = curStartableNode.next
+				endloop
+			endif
+						
 			if tcsCountOnLevel == 0 then
 				call parentLevel.AddLevelStartCB(Condition(function thistype.InitializeTeam))
 				call parentLevel.AddLevelStopCB(Condition(function thistype.DeinitializeTeam))
 			endif
 			
 			call parentLevel.AddStartable(new)
-			
+						
 			return new
 		endmethod
 		

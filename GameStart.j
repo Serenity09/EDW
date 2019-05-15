@@ -8,6 +8,7 @@ library EDWGameStart initializer Init requires Levels, EDWVisualVote, UnitGlobal
 		private boolean FinishedPostLoad = false
 		
 		private constant boolean DEBUG_PRELOAD = true
+		private constant boolean DEBUG_PRELOAD_FULL = false
 		private constant boolean DEBUG_POSTLOAD = true
     endglobals
     
@@ -55,7 +56,8 @@ library EDWGameStart initializer Init requires Levels, EDWVisualVote, UnitGlobal
                 // call AddUnitLocust(CreateUnit(Player(11), RBOUNCE, GetUnitX(u), GetUnitY(u), 0))
 				call Recycle_MakeUnit(RBOUNCE, GetUnitX(u), GetUnitY(u))
                 call RemoveUnit(u)
-			elseif GetPlayerId(GetOwningPlayer(u)) == 11 and (uID == BFIRE or uID == BKEY or uID == RFIRE or uID == RKEY or uID == GFIRE or uID == GKEY or uID == KEYR or uID == REGRET or uID == LMEMORY or uID == GUILT or uID == GRAVITY or uID == BOUNCER or uID == SUPERSPEED) then
+			//elseif GetPlayerId(GetOwningPlayer(u)) == 11 and (uID == BFIRE or uID == BKEY or uID == RFIRE or uID == RKEY or uID == GFIRE or uID == GKEY or uID == KEYR or uID == REGRET or uID == LMEMORY or uID == GUILT or uID == GRAVITY or uID == BOUNCER or uID == SUPERSPEED) then
+			else
 				call IndexedUnit.create(u)
             endif            
         call GroupRemoveUnit(TempGroup, u)
@@ -96,8 +98,6 @@ library EDWGameStart initializer Init requires Levels, EDWVisualVote, UnitGlobal
         
         //CALL OTHER INITS
         call EDWPlayerSlotsInit()
-		
-		
         
         //GAME MODE INIT
         //Menu should happen after level creation so that it doesn't mess with the number of players on the intro world
@@ -133,11 +133,29 @@ library EDWGameStart initializer Init requires Levels, EDWVisualVote, UnitGlobal
 		//connect editor placed units with their needed logic
         call PreplacedUnitInit()
 		
+		static if DEBUG_PRELOAD_FULL then
+			call DisplayTextToForce(bj_FORCE_PLAYER[0], "Preload 1")
+		endif
+		
         //call level initalizer
-		call EDWLevelContent_Initialize()
+		call EDWLevels_Initialize()
+		
+		static if DEBUG_PRELOAD_FULL then
+			call DisplayTextToForce(bj_FORCE_PLAYER[0], "Preload 2")
+		endif
+		
+		// call EDWLevelContent_Initialize()
+		
+		static if DEBUG_PRELOAD_FULL then
+			call DisplayTextToForce(bj_FORCE_PLAYER[0], "Preload 3")
+		endif
 		
 		//call cinematic initalizer after levels are ready
 		call EDWCinematicContent_Initialize()
+		
+		static if DEBUG_PRELOAD_FULL then
+			call DisplayTextToForce(bj_FORCE_PLAYER[0], "Preload 4")
+		endif
 		
 		static if DEBUG_MODE then
 			set FinishedPreLoad = true

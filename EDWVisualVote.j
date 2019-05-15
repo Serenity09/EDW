@@ -1,4 +1,4 @@
-library EDWVisualVote requires VisualVote, ContinueGlobals, Teams, PlayerUtils, MazerGlobals, EDWPlayerStart, Levels
+library EDWVisualVote requires VisualVote, ContinueGlobals, Teams, PlayerUtils, MazerGlobals, EDWPlayerStart, Levels, EDWLevelContent
     globals
         //public VisualVote_voteMenu MyMenu
         
@@ -130,6 +130,9 @@ library EDWVisualVote requires VisualVote, ContinueGlobals, Teams, PlayerUtils, 
         //call DisplayTextToPlayer(Player(0), 0, 0, "Initializing Game For Globals")
         //call DisplayTextToPlayer(Player(0), 0, 0, "Human count: " + I2S(count))
         
+		//now that difficulty is set, we can initialize all startable content
+		call EDWLevelContent_Initialize()
+		
         if GameMode == 0 then
             //create a team for each player
             set i = 0

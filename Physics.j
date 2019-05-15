@@ -1,4 +1,4 @@
-library Platformer requires ListModule, PlatformerGlobals, PlatformerOcean, PlatformerIce, PlatformerProfile, PlatformerPropertyEquation, ComplexTerrainPathing, StandardGameLoop, UnitWrapper, TerrainGlobals
+library Platformer requires ListModule, PlatformerGlobals, PlatformerOcean, PlatformerIce, PlatformerProfile, PlatformerPropertyEquation, ComplexTerrainPathing, StandardGameLoop, TerrainGlobals
 
 globals
     private constant integer KEY_UP     = 2
@@ -951,9 +951,9 @@ endglobals
         static if DEBUG_MODE then
             private static method RemoveCenterUnitCB takes nothing returns nothing
                 local timer t = GetExpiredTimer()
-                local UnitWrapper wrap = GetTimerData(t)
+                local IndexedUnit wrap = GetTimerData(t)
                 
-                call wrap.destroy()
+				call Recycle_ReleaseUnit(wrap.Unit)
                 
                 call ReleaseTimer(t)
                 set t = null
@@ -1285,7 +1285,7 @@ endglobals
                                     if pathingResult.TerrainMidpointX != .DiagonalPathing.TerrainMidpointX or pathingResult.TerrainMidpointY != .DiagonalPathing.TerrainMidpointY then
                                         call DisplayTextToForce(bj_FORCE_PLAYER[0], "Midpoint x, y: " + R2S(pathingResult.TerrainMidpointX) + ", " + R2S(pathingResult.TerrainMidpointY) + ", index: " + R2S(pathingResult.TerrainMidpointX / TERRAIN_TILE_SIZE) + ", " + R2S(pathingResult.TerrainMidpointY / TERRAIN_TILE_SIZE))
                                         //set centerUnit = Recycle_MakeUnitForPlayer(DEBUG_UNIT, pathingResult.TerrainMidpointX, pathingResult.TerrainMidpointY, Player(0))
-                                        //call TimerStart(NewTimerEx(UnitWrapper.create(centerUnit)), 1, false, function thistype.RemoveCenterUnitCB)
+                                        //call TimerStart(NewTimerEx(GetUnitUserData(centerUnit)), 1, false, function thistype.RemoveCenterUnitCB)
                                     else
                                         //call DisplayTextToForce(bj_FORCE_PLAYER[0], "Midpoint stays same")
                                     endif
@@ -1361,7 +1361,7 @@ endglobals
                                         
                                         //debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "Midpoint stays same")
                                         //debug set centerUnit = Recycle_MakeUnitForPlayer(DEBUG_UNIT, pathingResult.TerrainMidpointX, pathingResult.TerrainMidpointY, Player(0))
-                                        //debug call TimerStart(NewTimerEx(UnitWrapper.create(centerUnit)), 1, false, function thistype.RemoveCenterUnitCB)
+                                        //debug call TimerStart(NewTimerEx(GetUnitUserData(centerUnit)), 1, false, function thistype.RemoveCenterUnitCB)
                                     endif
                                 endif
                                 
@@ -2118,7 +2118,7 @@ endglobals
                             call DisplayTextToForce(bj_FORCE_PLAYER[0], "Diagonal " + I2S(pathingResult.TerrainPathingForPoint) + " starts in quadrant " + I2S(pathingResult.QuadrantForPoint))
                             call DisplayTextToForce(bj_FORCE_PLAYER[0], "Midpoint x, y: " + R2S(pathingResult.TerrainMidpointX) + ", " + R2S(pathingResult.TerrainMidpointY) + ", index: " + R2S(pathingResult.TerrainMidpointX / TERRAIN_TILE_SIZE) + ", " + R2S(pathingResult.TerrainMidpointY / TERRAIN_TILE_SIZE))
                             //set centerUnit = Recycle_MakeUnitForPlayer(DEBUG_UNIT, pathingResult.TerrainMidpointX, pathingResult.TerrainMidpointY, Player(0))
-                            //call TimerStart(NewTimerEx(UnitWrapper.create(centerUnit)), 1, false, function thistype.RemoveCenterUnitCB)
+                            //call TimerStart(NewTimerEx(GetUnitUserData(centerUnit)), 1, false, function thistype.RemoveCenterUnitCB)
                         endif
                         
                         //project newX,newY onto new diagonal, in the proper direction
@@ -3573,7 +3573,7 @@ endglobals
             set new.YFalloffEquation = PlatformerPropertyEquation.create()
             set new.TVYEquation = PlatformerPropertyEquation.create()
             
-            set new.Unit = CreateUnit(Player(pID), PlatformerGlobals_UID, PlatformerGlobals_SAFE_X, PlatformerGlobals_SAFE_Y, 0)
+            set new.Unit = CreateUnit(Player(pID), PLATFORMERWISP, PlatformerGlobals_SAFE_X, PlatformerGlobals_SAFE_Y, 0)
             call UnitAddAbility(new.Unit, 'Aloc')
             call ShowUnit(new.Unit, false)
             //sets the directions the unit is allowed to turn in, 0 means it move in no direction

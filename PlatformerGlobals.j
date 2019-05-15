@@ -1,6 +1,5 @@
 library PlatformerGlobals
 globals
-    public constant integer UID       = 'ewsp'
     public constant real RADIUS    = 22.
     public constant real SAFE_X    = -12000.0 //x where to store the .Unit when not in use
     public constant real SAFE_Y    = 12000.0 //y where to store the .Unit when not in use
