@@ -9,7 +9,7 @@ library Collectible requires Alloc, PermanentAlloc, SimpleList, Teams, IStartabl
 	//needs to use a unit so i can easily change visibility locally
 	struct Collectible extends array
 		readonly unit UncollectedUnit
-		public real UncollectedUnitRadius
+		public real UncollectedUnitRadius //TODO pull from IndexedUnit.Radius
 		readonly unit CollectedUnit
 		public boolean ReturnToCheckpoint
 		
@@ -17,13 +17,20 @@ library Collectible requires Alloc, PermanentAlloc, SimpleList, Teams, IStartabl
 		
 		public static method create takes integer uncollectedUnitID, integer collectedUnitID, real x, real y, real facing returns thistype
 			local thistype new = thistype.allocate()
+			local IndexedUnit uInfo
 						
 			set new.UncollectedUnit = CreateUnit(COLLECTIBLE_PLAYER, uncollectedUnitID, x, y, facing)
+			set uInfo = IndexedUnit.create(new.UncollectedUnit)
+			set uInfo.Collideable = false
+			call uInfo.InitializeVertexColor()
 			call AddUnitLocust(new.UncollectedUnit)
 			set new.UncollectedUnitRadius = GetUnitDefaultRadius(uncollectedUnitID)
 			
 			if collectedUnitID != 0 then
 				set new.CollectedUnit = CreateUnit(COLLECTIBLE_PLAYER, collectedUnitID, x, y, facing)
+				set uInfo = IndexedUnit.create(new.CollectedUnit)
+				set uInfo.Collideable = false
+				call uInfo.InitializeVertexColor()
 				call AddUnitLocust(new.CollectedUnit)
 			else
 				set new.CollectedUnit = null
@@ -236,29 +243,32 @@ library Collectible requires Alloc, PermanentAlloc, SimpleList, Teams, IStartabl
 		
 		public static method create takes Levels_Level parentLevel, DeferredCallback onAllCollected returns thistype
 			local integer tcsCountOnLevel = 0
-			local SimpleList_ListNode curStartableNode = parentLevel.Startables.first
+			local SimpleList_ListNode curStartableNode
 			local thistype new = thistype.allocate()
-			
+						
 			set new.OnAllCollected = onAllCollected
 			
 			set new.ActiveTeams = SimpleList_List.create()
 			set new.Collectibles = SimpleList_List.create()
-			
-			loop
-			exitwhen curStartableNode == 0 or tcsCountOnLevel != 0
-				if IStartable(curStartableNode.value).getType() == CollectibleSet.typeid then
-					set tcsCountOnLevel = tcsCountOnLevel + 1
-				endif
-			set curStartableNode = curStartableNode + 1
-			endloop
-			
+						
+			if parentLevel != 0 and parentLevel.Startables != 0 then
+				set curStartableNode = parentLevel.Startables.first
+				loop
+				exitwhen curStartableNode == 0 or tcsCountOnLevel != 0
+					if IStartable(curStartableNode.value).getType() == CollectibleSet.typeid then
+						set tcsCountOnLevel = tcsCountOnLevel + 1
+					endif
+				set curStartableNode = curStartableNode.next
+				endloop
+			endif
+						
 			if tcsCountOnLevel == 0 then
 				call parentLevel.AddLevelStartCB(Condition(function thistype.InitializeTeam))
 				call parentLevel.AddLevelStopCB(Condition(function thistype.DeinitializeTeam))
 			endif
 			
 			call parentLevel.AddStartable(new)
-			
+						
 			return new
 		endmethod
 		

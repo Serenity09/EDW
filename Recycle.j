@@ -7,7 +7,10 @@ library Recycle requires UnitGlobals, DisposableUnit
 		
 		public constant integer BUFFER_UNIT_COUNT = 5 //whenever an existing recycler calls make with 0 units in the collection, this is the number of units that will be simulataneously preloaded
 		private constant boolean HIDE_RECYCLED_UNITS = true
+		private constant boolean USE_SAFE_SET_POSITION = true
 		private constant boolean MOVE_WITH_SET_POSITION = false //SetUnitPosition seems to have issues with very large units?
+		private constant integer SET_POSITION_MODE = 2
+		
 	endglobals
     
     /*
@@ -77,7 +80,8 @@ library Recycle requires UnitGlobals, DisposableUnit
             loop
             exitwhen i >= count
 				set u = CreateUnit(this.defaultOwner, this.uID, SAFE_X + this.count, SAFE_Y + this*SAFE_TYPE_OFFSET + this.count, this.facing)
-                
+                call IndexedUnit.create(u)
+				
                 call UnitAddAbility(u, 'Aloc')
 				static if HIDE_RECYCLED_UNITS then
 					call ShowUnit(u, false)
@@ -131,7 +135,14 @@ library Recycle requires UnitGlobals, DisposableUnit
 			static if HIDE_RECYCLED_UNITS then
 				call ShowUnit(u, true)
 			endif
-			call SetUnitPosition(u, x, y)
+			static if USE_SAFE_SET_POSITION then
+				call SetUnitPosition(u, x, y)
+				call SetUnitX(u, x)
+				call SetUnitY(u, y)
+			else
+				call SetUnitX(u, x)
+				call SetUnitY(u, y)
+			endif
 			call SetUnitFacing(u, angle)
 			
 			//call DisplayTextToForce(bj_FORCE_PLAYER[0], "recycling with n left:" + I2S(r.count))
@@ -152,8 +163,10 @@ library Recycle requires UnitGlobals, DisposableUnit
 			static if HIDE_RECYCLED_UNITS then
 				call ShowUnit(u, true)
 			endif
-			static if MOVE_WITH_SET_POSITION then
+			static if USE_SAFE_SET_POSITION then
 				call SetUnitPosition(u, x, y)
+				call SetUnitX(u, x)
+				call SetUnitY(u, y)
 			else
 				call SetUnitX(u, x)
 				call SetUnitY(u, y)
@@ -169,7 +182,8 @@ library Recycle requires UnitGlobals, DisposableUnit
 			
 			if this == 0 or this.count == MAX_SINGLE_INSTANCE_COUNT then
                 //call DisplayTextToForce(bj_FORCE_PLAYER[0], "no recycler exists for uid: " + I2S(GetUnitTypeId(u)) + " " + I2S(Levels_ticker))
-                call RemoveUnit(u)
+                call IndexedUnit(GetUnitUserData(u)).destroy()
+				call RemoveUnit(u)
             else
                 //call DisplayTextToForce(bj_FORCE_PLAYER[0], "releasing total stack size: " + I2S(r.count + 1) + " key: " + I2S(Levels_ticker))
 				call GroupAddUnit(this.uStack, u)
@@ -183,6 +197,7 @@ library Recycle requires UnitGlobals, DisposableUnit
 					// call SetUnitMoveSpeed(u, GetDefaultMoveSpeed(GetUnitTypeId(u)))
 				// endif
 				call SetUnitMoveSpeed(u, GetUnitDefaultMoveSpeed(u))
+				call IssueImmediateOrder(u, "stop")
 				//moving/hiding units via these functions results in buggy recycles
                 //call SetUnitX(u, SAFE_X + r.count)
                 //call SetUnitY(u, SAFE_Y + r.count)
@@ -190,8 +205,10 @@ library Recycle requires UnitGlobals, DisposableUnit
 					call ShowUnit(u, false)
                 endif
 				
-				static if MOVE_WITH_SET_POSITION then
+				static if USE_SAFE_SET_POSITION then
 					call SetUnitPosition(u, SAFE_X + this.count, SAFE_Y + this*SAFE_TYPE_OFFSET + this.count)
+					call SetUnitX(u, SAFE_X + this.count)
+					call SetUnitY(u, SAFE_Y + this*SAFE_TYPE_OFFSET + this.count)
 				else
 					call SetUnitX(u, SAFE_X + this.count)
 					call SetUnitY(u, SAFE_Y + this*SAFE_TYPE_OFFSET + this.count)

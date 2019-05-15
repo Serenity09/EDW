@@ -344,6 +344,7 @@ library IceSkater requires SimpleList, Vector2, IceMovement
 			set new.CurrentDestination = new.Destinations.first.next
 			
 			set new.SkateUnit = CreateUnit(NPC_SKATE_PLAYER, unitID, start.x, start.y, Destination(new.CurrentDestination.value).AngleFromPrevious)
+			call IndexedUnit.create(new.SkateUnit)
 			//call ShowUnit(new.SkateUnit, false)
 			
 			set new.MaxAngleDelta = maxAngle

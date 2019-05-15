@@ -200,20 +200,18 @@ library Levels requires SimpleList, Teams, GameModesGlobals, LevelIDGlobals, Cin
         public method RemoveGreenFromLevel takes nothing returns nothing
             local unit u
             
-            call GroupEnumUnitsInRect(TempGroup, .Vision, Green)
-            set u = FirstOfGroup(TempGroup)
+            call GroupEnumUnitsInRect(TempGroup, .Vision, null)
             
             loop
-            exitwhen u == null
-                //reset unit to default stats based on what can currently change... at some point find a better way to unload modified units (and only them)
-                call SetUnitVertexColor(u, 255, 255, 255, 255)
-                call SetUnitMoveSpeed(u, GetUnitDefaultMoveSpeed(u))
-				if GetUnitUserData(u) != 0 then
-					call IndexedUnit(GetUnitUserData(u)).destroy()
-				endif
-                call Recycle_ReleaseUnit(u)
-            call GroupRemoveUnit(TempGroup, u)
             set u = FirstOfGroup(TempGroup)
+			exitwhen u == null
+				if GetPlayerId(GetOwningPlayer(u)) == 10 then					
+					//reset unit to default stats based on what can currently change... at some point find a better way to unload modified units (and only them)
+					call SetUnitVertexColor(u, 255, 255, 255, 255)
+					call SetUnitMoveSpeed(u, GetUnitDefaultMoveSpeed(u))
+					call Recycle_ReleaseUnit(u)
+				endif
+            call GroupRemoveUnit(TempGroup, u)
             endloop
                 
             set u = null

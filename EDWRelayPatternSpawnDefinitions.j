@@ -5,7 +5,6 @@ library EDWRelayPatternSpawnDefinitions requires RelayPatternSpawn, GroupUtils, 
 		local unit u
 				
 		set u = Recycle_MakeUnit(spawn.Data, spawnTurn.FirstLane.x, spawnTurn.FirstLane.y)
-		call IndexedUnit.create(u)
 		call IndexedUnit(GetUnitUserData(u)).SetMoveSpeed(GetUnitMoveSpeed(u)*spawn.Parent.OverclockFactor)
 		call GroupAddUnit(g, u)
 		
@@ -32,7 +31,6 @@ library EDWRelayPatternSpawnDefinitions requires RelayPatternSpawn, GroupUtils, 
 			endif
 			
 			set u = Recycle_MakeUnit(spawn.Data, x, y)
-			call IndexedUnit.create(u)
 			call IndexedUnit(GetUnitUserData(u)).SetMoveSpeed(GetUnitMoveSpeed(u)*spawn.Parent.OverclockFactor)
 			call GroupAddUnit(g, u)
 		
@@ -57,7 +55,6 @@ library EDWRelayPatternSpawnDefinitions requires RelayPatternSpawn, GroupUtils, 
 		endif
 		
 		set u = Recycle_MakeUnit(spawn.Data, x, y)
-		call IndexedUnit.create(u)
 		call IndexedUnit(GetUnitUserData(u)).SetMoveSpeed(GetUnitMoveSpeed(u)*spawn.Parent.OverclockFactor)
 		call GroupAddUnit(g, u)
 		
@@ -76,7 +73,6 @@ library EDWRelayPatternSpawnDefinitions requires RelayPatternSpawn, GroupUtils, 
 				set u = Recycle_MakeUnit(PASSENGERCAR, spawnTurn.FirstLane.x, spawnTurn.FirstLane.y + spawnTurn.FirstLaneY*spawn.Parent.UnitLaneSize)
 			endif
 			
-			call IndexedUnit.create(u)
 			call IndexedUnit(GetUnitUserData(u)).SetMoveSpeed(1.5 * TERRAIN_TILE_SIZE * spawn.Parent.OverclockFactor)
 			call GroupAddUnit(g, u)
 		endif
@@ -93,21 +89,18 @@ library EDWRelayPatternSpawnDefinitions requires RelayPatternSpawn, GroupUtils, 
 		if spawn.CurrentCycle == 1 or spawn.CurrentCycle == 3 then
 			//lane 0
 			set u = Recycle_MakeUnit(ICETROLL, spawnTurn.FirstLane.x, spawnTurn.FirstLane.y)
-			call IndexedUnit.create(u)
 			call IndexedUnit(GetUnitUserData(u)).SetMoveSpeed(200.*spawn.Parent.OverclockFactor)
 			//call SetUnitMoveSpeed(u, 200)
 			call GroupAddUnit(g, u)
 			
 			//lane 2
 			set u = Recycle_MakeUnit(ICETROLL, spawnTurn.FirstLane.x, spawnTurn.FirstLane.y + 2*spawnTurn.FirstLaneY*spawn.Parent.UnitLaneSize)
-			call IndexedUnit.create(u)
 			call IndexedUnit(GetUnitUserData(u)).SetMoveSpeed(200.*spawn.Parent.OverclockFactor)
 			//call SetUnitMoveSpeed(u, 200)
 			call GroupAddUnit(g, u)
 		elseif spawn.CurrentCycle == 2 then
 			//lane 1
 			set u = Recycle_MakeUnit(ICETROLL, spawnTurn.FirstLane.x, spawnTurn.FirstLane.y + spawnTurn.FirstLaneY*spawn.Parent.UnitLaneSize)
-			call IndexedUnit.create(u)
 			call IndexedUnit(GetUnitUserData(u)).SetMoveSpeed(400.*spawn.Parent.OverclockFactor)
 			//call SetUnitMoveSpeed(u, 400)
 			call GroupAddUnit(g, u)

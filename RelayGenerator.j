@@ -382,9 +382,7 @@ library RelayGenerator requires GameGlobalConstants, SimpleList, Table, Vector2,
 					set lane = R2I((GetUnitY(u) - spawnTurn.FirstLane.y) / (spawnTurn.FirstLaneY * this.UnitLaneSize))
 				endif
 				
-				//debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "Creating unit in lane " + I2S(lane))
-				
-				//call IndexedUnit.create(u)
+				//debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "Creating unit in lane " + I2S(lane))				
 				call GroupAddUnit(this.Units, u)
 				set spawnUnit = RelayUnit.create(lane, this.Turns.first)
 				set UnitIDToRelayUnitID[GetUnitUserData(u)] = spawnUnit
@@ -412,7 +410,6 @@ library RelayGenerator requires GameGlobalConstants, SimpleList, Table, Vector2,
 			call RelayUnit(UnitIDToRelayUnitID[GetUnitUserData(u)]).deallocate()
 			call GroupRemoveUnit(.Units, u)
 			
-			call IndexedUnit(GetUnitUserData(u)).destroy()
 			call Recycle_ReleaseUnit(u)
 		endmethod
 		

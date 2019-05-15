@@ -17,22 +17,22 @@ library LW2 requires Recycle, Levels, EDWCollectibleResolveHandlers
 		//collect all 3 to beat the level
 		set collectibleSet = CollectibleSet.create(l, EDWCollectibleResolveHandlers_AdvanceLevel)
 		
-		set collectible = Collectible.createFromPoint(FROG, 0, gg_rct_LW2_C1, 180)
+		set collectible = Collectible.createFromPoint(ORANGEFROG, 0, gg_rct_LW2_C1, 180)
 		call collectibleSet.AddCollectible(collectible)
 		
-		set collectible = Collectible.createFromPoint(FROG, 0, gg_rct_LW2_C2, 0)
+		set collectible = Collectible.createFromPoint(GREENFROG, 0, gg_rct_LW2_C2, 0)
 		//set collectible.ReturnToCheckpoint = true
 		call collectibleSet.AddCollectible(collectible)
 		
-		set collectible = Collectible.createFromPoint(FROG, 0, gg_rct_LW2_C3, 270)
+		set collectible = Collectible.createFromPoint(PURPLEFROG, 0, gg_rct_LW2_C3, 270)
 		//set collectible.ReturnToCheckpoint = true
 		call collectibleSet.AddCollectible(collectible)
 		
-		set collectible = Collectible.createFromPoint(FROG, 0, gg_rct_LW2_C4, 0)
+		set collectible = Collectible.createFromPoint(REDFROG, 0, gg_rct_LW2_C4, 0)
 		//set collectible.ReturnToCheckpoint = true
 		call collectibleSet.AddCollectible(collectible)
 		
-		set collectible = Collectible.createFromPoint(FROG, 0, gg_rct_LW2_C5, 0)
+		set collectible = Collectible.createFromPoint(TURQOISEFROG, 0, gg_rct_LW2_C5, 0)
 		//set collectible.ReturnToCheckpoint = true
 		call collectibleSet.AddCollectible(collectible)
 				

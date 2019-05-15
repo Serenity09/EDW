@@ -111,10 +111,12 @@ library EDWPatternSpawnDefinitions requires PatternSpawn, Recycle
 		call SetUnitMoveSpeed(u, 200.)
 		call GroupAddUnit(g, u)
 		
-		if GetRandomInt(0, 1) == 0 then
-			set u = Recycle_MakeUnit(ICETROLL, LinePatternSpawn(spawn).SpawnOrigin.x, LinePatternSpawn(spawn).SpawnOrigin.y + GetRandomReal(0, LinePatternSpawn(spawn).SpawnLineLength))
-			call SetUnitMoveSpeed(u, 300.)
-			call GroupAddUnit(g, u)
+		if RewardMode == GameModesGlobals_HARD then
+			if GetRandomInt(0, 1) == 0 then
+				set u = Recycle_MakeUnit(ICETROLL, LinePatternSpawn(spawn).SpawnOrigin.x, LinePatternSpawn(spawn).SpawnOrigin.y + GetRandomReal(0, LinePatternSpawn(spawn).SpawnLineLength))
+				call SetUnitMoveSpeed(u, 300.)
+				call GroupAddUnit(g, u)
+			endif
 		endif
 		
 		return g

@@ -1,4 +1,4 @@
-library BoundedWheel requires Alloc, SimpleList, locust, UnitWrapper
+library BoundedWheel requires Alloc, SimpleList, locust
     globals
         public constant player WISP_WHEEL_PLAYER = Player(10)
         
@@ -46,9 +46,7 @@ library BoundedWheel requires Alloc, SimpleList, locust, UnitWrapper
                     //debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "x: " + R2S(x))
                     //debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "y: " + R2S(y))
                     
-                    //call SetUnitX(UnitWrapper(wUnitNode).u, x)
-                    //call SetUnitY(UnitWrapper(wUnitNode).u, y)
-                    call SetUnitPosition(UnitWrapper(wUnitNode.value).u, x, y)
+                    call SetUnitPosition(IndexedUnit(wUnitNode.value).Unit, x, y)
                 //else
                     //debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "Empty unit")
                 endif

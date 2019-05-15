@@ -1,4 +1,4 @@
-library Wheel requires Alloc, SimpleList, locust, UnitWrapper
+library Wheel requires Alloc, SimpleList, locust
     globals
         public constant player WISP_WHEEL_PLAYER = Player(11)
         
@@ -52,9 +52,7 @@ library Wheel requires Alloc, SimpleList, locust, UnitWrapper
                     //debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "x: " + R2S(x))
                     //debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "y: " + R2S(y))
                     
-                    //call SetUnitX(UnitWrapper(wUnitNode).u, x)
-                    //call SetUnitY(UnitWrapper(wUnitNode).u, y)
-                    call SetUnitPosition(UnitWrapper(wUnitNode.value).u, x, y)
+                    call SetUnitPosition(IndexedUnit(wUnitNode.value).Unit, x, y)
                 //else
                     //debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "Empty unit")
                 endif
@@ -107,7 +105,7 @@ library Wheel requires Alloc, SimpleList, locust, UnitWrapper
         //adds units to spokes
         public method AddUnits takes integer unitID, integer count returns nothing
             local integer iUnit = 0
-            local UnitWrapper wu
+			local unit u
             
             //R2I translates to Math.floor
             local integer iLayer
@@ -121,9 +119,7 @@ library Wheel requires Alloc, SimpleList, locust, UnitWrapper
             exitwhen iUnit >= count
                 set iLayer = this.Units.count / this.SpokeCount
                 set iSpoke = this.Units.count - iLayer * this.SpokeCount
-                
-                set wu = UnitWrapper.allocate()
-                
+                                
                 set theta = this.CurrentAngle + iSpoke * this.AngleBetween
                 set x = this.Center.x + this.InitialOffset * Cos(theta) + (iLayer + 1) * this.DistanceBetween * Cos(theta)
                 set y = this.Center.y + this.InitialOffset * Sin(theta) + (iLayer + 1) * this.DistanceBetween * Sin(theta)
@@ -131,10 +127,11 @@ library Wheel requires Alloc, SimpleList, locust, UnitWrapper
                 //debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "x: " + R2S(x))
                 //debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "y: " + R2S(y))
                 
-                set wu.u = CreateUnit(WISP_WHEEL_PLAYER, unitID, x, y, 0)
-                call AddUnitLocust(wu.u)
+				set u = CreateUnit(WISP_WHEEL_PLAYER, unitID, x, y, 0)
+				call IndexedUnit.create(u)				
+                call AddUnitLocust(u)
                 
-                call this.Units.addEnd(wu)
+                call this.Units.addEnd(GetUnitUserData(u))
             set iUnit = iUnit + 1
             endloop
         endmethod

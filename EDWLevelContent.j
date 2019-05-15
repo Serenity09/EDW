@@ -1,11 +1,10 @@
-library EDWLevelContent requires LevelIDGlobals, SimpleList, Teams, Levels, EDWPatternSpawnDefinitions, Collectible, FastLoad
+library EDWLevelContent requires LevelIDGlobals, EDWLevels, SimpleList, Teams, Levels, EDWPatternSpawnDefinitions, Collectible, FastLoad
 	private function FinishedIntro takes nothing returns nothing
 		call TrackGameTime()
 	endfunction
 		
 	public function Initialize takes nothing returns nothing
 		local Levels_Level l
-        local Checkpoint cp
                 
         local BoundedSpoke boundedSpoke
         local Wheel wheel
@@ -27,13 +26,7 @@ library EDWLevelContent requires LevelIDGlobals, SimpleList, Teams, Levels, EDWP
 		local integer i
 		
 		//FIRST LEVEL INITS HARD CODED
-        set l = Levels_Level.create(INTRO_LEVEL_ID, "???", 0, 0, "IntroWorldLevelStart", "IntroWorldLevelStop", gg_rct_IntroWorld_R1, gg_rct_IntroWorld_Vision, gg_rct_IntroWorld_End, 0)
-        //1st level is now handled in EDWVisualVote vote finish callback
-        //call l.StartLevel() //just start it, intro level vision handled by Reveal Intro World... i like the reveal effect
-        call l.AddCheckpoint(gg_rct_IntroWorldCP_1_1, gg_rct_IntroWorld_R2)
-        call l.AddCheckpoint(gg_rct_IntroWorldCP_1_2a, gg_rct_IntroWorld_R3a)
-        call l.AddCheckpoint(gg_rct_IntroWorldCP_1_2, gg_rct_IntroWorld_R3)
-		
+        set l = Levels_Level(INTRO_LEVEL_ID)
 		set pattern = LinePatternSpawn.createFromRect(IntroPatternSpawn, 1, gg_rct_Rect_052, TERRAIN_TILE_SIZE)
 		set sg = SimpleGenerator.create(pattern, .75, 270, 16)
 		call sg.SetMoveSpeed(200.)
@@ -49,56 +42,59 @@ library EDWLevelContent requires LevelIDGlobals, SimpleList, Teams, Levels, EDWP
         
 		call l.AddStartable(boundedSpoke)
 		
+		if RewardMode == GameModesGlobals_HARD then
+			call l.AddStartable(MortarNTarget.create(SMLMORT, SMLTARG, Player(8), gg_rct_IntroWorld_Mortar1 , gg_rct_IntroWorld_Target1))
+		endif
+		
 		call l.AddLevelStopCB(Condition(function FinishedIntro))
                 
         //DOORS HARD CODED
         //currently no start or stop logic
-        call Levels_Level.CreateDoors(l, null, null, gg_rct_HubWorld_R, gg_rct_HubWorld_Vision)
         
-        //REMAINING LEVELS
-        //takes integer levelID, trigger start, trigger stop, trigger preload, trigger unload, boolean haspreload, rect startspawn, rect vision, rect tothislevel, Level previouslevel returns Level
-        //config extension methods:
-        //.setPreload(trigger preload, trigger unload) returns Levels_Level
         //ICE WORLD TECH / ENVY WORLD
         //LEVEL 1
-        set l = Levels_Level.create(IW1_LEVEL_ID, "Cruise Control", 3, 2, "IW1Start", "IW1Stop", gg_rct_IWR_1_1, gg_rct_IW1_Vision, gg_rct_IW1_End, 0)
-        call l.AddCheckpoint(gg_rct_IWCP_1_1, gg_rct_IWR_1_2)
-        
-        call l.AddStartable(MortarNTarget.create(SMLMORT, SMLTARG, Player(8), gg_rct_IW1_Mortar1 , gg_rct_IW1_Target1))
-        call l.AddStartable(MortarNTarget.create(SMLMORT, SMLTARG, Player(8), gg_rct_IW1_Mortar2 , gg_rct_IW1_Target2))
-        call l.AddStartable(MortarNTarget.create(SMLMORT, SMLTARG, Player(8), gg_rct_IW1_Mortar3 , gg_rct_IW1_Target3))
-        call l.AddStartable(MortarNTarget.create(SMLMORT, SMLTARG, Player(8), gg_rct_IW1_Mortar1 , gg_rct_IW1_Target1))
-        call l.AddStartable(MortarNTarget.create(SMLMORT, SMLTARG, Player(8), gg_rct_IW1_Mortar2 , gg_rct_IW1_Target2))
-        call l.AddStartable(MortarNTarget.create(SMLMORT, SMLTARG, Player(8), gg_rct_IW1_Mortar3 , gg_rct_IW1_Target3))
-        call l.AddStartable(MortarNTarget.create(SMLMORT, SMLTARG, Player(8), gg_rct_IW1_Mortar1 , gg_rct_IW1_Target1))
-        call l.AddStartable(MortarNTarget.create(SMLMORT, SMLTARG, Player(8), gg_rct_IW1_Mortar2 , gg_rct_IW1_Target2))
-        call l.AddStartable(MortarNTarget.create(SMLMORT, SMLTARG, Player(8), gg_rct_IW1_Mortar3 , gg_rct_IW1_Target3))
+        set l = Levels_Level(IW1_LEVEL_ID)
+        		
+		if RewardMode == GameModesGlobals_HARD then
+			set i = GetRandomInt(4, 5)
+		else
+			set i = 3
+		endif
+		loop
+			exitwhen i == 0
+			call l.AddStartable(MortarNTarget.create(SMLMORT, SMLTARG, Player(8), gg_rct_IW1_Mortar1 , gg_rct_IW1_Target1))
+			call l.AddStartable(MortarNTarget.create(SMLMORT, SMLTARG, Player(8), gg_rct_IW1_Mortar2 , gg_rct_IW1_Target2))
+			call l.AddStartable(MortarNTarget.create(SMLMORT, SMLTARG, Player(8), gg_rct_IW1_Mortar3 , gg_rct_IW1_Target3))
+		set i = i - 1
+		endloop
         
         //LEVEL 2
-        set l = Levels_Level.create(IW2_LEVEL_ID, "Jesus on Wheel", 4, 3, "IW2Start", "IW2Stop", gg_rct_IWR_2_1, gg_rct_IW2_Vision, gg_rct_IW2_End, l)
-        call l.AddCheckpoint(gg_rct_IWCP_2_1, gg_rct_IWR_2_2)
-        call l.AddCheckpoint(gg_rct_IWCP_2_2, gg_rct_IWR_2_3)
+        set l = Levels_Level(IW2_LEVEL_ID)
         
 		set pattern = LinePatternSpawn.createFromRect(IW2PatternSpawn, 1, gg_rct_Rect_092, TERRAIN_TILE_SIZE)
 		set sg = SimpleGenerator.create(pattern, .9, 0, 23)
         call l.AddStartable(sg)
 		
-        call l.AddStartable(MortarNTarget.create(SMLMORT, SMLTARG, Player(8), gg_rct_IW2_Mortar1 , gg_rct_IW2_Target1))
-        call l.AddStartable(MortarNTarget.create(SMLMORT, SMLTARG, Player(8), gg_rct_IW2_Mortar2 , gg_rct_IW2_Target2))
-        call l.AddStartable(MortarNTarget.create(SMLMORT, SMLTARG, Player(8), gg_rct_IW2_Mortar1 , gg_rct_IW2_Target1))
-        call l.AddStartable(MortarNTarget.create(SMLMORT, SMLTARG, Player(8), gg_rct_IW2_Mortar2 , gg_rct_IW2_Target2))
-        call l.AddStartable(MortarNTarget.create(SMLMORT, SMLTARG, Player(8), gg_rct_IW2_Mortar1 , gg_rct_IW2_Target1))
-        call l.AddStartable(MortarNTarget.create(SMLMORT, SMLTARG, Player(8), gg_rct_IW2_Mortar2 , gg_rct_IW2_Target2))
-        call l.AddStartable(MortarNTarget.create(SMLMORT, SMLTARG, Player(8), gg_rct_IW2_Mortar1 , gg_rct_IW2_Target1))
-        call l.AddStartable(MortarNTarget.create(SMLMORT, SMLTARG, Player(8), gg_rct_IW2_Mortar2 , gg_rct_IW2_Target2))
-        call l.AddStartable(MortarNTarget.create(SMLMORT, SMLTARG, Player(8), gg_rct_IW2_Mortar1 , gg_rct_IW2_Target1))
-        call l.AddStartable(MortarNTarget.create(SMLMORT, SMLTARG, Player(8), gg_rct_IW2_Mortar2 , gg_rct_IW2_Target2))
+		if RewardMode == GameModesGlobals_HARD then
+			set i = GetRandomInt(3, 4)
+		else
+			set i = 2
+		endif
+		loop
+			exitwhen i == 0
+			call l.AddStartable(MortarNTarget.create(SMLMORT, SMLTARG, Player(8), gg_rct_IW2_Mortar1 , gg_rct_IW2_Target1))
+			call l.AddStartable(MortarNTarget.create(SMLMORT, SMLTARG, Player(8), gg_rct_IW2_Mortar1 , gg_rct_IW2_Target3))
+			call l.AddStartable(MortarNTarget.create(SMLMORT, SMLTARG, Player(8), gg_rct_IW2_Mortar2 , gg_rct_IW2_Target2))
+			call l.AddStartable(MortarNTarget.create(SMLMORT, SMLTARG, Player(8), gg_rct_IW2_Mortar2 , gg_rct_IW2_Target4))
+		set i = i - 1
+		endloop
+		
+		if RewardMode == GameModesGlobals_HARD then
+			call SetTerrainType(GetRectCenterX(gg_rct_IW2_TC1), GetRectCenterY(gg_rct_IW2_TC1), ABYSS, 0, 1, 0)
+		endif
         
         //LEVEL 3
-        set l = Levels_Level.create(IW3_LEVEL_ID, "Illidan Goes Skiing", 6, 6, "IW3Start", "IW3Stop", gg_rct_IWR_3_1, gg_rct_IW3_Vision, gg_rct_IW3_End, l)
-        call l.AddCheckpoint(gg_rct_IWCP_3_1, gg_rct_IWR_3_2)
-        call l.AddCheckpoint(gg_rct_IWCP_3_2, gg_rct_IWR_3_3)
-        call l.AddCheckpoint(gg_rct_IWCP_3_3, gg_rct_IWR_3_4)
+        set l = Levels_Level(IW3_LEVEL_ID)
         		
 		call l.AddStartable(MortarNTarget.create(SMLMORT, SMLTARG, Player(8), gg_rct_IW3_Mortar1 , gg_rct_IW3_Target1))
 		call l.AddStartable(MortarNTarget.create(SMLMORT, SMLTARG, Player(8), gg_rct_IW3_Mortar1 , gg_rct_IW3_Target1))
@@ -109,12 +105,9 @@ library EDWLevelContent requires LevelIDGlobals, SimpleList, Teams, Levels, EDWP
 		
         call l.AddStartable(DrunkWalker_DrunkWalkerSpawn.create(gg_rct_IW3_Drunks_1, 6, 5, LGUARD, 24))
         call l.AddStartable(DrunkWalker_DrunkWalkerSpawn.create(gg_rct_IW3_Drunks_2, 8, 6, LGUARD, 16))
-        
+        		
         //LEVEL 4
-        set l = Levels_Level.create(IW4_LEVEL_ID, "Hard Angles", 6, 4, "IW4Start", "IW4Stop", gg_rct_IWR_4_1, gg_rct_IW4_Vision, gg_rct_IW4_End, l)
-        set cp = l.AddCheckpoint(gg_rct_IWCP_4_1, gg_rct_IWR_4_2)
-        set cp.DefaultColor = KEY_RED
-        call l.AddCheckpoint(gg_rct_IWCP_4_2, gg_rct_IWR_4_3)
+        set l = Levels_Level(IW4_LEVEL_ID)
         
         call l.AddStartable(DrunkWalker_DrunkWalkerSpawn.create(gg_rct_IW4_Drunks, 6, 5, LGUARD, 24))
         call l.AddStartable(Blackhole.create(8958, 6400, true))
@@ -153,18 +146,16 @@ library EDWLevelContent requires LevelIDGlobals, SimpleList, Teams, Levels, EDWP
                 
         //LEVEL 5
 		if CONFIGURATION_PROFILE != RELEASE then
-			set l = Levels_Level.create(IW5_LEVEL_ID, "Frosty", 4, 4, "IW5Start", "IW5Stop", gg_rct_IWR_5_1, gg_rct_IW5_Vision, gg_rct_IW5_End, l)
-			call l.AddCheckpoint(gg_rct_IWCP_5_1, gg_rct_IWR_5_2)
+			set l = Levels_Level(IW5_LEVEL_ID)
 						
 			call l.AddStartable(DrunkWalker_DrunkWalkerSpawn.create(gg_rct_IW5_Drunks_3, 2, 2, GUARD, 12))
 			call l.AddStartable(DrunkWalker_DrunkWalkerSpawn.create(gg_rct_IW5_Drunks_2, 6, 3.5, LGUARD, 16))
 			call l.AddStartable(DrunkWalker_DrunkWalkerSpawn.create(gg_rct_IW5_Drunks_1, 10, 8, LGUARD, 60))
         endif
-		
+				
 		//ICE WORLD B
 		//LEVEL 1
-		set l = Levels_Level.create(IWB1_LEVEL_ID, "Training Wheels", 4, 2, "IWB1Start", "IWB1Stop", gg_rct_EIWR_1_1, gg_rct_EIW1_Vision, gg_rct_EIW1_End, 0)
-        call l.AddCheckpoint(gg_rct_EIWCP_1_1, gg_rct_EIWR_1_2)
+		set l = Levels_Level(IWB1_LEVEL_ID)
 				
 		set rg = RelayGenerator.create(-5948, 10836, 4, 4, 270, 0, 2., RelayGeneratorRandomSpawn, 1)
 		set rg.SpawnPattern.Data = ICETROLL
@@ -176,47 +167,21 @@ library EDWLevelContent requires LevelIDGlobals, SimpleList, Teams, Levels, EDWP
 				
 		//LAND WORLD A
 		//LEVEL 1
-		set l = Levels_Level.create(LW1_LEVEL_ID, "Need For Speed", 3, 3, "LW1Start", "LW1Stop", gg_rct_LWR_1_1, gg_rct_LW1_Vision, gg_rct_LW1_End, 0)
-        call l.AddCheckpoint(gg_rct_LWCP_1_1, gg_rct_LWR_1_2)
-		
 		call LW1_InitializeStartableContent()
-		
-		
 		//LEVEL 2
-		set l = Levels_Level.create(LW2_LEVEL_ID, "Monday Commute", 3, 3, "LW2Start", "LW2Stop", gg_rct_LWR_2_1, gg_rct_LW2_Vision, gg_rct_LW2_End, l)
-		set l.MaxCollisionSize = 300.
-		//call l.AddCheckpoint(gg_rct_LWCP_2_1, gg_rct_LWR_2_2)
 		call LW2_InitializeStartableContent()
 		
         //PRIDE WORLD / PLATFORMING
         //LEVEL 1
-        set l = Levels_Level.create(PW1_LEVEL_ID, "Perspective", 4, 2, "PW1Start", "PW1Stop", gg_rct_PWR_1_1, gg_rct_PW1_Vision, gg_rct_PW1_End, 0) //gg_rct_PW1_Vision
-        set cp = l.AddCheckpoint(gg_rct_PWCP_1_1, gg_rct_PWR_1_2)
-		set cp.DefaultGameMode = Teams_GAMEMODE_PLATFORMING
-		
-        set cp = l.AddCheckpoint(gg_rct_PWCP_1_2, gg_rct_PWR_1_3)
-        set cp.DefaultGameMode = Teams_GAMEMODE_PLATFORMING
-		
-		set cp = l.AddCheckpoint(gg_rct_PWCP_1_3, gg_rct_PWR_1_4)
-		set cp.RequiresSameGameMode = true
+        set l = Levels_Level(PW1_LEVEL_ID)
                 
         call l.AddStartable(MortarNTarget.create(SMLMORT, SMLTARG, Player(8), gg_rct_Rect_340 , gg_rct_Rect_339))
         call l.AddStartable(MortarNTarget.create(SMLMORT, SMLTARG, Player(8), gg_rct_Rect_340 , gg_rct_Rect_339))
         
         call l.AddStartable(MortarNTarget.create(SMLMORT, SMLTARG, Player(8), gg_rct_Rect_352 , gg_rct_Rect_351))
         
-        
         //LEVEL 2
-        set l = Levels_Level.create(PW2_LEVEL_ID, "Palindrome", 5, 5, "PW2Start", "PW2Stop", gg_rct_PWR_2_1, gg_rct_PW2_Vision, gg_rct_PW2_End, l) //gg_rct_PW1_Vision
-		//set cpID = l.AddCheckpoint(gg_rct_PWCP_2_1, gg_rct_PWR_2_2)
-        call l.AddCheckpoint(gg_rct_PWCP_2_2, gg_rct_PWR_2_3)
-        
-		set cp = l.AddCheckpoint(gg_rct_PWCP_2_3, gg_rct_PWR_2_4)
-        set cp.DefaultGameMode = Teams_GAMEMODE_PLATFORMING
-        
-		set cp = l.AddCheckpoint(gg_rct_PWCP_2_4, gg_rct_PWR_2_5)
-        set cp.DefaultGameMode = Teams_GAMEMODE_PLATFORMING
-        set cp.RequiresSameGameMode = true
+        set l = Levels_Level(PW2_LEVEL_ID)
                         
         call l.AddStartable(MortarNTarget.create(SMLMORT, SMLTARG, Player(8), gg_rct_PW2_Mortar , gg_rct_PW2_Target))
         call l.AddStartable(MortarNTarget.create(SMLMORT, SMLTARG, Player(8), gg_rct_PW2_Mortar , gg_rct_PW2_Target))
@@ -256,19 +221,9 @@ library EDWLevelContent requires LevelIDGlobals, SimpleList, Teams, Levels, EDWP
         //debug call rg.DrawTurns()
         
         call l.AddStartable(rg)
-        
+        		
         //LEVEL 3
-        set l = Levels_Level.create(PW3_LEVEL_ID, "Playground", 5, 4, "PW3Start", "PW3Stop", gg_rct_PWR_3_1, gg_rct_PW3_Vision, gg_rct_PW3_End, l) //gg_rct_PW1_Vision
-        set Checkpoint(l.Checkpoints.first.value).DefaultGameMode = Teams_GAMEMODE_PLATFORMING
-        
-		set cp = l.AddCheckpoint(gg_rct_PWCP_3_1, gg_rct_PWR_3_2)
-        set cp.DefaultGameMode = Teams_GAMEMODE_PLATFORMING
-        
-		set cp = l.AddCheckpoint(gg_rct_PWCP_3_2, gg_rct_PWR_3_3)
-        set cp.DefaultGameMode = Teams_GAMEMODE_PLATFORMING
-        
-		set cp = l.AddCheckpoint(gg_rct_PWCP_3_3, gg_rct_PWR_3_4)
-        set cp.DefaultGameMode = Teams_GAMEMODE_PLATFORMING
+        set l = Levels_Level(PW3_LEVEL_ID)
         
 		set pattern = LinePatternSpawn.createFromRect(RandomLineSlotSpawn, 1, gg_rct_PW3_MassCreate, TERRAIN_TILE_SIZE)
 		set pattern.Data = BOUNCER
@@ -276,24 +231,6 @@ library EDWLevelContent requires LevelIDGlobals, SimpleList, Teams, Levels, EDWP
 		call sg.SetMoveSpeed(100.)
         call l.AddStartable(sg)
         
-        /*
-        set wheel = Wheel.create(-2904, -6765)
-        set wheel.LayerCount = 3
-        set wheel.SpokeCount = 12
-        set wheel.AngleBetween = 30 * bj_PI / 180
-        set wheel.RotationSpeed = bj_PI / 20 * Wheel_TIMEOUT
-        set wheel.DistanceBetween = 2*TERRAIN_TILE_SIZE
-        set wheel.InitialOffset = 2*TERRAIN_TILE_SIZE
-        
-        call wheel.AddUnits('e00A', 12)
-        call wheel.AddUnits('e00K', 1)
-        call wheel.AddEmptySpace(5)
-        call wheel.AddUnits('e00K', 1)
-        call wheel.AddLayer(0)
-        call wheel.AddUnits('e00J', 12)
-        
-        call l.AddStartable(wheel)
-        */
         //set wheel = Wheel.create(-2694, -9200)
         set boundedWheel = BoundedWheel.create(-2694, -9200)
         set boundedWheel.SpokeCount = 16
@@ -302,59 +239,25 @@ library EDWLevelContent requires LevelIDGlobals, SimpleList, Teams, Levels, EDWP
         set boundedWheel.InitialOffset = 1.5*TERRAIN_TILE_SIZE
         set boundedWheel.DistanceBetween = 1*TERRAIN_QUADRANT_SIZE
         call boundedWheel.SetAngleBounds(bj_PI * 3/6,bj_PI * 5/6)
-        
-        /*
-        call boundedWheel.AddUnits('e00A', 3)
-        call boundedWheel.AddUnits('e00J', 1)
-        call boundedWheel.AddUnits('e00A', 3)
-        call boundedWheel.AddEmptySpace(1)
-        */
         call boundedWheel.AddEmptySpace(1)
         call boundedWheel.AddUnits('e00A', 6)
         call boundedWheel.AddUnits('e00J', 1)
         call boundedWheel.AddUnits('e00A', 6)
         call boundedWheel.AddEmptySpace(2)
-        
-        /*
-        set i = 0
-        loop
-        exitwhen i > 1
-            call wheel.AddUnits('e00A', 3)
-            call wheel.AddUnits('e00J', 1)
-        set i = i + 1
-        endloop
-        */
         call l.AddStartable(boundedWheel)
         
-        call AddUnitLocust(CreateUnit(Player(11), 'e00K', -554, -4840, 0))
+		call Recycle_MakeUnit(BOUNCER, -554, -4840)
         set wheel = Wheel.create(-554, -4840)
         set wheel.SpokeCount = 4
         set wheel.AngleBetween = bj_PI / 2
         set wheel.RotationSpeed = bj_PI / 10 * Wheel_TIMEOUT
         set wheel.DistanceBetween = 2.25*TERRAIN_TILE_SIZE
         call wheel.AddUnits('e00K', 4)
-        /*
-        call wheel.AddUnits('e00K', 1)
-        call wheel.AddEmptySpace(1)
-        call wheel.AddUnits('e00K', 1)
-        call wheel.AddEmptySpace(1)
-        
-        
-        call wheel.AddEmptySpace(1)
-        call wheel.AddUnits('e00K', 1)
-        call wheel.AddEmptySpace(1)
-        call wheel.AddUnits('e00K', 1)
-        
-        call wheel.AddUnits('e00K', 4)
-        */
         call l.AddStartable(wheel)
         
 		//LEVEL 4
 		if CONFIGURATION_PROFILE != RELEASE then
-			set l = Levels_Level.create(PW4_LEVEL_ID, "Moon", 5, 4, "PW4Start", "PW4Stop", gg_rct_PWR_4_1, gg_rct_PW4_Vision, gg_rct_PW4_End, l) //gg_rct_PW1_Vision
-			set Checkpoint(l.Checkpoints.first.value).DefaultGameMode = Teams_GAMEMODE_PLATFORMING
-			call l.AddLevelStartCB(Condition(function PW4TeamStart))
-			call l.AddLevelStopCB(Condition(function PW4TeamStop))
+			set l = Levels_Level(PW4_LEVEL_ID)
 						
 			set wheel = Wheel.create(-7040, -2942)
 			set wheel.LayerCount = 2
@@ -379,18 +282,12 @@ library EDWLevelContent requires LevelIDGlobals, SimpleList, Teams, Levels, EDWP
 		endif
 		
         //Justine's Four Seasons
-		set l = Levels_Level.create(FS1_LEVEL_ID, "Spring", 3, 2, "FourSeason1Start", "FourSeason1Stop", gg_rct_FSR_1_1, gg_rct_FS1_Vision, gg_rct_FS1_End, 0)
-		
-		call l.AddCheckpoint(gg_rct_FSCP_1_1, gg_rct_FSR_1_2)
+		set l = Levels_Level(FS1_LEVEL_ID)
 		
 		call l.AddStartable(DrunkWalker_DrunkWalkerSpawn.create(gg_rct_FS_1_Drunks, 3, 4, LGUARD, 16))
 	        
 		
         //Testing worlds
-        set l = Levels_Level.create(TESTDH_LEVEL_ID, "Test Standard", 0, 0, null, null, gg_rct_SWR_2_1, null, null, 0)
-		
-		set l = Levels_Level.create(TESTP_LEVEL_ID, "Test Platforming", 0, 0, null, null, gg_rct_SWR_1_1, null, null, 0)
-        set Checkpoint(l.Checkpoints.first.value).DefaultGameMode = Teams_GAMEMODE_PLATFORMING
         
 	endfunction
 endlibrary
