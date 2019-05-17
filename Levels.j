@@ -562,8 +562,9 @@ library Levels requires SimpleList, Teams, GameModesGlobals, LevelIDGlobals, Cin
 			set DoorRects[0] = gg_rct_IW_Entrance
 			set DoorRects[1] = gg_rct_EIW_Entrance
 			set DoorRects[2] = gg_rct_LW_Entrance
-			set DoorRects[5] = gg_rct_PW_Entrance
-			set DoorRects[6] = gg_rct_FS_Entrance
+			set DoorRects[5] = gg_rct_FS_Entrance
+			set DoorRects[6] = gg_rct_PW_Entrance
+			
 			
 			set new.MaxCollisionSize = DEFAULT_MAX_COLLISION_SIZE
             //call DisplayTextToForce(bj_FORCE_PLAYER[0], "Created doors")

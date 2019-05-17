@@ -53,8 +53,8 @@ library BoundedSpoke requires Alloc, SimpleList, locust
             loop
             exitwhen wUnitNode == 0
                 if wUnitNode.value != 0 then
-                    set x = this.Center.x + this.InitialOffset * Cos(theta) + (iLayer + 1) * this.LayerOffset * Cos(theta)
-                    set y = this.Center.y + this.InitialOffset * Sin(theta) + (iLayer + 1) * this.LayerOffset * Sin(theta)
+                    set x = this.Center.x + this.InitialOffset * Cos(theta) + iLayer * this.LayerOffset * Cos(theta)
+                    set y = this.Center.y + this.InitialOffset * Sin(theta) + iLayer * this.LayerOffset * Sin(theta)
                     
                     //debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "x: " + R2S(x))
                     //debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "y: " + R2S(y))
@@ -122,8 +122,8 @@ library BoundedSpoke requires Alloc, SimpleList, locust
             exitwhen iUnit >= count
                 set iLayer = this.Units.count
                                 
-                set x = this.Center.x + this.InitialOffset * Cos(this.CurrentAngle) + (iLayer + 1) * this.LayerOffset * Cos(this.CurrentAngle)
-                set y = this.Center.y + this.InitialOffset * Sin(this.CurrentAngle) + (iLayer + 1) * this.LayerOffset * Sin(this.CurrentAngle)
+                set x = this.Center.x + this.InitialOffset * Cos(this.CurrentAngle) + iLayer * this.LayerOffset * Cos(this.CurrentAngle)
+                set y = this.Center.y + this.InitialOffset * Sin(this.CurrentAngle) + iLayer * this.LayerOffset * Sin(this.CurrentAngle)
                 
                 //debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "x: " + R2S(x))
                 //debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "y: " + R2S(y))

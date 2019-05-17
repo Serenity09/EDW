@@ -40,8 +40,8 @@ library BoundedWheel requires Alloc, SimpleList, locust
                 
                 if wUnitNode.value != 0 then
                     set theta = this.CurrentAngle + iSpoke * this.AngleBetween
-                    set x = this.Center.x + this.InitialOffset * Cos(theta) + (iLayer + 1) * this.DistanceBetween * Cos(theta)
-                    set y = this.Center.y + this.InitialOffset * Sin(theta) + (iLayer + 1) * this.DistanceBetween * Sin(theta)
+                    set x = this.Center.x + this.InitialOffset * Cos(theta) + iLayer * this.DistanceBetween * Cos(theta)
+                    set y = this.Center.y + this.InitialOffset * Sin(theta) + iLayer * this.DistanceBetween * Sin(theta)
                     
                     //debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "x: " + R2S(x))
                     //debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "y: " + R2S(y))

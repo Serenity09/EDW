@@ -28,12 +28,17 @@ library EDWLevelContent requires LevelIDGlobals, EDWLevels, SimpleList, Teams, L
 		//FIRST LEVEL INITS HARD CODED
         set l = Levels_Level(INTRO_LEVEL_ID)
 		set pattern = LinePatternSpawn.createFromRect(IntroPatternSpawn, 1, gg_rct_Rect_052, TERRAIN_TILE_SIZE)
-		set sg = SimpleGenerator.create(pattern, .75, 270, 16)
-		call sg.SetMoveSpeed(200.)
+		if RewardMode == GameModesGlobals_HARD then
+			set sg = SimpleGenerator.create(pattern, .75, 270, 16)
+			call sg.SetMoveSpeed(200.)
+		else
+			set sg = SimpleGenerator.create(pattern, 1., 270, 16)
+			call sg.SetMoveSpeed(175.)
+		endif
         call l.AddStartable(sg)
 		
         set boundedSpoke = BoundedSpoke.create(11970, 14465)
-        set boundedSpoke.InitialOffset = 1*TERRAIN_TILE_SIZE
+        set boundedSpoke.InitialOffset = 2.25*TERRAIN_TILE_SIZE
         set boundedSpoke.LayerOffset = 2.25*TERRAIN_QUADRANT_SIZE
         set boundedSpoke.CurrentRotationSpeed = bj_PI / 6. * BoundedSpoke_TIMESTEP
         call boundedSpoke.AddUnits('e00A', 3)
@@ -95,24 +100,47 @@ library EDWLevelContent requires LevelIDGlobals, EDWLevels, SimpleList, Teams, L
         
         //LEVEL 3
         set l = Levels_Level(IW3_LEVEL_ID)
-        		
-		call l.AddStartable(MortarNTarget.create(SMLMORT, SMLTARG, Player(8), gg_rct_IW3_Mortar1 , gg_rct_IW3_Target1))
-		call l.AddStartable(MortarNTarget.create(SMLMORT, SMLTARG, Player(8), gg_rct_IW3_Mortar1 , gg_rct_IW3_Target1))
-		call l.AddStartable(MortarNTarget.create(SMLMORT, SMLTARG, Player(8), gg_rct_IW3_Mortar1 , gg_rct_IW3_Target1))
-		call l.AddStartable(MortarNTarget.create(SMLMORT, SMLTARG, Player(8), gg_rct_IW3_Mortar1 , gg_rct_IW3_Target1))
+        
+		if RewardMode == GameModesGlobals_HARD then
+			set i = GetRandomInt(3, 7)
+			loop
+			exitwhen i == 0
+				call l.AddStartable(MortarNTarget.create(SMLMORT, SMLTARG, Player(8), gg_rct_IW3_Mortar1 , gg_rct_IW3_Target2))
+			set i = i - 1
+			endloop
+			
+			set i = GetRandomInt(3, 7)
+			loop
+			exitwhen i == 0
+				call l.AddStartable(MortarNTarget.create(SMLMORT, SMLTARG, Player(8), gg_rct_IW3_Mortar1 , gg_rct_IW3_Target3))
+			set i = i - 1
+			endloop
+			
+			set i = GetRandomInt(5, 7)
+		else
+			set i = 4
+		endif
+		loop
+		exitwhen i == 0
+			call l.AddStartable(MortarNTarget.create(SMLMORT, SMLTARG, Player(8), gg_rct_IW3_Mortar1 , gg_rct_IW3_Target1))
+		set i = i - 1
+		endloop
 		
 		call l.AddStartable(Blackhole.create(15000, 3330, true))
-		
-        call l.AddStartable(DrunkWalker_DrunkWalkerSpawn.create(gg_rct_IW3_Drunks_1, 6, 5, LGUARD, 24))
-        call l.AddStartable(DrunkWalker_DrunkWalkerSpawn.create(gg_rct_IW3_Drunks_2, 8, 6, LGUARD, 16))
-        		
+        
+		if RewardMode == GameModesGlobals_HARD then
+			call l.AddStartable(DrunkWalker_DrunkWalkerSpawn.create(gg_rct_IW3_Drunks_1, 6, 5, LGUARD, 24))
+			call l.AddStartable(DrunkWalker_DrunkWalkerSpawn.create(gg_rct_IW3_Drunks_2, 8, 6, LGUARD, 16))
+		else
+			call l.AddStartable(DrunkWalker_DrunkWalkerSpawn.create(gg_rct_IW3_Drunks_1, 6, 5, LGUARD, 20))
+			call l.AddStartable(DrunkWalker_DrunkWalkerSpawn.create(gg_rct_IW3_Drunks_2, 8, 6, LGUARD, 12))
+		endif
         //LEVEL 4
         set l = Levels_Level(IW4_LEVEL_ID)
         
-        call l.AddStartable(DrunkWalker_DrunkWalkerSpawn.create(gg_rct_IW4_Drunks, 6, 5, LGUARD, 24))
-        call l.AddStartable(Blackhole.create(8958, 6400, true))
-        //
+		call FastLoad.create(l, l.Checkpoints.first.value, 10., 2.5)
 		
+        //
         set rg = RelayGenerator.create(5373, 9984, 3, 6, 270, 0, 2., RelayGeneratorRandomSpawn, 1)
 		set rg.SpawnPattern.Data = LGUARD
         call rg.AddTurnSimple(0, 6)
@@ -120,8 +148,13 @@ library EDWLevelContent requires LevelIDGlobals, EDWLevels, SimpleList, Teams, L
         call rg.EndTurns(90)
         
         call l.AddStartable(rg)
+		
         //
-        set rg = RelayGenerator.create(6654, 6528, 3, 6, 90, 7, 1.5, RelayGeneratorRandomSpawn, 1)
+		if RewardMode == GameModesGlobals_HARD then
+			set rg = RelayGenerator.create(6654, 6528, 3, 6, 90, 7, 1.5, RelayGeneratorRandomSpawn, 1)
+		else
+			set rg = RelayGenerator.create(6654, 6528, 3, 6, 90, 7, 2., RelayGeneratorRandomSpawn, 1)
+		endif
 		set rg.SpawnPattern.Data = LGUARD
         call rg.AddTurnSimple(180, 7)
         call rg.AddTurnSimple(270, 1)
@@ -134,7 +167,15 @@ library EDWLevelContent requires LevelIDGlobals, EDWLevels, SimpleList, Teams, L
         call rg.AddTurnSimple(0, 3)
         call rg.EndTurns(0)
         
-        call l.AddStartable(rg)
+		call l.AddStartable(rg)
+		
+		if RewardMode == GameModesGlobals_HARD then
+			call l.AddStartable(DrunkWalker_DrunkWalkerSpawn.create(gg_rct_IW4_Drunks, 6, 5, LGUARD, 24))
+		else
+			call l.AddStartable(DrunkWalker_DrunkWalkerSpawn.create(gg_rct_IW4_Drunks, 6, 5, LGUARD, 10))
+		endif
+        call l.AddStartable(Blackhole.create(8958, 6400, true))
+		
         //
         set rg = RelayGenerator.create(3830, 6278, 3, 6, 90, 3, 3., RelayGeneratorRandomSpawn, 1)
 		set rg.SpawnPattern.Data = GUARD
@@ -236,9 +277,8 @@ library EDWLevelContent requires LevelIDGlobals, EDWLevels, SimpleList, Teams, L
         set boundedWheel.SpokeCount = 16
         set boundedWheel.AngleBetween = bj_PI / 8
         set boundedWheel.RotationSpeed = bj_PI / 20 * Wheel_TIMEOUT
-        set boundedWheel.InitialOffset = 1.5*TERRAIN_TILE_SIZE
-        set boundedWheel.DistanceBetween = 1*TERRAIN_QUADRANT_SIZE
-        call boundedWheel.SetAngleBounds(bj_PI * 3/6,bj_PI * 5/6)
+        set boundedWheel.InitialOffset = 2.*TERRAIN_TILE_SIZE
+        call boundedWheel.SetAngleBounds(bj_PI * 3/6, bj_PI * 5/6)
         call boundedWheel.AddEmptySpace(1)
         call boundedWheel.AddUnits('e00A', 6)
         call boundedWheel.AddUnits('e00J', 1)
@@ -251,7 +291,7 @@ library EDWLevelContent requires LevelIDGlobals, EDWLevels, SimpleList, Teams, L
         set wheel.SpokeCount = 4
         set wheel.AngleBetween = bj_PI / 2
         set wheel.RotationSpeed = bj_PI / 10 * Wheel_TIMEOUT
-        set wheel.DistanceBetween = 2.25*TERRAIN_TILE_SIZE
+		set wheel.InitialOffset = 2.*TERRAIN_TILE_SIZE
         call wheel.AddUnits('e00K', 4)
         call l.AddStartable(wheel)
         
