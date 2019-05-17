@@ -12,7 +12,7 @@ library LW2 requires Recycle, Levels, EDWCollectibleResolveHandlers
 		
 		local Wheel wheel
 		
-		local FastLoad fastLoad
+		local integer i
 		
 		//collect all 3 to beat the level
 		set collectibleSet = CollectibleSet.create(l, EDWCollectibleResolveHandlers_AdvanceLevel)
@@ -36,7 +36,7 @@ library LW2 requires Recycle, Levels, EDWCollectibleResolveHandlers
 		//set collectible.ReturnToCheckpoint = true
 		call collectibleSet.AddCollectible(collectible)
 				
-		set fastLoad = FastLoad.create(l, l.Checkpoints.first.value, 20., 3.)
+		call FastLoad.create(l, l.Checkpoints.first.value, 20., 3.)
 		
 		set wheel = Wheel.createFromPoint(gg_rct_LW2_WW1)
 		set wheel.LayerCount = 6
@@ -48,7 +48,7 @@ library LW2 requires Recycle, Levels, EDWCollectibleResolveHandlers
 			set wheel.RotationSpeed = bj_PI / 1.5 * Wheel_TIMEOUT
 		endif
 		set wheel.DistanceBetween = .5*TERRAIN_TILE_SIZE
-        set wheel.InitialOffset = 0
+        set wheel.InitialOffset = TERRAIN_TILE_SIZE
 		call wheel.AddUnits(WWWISP, 12)
 		call l.AddStartable(wheel)
 		
@@ -56,16 +56,74 @@ library LW2 requires Recycle, Levels, EDWCollectibleResolveHandlers
 		set wheel.LayerCount = 5
         set wheel.SpokeCount = 2
         set wheel.AngleBetween = bj_PI
-        if RewardMode == GameModesGlobals_HARD then
-			set wheel.RotationSpeed = bj_PI / 1.25 * Wheel_TIMEOUT
-		else
-			set wheel.RotationSpeed = bj_PI / 1.5 * Wheel_TIMEOUT
-		endif
 		set wheel.RotationSpeed = bj_PI / 1.5 * Wheel_TIMEOUT
 		set wheel.DistanceBetween = .5*TERRAIN_TILE_SIZE
-        set wheel.InitialOffset = .5*TERRAIN_TILE_SIZE
+        set wheel.InitialOffset = 1.25*TERRAIN_TILE_SIZE
 		call wheel.AddUnits(WWWISP, 10)
 		call l.AddStartable(wheel)
+		
+		if RewardMode == GameModesGlobals_HARD then
+			//outer shell
+			set wheel = Wheel.createFromPoint(gg_rct_LW2_WW3)
+			set wheel.LayerCount = 1
+			set wheel.InitialOffset = 3.25*TERRAIN_TILE_SIZE
+			//C = 2*pi*r = 2*pi*wheel.DistanceBetween = 2411.52
+			//dist between = C / (GetUnitDefaultRadius(WWWISP) * 2) = (pi*wheel.DistanceBetween) / GetUnitDefaultRadius(WWWISP) = 64
+			//% circ = (2*GetUnitDefaultRadius(WWWISP)) / C
+			//angle between = % circ * 2 * bj_PI
+			set wheel.AngleBetween = 10 * bj_PI / 180
+			set wheel.SpokeCount = R2I((2*bj_PI / wheel.AngleBetween) + .5)
+			set wheel.RotationSpeed = bj_PI / 5 * Wheel_TIMEOUT
+			
+			set i = (wheel.SpokeCount - 12) / 2
+			call wheel.AddUnits(WWWISP, i)
+			call wheel.AddEmptySpace(5)
+			call wheel.AddUnits(WWWISP, i)
+			call wheel.AddEmptySpace(5)
+			
+			call l.AddStartable(wheel)
+			
+			//inner shell
+			set wheel = Wheel.createFromPoint(gg_rct_LW2_WW3)
+			set wheel.LayerCount = 1
+			set wheel.InitialOffset = 1.25*TERRAIN_TILE_SIZE
+			set wheel.AngleBetween = 15 * bj_PI / 180
+			set wheel.SpokeCount = R2I((2*bj_PI / wheel.AngleBetween) + .5)
+			set wheel.RotationSpeed = bj_PI / 5 * Wheel_TIMEOUT
+			
+			call wheel.AddEmptySpace(2)
+			call wheel.AddUnits(WWWISP, wheel.SpokeCount - 4)
+			// call wheel.AddEmptySpace(3)
+			// call wheel.AddUnits(WWWISP, i)
+			
+			//call l.AddStartable(wheel)
+			
+			//even odd inbetween
+			set wheel = Wheel.createFromPoint(gg_rct_LW2_WW3)
+			set wheel.LayerCount = 2
+			set wheel.DistanceBetween = 1*TERRAIN_TILE_SIZE
+			set wheel.InitialOffset = 1.75*TERRAIN_TILE_SIZE
+			set wheel.AngleBetween = 45 * bj_PI / 180
+			set wheel.SpokeCount = R2I((2*bj_PI / wheel.AngleBetween) + .5)
+			set wheel.RotationSpeed = bj_PI / 5 * Wheel_TIMEOUT
+			
+			set i = wheel.SpokeCount
+			loop
+			exitwhen i <= 1
+				call wheel.AddUnits(WWWISP, 1)
+				call wheel.AddEmptySpace(1)
+			set i = i - 2
+			endloop
+			set i = wheel.SpokeCount
+			loop
+			exitwhen i <= 1
+				call wheel.AddEmptySpace(1)
+				call wheel.AddUnits(WWWISP, 1)
+			set i = i - 2
+			endloop
+			
+			call l.AddStartable(wheel)
+		endif
 		
 		set rg = RelayGenerator.createFromPoint(gg_rct_LW2_RG1, 2, 2, 270, 12, 8., RelayGeneratorAllSpawn, 1)
 		set rg.SpawnPattern.Data = ICETROLL
