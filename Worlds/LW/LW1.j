@@ -10,6 +10,30 @@ library LW1 requires Recycle, Levels
 				
 		local PatternSpawn pattern
 				
+		//synced patrol set
+		set nsync = SynchronizedGroup.create()
+		call l.AddStartable(nsync)
+		
+		set jtimber = nsync.AddUnit(GUARD)
+		call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_Rect_221))
+		call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_Rect_222))
+		set jtimber.AllOrders.last.next = jtimber.AllOrders.first
+		
+		set jtimber = nsync.AddUnit(GUARD)
+		call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_Rect_224))
+		call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_Rect_223))
+		set jtimber.AllOrders.last.next = jtimber.AllOrders.first
+		
+		set jtimber = nsync.AddUnit(GUARD)
+		call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_Rect_225))
+		call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_Rect_226))
+		set jtimber.AllOrders.last.next = jtimber.AllOrders.first
+		
+		set jtimber = nsync.AddUnit(GUARD)
+		call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_Rect_228))
+		call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_Rect_227))
+		set jtimber.AllOrders.last.next = jtimber.AllOrders.first
+		
 		//outer sync group
 		set nsync = SynchronizedGroup.create()
 		call l.AddStartable(nsync)
@@ -132,6 +156,25 @@ library LW1 requires Recycle, Levels
 		call sg.SetMoveSpeed(200.)
 		call l.AddStartable(sg)
 		
+		//synced patrol set
+		set nsync = SynchronizedGroup.create()
+		call l.AddStartable(nsync)
+		
+		set jtimber = nsync.AddUnit(GUARD)
+		call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_Rect_237))
+		call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_Rect_238))
+		set jtimber.AllOrders.last.next = jtimber.AllOrders.first
+		
+		set jtimber = nsync.AddUnit(GUARD)
+		call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_Rect_239))
+		call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_Rect_240))
+		set jtimber.AllOrders.last.next = jtimber.AllOrders.first
+		
+		set jtimber = nsync.AddUnit(GUARD)
+		call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_Rect_241))
+		call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_Rect_242))
+		set jtimber.AllOrders.last.next = jtimber.AllOrders.first
+		
 		//sync movement near teleport area
 		//left & right
 		set nsync = SynchronizedGroup.create()
@@ -237,16 +280,16 @@ library LW1 requires Recycle, Levels
 		call Recycle_MakeUnitAndPatrolRect(LGUARD, gg_rct_Rect_217, gg_rct_Rect_218)
 		call Recycle_MakeUnitAndPatrolRect(GUARD, gg_rct_Rect_219, gg_rct_Rect_220)
 		
-		call Recycle_MakeUnitAndPatrolRect(GUARD, gg_rct_Rect_221, gg_rct_Rect_222)
-		call Recycle_MakeUnitAndPatrolRect(GUARD, gg_rct_Rect_224, gg_rct_Rect_223)
-		call Recycle_MakeUnitAndPatrolRect(GUARD, gg_rct_Rect_225, gg_rct_Rect_226)
-		call Recycle_MakeUnitAndPatrolRect(GUARD, gg_rct_Rect_228, gg_rct_Rect_227)
+		// call Recycle_MakeUnitAndPatrolRect(GUARD, gg_rct_Rect_221, gg_rct_Rect_222)
+		// call Recycle_MakeUnitAndPatrolRect(GUARD, gg_rct_Rect_224, gg_rct_Rect_223)
+		// call Recycle_MakeUnitAndPatrolRect(GUARD, gg_rct_Rect_225, gg_rct_Rect_226)
+		// call Recycle_MakeUnitAndPatrolRect(GUARD, gg_rct_Rect_228, gg_rct_Rect_227)
 		
 		//call CreateMortarCenterRect(SMLMORT, Player(10), gg_rct_Rect_247, gg_rct_Rect_246)
 		
-		call Recycle_MakeUnitAndPatrolRect(GUARD, gg_rct_Rect_237, gg_rct_Rect_238)
-		call Recycle_MakeUnitAndPatrolRect(GUARD, gg_rct_Rect_239, gg_rct_Rect_240)
-		call Recycle_MakeUnitAndPatrolRect(GUARD, gg_rct_Rect_241, gg_rct_Rect_242)
+		// call Recycle_MakeUnitAndPatrolRect(GUARD, gg_rct_Rect_237, gg_rct_Rect_238)
+		// call Recycle_MakeUnitAndPatrolRect(GUARD, gg_rct_Rect_239, gg_rct_Rect_240)
+		// call Recycle_MakeUnitAndPatrolRect(GUARD, gg_rct_Rect_241, gg_rct_Rect_242)
 			
 		//turn on periodic functions
 		//call EnableTrigger(gg_trg_LW1_MassCreate)

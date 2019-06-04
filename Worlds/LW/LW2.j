@@ -24,7 +24,11 @@ library LW2 requires Recycle, Levels, EDWCollectibleResolveHandlers
 		//set collectible.ReturnToCheckpoint = true
 		call collectibleSet.AddCollectible(collectible)
 		
-		set collectible = Collectible.createFromPoint(PURPLEFROG, 0, gg_rct_LW2_C3, 270)
+		if RewardMode == GameModesGlobals_HARD then
+			set collectible = Collectible.createFromPoint(PURPLEFROG, 0, gg_rct_LW2_WW3, 0)
+		else
+			set collectible = Collectible.createFromPoint(PURPLEFROG, 0, gg_rct_LW2_WW2, 270)
+		endif
 		//set collectible.ReturnToCheckpoint = true
 		call collectibleSet.AddCollectible(collectible)
 		
@@ -38,28 +42,44 @@ library LW2 requires Recycle, Levels, EDWCollectibleResolveHandlers
 				
 		call FastLoad.create(l, l.Checkpoints.first.value, 20., 3.)
 		
+		//
 		set wheel = Wheel.createFromPoint(gg_rct_LW2_WW1)
-		set wheel.LayerCount = 6
-        set wheel.SpokeCount = 2
+		
         set wheel.AngleBetween = bj_PI
+		set wheel.DistanceBetween = .5*TERRAIN_TILE_SIZE
+		set wheel.SpokeCount = 2
+		
 		if RewardMode == GameModesGlobals_HARD then
-			set wheel.RotationSpeed = bj_PI / 1.25 * Wheel_TIMEOUT
+			set wheel.RotationSpeed = bj_PI / 1.35 * Wheel_TIMEOUT
+			set wheel.InitialOffset = .7 * TERRAIN_TILE_SIZE
+			set wheel.LayerCount = 7
+			call wheel.AddUnits(WWWISP, 14)
 		else
 			set wheel.RotationSpeed = bj_PI / 1.5 * Wheel_TIMEOUT
+			set wheel.InitialOffset = TERRAIN_TILE_SIZE
+			set wheel.LayerCount = 6
+			call wheel.AddUnits(WWWISP, 12)
 		endif
-		set wheel.DistanceBetween = .5*TERRAIN_TILE_SIZE
-        set wheel.InitialOffset = TERRAIN_TILE_SIZE
-		call wheel.AddUnits(WWWISP, 12)
+		
 		call l.AddStartable(wheel)
 		
-		set wheel = Wheel.createFromPoint(gg_rct_LW2_C3)
-		set wheel.LayerCount = 5
-        set wheel.SpokeCount = 2
-        set wheel.AngleBetween = bj_PI
+		//
+		set wheel = Wheel.createFromPoint(gg_rct_LW2_WW2)
+		set wheel.AngleBetween = bj_PI
 		set wheel.RotationSpeed = bj_PI / 1.5 * Wheel_TIMEOUT
-		set wheel.DistanceBetween = .5*TERRAIN_TILE_SIZE
-        set wheel.InitialOffset = 1.25*TERRAIN_TILE_SIZE
-		call wheel.AddUnits(WWWISP, 10)
+		set wheel.DistanceBetween = .45*TERRAIN_TILE_SIZE
+		set wheel.SpokeCount = 2
+		
+		if RewardMode == GameModesGlobals_HARD then
+			set wheel.InitialOffset = .5 * TERRAIN_TILE_SIZE
+			set wheel.LayerCount = 7
+			call wheel.AddUnits(WWWISP, 14)
+		else
+			set wheel.InitialOffset = 1.5*TERRAIN_TILE_SIZE
+			set wheel.LayerCount = 5
+			call wheel.AddUnits(WWWISP, 10)
+		endif
+		
 		call l.AddStartable(wheel)
 		
 		if RewardMode == GameModesGlobals_HARD then
@@ -110,32 +130,33 @@ library LW2 requires Recycle, Levels, EDWCollectibleResolveHandlers
 			set i = wheel.SpokeCount
 			loop
 			exitwhen i <= 1
-				call wheel.AddUnits(WWWISP, 1)
 				call wheel.AddEmptySpace(1)
+				call wheel.AddUnits(WWWISP, 1)
 			set i = i - 2
 			endloop
 			set i = wheel.SpokeCount
 			loop
 			exitwhen i <= 1
-				call wheel.AddEmptySpace(1)
 				call wheel.AddUnits(WWWISP, 1)
+				call wheel.AddEmptySpace(1)
 			set i = i - 2
 			endloop
 			
 			call l.AddStartable(wheel)
+		else
+			call SetTerrainType(GetRectCenterX(gg_rct_LW2_WW3), GetRectCenterY(gg_rct_LW2_WW3), ABYSS, 0, 4, 1)
 		endif
 		
-		set rg = RelayGenerator.createFromPoint(gg_rct_LW2_RG1, 2, 2, 270, 12, 8., RelayGeneratorAllSpawn, 1)
-		set rg.SpawnPattern.Data = ICETROLL
+		set rg = RelayGenerator.createFromPoint(gg_rct_LW2_RG1, 3, 3, 270, 11, 1.5, LW2PatternSpawn1, 6)
 		call rg.AddTurnSimple(180, 4)
 		call rg.AddTurnSimple(270, 26)
 		call rg.EndTurns(270)
 		
 		call l.AddStartable(rg)
 		
-		set rg = RelayGenerator.createFromPoint(gg_rct_LW2_RG2, 3, 3, 90, 24, 4., RelayGeneratorAllSpawn, 1)
+		set rg = RelayGenerator.createFromPoint(gg_rct_LW2_RG2, 2, 2, 90, 25, 4., RelayGeneratorAllSpawn, 1)
 		set rg.SpawnPattern.Data = ICETROLL
-		call rg.AddTurnSimple(0, 6)
+		call rg.AddTurnSimple(0, 7)
 		call rg.AddTurnSimple(270, 25)
 		call rg.EndTurns(270)
 		
@@ -203,17 +224,17 @@ library LW2 requires Recycle, Levels, EDWCollectibleResolveHandlers
 		set jtimber = nsync.AddUnit(ICETROLL)
 		set jtimber.MoveSpeed = 375
 		call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_LW2_SG2_2))
-		call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_LW2_SG2_1))
-		call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_LW2_SG2_4))
 		call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_LW2_SG2_3))
+		call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_LW2_SG2_4))
+		call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_LW2_SG2_1))
 		set jtimber.AllOrders.last.next = jtimber.AllOrders.first
 		
 		set jtimber = nsync.AddUnit(ICETROLL)
 		set jtimber.MoveSpeed = 375
 		call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_LW2_SG2_4))
-		call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_LW2_SG2_3))
-		call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_LW2_SG2_2))
 		call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_LW2_SG2_1))
+		call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_LW2_SG2_2))
+		call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_LW2_SG2_3))
 		set jtimber.AllOrders.last.next = jtimber.AllOrders.first
 		
 		//top inner
@@ -235,6 +256,40 @@ library LW2 requires Recycle, Levels, EDWCollectibleResolveHandlers
 		call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_LW2_SG4_4))
 		call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_LW2_SG4_1))
 		set jtimber.AllOrders.last.next = jtimber.AllOrders.first
+		
+		//mortars
+		if RewardMode == GameModesGlobals_HARD then
+			set i = l.GetWeightedRandomInt(3, 5)
+		else
+			set i = 3
+		endif
+		loop
+		exitwhen i == 0
+			call l.AddStartable(MortarNTarget.create(SMLMORT, SMLTARG, Player(8), gg_rct_LW2_Mortar1 , gg_rct_LW2_Target1))
+		set i = i - 1
+		endloop
+		
+		if RewardMode == GameModesGlobals_HARD then
+			set i = l.GetWeightedRandomInt(4, 6)
+		else
+			set i = 4
+		endif
+		loop
+		exitwhen i == 0
+			call l.AddStartable(MortarNTarget.create(SMLMORT, SMLTARG, Player(8), gg_rct_LW2_Mortar2 , gg_rct_LW2_Target2))
+		set i = i - 1
+		endloop
+		
+		if RewardMode == GameModesGlobals_HARD then
+			set i = l.GetWeightedRandomInt(6, 8)
+		else
+			set i = 6
+		endif
+		loop
+		exitwhen i == 0
+			call l.AddStartable(MortarNTarget.create(SMLMORT, SMLTARG, Player(8), gg_rct_LW2_Mortar3 , gg_rct_LW2_Target3))
+		set i = i - 1
+		endloop
 	endfunction
 	
 	function LW2Start takes nothing returns nothing

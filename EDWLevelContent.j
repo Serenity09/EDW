@@ -27,114 +27,30 @@ library EDWLevelContent requires LevelIDGlobals, EDWLevels, SimpleList, Teams, L
 		
 		//FIRST LEVEL INITS HARD CODED
         set l = Levels_Level(INTRO_LEVEL_ID)
-		set pattern = LinePatternSpawn.createFromRect(IntroPatternSpawn, 1, gg_rct_Rect_052, TERRAIN_TILE_SIZE)
-		if RewardMode == GameModesGlobals_HARD then
-			set sg = SimpleGenerator.create(pattern, .75, 270, 16)
-			call sg.SetMoveSpeed(200.)
-		else
-			set sg = SimpleGenerator.create(pattern, 1., 270, 16)
-			call sg.SetMoveSpeed(175.)
-		endif
-        call l.AddStartable(sg)
-		
-        set boundedSpoke = BoundedSpoke.create(11970, 14465)
-        set boundedSpoke.InitialOffset = 2.25*TERRAIN_TILE_SIZE
-        set boundedSpoke.LayerOffset = 2.25*TERRAIN_QUADRANT_SIZE
-        set boundedSpoke.CurrentRotationSpeed = bj_PI / 6. * BoundedSpoke_TIMESTEP
-        call boundedSpoke.AddUnits('e00A', 3)
-        // call boundedSpoke.SetAngleBounds(bj_PI/4, bj_PI*3./4.)
-		call boundedSpoke.SetAngleBounds(55./180.*bj_PI, 125./180.*bj_PI)
-        
-		call l.AddStartable(boundedSpoke)
-		
-		if RewardMode == GameModesGlobals_HARD then
-			call l.AddStartable(MortarNTarget.create(SMLMORT, SMLTARG, Player(8), gg_rct_IntroWorld_Mortar1 , gg_rct_IntroWorld_Target1))
-		endif
-		
 		call l.AddLevelStopCB(Condition(function FinishedIntro))
-                
+		
+		call IntroWorld_InitializeStartableContent()
+		
         //DOORS HARD CODED
         //currently no start or stop logic
         
         //ICE WORLD TECH / ENVY WORLD
         //LEVEL 1
         set l = Levels_Level(IW1_LEVEL_ID)
-        		
-		if RewardMode == GameModesGlobals_HARD then
-			set i = GetRandomInt(4, 5)
-		else
-			set i = 3
-		endif
-		loop
-			exitwhen i == 0
-			call l.AddStartable(MortarNTarget.create(SMLMORT, SMLTARG, Player(8), gg_rct_IW1_Mortar1 , gg_rct_IW1_Target1))
-			call l.AddStartable(MortarNTarget.create(SMLMORT, SMLTARG, Player(8), gg_rct_IW1_Mortar2 , gg_rct_IW1_Target2))
-			call l.AddStartable(MortarNTarget.create(SMLMORT, SMLTARG, Player(8), gg_rct_IW1_Mortar3 , gg_rct_IW1_Target3))
-		set i = i - 1
-		endloop
+        
+		call IW1_InitializeStartableContent()
         
         //LEVEL 2
         set l = Levels_Level(IW2_LEVEL_ID)
         
-		set pattern = LinePatternSpawn.createFromRect(IW2PatternSpawn, 1, gg_rct_Rect_092, TERRAIN_TILE_SIZE)
-		set sg = SimpleGenerator.create(pattern, .9, 0, 23)
-        call l.AddStartable(sg)
+		call IW2_InitializeStartableContent()
 		
-		if RewardMode == GameModesGlobals_HARD then
-			set i = GetRandomInt(3, 4)
-		else
-			set i = 2
-		endif
-		loop
-			exitwhen i == 0
-			call l.AddStartable(MortarNTarget.create(SMLMORT, SMLTARG, Player(8), gg_rct_IW2_Mortar1 , gg_rct_IW2_Target1))
-			call l.AddStartable(MortarNTarget.create(SMLMORT, SMLTARG, Player(8), gg_rct_IW2_Mortar1 , gg_rct_IW2_Target3))
-			call l.AddStartable(MortarNTarget.create(SMLMORT, SMLTARG, Player(8), gg_rct_IW2_Mortar2 , gg_rct_IW2_Target2))
-			call l.AddStartable(MortarNTarget.create(SMLMORT, SMLTARG, Player(8), gg_rct_IW2_Mortar2 , gg_rct_IW2_Target4))
-		set i = i - 1
-		endloop
-		
-		if RewardMode == GameModesGlobals_HARD then
-			call SetTerrainType(GetRectCenterX(gg_rct_IW2_TC1), GetRectCenterY(gg_rct_IW2_TC1), ABYSS, 0, 1, 0)
-		endif
         
         //LEVEL 3
         set l = Levels_Level(IW3_LEVEL_ID)
         
-		if RewardMode == GameModesGlobals_HARD then
-			set i = GetRandomInt(3, 7)
-			loop
-			exitwhen i == 0
-				call l.AddStartable(MortarNTarget.create(SMLMORT, SMLTARG, Player(8), gg_rct_IW3_Mortar1 , gg_rct_IW3_Target2))
-			set i = i - 1
-			endloop
-			
-			set i = GetRandomInt(3, 7)
-			loop
-			exitwhen i == 0
-				call l.AddStartable(MortarNTarget.create(SMLMORT, SMLTARG, Player(8), gg_rct_IW3_Mortar1 , gg_rct_IW3_Target3))
-			set i = i - 1
-			endloop
-			
-			set i = GetRandomInt(5, 7)
-		else
-			set i = 4
-		endif
-		loop
-		exitwhen i == 0
-			call l.AddStartable(MortarNTarget.create(SMLMORT, SMLTARG, Player(8), gg_rct_IW3_Mortar1 , gg_rct_IW3_Target1))
-		set i = i - 1
-		endloop
+		call IW3_InitializeStartableContent()
 		
-		call l.AddStartable(Blackhole.create(15000, 3330, true))
-        
-		if RewardMode == GameModesGlobals_HARD then
-			call l.AddStartable(DrunkWalker_DrunkWalkerSpawn.create(gg_rct_IW3_Drunks_1, 6, 5, LGUARD, 24))
-			call l.AddStartable(DrunkWalker_DrunkWalkerSpawn.create(gg_rct_IW3_Drunks_2, 8, 6, LGUARD, 16))
-		else
-			call l.AddStartable(DrunkWalker_DrunkWalkerSpawn.create(gg_rct_IW3_Drunks_1, 6, 5, LGUARD, 20))
-			call l.AddStartable(DrunkWalker_DrunkWalkerSpawn.create(gg_rct_IW3_Drunks_2, 8, 6, LGUARD, 12))
-		endif
         //LEVEL 4
         set l = Levels_Level(IW4_LEVEL_ID)
         
