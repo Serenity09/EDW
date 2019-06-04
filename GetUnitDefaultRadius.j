@@ -25,7 +25,7 @@ library GetUnitDefaultRadius
 		elseif InWorldPowerup.IsPowerupUnit(unitTypeID) then
 			return 47.
 		elseif unitTypeID == WWWISP then
-			return 22.
+			return 19.
 		elseif unitTypeID == WWSKUL then
 			return 20.
 		elseif unitTypeID == KEYR then

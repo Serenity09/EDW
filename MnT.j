@@ -157,6 +157,7 @@ struct MortarNTarget extends IStartable
         call PauseUnit(new.Mortar, true)
 		
 		set new.Target = CreateUnit(playerID, targetID, GetRectCenterX(targetrect), GetRectCenterY(targetrect), 0)
+		call SetUnitColor(new.Target, PLAYER_COLOR_AQUA)
         
         call AddUnitLocust(new.Mortar)
         call AddUnitLocust(new.Target)
