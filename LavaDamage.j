@@ -8,79 +8,60 @@ library LavaDamage requires TimerUtils, GroupUtils, SimpleList
 
 	struct LavaDamage extends array
 		private static SimpleList_List players
-		private static real array appliedTime
+		private static real array pctTimeApplied
 		private static timer t = null		
 		
 		//this doesn't work when run on timer start
 		//for some reason timers start with a different elapsed / remaining time than they tick with
-		public static method ApplyDamage takes integer pID returns nothing
+		//OR i could pass Elapsed time in as a parameter, hard coding it to the ideal value for its start state
+		public static method ApplyDamage takes integer pID, real pctTimeElapsed returns nothing
 			//delta remaining from previous call * % of timestep represented during call
-			local real pctTimeElapsed = TimerGetElapsed(.t) / TIMESTEP
-			local real pctTimeDamaged = pctTimeElapsed - thistype.appliedTime[pID]
+			local real pctTimeDamaged = pctTimeElapsed - thistype.pctTimeApplied[pID]
 			local real damagedHP = RMaxBJ(0., (GetUnitState(MazersArray[pID], UNIT_STATE_LIFE) - LAVARATE * pctTimeDamaged))
 			
 			static if DEBUG_DELTA then
 				call DisplayTextToForce(bj_FORCE_PLAYER[0], "Applied Delta: " + R2S(pctTimeDamaged) + ", damage: " + R2S(LAVARATE * pctTimeDamaged))
-				call DisplayTextToForce(bj_FORCE_PLAYER[0], "Elapsed time: " + R2S(TimerGetElapsed(.t)) + ", pctTimeElapsed: " + R2S(pctTimeElapsed) + ", already applied time (%): " + R2S(thistype.appliedTime[pID]))
+				call DisplayTextToForce(bj_FORCE_PLAYER[0], "Timer elapsed time: " + R2S(TimerGetElapsed(.t)) + ", parameter pctTimeElapsed: " + R2S(pctTimeElapsed) + ", property already applied time (%): " + R2S(thistype.pctTimeApplied[pID]))
 			endif
 			
-			if TimerGetElapsed(.t) == TIMESTEP then
+			if pctTimeElapsed >= 1. then
 				//reset deltas
-				set appliedTime[pID] = 0.
+				set pctTimeApplied[pID] = 0.
 			else
-				//equivalent to thistype.appliedTime[pID] + pctTimeDamaged
-				set appliedTime[pID] = pctTimeElapsed 
+				//equivalent to thistype.pctTimeApplied[pID] + pctTimeDamaged
+				set pctTimeApplied[pID] = pctTimeElapsed 
 			endif
 						
 			static if DEBUG_DELTA then
-				call DisplayTextToForce(bj_FORCE_PLAYER[0], "New Delta: " + R2S(thistype.appliedTime[pID]))
+				call DisplayTextToForce(bj_FORCE_PLAYER[0], "New Delta: " + R2S(thistype.pctTimeApplied[pID]))
 			endif
 			
 			//update mazer life
 			call SetUnitState(MazersArray[pID], UNIT_STATE_LIFE, damagedHP)
-		endmethod
-		//hack workaround for timers starting with different properties than they tick with
-		//all TimerGet___ calls are replaced with my preferred result on TimerStart
-		private static method ApplyDamageTimerStart takes integer pID returns nothing
-			//local real pctTimeElapsed = 1.
-			//local real pctTimeDamaged = 1.
-			local real damagedHP = RMaxBJ(0., (GetUnitState(MazersArray[pID], UNIT_STATE_LIFE) - LAVARATE))
-			
-			static if DEBUG_DELTA then
-				call DisplayTextToForce(bj_FORCE_PLAYER[0], "Applied Damage Start")
-			endif
-			
-			set thistype.appliedTime[pID] = 0.
-			
-			//update mazer life
-			call SetUnitState(MazersArray[pID], UNIT_STATE_LIFE, damagedHP)
-		endmethod
-		
+		endmethod		
 		private static method ApplyDamageLoop takes nothing returns nothing
 			local SimpleList_ListNode curPlayerNode = thistype.players.first
-						
+			local real pctTimeElapsed = TimerGetElapsed(thistype.t) / TIMESTEP
+			
 			loop
 			exitwhen curPlayerNode == 0
-				call thistype.ApplyDamage(curPlayerNode.value)
+				call thistype.ApplyDamage(curPlayerNode.value, pctTimeElapsed)
 			set curPlayerNode = curPlayerNode.next
 			endloop
 		endmethod
 
 		public static method Add takes integer pID returns nothing
+			set thistype.pctTimeApplied[pID] = 0.
+			
 			if thistype.players.count == 0 then
 				set .t = NewTimer()
 				call TimerStart(.t, TIMESTEP, true, function thistype.ApplyDamageLoop)
 				
-				set thistype.appliedTime[pID] = 0.
-				
 				//immediately apply full portion of damage
-				call thistype.ApplyDamageTimerStart(pID)
+				call thistype.ApplyDamage(pID, 1.)
 			else
-				//set initial delta to the % of time till next timer periodic and then immediately apply lava damage
-				set thistype.appliedTime[pID] = (TIMESTEP - TimerGetElapsed(thistype.t)) / TIMESTEP
-				
-				//immediately apply the portion of damage that this player has been present for
-				call thistype.ApplyDamage(pID)
+				//immediately apply the portion of damage that the timer has currently elapsed for, it will then apply the remaining damage at the next natural tick
+				call thistype.ApplyDamage(pID, TimerGetElapsed(thistype.t) / TIMESTEP)
 			endif
 			
 			call thistype.players.add(pID)
