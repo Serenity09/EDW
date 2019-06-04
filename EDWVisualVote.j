@@ -4,9 +4,10 @@ library EDWVisualVote requires VisualVote, ContinueGlobals, Teams, PlayerUtils, 
         
         private constant real VOTE_TIME_ROUND_ONE = 10
 		private constant real VOTE_TIME_ROUND_TWO = 10
-		private constant boolean FORCE_MENU = false
+		
+		private constant integer DEBUG_DIFFICULTY_MODE = GameModesGlobals_HARD
     endglobals
-        
+    	
     public function GameModeSolo takes nothing returns nothing
         //call DisplayTextToPlayer(Player(0), 0, 0, "solo")
                 
@@ -327,7 +328,7 @@ library EDWVisualVote requires VisualVote, ContinueGlobals, Teams, PlayerUtils, 
             call team[i].ApplyTeamDefaultCameras()
             //call team[i].AddTeamVision(firstLevel.Vision)			
 			
-			static if not DEBUG_MODE then
+			if ShouldShowSettingVoteMenu() then
 				call team[i].AddTeamCinema(welcomeCine, team[i].FirstUser.value)
 			endif
 			
@@ -345,7 +346,7 @@ library EDWVisualVote requires VisualVote, ContinueGlobals, Teams, PlayerUtils, 
         exitwhen i >= teamCount
         endloop
 				
-		static if not DEBUG_MODE then
+		if ShouldShowSettingVoteMenu() then
 			call EnableUserUI(false)
 			call SetCineFilterTexture("ReplaceableTextures\\CameraMasks\\Black_mask.blp")
 			call SetCineFilterBlendMode(BLEND_MODE_BLEND)
@@ -371,7 +372,7 @@ library EDWVisualVote requires VisualVote, ContinueGlobals, Teams, PlayerUtils, 
         //apply the player's (custom) Default camerasetup and pan to their default mazer
         //call SelectAndPanAllDefaultUnits()
         
-		if RewardMode == GameModesGlobals_CHEAT then
+		if not ShouldShowSettingVoteMenu() or RewardMode == GameModesGlobals_CHEAT then
 			set i = 0
 			loop
 				call team[i].SetContinueCount(99)
@@ -428,13 +429,12 @@ library EDWVisualVote requires VisualVote, ContinueGlobals, Teams, PlayerUtils, 
         local VisualVote_voteContainer con
         local VisualVote_voteOption opt        
 
-		if not FORCE_MENU and DEBUG_MODE then
-        //static if DEBUG_MODE and false then
+		if not ShouldShowSettingVoteMenu() then
             call CreateFogModifierRectBJ(true, Player(0), FOG_OF_WAR_VISIBLE, GetPlayableMapRect())
 			
 			set GameMode = GameModesGlobals_TEAMALL
             //99 and none
-            set RewardMode = 2
+            set RewardMode = DEBUG_DIFFICULTY_MODE
             //respawn as soon as you die
             set RespawnASAPMode = false
             //currently unimplemented

@@ -11,7 +11,7 @@ library Levels requires SimpleList, Teams, GameModesGlobals, LevelIDGlobals, Cin
         public constant real HARD_SCORE_MODIFIER = 1.25
         public constant real EASY_CONTINUE_MODIFIER = 1.5
         public constant integer EASY_MAX_CONTINUE_ROLLOVER = 3
-		public constant integer HARD_MAX_CONTINUE_ROLLOVER = 0
+		public constant integer HARD_MAX_CONTINUE_ROLLOVER = 1
         public constant real HARD_CONTINUE_MODIFIER = .8
         
 		private constant boolean DEBUG_START_STOP = false
@@ -149,6 +149,14 @@ library Levels requires SimpleList, Teams, GameModesGlobals, LevelIDGlobals, Cin
                 //debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "Stopped level " + I2S(this))
             endif
         endmethod
+		
+		//placeholder, TODO implement based on random integers already gotten for the level *and* the level's intended difficulty
+		public method GetWeightedRandomInt takes integer lowBound, integer highBound returns integer
+			return GetRandomInt(lowBound, highBound)
+		endmethod
+		public method GetWeightedRandomReal takes real lowBound, real highBound returns real
+			return GetRandomReal(lowBound, highBound)
+		endmethod
         
         public method GetWorldID takes nothing returns integer
             //World levels follow this format
@@ -274,7 +282,7 @@ library Levels requires SimpleList, Teams, GameModesGlobals, LevelIDGlobals, Cin
 			endif
 			
 			//update continues
-			if RewardMode == GameModesGlobals_EASY or RewardMode == GameModesGlobals_HARD then				
+			if ShouldShowSettingVoteMenu() and RewardMode != GameModesGlobals_CHEAT then				
 				if RewardMode == GameModesGlobals_EASY then
 					if mt.GetContinueCount() > EASY_MAX_CONTINUE_ROLLOVER then
 						set rolloverContinues = EASY_MAX_CONTINUE_ROLLOVER
@@ -304,14 +312,20 @@ library Levels requires SimpleList, Teams, GameModesGlobals, LevelIDGlobals, Cin
 			
 			if this == DOORS_LEVEL_ID then
 				//call mt.PrintMessage("Starting level " + ColorMessage(nextLevel.Name, SPEAKER_COLOR) + "!")
-				if RewardMode == GameModesGlobals_CHEAT then
+				if not ShouldShowSettingVoteMenu() or RewardMode == GameModesGlobals_CHEAT then
 					call mt.PrintMessage("Starting " + nextLevel.GetWorldString())
 				else
 					call mt.PrintMessage("Starting " + nextLevel.GetWorldString() + " with " + ColorMessage(I2S(mt.GetContinueCount()), SPEAKER_COLOR) + " continues")
 				endif
 			else
-				if RewardMode != GameModesGlobals_CHEAT and originalContinues != rolloverContinues + nextLevelContinues then
-					call mt.PrintMessage("You kept " + ColorMessage(I2S(rolloverContinues), SPEAKER_COLOR) + " of your " + ColorMessage(I2S(originalContinues), SPEAKER_COLOR) + " continues, and gained " + ColorMessage(I2S(nextLevelContinues), SPEAKER_COLOR) + " extra continues to boot")
+				if ShouldShowSettingVoteMenu() and RewardMode != GameModesGlobals_CHEAT then
+					if originalContinues == 1 and rolloverContinues == 1 then
+						call mt.PrintMessage("You kept your " + ColorMessage(I2S(1), SPEAKER_COLOR) + " continue, and gained " + ColorMessage(I2S(nextLevelContinues), SPEAKER_COLOR) + " extra continues to boot")
+					elseif originalContinues > 0 and originalContinues != rolloverContinues + nextLevelContinues then
+						call mt.PrintMessage("You kept " + ColorMessage(I2S(rolloverContinues), SPEAKER_COLOR) + " of your " + ColorMessage(I2S(originalContinues), SPEAKER_COLOR) + " continues, and gained " + ColorMessage(I2S(nextLevelContinues), SPEAKER_COLOR) + " extra continues to boot")
+					else
+						call mt.PrintMessage("You have " + ColorMessage(I2S(rolloverContinues + nextLevelContinues), SPEAKER_COLOR) + " continues")
+					endif
 				endif
 			endif
 		endmethod
