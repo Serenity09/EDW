@@ -12,11 +12,13 @@ library IndexedUnit
 		readonly integer G
 		readonly integer B
 		readonly integer A
-		
+						
 		implement Alloc
 		
 		public static method create takes unit u returns thistype
 			local integer unitTypeID = GetUnitTypeId(u)
+			local integer rand
+			
 			static if DEBUG_MODE then
 				local thistype new
 				
@@ -40,6 +42,43 @@ library IndexedUnit
 			set new.RectangularGeometry = unitTypeID == TANK or unitTypeID == TRUCK or unitTypeID == FIRETRUCK or unitTypeID == AMBULANCE or unitTypeID == JEEP or unitTypeID == PASSENGERCAR or unitTypeID == CORVETTE or unitTypeID == POLICECAR
 			if not new.RectangularGeometry then
 				set new.Radius = GetUnitDefaultRadius(unitTypeID)
+			endif
+			
+			if unitTypeID == PASSENGERCAR then
+				//equal weights per color
+				set rand = GetRandomInt(0, 4)
+				
+				if rand == 0 then
+					call SetUnitColor(new.Unit, PLAYER_COLOR_CYAN)
+				elseif rand == 1 then
+					call SetUnitColor(new.Unit, PLAYER_COLOR_YELLOW)
+				elseif rand == 2 then
+					call SetUnitColor(new.Unit, PLAYER_COLOR_LIGHT_BLUE)
+				elseif rand == 3 then
+					call SetUnitColor(new.Unit, PLAYER_COLOR_MINT)
+				else
+					call SetUnitColor(new.Unit, PLAYER_COLOR_LAVENDER)
+				endif
+			elseif unitTypeID == CORVETTE then
+				set rand = GetRandomInt(0, 30)
+				
+				if rand < 10 then
+					call SetUnitColor(new.Unit, PLAYER_COLOR_RED)
+				elseif rand < 15 then
+					call SetUnitColor(new.Unit, PLAYER_COLOR_ORANGE)
+				elseif rand < 25 then
+					call SetUnitColor(new.Unit, PLAYER_COLOR_LIGHT_BLUE)
+				else
+					call SetUnitColor(new.Unit, PLAYER_COLOR_LAVENDER)
+				endif
+			elseif unitTypeID == TRUCK then
+				set rand = GetRandomInt(0, 10)
+				
+				if rand == 0 then
+					call SetUnitColor(new.Unit, PLAYER_COLOR_RED)
+				else
+					call SetUnitColor(new.Unit, PLAYER_COLOR_AQUA)
+				endif
 			endif
 			
 			//defaults
