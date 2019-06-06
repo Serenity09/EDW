@@ -108,7 +108,7 @@ library PatternSpawn requires Draw
 			return R2I(.SpawnLineLength / .SpawnOffset)
 		endmethod
 		public method GetSpawnPosition takes integer spawnIndex returns vector2
-			return vector2.create(.SpawnOrigin.x + Cos(.SpawnLineAngle*bj_DEGTORAD)*.SpawnOffset*spawnIndex, .SpawnOrigin.y + Sin(.SpawnLineAngle*bj_DEGTORAD)*.SpawnOffset*spawnIndex)
+			return vector2.create(.SpawnOrigin.x + Cos(.SpawnLineAngle*bj_DEGTORAD)*(.5*.SpawnOffset + .SpawnOffset*spawnIndex), .SpawnOrigin.y + Sin(.SpawnLineAngle*bj_DEGTORAD)*(.5*.SpawnOffset + .SpawnOffset*spawnIndex))
 		endmethod
 		
 		public method DrawOrigin takes nothing returns nothing
@@ -141,11 +141,11 @@ library PatternSpawn requires Draw
 			if GetRectMaxX(spawnRect) - GetRectMinX(spawnRect) >= GetRectMaxY(spawnRect) - GetRectMinY(spawnRect) then
 				set spawnLineLength = GetRectMaxX(spawnRect) - GetRectMinX(spawnRect)
 				set spawnLineAngle = 0 //auto create from rect always starts position index on left side and moves right
-				set spawnOrigin = vector2.create(GetRectMinX(spawnRect), GetRectMinY(spawnRect) + ((GetRectMaxY(spawnRect) - GetRectMinY(spawnRect)) / 2.))
+				set spawnOrigin = vector2.create(GetRectMinX(spawnRect), (GetRectMaxY(spawnRect) + GetRectMinY(spawnRect)) / 2.)
 			else
 				set spawnLineLength = GetRectMaxY(spawnRect) - GetRectMinY(spawnRect)
 				set spawnLineAngle = 90 //auto create from rect always starts position index on bottom side and moves up
-				set spawnOrigin = vector2.create(GetRectMinX(spawnRect) + ((GetRectMaxX(spawnRect) - GetRectMinX(spawnRect)) / 2.), GetRectMinY(spawnRect))
+				set spawnOrigin = vector2.create((GetRectMaxX(spawnRect) + GetRectMinX(spawnRect)) / 2., GetRectMinY(spawnRect))
 			endif
 			
 			//bound spawnLineLength to include at least a single location

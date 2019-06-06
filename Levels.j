@@ -50,6 +50,10 @@ library Levels requires SimpleList, Teams, GameModesGlobals, LevelIDGlobals, Cin
 			
 			return new
 		endmethod
+		
+		public method InitGate takes real angle, real scale returns destructable
+			return CreateDestructable('B006', GetRectCenterX(this.Gate), GetRectCenterY(this.Gate), angle, scale, 1)
+		endmethod
     endstruct
     
 	public struct Level extends array //extends IStartable
@@ -262,6 +266,17 @@ library Levels requires SimpleList, Teams, GameModesGlobals, LevelIDGlobals, Cin
 			
 			return cp
         endmethod
+		public method InsertCheckpoint takes rect gate, rect center, integer position returns Checkpoint
+			local Checkpoint cp = Checkpoint.create(gate, center)
+			
+			if position < .Checkpoints.count then
+				call .Checkpoints.insert(cp, position)
+			else
+				call .Checkpoints.addEnd(cp)
+			endif
+			
+			return cp
+		endmethod
                         
 		public method ApplyLevelRewards takes User u, Teams_MazingTeam mt, Level nextLevel returns nothing			
 			local integer score = 0

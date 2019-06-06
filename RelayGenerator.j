@@ -116,7 +116,7 @@ library RelayGenerator requires GameGlobalConstants, SimpleList, Table, Vector2,
         
         public real UnitLaneSize
         public static integer array UnitIDToRelayUnitID //links unit ID to RelayUnit struct ID (UnitIDToRelayUnitID[UnitID] = RelayUnit struct ID)
-        private real UnitTimeout
+        public real UnitTimeout
 		readonly real OverclockFactor
         private timer UnitTimer
 		

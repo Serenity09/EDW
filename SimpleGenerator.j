@@ -21,9 +21,9 @@ struct SimpleGenerator extends IStartable
     public real EndCoordinate
     
     private timer SpawnTimer
-    private real SpawnTimeStep
+    public real SpawnTimeStep
     private group SpawnedUnits
-	private real SpawnMoveSpeed
+	readonly real SpawnMoveSpeed
     
     private static timer MoveTimer
     private static SimpleList_List ActiveWidgets

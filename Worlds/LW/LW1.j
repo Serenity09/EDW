@@ -74,7 +74,11 @@ library LW1 requires Recycle, Levels
 		set nsync = SynchronizedGroup.create()
 		call l.AddStartable(nsync)
 		set jtimber = nsync.AddUnit(ICETROLL)
-		set jtimber.MoveSpeed = 200
+		if RewardMode == GameModesGlobals_HARD then
+			set jtimber.MoveSpeed = 200
+		else
+			set jtimber.MoveSpeed = 150
+		endif
 		call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_Rect_233))
 		call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_Rect_234))
 		call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_Rect_235))
@@ -82,7 +86,11 @@ library LW1 requires Recycle, Levels
 		set jtimber.AllOrders.last.next = jtimber.AllOrders.first
 		
 		set jtimber = nsync.AddUnit(ICETROLL)
-		set jtimber.MoveSpeed = 200
+		if RewardMode == GameModesGlobals_HARD then
+			set jtimber.MoveSpeed = 200
+		else
+			set jtimber.MoveSpeed = 150
+		endif
 		call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_Rect_235))
 		call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_Rect_236))
 		call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_Rect_233))
@@ -93,7 +101,11 @@ library LW1 requires Recycle, Levels
 		set nsync = SynchronizedGroup.create()
 		call l.AddStartable(nsync)
 		set jtimber = nsync.AddUnit(ICETROLL)
-		set jtimber.MoveSpeed = 200
+		if RewardMode == GameModesGlobals_HARD then
+			set jtimber.MoveSpeed = 200
+		else
+			set jtimber.MoveSpeed = 150
+		endif
 		call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_Region_442))
 		call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_Region_441))
 		call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_Region_440))
@@ -101,7 +113,11 @@ library LW1 requires Recycle, Levels
 		set jtimber.AllOrders.last.next = jtimber.AllOrders.first
 		
 		set jtimber = nsync.AddUnit(ICETROLL)
-		set jtimber.MoveSpeed = 200
+		if RewardMode == GameModesGlobals_HARD then
+			set jtimber.MoveSpeed = 200
+		else
+			set jtimber.MoveSpeed = 150
+		endif
 		call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_Region_440))
 		call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_Region_439))
 		call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_Region_442))
@@ -127,16 +143,34 @@ library LW1 requires Recycle, Levels
 		call l.AddStartable(RespawningGateway.CreateFromVectors(BFIRE, vector2.createFromRect(gg_rct_Region_484), vector2.createFromRect(gg_rct_Region_479), 5*60))
 		call l.AddStartable(RespawningGateway.CreateFromVectors(RFIRE, vector2.createFromRect(gg_rct_Region_485), vector2.createFromRect(gg_rct_Region_480), 5*60))
 		call l.AddStartable(RespawningGateway.CreateFromVectors(BFIRE, vector2.createFromRect(gg_rct_Region_486), vector2.createFromRect(gg_rct_Region_481), 5*60))
-		call l.AddStartable(RespawningGateway.CreateFromVectors(RFIRE, vector2.createFromRect(gg_rct_Region_487), vector2.createFromRect(gg_rct_Region_482), 5*60))
 		
-		//width 4 behavior A spawn
+		if RewardMode == GameModesGlobals_HARD then
+			call l.AddStartable(RespawningGateway.CreateFromVectors(RFIRE, vector2.createFromRect(gg_rct_Region_487), vector2.createFromRect(gg_rct_Region_482), 5*60))
+		else
+			//x, y, ttype, variation (-1 : random), radius, shape (0 : circ, 1 : rect)
+			call SetTerrainType(-9984, -13432, ABYSS, 0, 4, 1)
+			call SetTerrainType(-9092, -13432, ABYSS, 0, 6, 1)
+			
+			call SetTerrainType(-9602, -14718, NOEFFECT, 0, 1, 1)
+			call SetTerrainType(-9602, -14846, ABYSS, 0, 1, 1)
+			
+			call SetTerrainType(-9602, -15738, NOEFFECT, 0, 1, 1)
+		endif
+		
+		//width 4 spawn
 		set pattern = LinePatternSpawn.createFromRect(W4APatternSpawn, 5, gg_rct_LW1_Generator2, TERRAIN_TILE_SIZE)
 		set pattern.CycleVariations = 3
-		set sg = SimpleGenerator.create(pattern, 1.8, 90, 22)
-		call sg.SetMoveSpeed(175.)
+		set sg = SimpleGenerator.create(pattern, 2.2, 90, 22)
+		if RewardMode == GameModesGlobals_HARD then
+			set sg.SpawnTimeStep = 1.8
+			call sg.SetMoveSpeed(175.)
+		else
+			call sg.SetMoveSpeed(150.)
+		endif
+		
 		call l.AddStartable(sg)
 		
-		//width 3 behavior A spawn
+		//width 3 spawn
 		set pattern = LinePatternSpawn.createFromRect(W3APatternSpawn, 3, gg_rct_LW1_Generator3, TERRAIN_TILE_SIZE)
 		set pattern.CycleVariations = 4
 		set sg = SimpleGenerator.create(pattern, 1.4, 270, 16)
@@ -149,12 +183,14 @@ library LW1 requires Recycle, Levels
 		set sg = SimpleGenerator.create(pattern, 5, 270, 18)
 		call sg.SetMoveSpeed(250.)
 		call l.AddStartable(sg)
-				
-		set pattern = LinePatternSpawn.createFromPoint(OriginSpawn, 1, gg_rct_LW1_Generator6)
-		set pattern.Data = SPIRITWALKER
-		set sg = SimpleGenerator.create(pattern, 5, 270, 22)
-		call sg.SetMoveSpeed(200.)
-		call l.AddStartable(sg)
+		
+		if RewardMode == GameModesGlobals_HARD then
+			set pattern = LinePatternSpawn.createFromPoint(OriginSpawn, 1, gg_rct_LW1_Generator6)
+			set pattern.Data = SPIRITWALKER
+			set sg = SimpleGenerator.create(pattern, 5, 270, 22)
+			call sg.SetMoveSpeed(200.)
+			call l.AddStartable(sg)
+		endif
 		
 		//synced patrol set
 		set nsync = SynchronizedGroup.create()
@@ -182,7 +218,11 @@ library LW1 requires Recycle, Levels
 		
 		//left sync group
 		set jtimber = nsync.AddUnit(ICETROLL)
-		set jtimber.MoveSpeed = 180
+		if RewardMode == GameModesGlobals_HARD then
+			set jtimber.MoveSpeed = 180
+		else
+			set jtimber.MoveSpeed = 160
+		endif
 		call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_Region_456))
 		call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_Region_464))
 		call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_Region_463))
@@ -191,7 +231,11 @@ library LW1 requires Recycle, Levels
 		
 		//right sync group		
 		set jtimber = nsync.AddUnit(ICETROLL)
-		set jtimber.MoveSpeed = 180
+		if RewardMode == GameModesGlobals_HARD then
+			set jtimber.MoveSpeed = 180
+		else
+			set jtimber.MoveSpeed = 160
+		endif
 		call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_Region_463))
 		call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_Region_459))
 		call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_Region_456))
@@ -204,7 +248,11 @@ library LW1 requires Recycle, Levels
 		
 		//top sync group
 		set jtimber = nsync.AddUnit(CLAWMAN)
-		set jtimber.MoveSpeed = 360
+		if RewardMode == GameModesGlobals_HARD then
+			set jtimber.MoveSpeed = 360
+		else
+			set jtimber.MoveSpeed = 320
+		endif
 		call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_Region_467))
 		call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_Region_462))
 		call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_Region_461))
@@ -213,7 +261,11 @@ library LW1 requires Recycle, Levels
 				
 		//bottom sync group		
 		set jtimber = nsync.AddUnit(CLAWMAN)
-		set jtimber.MoveSpeed = 360
+		if RewardMode == GameModesGlobals_HARD then
+			set jtimber.MoveSpeed = 360
+		else
+			set jtimber.MoveSpeed = 320
+		endif
 		call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_Region_461))
 		call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_Region_466))
 		call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_Region_467))

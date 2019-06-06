@@ -265,7 +265,7 @@ library EDWPatternSpawnDefinitions requires PatternSpawn, Recycle
 				endif
 			endif
 		endif
-				
+		
 		return g
 	endfunction
 endlibrary

@@ -49,6 +49,35 @@ library SimpleList requires Alloc, Table
             
             set .count = .count + 1
         endmethod
+		public method insert takes integer value, integer position returns nothing
+			local integer curPosition = 0
+			local ListNode curNode
+			local ListNode newNode
+			
+			if position <= 0 or .count == 0 then
+				call .add(value)
+			elseif position >= .count then
+				call .addEnd(value)
+			else
+				set curNode = .first
+				loop
+				exitwhen curPosition == position
+					
+				set curNode = curNode.next
+				set curPosition = curPosition + 1
+				endloop
+				
+				set newNode = ListNode.allocate()
+				set newNode.value = value
+				set newNode.prev = curNode.prev
+				set newNode.next = curNode
+				
+				set curNode.prev = newNode
+				if newNode.prev != 0 then
+					set newNode.prev.next = newNode
+				endif
+			endif
+		endmethod
         
         //remove the first node and return it
 		//remember to store or destroy the node when finished with it

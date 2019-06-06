@@ -5,6 +5,7 @@ library EDWLevelContent requires LevelIDGlobals, EDWLevels, SimpleList, Teams, L
 		
 	public function Initialize takes nothing returns nothing
 		local Levels_Level l
+		local Checkpoint cp
                 
         local BoundedSpoke boundedSpoke
         local Wheel wheel
@@ -24,7 +25,7 @@ library EDWLevelContent requires LevelIDGlobals, EDWLevels, SimpleList, Teams, L
 		local FastLoad fastLoad
 		
 		local integer i
-		
+				
 		//FIRST LEVEL INITS HARD CODED
         set l = Levels_Level(INTRO_LEVEL_ID)
 		call l.AddLevelStopCB(Condition(function FinishedIntro))
@@ -124,6 +125,11 @@ library EDWLevelContent requires LevelIDGlobals, EDWLevels, SimpleList, Teams, L
 				
 		//LAND WORLD A
 		//LEVEL 1
+		if RewardMode == GameModesGlobals_EASY then
+			set cp = Levels_Level(LW1_LEVEL_ID).InsertCheckpoint(gg_rct_LWCP_1_1a, gg_rct_LWR_1_2a, 1)
+			call cp.InitGate(bj_PI, 1.25)
+		endif
+		
 		call LW1_InitializeStartableContent()
 		//LEVEL 2
 		call LW2_InitializeStartableContent()

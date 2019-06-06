@@ -48,7 +48,7 @@ library EDWLevels requires LevelIDGlobals, Levels, PW4
 		//LAND WORLD A
 		//LEVEL 1
 		set l = Levels_Level.create(LW1_LEVEL_ID, "Need For Speed", 3, 3, "LW1Start", "LW1Stop", gg_rct_LWR_1_1, gg_rct_LW1_Vision, gg_rct_LW1_End, 0)
-        call l.AddCheckpoint(gg_rct_LWCP_1_1, gg_rct_LWR_1_2)		
+		call l.AddCheckpoint(gg_rct_LWCP_1_1, gg_rct_LWR_1_2)		
 		
 		//LEVEL 2
 		set l = Levels_Level.create(LW2_LEVEL_ID, "Monday Commute", 3, 3, "LW2Start", "LW2Stop", gg_rct_LWR_2_1, gg_rct_LW2_Vision, gg_rct_LW2_End, l)
