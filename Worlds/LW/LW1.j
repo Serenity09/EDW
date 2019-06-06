@@ -9,6 +9,8 @@ library LW1 requires Recycle, Levels
 		local SynchronizedUnit jtimber
 				
 		local PatternSpawn pattern
+		
+		local integer rand
 				
 		//synced patrol set
 		set nsync = SynchronizedGroup.create()
@@ -180,7 +182,7 @@ library LW1 requires Recycle, Levels
 		//standard simple generators
 		set pattern = LinePatternSpawn.createFromPoint(OriginSpawn, 1, gg_rct_LW1_Generator4)
 		set pattern.Data = SPIRITWALKER
-		set sg = SimpleGenerator.create(pattern, 5, 270, 18)
+		set sg = SimpleGenerator.create(pattern, 5, 270, 14)
 		call sg.SetMoveSpeed(250.)
 		call l.AddStartable(sg)
 		
@@ -211,7 +213,23 @@ library LW1 requires Recycle, Levels
 		call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_Rect_242))
 		set jtimber.AllOrders.last.next = jtimber.AllOrders.first
 		
-		//sync movement near teleport area
+		//terrain changes below teleport area
+		if RewardMode == GameModesGlobals_HARD then
+			set rand = l.GetWeightedRandomInt(0, 9)
+			
+			if rand > 0 then
+				//x, y, ttype, variation (-1 : random), radius, shape (0 : circ, 1 : rect)
+				call SetTerrainType(-9992, -14578, ABYSS, 0, 1, 1)
+			endif
+			if rand > 4 then
+				call SetTerrainType(-9728, -14838, ABYSS, 0, 1, 1)
+			endif
+			if rand > 8 then
+				call SetTerrainType(-9992, -15098, ABYSS, 0, 1, 1)
+			endif
+		endif
+		
+		//sync movement below teleport area
 		//left & right
 		set nsync = SynchronizedGroup.create()
 		call l.AddStartable(nsync)
