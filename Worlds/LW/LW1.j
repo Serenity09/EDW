@@ -11,7 +11,9 @@ library LW1 requires Recycle, Levels
 		local PatternSpawn pattern
 		
 		local integer rand
-				
+		
+		call FastLoad.create(l, l.Checkpoints.first.value, 10., 5.)
+		
 		//synced patrol set
 		set nsync = SynchronizedGroup.create()
 		call l.AddStartable(nsync)
