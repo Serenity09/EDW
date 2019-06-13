@@ -3,55 +3,67 @@ library FastLoad requires IStartable, SimpleList, RelayGenerator, SimpleGenerato
 		private constant integer UNLOADED = 0
 		private constant integer LOADING = 1
 		private constant integer LOADED = 2
+		
+		private constant real OVERCLOCK_LOADED_EXTRA_WAIT = 1.
 	endglobals
 	
 	struct FastLoad extends IStartable
-		
 		private Checkpoint Checkpoint
+		
+		private timer OverclockTimer
 		
 		public real OverclockFactor
 		public real FastLoadTime
 		
 		public integer LoadState
 		
-		private SimpleList_List RelayGenerators
-		private SimpleList_List SimpleGenerators
+		private SimpleList_List AwaitingTeams
 		
 		private static SimpleList_List ActiveLoaders
 				
-		private method SetOverclockFactor takes real overclockFactor returns nothing
+		private method BroadcastOverclockFactor takes real overclockFactor returns nothing
 			local SimpleList_ListNode curNode = this.ParentLevel.Startables.first
 			
 			loop
 			exitwhen curNode == 0
 				if IStartable(curNode.value).getType() == RelayGenerator.typeid then					
 					call RelayGenerator(curNode.value).SetOverclockFactor(overclockFactor)
+				elseif IStartable(curNode.value).getType() == SimpleGenerator.typeid then
+					call SimpleGenerator(curNode.value).SetOverclockFactor(overclockFactor)
 				endif
 			set curNode = curNode.next
 			endloop	
+		endmethod
+		
+		private static method OverclockLoadPlayerCB takes nothing returns nothing
+			local timer t = GetExpiredTimer()
+			local thistype fastLoad = GetTimerData(t)
+			local SimpleList_ListNode curNode
+			// local Checkpoint checkpoint
+			
+			loop
+			set curNode = fastLoad.AwaitingTeams.pop()
+			exitwhen curNode == 0
+				// set checkpoint = fastLoad.ParentLevel.Checkpoints.get(Teams_MazingTeam(curNode.value).OnCheckpoint).value
+				// if checkpoint == fastLoad.Checkpoint then
+					// call Teams_MazingTeam(curNode.value).PauseTeam(false)
+				// endif
+				call Teams_MazingTeam(curNode.value).PauseTeam(false)
+			endloop
+			
+			call ReleaseTimer(t)
+			set fastLoad.OverclockTimer = null
+			set t = null
 		endmethod
 		private static method OverclockLoadCB takes nothing returns nothing
 			local timer t = GetExpiredTimer()
 			local thistype fastLoad = GetTimerData(t)
 			local SimpleList_ListNode curNode
-			local Checkpoint checkpoint
 			
 			set fastLoad.LoadState = LOADED
+			call fastLoad.BroadcastOverclockFactor(1.0)
 			
-			call fastLoad.SetOverclockFactor(1.0)
-			
-			set curNode = fastLoad.ParentLevel.ActiveTeams.first
-			loop
-			exitwhen curNode == 0
-				set checkpoint = fastLoad.ParentLevel.Checkpoints.get(Teams_MazingTeam(curNode.value).OnCheckpoint).value
-				if checkpoint == fastLoad.Checkpoint then
-					call Teams_MazingTeam(curNode.value).PauseTeam(false)
-				endif
-			set curNode = curNode.next
-			endloop
-			
-			call ReleaseTimer(t)
-			set t = null
+			call TimerStart(t, OVERCLOCK_LOADED_EXTRA_WAIT, false, function thistype.OverclockLoadPlayerCB)
 		endmethod
 		
 		private static method GetCheckpointFastLoad takes Levels_Level level, Checkpoint checkpoint returns thistype
@@ -72,7 +84,9 @@ library FastLoad requires IStartable, SimpleList, RelayGenerator, SimpleGenerato
 			local thistype fastLoad = thistype.GetCheckpointFastLoad(EventCurrentLevel, EventCheckpoint)
 			local SimpleList_ListNode curNode
 						
-			if fastLoad != 0 and fastLoad.LoadState != LOADED then
+			if fastLoad != 0 and fastLoad.LoadState != LOADED and (TimerGetRemaining(fastLoad.OverclockTimer) + OVERCLOCK_LOADED_EXTRA_WAIT) > RespawnPauseTime then
+				call fastLoad.AwaitingTeams.addEnd(Levels_Level.CBTeam)
+				
 				call Levels_Level.CBTeam.CancelAutoUnpauseForTeam()
 				call Levels_Level.CBTeam.PauseTeam(true)
 			endif
@@ -82,10 +96,10 @@ library FastLoad requires IStartable, SimpleList, RelayGenerator, SimpleGenerato
 			if not thistype.ActiveLoaders.contains(this) then
 				if this.LoadState == UNLOADED then
 					set this.LoadState = LOADING
+					call this.BroadcastOverclockFactor(this.OverclockFactor)
 					
-					call this.SetOverclockFactor(this.OverclockFactor)
-					
-					call TimerStart(NewTimerEx(this), this.FastLoadTime, false, function thistype.OverclockLoadCB)
+					set this.OverclockTimer = NewTimerEx(this)
+					call TimerStart(this.OverclockTimer, this.FastLoadTime, false, function thistype.OverclockLoadCB)
 				endif
 				
 				call thistype.ActiveLoaders.add(this)
@@ -110,6 +124,7 @@ library FastLoad requires IStartable, SimpleList, RelayGenerator, SimpleGenerato
 			set new.FastLoadTime = fastLoadTime
 			
 			set new.LoadState = UNLOADED
+			set new.AwaitingTeams = SimpleList_List.create()
 			
 			call parentLevel.AddCheckpointChangeCB(Condition(function thistype.CheckpointChangeCB))
 			

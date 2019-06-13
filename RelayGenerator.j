@@ -608,7 +608,7 @@ library RelayGenerator requires GameGlobalConstants, SimpleList, Table, Vector2,
 			local real oldFactor
 			local group tempGroup
 			local unit turnUnit
-			local real timeout
+			// local real timeout
 			
 			if factor != this.OverclockFactor then
 				static if DEBUG_MODE then
@@ -638,11 +638,11 @@ library RelayGenerator requires GameGlobalConstants, SimpleList, Table, Vector2,
 					call ReleaseGroup(this.Units)
 					set this.Units = tempGroup
 					
-					if TimerGetRemaining(this.UnitTimer) + OVERCLOCK_RESTART_BUFFER < .035 then
-						set timeout = .035
-					else
-						set timeout = TimerGetRemaining(this.UnitTimer) + OVERCLOCK_RESTART_BUFFER
-					endif
+					// if TimerGetRemaining(this.UnitTimer) + OVERCLOCK_RESTART_BUFFER < .035 then
+						// set timeout = .035
+					// else
+						// set timeout = TimerGetRemaining(this.UnitTimer) + OVERCLOCK_RESTART_BUFFER
+					// endif
 					
 					call PauseTimer(this.UnitTimer)
 					call TimerStart(this.UnitTimer, this.UnitTimeout / this.OverclockFactor, true, function RelayGenerator.CreateUnitCB)

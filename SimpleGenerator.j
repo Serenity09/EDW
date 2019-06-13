@@ -21,20 +21,73 @@ struct SimpleGenerator extends IStartable
     public real EndCoordinate
     
     private timer SpawnTimer
+	readonly real OverclockFactor
     public real SpawnTimeStep
     private group SpawnedUnits
-	readonly real SpawnMoveSpeed
+	readonly real SpawnMoveSpeed	
     
     private static timer MoveTimer
     private static SimpleList_List ActiveWidgets
     
 	public method SetMoveSpeed takes real movespeed returns nothing
-		set this.SpawnMoveSpeed = movespeed * MOVEMENT_UPDATE_TIMESTEP
+		set this.SpawnMoveSpeed = movespeed * MOVEMENT_UPDATE_TIMESTEP * this.OverclockFactor
 		
 		if this.SpawnDirection == 180 or this.SpawnDirection == 270 then
 			set this.SpawnMoveSpeed = -this.SpawnMoveSpeed
 		endif
 	endmethod
+	
+	public method SetOverclockFactor takes real factor returns nothing
+			local real oldFactor
+			local group tempGroup
+			local unit turnUnit
+			// local real timeout
+			
+			if factor != this.OverclockFactor then
+				static if DEBUG_MODE then
+					if this.SpawnTimeStep / this.OverclockFactor < .03500 then
+						call DisplayTextToForce(bj_FORCE_PLAYER[0], "Warning: overclocking simple generator " + I2S(this) + " further than WC3 can support!")
+					endif
+				endif
+				
+				set oldFactor = this.OverclockFactor
+				set this.OverclockFactor = factor
+				
+				if this.SpawnMoveSpeed != 0 then
+					set this.SpawnMoveSpeed = this.SpawnMoveSpeed / oldFactor * factor
+				endif
+				
+				if ActiveWidgets.contains(this) then
+					if this.SpawnMoveSpeed == 0 then
+						set tempGroup = NewGroup()
+						
+						loop
+						set turnUnit = FirstOfGroup(this.SpawnedUnits)
+						exitwhen turnUnit == null
+							call IndexedUnit(GetUnitUserData(turnUnit)).SetMoveSpeed(IndexedUnit(GetUnitUserData(turnUnit)).MoveSpeed / oldFactor * factor)
+						
+							if IsUnitAnimated(GetUnitTypeId(turnUnit)) then
+								call SetUnitTimeScale(turnUnit, GetUnitMoveSpeed(turnUnit) / GetUnitDefaultMoveSpeed(turnUnit))
+							endif
+						call GroupRemoveUnit(this.SpawnedUnits, turnUnit)
+						call GroupAddUnit(tempGroup, turnUnit)
+						endloop
+						
+						call ReleaseGroup(this.SpawnedUnits)
+						set this.SpawnedUnits = tempGroup
+					endif
+					
+					// if TimerGetRemaining(this.UnitTimer) + OVERCLOCK_RESTART_BUFFER < .035 then
+						// set timeout = .035
+					// else
+						// set timeout = TimerGetRemaining(this.UnitTimer) + OVERCLOCK_RESTART_BUFFER
+					// endif
+					
+					call PauseTimer(this.SpawnTimer)
+					call TimerStart(this.SpawnTimer, this.SpawnTimeStep / this.OverclockFactor, true, function thistype.PeriodicSpawn)
+				endif
+			endif
+		endmethod
 	
     private static method PeriodicSpawn takes nothing returns nothing
         local thistype generator = GetTimerData(GetExpiredTimer())
@@ -224,7 +277,7 @@ struct SimpleGenerator extends IStartable
 			call DisplayTextToForce(bj_FORCE_PLAYER[0], "Starting generator " + I2S(this) + " with group " + I2S(GetHandleId(this.SpawnedUnits)))
 		endif
 		
-        call TimerStart(this.SpawnTimer, this.SpawnTimeStep, true, function thistype.PeriodicSpawn)
+        call TimerStart(this.SpawnTimer, this.SpawnTimeStep / this.OverclockFactor, true, function thistype.PeriodicSpawn)
     endmethod
     public method Stop takes nothing returns nothing
         call thistype.ActiveWidgets.remove(this)
@@ -235,6 +288,8 @@ struct SimpleGenerator extends IStartable
 		call ReleaseGroup(this.SpawnedUnits)
 		set this.SpawnedUnits = null
         
+		set this.OverclockFactor = 1.
+		
 		if this.SpawnPattern != 0 then
 			call this.SpawnPattern.Reset()
 		endif
@@ -295,6 +350,7 @@ struct SimpleGenerator extends IStartable
 		
 		//defaults
 		set new.SpawnMoveSpeed = 0.
+		set new.OverclockFactor = 1.
 		
         return new
     endmethod
