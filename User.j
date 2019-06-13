@@ -2,7 +2,7 @@ library User requires GetUnitDefaultRadius, MazerGlobals, Platformer, TerrainHel
 
 globals
 	User TriggerUser //used with events
-	private constant boolean DEBUG_GAMEMODE_CHANGE = true
+	private constant boolean DEBUG_GAMEMODE_CHANGE = false
 endglobals
 
 struct User extends array
@@ -245,16 +245,12 @@ struct User extends array
 			
 				call this.SwitchGameModes(Teams_GAMEMODE_STANDARD_PAUSED, x, y)
                 
-                if RespawnASAPMode then
-                    call TimerStart(.UnpauseTimer, REVIVE_PAUSE_TIME_ASAP, false, function User.UnpauseUserCB)
-                else
-                    call TimerStart(.UnpauseTimer, REVIVE_PAUSE_TIME_NONASAP, false, function User.UnpauseUserCB)
-                endif
+				call TimerStart(.UnpauseTimer, RespawnPauseTime, false, function User.UnpauseUserCB)
 			elseif .Team.DefaultGameMode == Teams_GAMEMODE_PLATFORMING_PAUSED then
 				call .CancelAutoUnpause()
 				set .UnpauseTimer = NewTimerEx(this)
 				
-				call TimerStart(.UnpauseTimer, REVIVE_PAUSE_TIME_NONASAP, false, function User.UnpauseUserCB)
+				call TimerStart(.UnpauseTimer, RespawnPauseTime, false, function User.UnpauseUserCB)
             /*
             elseif .Team.DefaultGameMode == Teams_GAMEMODE_PLATFORMING then
                 call .CancelAutoUnpause()
@@ -262,7 +258,7 @@ struct User extends array
 				
 				call this.SwitchGameModes(Teams_GAMEMODE_PLATFORMING_PAUSED, x, y)
                 
-                call TimerStart(.UnpauseTimer, REVIVE_PAUSE_TIME_PLATFORMING, false, function User.UnpauseUserCB)
+                call TimerStart(.UnpauseTimer, RespawnPauseTime, false, function User.UnpauseUserCB)
             */
             else
                 call this.SwitchGameModes(.Team.DefaultGameMode, x, y)

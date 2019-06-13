@@ -6,7 +6,7 @@ library StandardGameLoop initializer init requires Effects, LavaDamage, IceMovem
 		public timer GameLoopTimer = CreateTimer()
 		private constant real TIMESTEP = .05
 		
-		private constant boolean DEBUG_TERRAIN_CHANGE = true
+		private constant boolean DEBUG_TERRAIN_CHANGE = false
 	endglobals
 
 //! textmacro GetTerrainPriority takes TType, TPriority

@@ -13,6 +13,9 @@ globals
 	constant integer VICTORY_TIME_20 = 2
 	constant integer VICTORY_TIME_30 = 3
 	
+	constant real REVIVE_PAUSE_TIME_ASAP = 2.5
+	constant real REVIVE_PAUSE_TIME_NONASAP = 1.5
+	
     integer     GameMode        = SOLO     //0 = solo, 1 = all on 1 team, 2 = random teams
     integer     RewardMode      = EASY     //0 = standard rewards, 1 = challenge, 2 = start with 99
     boolean     MinigamesMode   = false //Whether minigames are enabled
@@ -20,5 +23,7 @@ globals
     
 	integer		VictoryTime		= 45 * 60
 	integer		VictoryScore	= 20
+	
+	real		RespawnPauseTime= REVIVE_PAUSE_TIME_NONASAP
 endglobals
 endlibrary

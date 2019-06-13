@@ -11,37 +11,37 @@ library EDWVisualVote requires VisualVote, ContinueGlobals, Teams, PlayerUtils, 
     public function GameModeSolo takes nothing returns nothing
         //call DisplayTextToPlayer(Player(0), 0, 0, "solo")
                 
-        set GameMode = 0
+        set GameMode = GameModesGlobals_SOLO
     endfunction
     
     public function GameModeRandom takes nothing returns nothing
         //call DisplayTextToPlayer(Player(0), 0, 0, "random")
         
-        set GameMode = 2
+        set GameMode = GameModesGlobals_TEAMRANDOM
     endfunction
     
     public function GameModeAllIsOne takes nothing returns nothing        
         //call DisplayTextToPlayer(Player(0), 0, 0, "all is one")
         
-        set GameMode = 1
+        set GameMode = GameModesGlobals_TEAMALL
     endfunction
     
     public function RewardStandard takes nothing returns nothing
         //call DisplayTextToPlayer(Player(0), 0, 0, "standard")
         
-        set RewardMode = 0
+        set RewardMode = GameModesGlobals_EASY
     endfunction
     
     public function RewardChallenge takes nothing returns nothing
         //call DisplayTextToPlayer(Player(0), 0, 0, "challenge")
         
-        set RewardMode = 1
+        set RewardMode = GameModesGlobals_HARD
     endfunction
     
     public function Reward99AndNone takes nothing returns nothing
         //call DisplayTextToPlayer(Player(0), 0, 0, "99 and none")
         
-        set RewardMode = 2
+        set RewardMode = GameModesGlobals_CHEAT
     endfunction
     
     public function MinigamesOn takes nothing returns nothing
@@ -61,11 +61,13 @@ library EDWVisualVote requires VisualVote, ContinueGlobals, Teams, PlayerUtils, 
         //call DisplayTextToPlayer(Player(0), 0, 0, "respawn ASAP on")
         
         set RespawnASAPMode = true
+		set RespawnPauseTime = 2.5
     endfunction
     public function InstantRespawnOff takes nothing returns nothing
         //call DisplayTextToPlayer(Player(0), 0, 0, "respawn ASAP off")
         
         set RespawnASAPMode = false
+		set RespawnPauseTime = 1.5
     endfunction
 	
 	private function FadeCBTwo takes nothing returns nothing
@@ -297,13 +299,13 @@ library EDWVisualVote requires VisualVote, ContinueGlobals, Teams, PlayerUtils, 
 		set welcomeCine = Cinematic.create(null, false, true, cineMsg)
 		
 		if RewardMode == GameModesGlobals_EASY then
-			call welcomeCine.AddMessage(null, ColorMessage("Easy mode", SPEAKER_COLOR) + " selected", DEFAULT_MEDIUM_TEXT_SPEED)
+			call welcomeCine.AddMessage(null, ColorMessage("Easy mode", SPEAKER_COLOR) + " selected. Gotta start somewhere", DEFAULT_MEDIUM_TEXT_SPEED)
 			set welcomeCineTime = welcomeCineTime + DEFAULT_MEDIUM_TEXT_SPEED
 		elseif RewardMode == GameModesGlobals_HARD then
-			call welcomeCine.AddMessage(null, ColorMessage("Hard mode", SPEAKER_COLOR) + " selected", DEFAULT_MEDIUM_TEXT_SPEED)
+			call welcomeCine.AddMessage(null, ColorMessage("Hard mode", SPEAKER_COLOR) + " selected. Yikes", DEFAULT_MEDIUM_TEXT_SPEED)
 			set welcomeCineTime = welcomeCineTime + DEFAULT_MEDIUM_TEXT_SPEED
 		else //CHEAT
-			call welcomeCine.AddMessage(null, ColorMessage("99 and None mode", SPEAKER_COLOR) + " selected. Like " + ColorMessage("easy mode", SPEAKER_COLOR) + ", but you start with 99 continues and can only get more through special bonuses", DEFAULT_LONG_TEXT_SPEED)
+			call welcomeCine.AddMessage(null, ColorMessage("99 and None mode", SPEAKER_COLOR) + " selected. Like " + ColorMessage("easy mode", SPEAKER_COLOR) + ", but cheatier", DEFAULT_LONG_TEXT_SPEED)
 			set welcomeCineTime = welcomeCineTime + DEFAULT_LONG_TEXT_SPEED
 		endif
 		
@@ -422,7 +424,7 @@ library EDWVisualVote requires VisualVote, ContinueGlobals, Teams, PlayerUtils, 
 		endif
 	endfunction
     
-    //TODO add 2 stage menu, first choose team or solo -- then specify for final options
+    //2 stage menu, first choose difficulty and team breakdown -- then specify for final options
     public function CreateMenu takes nothing returns nothing
 		local VisualVote_voteMenu MyMenu
 		local VisualVote_voteColumn col
@@ -432,13 +434,16 @@ library EDWVisualVote requires VisualVote, ContinueGlobals, Teams, PlayerUtils, 
 		if not ShouldShowSettingVoteMenu() then
             call CreateFogModifierRectBJ(true, Player(0), FOG_OF_WAR_VISIBLE, GetPlayableMapRect())
 			
-			set GameMode = GameModesGlobals_TEAMALL
+			call GameModeAllIsOne()
+			//set GameMode = GameModesGlobals_TEAMALL
             //99 and none
-            set RewardMode = DEBUG_DIFFICULTY_MODE
+			set RewardMode = DEBUG_DIFFICULTY_MODE
             //respawn as soon as you die
-            set RespawnASAPMode = false
+            call InstantRespawnOff()
+			//set RespawnASAPMode = false
             //currently unimplemented
-            set MinigamesMode = false
+            call MinigamesOff()
+			//set MinigamesMode = false
             
             call InitializeGameForGlobals()
 			
@@ -448,9 +453,9 @@ library EDWVisualVote requires VisualVote, ContinueGlobals, Teams, PlayerUtils, 
 				call TrackGameTime()
 			endif
 		elseif GetHumanPlayersCount() == 1 then
-			set GameMode = GameModesGlobals_SOLO
-			set RespawnASAPMode = true
-			set MinigamesMode = false
+			call GameModeSolo()
+			call InstantRespawnOn()
+			call MinigamesOff()
 			
 			set MyMenu = VisualVote_voteMenu.create(3060, 5800, VOTE_TIME_ROUND_ONE, null)
             set MyMenu.onDestroyFinish = "EDWVisualVote_InitializeGameForGlobals"
