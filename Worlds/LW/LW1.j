@@ -7,12 +7,12 @@ library LW1 requires Recycle, Levels
 		
 		local SynchronizedGroup nsync
 		local SynchronizedUnit jtimber
-				
+		
 		local PatternSpawn pattern
 		
 		local integer rand
 		
-		call FastLoad.create(l, l.Checkpoints.first.value, 10., 5.)
+		call FastLoad.create(l, l.Checkpoints.first.value, 50., .5)
 		
 		//synced patrol set
 		set nsync = SynchronizedGroup.create()

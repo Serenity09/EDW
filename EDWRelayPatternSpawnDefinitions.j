@@ -1,6 +1,12 @@
-library EDWRelayPatternSpawnDefinitions requires RelayPatternSpawn, GroupUtils, Recycle
+library EDWRelayPatternSpawnDefinitions requires RelayPatternSpawn, GroupUtils, Recycle, RunningGlobals
 	globals
-		private constant real LW2_RG1_BASEMS = 1.5 * TERRAIN_TILE_SIZE
+		// private constant real LW2_RG1_BASEMS = 1.5 * TERRAIN_TILE_SIZE
+		// private constant real LW2_RG2_BASEMS = 2. * TERRAIN_TILE_SIZE
+		// private constant real LW2_RG3_BASEMS = 3. * TERRAIN_TILE_SIZE
+		private constant real LW2_RG1_BASEMS = .5 * RoadSpeed
+		private constant real LW2_RG2_BASEMS = .75 * RoadSpeed
+		private constant real LW2_RG3_BASEMS = 1.5 * RoadSpeed
+		private constant real LW2_RG4_BASEMS = 1.5 * TERRAIN_TILE_SIZE
 	endglobals
 	
 	
@@ -70,42 +76,91 @@ library EDWRelayPatternSpawnDefinitions requires RelayPatternSpawn, GroupUtils, 
 		local group g = NewGroup()
 		local RelayTurn spawnTurn = spawn.Parent.Turns.first.value
 		local unit u
-		local integer rand = spawn.CurrentCycle / 2
-		local boolean evenCycle = (spawn.CurrentCycle / 2.) - rand == 0.
+		//local integer rand = spawn.CurrentCycle / 2
+		//local boolean evenCycle = (spawn.CurrentCycle / 2.) - rand == 0.
 		
-		if spawn.CurrentCycle == 1 or spawn.CurrentCycle == 5 then
+		if spawn.CurrentCycle == 1 or (spawn.CurrentCycle == 2 and parentLevel.GetWeightedRandomInt(0, 1) == 1) then
 			set u = Recycle_MakeUnit(AMBULANCE, spawnTurn.FirstLane.x, spawnTurn.FirstLane.y)
 			
-			call IndexedUnit(GetUnitUserData(u)).SetMoveSpeed(3 * LW2_RG1_BASEMS * spawn.Parent.OverclockFactor)
+			call IndexedUnit(GetUnitUserData(u)).SetMoveSpeed(3. * LW2_RG1_BASEMS * spawn.Parent.OverclockFactor)
 			call GroupAddUnit(g, u)
 		elseif spawn.CurrentCycle == 3 then
-			set rand = GetRandomInt(0, 1)
-			if rand == 0 then
-				set u = Recycle_MakeUnit(TRUCK, spawnTurn.FirstLane.x + 2*spawnTurn.FirstLaneX*spawn.Parent.UnitLaneSize, spawnTurn.FirstLane.y)
-			elseif rand == 1 then
-				set u = Recycle_MakeUnit(FIRETRUCK, spawnTurn.FirstLane.x + 2*spawnTurn.FirstLaneX*spawn.Parent.UnitLaneSize, spawnTurn.FirstLane.y)
-			endif
+			// set rand = GetRandomInt(0, 1)
+			// if rand == 0 then
+				// set u = Recycle_MakeUnit(TRUCK, spawnTurn.FirstLane.x + 2*spawnTurn.FirstLaneX*spawn.Parent.UnitLaneSize, spawnTurn.FirstLane.y)
+			// elseif rand == 1 then
+				// set u = Recycle_MakeUnit(FIRETRUCK, spawnTurn.FirstLane.x + 2*spawnTurn.FirstLaneX*spawn.Parent.UnitLaneSize, spawnTurn.FirstLane.y)
+			// endif
+			set u = Recycle_MakeUnit(TRUCK, spawnTurn.FirstLane.x + 2*spawnTurn.FirstLaneX*spawn.Parent.UnitLaneSize, spawnTurn.FirstLane.y)
 			
 			call IndexedUnit(GetUnitUserData(u)).SetMoveSpeed(LW2_RG1_BASEMS * spawn.Parent.OverclockFactor)
 			call GroupAddUnit(g, u)
 		endif
 		
-		if evenCycle then
-			set rand = GetRandomInt(0, 3)
-			if rand == 0 then
-				set u = Recycle_MakeUnit(PASSENGERCAR, spawnTurn.FirstLane.x + spawnTurn.FirstLaneX*spawn.Parent.UnitLaneSize, spawnTurn.FirstLane.y)
-			elseif rand == 1 then
-				set u = Recycle_MakeUnit(JEEP, spawnTurn.FirstLane.x + spawnTurn.FirstLaneX*spawn.Parent.UnitLaneSize, spawnTurn.FirstLane.y)
-			elseif rand == 2 then
-				set u = Recycle_MakeUnit(POLICECAR, spawnTurn.FirstLane.x + spawnTurn.FirstLaneX*spawn.Parent.UnitLaneSize, spawnTurn.FirstLane.y)
-			elseif rand == 3 then
-				set u = Recycle_MakeUnit(CORVETTE, spawnTurn.FirstLane.x + spawnTurn.FirstLaneX*spawn.Parent.UnitLaneSize, spawnTurn.FirstLane.y)
-			endif
+		if (spawn.CurrentCycle / 2.) - (spawn.CurrentCycle / 2) == 0. then
+			// set rand = GetRandomInt(0, 3)
+			// if rand == 0 then
+				// set u = Recycle_MakeUnit(PASSENGERCAR, spawnTurn.FirstLane.x + spawnTurn.FirstLaneX*spawn.Parent.UnitLaneSize, spawnTurn.FirstLane.y)
+			// elseif rand == 1 then
+				// set u = Recycle_MakeUnit(JEEP, spawnTurn.FirstLane.x + spawnTurn.FirstLaneX*spawn.Parent.UnitLaneSize, spawnTurn.FirstLane.y)
+			// elseif rand == 2 then
+				// set u = Recycle_MakeUnit(POLICECAR, spawnTurn.FirstLane.x + spawnTurn.FirstLaneX*spawn.Parent.UnitLaneSize, spawnTurn.FirstLane.y)
+			// elseif rand == 3 then
+				// set u = Recycle_MakeUnit(CORVETTE, spawnTurn.FirstLane.x + spawnTurn.FirstLaneX*spawn.Parent.UnitLaneSize, spawnTurn.FirstLane.y)
+			// endif
+			set u = Recycle_MakeUnit(JEEP, spawnTurn.FirstLane.x + spawnTurn.FirstLaneX*spawn.Parent.UnitLaneSize, spawnTurn.FirstLane.y)
 			
-			call IndexedUnit(GetUnitUserData(u)).SetMoveSpeed(2. * LW2_RG1_BASEMS * spawn.Parent.OverclockFactor)
+			call IndexedUnit(GetUnitUserData(u)).SetMoveSpeed(2.25 * LW2_RG1_BASEMS * spawn.Parent.OverclockFactor)
 			call GroupAddUnit(g, u)
 		endif
 		
+		return g
+	endfunction
+	function LW2PatternSpawn2 takes RelayPatternSpawn spawn, Levels_Level parentLevel returns group
+		local group g = NewGroup()
+		local RelayTurn spawnTurn = spawn.Parent.Turns.first.value
+		local unit u
+		//local integer rand
+		
+		if spawn.CurrentCycle == 0 then
+			set u = Recycle_MakeUnit(CORVETTE, spawnTurn.FirstLane.x + spawnTurn.FirstLaneX*spawn.Parent.UnitLaneSize, spawnTurn.FirstLane.y)
+			
+			call IndexedUnit(GetUnitUserData(u)).SetMoveSpeed(2.5 * LW2_RG2_BASEMS * spawn.Parent.OverclockFactor)
+			call GroupAddUnit(g, u)
+		elseif spawn.CurrentCycle == 1 and parentLevel.GetWeightedRandomInt(0, 1) == 1 then
+			set u = Recycle_MakeUnit(POLICECAR, spawnTurn.FirstLane.x + spawnTurn.FirstLaneX*spawn.Parent.UnitLaneSize, spawnTurn.FirstLane.y)
+			
+			call IndexedUnit(GetUnitUserData(u)).SetMoveSpeed(2.5 * LW2_RG2_BASEMS * spawn.Parent.OverclockFactor)
+			call GroupAddUnit(g, u)
+		endif
+		
+		if spawn.CurrentCycle == 1 or spawn.CurrentCycle == 3 or spawn.CurrentCycle == 5 then
+			set u = Recycle_MakeUnit(PASSENGERCAR, spawnTurn.FirstLane.x, spawnTurn.FirstLane.y)
+			
+			call IndexedUnit(GetUnitUserData(u)).SetMoveSpeed(LW2_RG2_BASEMS * spawn.Parent.OverclockFactor)
+			call GroupAddUnit(g, u)
+		endif
+		
+		return g
+	endfunction
+	function LW2PatternSpawn3 takes RelayPatternSpawn spawn, Levels_Level parentLevel returns group
+		local group g = NewGroup()
+		local RelayTurn spawnTurn = spawn.Parent.Turns.first.value
+		local unit u
+		//local integer rand
+		
+		if spawn.CurrentCycle == 0 or spawn.CurrentCycle == 2 then
+			set u = Recycle_MakeUnit(FIRETRUCK, spawnTurn.FirstLane.x + spawnTurn.FirstLaneX*spawn.Parent.UnitLaneSize, spawnTurn.FirstLane.y)
+			
+			call IndexedUnit(GetUnitUserData(u)).SetMoveSpeed(LW2_RG3_BASEMS * spawn.Parent.OverclockFactor)
+			call GroupAddUnit(g, u)
+		elseif spawn.CurrentCycle == 1 or spawn.CurrentCycle == 2 then
+			set u = Recycle_MakeUnit(JEEP, spawnTurn.FirstLane.x, spawnTurn.FirstLane.y)
+			
+			call IndexedUnit(GetUnitUserData(u)).SetMoveSpeed(1.5 * LW2_RG3_BASEMS * spawn.Parent.OverclockFactor)
+			call GroupAddUnit(g, u)
+		endif
+			
 		return g
 	endfunction
 	function LW2PatternSpawn4 takes RelayPatternSpawn spawn, Levels_Level parentLevel returns group
@@ -120,7 +175,7 @@ library EDWRelayPatternSpawnDefinitions requires RelayPatternSpawn, GroupUtils, 
 				set u = Recycle_MakeUnit(PASSENGERCAR, spawnTurn.FirstLane.x, spawnTurn.FirstLane.y + spawnTurn.FirstLaneY*spawn.Parent.UnitLaneSize)
 			endif
 			
-			call IndexedUnit(GetUnitUserData(u)).SetMoveSpeed(1.5 * TERRAIN_TILE_SIZE * spawn.Parent.OverclockFactor)
+			call IndexedUnit(GetUnitUserData(u)).SetMoveSpeed(LW2_RG4_BASEMS * spawn.Parent.OverclockFactor)
 			call GroupAddUnit(g, u)
 		endif
 		

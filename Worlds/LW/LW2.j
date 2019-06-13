@@ -21,19 +21,19 @@ library LW2 requires Recycle, Levels, EDWCollectibleResolveHandlers
 		set collectible = Collectible.createFromPoint(ORANGEFROG, 0, gg_rct_LW2_C1, 180)
 		call collectibleSet.AddCollectible(collectible)
 		
-		set collectible = Collectible.createFromPoint(GREENFROG, 0, gg_rct_LW2_C2, 0)
+		set collectible = Collectible.createFromPoint(GREENFROG, 0, gg_rct_LW2_C2, 180)
 		//set collectible.ReturnToCheckpoint = true
 		call collectibleSet.AddCollectible(collectible)
 		
 		if RewardMode == GameModesGlobals_HARD then
-			set collectible = Collectible.createFromPoint(PURPLEFROG, 0, gg_rct_LW2_WW3, 0)
+			set collectible = Collectible.createFromPoint(PURPLEFROG, 0, gg_rct_LW2_WW3, 90)
 		else
 			set collectible = Collectible.createFromPoint(PURPLEFROG, 0, gg_rct_LW2_WW2, 270)
 		endif
 		//set collectible.ReturnToCheckpoint = true
 		call collectibleSet.AddCollectible(collectible)
 		
-		set collectible = Collectible.createFromPoint(REDFROG, 0, gg_rct_LW2_C4, 0)
+		set collectible = Collectible.createFromPoint(REDFROG, 0, gg_rct_LW2_C4, 180)
 		//set collectible.ReturnToCheckpoint = true
 		call collectibleSet.AddCollectible(collectible)
 		
@@ -41,7 +41,7 @@ library LW2 requires Recycle, Levels, EDWCollectibleResolveHandlers
 		//set collectible.ReturnToCheckpoint = true
 		call collectibleSet.AddCollectible(collectible)
 				
-		call FastLoad.create(l, l.Checkpoints.first.value, 20., 3.)
+		call FastLoad.create(l, l.Checkpoints.first.value, 30., 1.)
 		
 		//
 		set wheel = Wheel.createFromPoint(gg_rct_LW2_WW1)
@@ -158,23 +158,23 @@ library LW2 requires Recycle, Levels, EDWCollectibleResolveHandlers
 			call SetTerrainType(GetRectCenterX(gg_rct_LW2_WW3), GetRectCenterY(gg_rct_LW2_WW3), ABYSS, 0, 4, 1)
 		endif
 		
-		set rg = RelayGenerator.createFromPoint(gg_rct_LW2_RG1, 3, 3, 270, 39, 1.75, LW2PatternSpawn1, 6)
+		set rg = RelayGenerator.createFromPoint(gg_rct_LW2_RG1, 3, 3, 270, 38, 1.75, LW2PatternSpawn1, 6)
 		// call rg.AddTurnSimple(180, 4)
 		// call rg.AddTurnSimple(270, 26)
 		call rg.EndTurns(270)
 		
 		call l.AddStartable(rg)
 		
-		set rg = RelayGenerator.createFromPoint(gg_rct_LW2_RG2, 2, 2, 90, 25, 4., RelayGeneratorAllSpawn, 1)
+		set rg = RelayGenerator.createFromPoint(gg_rct_LW2_RG2, 2, 2, 90, 26, 1.75, LW2PatternSpawn2, 4)
 		set rg.SpawnPattern.Data = ICETROLL
 		call rg.AddTurnSimple(0, 7)
-		call rg.AddTurnSimple(270, 25)
+		call rg.AddTurnSimple(270, 26)
 		call rg.EndTurns(270)
 		
 		call l.AddStartable(rg)
 		
 		//TODO replace with SimpleGenerator
-		set rg = RelayGenerator.createFromPoint(gg_rct_LW2_RG3, 2, 2, 270, 44, 6., RelayGeneratorAllSpawn, 1)
+		set rg = RelayGenerator.createFromPoint(gg_rct_LW2_RG3, 2, 2, 270, 44, 2.5, LW2PatternSpawn3, 4)
 		set rg.SpawnPattern.Data = ICETROLL
 		call rg.EndTurns(270)
 		
