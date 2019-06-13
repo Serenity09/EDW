@@ -2,6 +2,7 @@ library User requires GetUnitDefaultRadius, MazerGlobals, Platformer, TerrainHel
 
 globals
 	User TriggerUser //used with events
+	private constant boolean DEBUG_GAMEMODE_CHANGE = true
 endglobals
 
 struct User extends array
@@ -238,11 +239,11 @@ struct User extends array
 				// call DisplayTextToForce(bj_FORCE_PLAYER[0], "reviving at x: " + R2S(x) + ", y: " + R2S(y))
 			// endif
 			
-			call .CancelAutoUnpause()
-			set .UnpauseTimer = NewTimerEx(this)
-			
             if .Team.DefaultGameMode == Teams_GAMEMODE_STANDARD or .Team.DefaultGameMode == Teams_GAMEMODE_STANDARD_PAUSED then
-                call this.SwitchGameModes(Teams_GAMEMODE_STANDARD_PAUSED, x, y)
+                call .CancelAutoUnpause()
+				set .UnpauseTimer = NewTimerEx(this)
+			
+				call this.SwitchGameModes(Teams_GAMEMODE_STANDARD_PAUSED, x, y)
                 
                 if RespawnASAPMode then
                     call TimerStart(.UnpauseTimer, REVIVE_PAUSE_TIME_ASAP, false, function User.UnpauseUserCB)
@@ -250,10 +251,16 @@ struct User extends array
                     call TimerStart(.UnpauseTimer, REVIVE_PAUSE_TIME_NONASAP, false, function User.UnpauseUserCB)
                 endif
 			elseif .Team.DefaultGameMode == Teams_GAMEMODE_PLATFORMING_PAUSED then
+				call .CancelAutoUnpause()
+				set .UnpauseTimer = NewTimerEx(this)
+				
 				call TimerStart(.UnpauseTimer, REVIVE_PAUSE_TIME_NONASAP, false, function User.UnpauseUserCB)
             /*
             elseif .Team.DefaultGameMode == Teams_GAMEMODE_PLATFORMING then
-                call this.SwitchGameModes(Teams_GAMEMODE_PLATFORMING_PAUSED, x, y)
+                call .CancelAutoUnpause()
+				set .UnpauseTimer = NewTimerEx(this)
+				
+				call this.SwitchGameModes(Teams_GAMEMODE_PLATFORMING_PAUSED, x, y)
                 
                 call TimerStart(.UnpauseTimer, REVIVE_PAUSE_TIME_PLATFORMING, false, function User.UnpauseUserCB)
             */
@@ -407,7 +414,11 @@ struct User extends array
         //debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "Adding " + I2S(newGameMode))
         
         if newGameMode != curGameMode then
-            //if the new gamemode is death then we might need to keep a few things in memory
+            static if DEBUG_GAMEMODE_CHANGE then
+				call DisplayTextToForce(bj_FORCE_PLAYER[0], "Current gamemode: " + I2S(curGameMode) + ", New gamemode: " + I2S(newGameMode))
+			endif
+			
+			//if the new gamemode is death then we might need to keep a few things in memory
             if newGameMode == Teams_GAMEMODE_DEAD then
                 if not RespawnASAPMode then
                     set facing = GetUnitFacing(.ActiveUnit)
@@ -424,9 +435,9 @@ struct User extends array
                 call SetUnitPosition(MazersArray[this], MazerGlobals_SAFE_X, MazerGlobals_SAFE_Y)
                 //removes the reg unit from the reg game loop. thereby enabling regular terrain effects
                 call GroupRemoveUnit(MazersGroup, MazersArray[this])
-                //remove the current terrain effect
-                call GameLoopRemoveTerrainAction(MazersArray[this], this, PreviousTerrainTypedx[this], NOEFFECT)
-                set PreviousTerrainTypedx[this] = NOEFFECT
+                // //remove the current terrain effect
+                // call GameLoopRemoveTerrainAction(MazersArray[this], this, PreviousTerrainTypedx[this], NOEFFECT)
+                // set PreviousTerrainTypedx[this] = NOEFFECT
                 //updates the number of units platforming/regular mazing
                 set NumberMazing = NumberMazing - 1
                 
@@ -436,8 +447,8 @@ struct User extends array
             elseif curGameMode == Teams_GAMEMODE_PLATFORMING then
                 call .Platformer.StopPlatforming()
             elseif curGameMode == Teams_GAMEMODE_STANDARD_PAUSED then
-                //restore default movespeed regardless
-                call SetUnitMoveSpeed(MazersArray[this], DefaultMoveSpeed)
+                // //restore default movespeed regardless
+                //call SetUnitMoveSpeed(MazersArray[this], DefaultMoveSpeed)
                 
                 //remove entangling roots on the paused mazer
 				/*
@@ -484,7 +495,6 @@ struct User extends array
             
             //apply the new game mode
             if newGameMode == Teams_GAMEMODE_STANDARD then
-                set PreviousTerrainTypedx[this] = PLATFORMING
                 //moves the mazing unit
 				call SetUnitPosition(MazersArray[this], x, y)
                 //adds the reg unit from the reg game loop. thereby enabling regular terrain effects

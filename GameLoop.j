@@ -5,6 +5,8 @@ library StandardGameLoop initializer init requires Effects, LavaDamage, IceMovem
 		
 		public timer GameLoopTimer = CreateTimer()
 		private constant real TIMESTEP = .05
+		
+		private constant boolean DEBUG_TERRAIN_CHANGE = true
 	endglobals
 
 //! textmacro GetTerrainPriority takes TType, TPriority
@@ -313,152 +315,142 @@ function GameLoopNewTerrainAction takes nothing returns nothing
     //if last step in Gameloop had the same terrain as this step, nothing needs to be changed
     //otherwise proceed with GameLoopNewTerrainAction actions
     //always remove the old effect before adding a new one
-    if previousterrain == basicterrain then
-        return
-    else
-        //ABYSS keep the effect of whatever terrain type the unit was on previously
-        if (basicterrain == ABYSS) then
-            return
-        //ABYSS is handled differently and should never be stored as the previous terrain
-        else
-            //switch previous terrain types
-            //set PreviousTerrainType2[i] = PreviousTerrainType[i]
-            //set PreviousTerrainType[i] = previousterrain 
-            //debug
-            //call DisplayTextToForce(bj_FORCE_PLAYER[i], ("Remove Effect Call " + I2S(i) + " " + I2S(previousterrain) + " " + I2S(basicterrain)))
-            //remove the previous terrain effect
-            call GameLoopRemoveTerrainAction(u, i, previousterrain, basicterrain) 
-        endif
-    endif
-    
-    //call DisplayTextToForce(bj_FORCE_PLAYER[i], "loop")
-    
-    //on Fast Ice? Uses equivalent of Simple Terrain Check
-    if (basicterrain == FASTICE) then
-        set CanSteer[i] = true
-        set SkateSpeed[i] = FastIceSpeed
-        
-        call IceMovement_Add(MazersArray[i])
-        //call DisplayTextToForce(bj_FORCE_PLAYER[i], "On Fast Ice")
-        set TerrainOffset[i] = FASTICEOFFSET
-        set PreviousTerrainTypedx[i] = basicterrain
-    elseif (basicterrain == MEDIUMICE) then
-        set CanSteer[i] = true
-        set SkateSpeed[i] = MediumIceSpeed
-        
-        call IceMovement_Add(MazersArray[i])
-        
-        set TerrainOffset[i] = MEDIUMICEOFFSET
-        set PreviousTerrainTypedx[i] = basicterrain
-    elseif (basicterrain == SLOWICE) then
-        set CanSteer[i] = true
-        set SkateSpeed[i] = SlowIceSpeed
-        
-        call IceMovement_Add(MazersArray[i])
-        
-        set TerrainOffset[i] = SLOWICEOFFSET
-        set PreviousTerrainTypedx[i] = basicterrain
-    elseif (basicterrain == VINES) then
-        call SetUnitMoveSpeed(u, SlowGrassSpeed)
-        
-        set TerrainOffset[i] = VINESOFFSET
-        set PreviousTerrainTypedx[i] = basicterrain
-    elseif (basicterrain == GRASS) then
-        call SetUnitMoveSpeed(u, MediumGrassSpeed)
-        
-        set TerrainOffset[i] = GRASSOFFSET
-        set PreviousTerrainTypedx[i] = basicterrain
-    elseif (basicterrain == D_GRASS) then
-        call SetUnitMoveSpeed(u, FastGrassSpeed)
-        
-        set TerrainOffset[i] = D_GRASSOFFSET
-        set PreviousTerrainTypedx[i] = basicterrain
-    elseif (basicterrain == RTILE) then
-        //call DisplayTextToForce(bj_FORCE_PLAYER[i], "R Tiles")
-        //call RotationCameras[i].cUnpause()
-        //functionality defined within Ice.isMoving
-        set UseTeleportMovement[i] = true
-		set terrainCenterPoint = GetTerrainCenterpoint(x, y)
-		call SetUnitX(u, terrainCenterPoint.x)
-		call SetUnitY(u, terrainCenterPoint.y)
-        call IssueImmediateOrder(u, "stop")
-        
-        set TerrainOffset[i] = RTILEOFFSET
-        set PreviousTerrainTypedx[i] = basicterrain
+	if previousterrain != basicterrain and basicterrain != ABYSS then
+		static if DEBUG_TERRAIN_CHANGE then
+			call DisplayTextToForce(bj_FORCE_PLAYER[i], ("Removing terrain: " + I2S(previousterrain) + ", new terrain: " + I2S(basicterrain)))
+		endif
 		
-		call terrainCenterPoint.destroy()
-    elseif (basicterrain == SAND) then
-        //call DisplayTextToForce(bj_FORCE_PLAYER[i], "On Sand")
-        call SandMovement.Add(u)
-		call SetUnitMoveSpeed(u, SandMovement_MOVESPEED)
-        call GroupAddUnit(DestinationGroup, u)
-        
-        //momentum going onto sand from regular ice (do momentum ice later)
-        if (previousterrain == FASTICE or previousterrain == MEDIUMICE or previousterrain == SLOWICE) then
-            set facingRad = (GetUnitFacing(u)/180) * bj_PI
+		//remove the previous terrain effect before applying a new one
+		call GameLoopRemoveTerrainAction(u, i, previousterrain, basicterrain)
+		
+		//apply new terrain logic
+		if (basicterrain == FASTICE) then
+			set CanSteer[i] = true
+			set SkateSpeed[i] = FastIceSpeed
 			
-			set VelocityX[i] = Cos(facingRad) * SkateSpeed[i] * ICE2MOMENTUMFACTOR
-            set VelocityY[i] = Sin(facingRad) * SkateSpeed[i] * ICE2MOMENTUMFACTOR
-        endif
-        
-        //update previous terrain type
-        set TerrainOffset[i] = SANDOFFSET
-        set PreviousTerrainTypedx[i] = basicterrain
-    elseif (basicterrain == SNOW) then
-        set CanSteer[i] = true
-        call SnowMovement.Add(u)
-        
-        //momentum going onto sand from regular ice (do momentum ice later)
-        if (previousterrain == FASTICE or previousterrain == MEDIUMICE or previousterrain == SLOWICE) then
-            set facingRad = (GetUnitFacing(u)/180) * bj_PI
-			set VelocityX[i] = Cos(facingRad) * SkateSpeed[i] * ICE2MOMENTUMFACTOR
-            set VelocityY[i] = Sin(facingRad) * SkateSpeed[i] * ICE2MOMENTUMFACTOR
-        endif
-        
-        //update previous terrain type
-        set TerrainOffset[i] = SNOWOFFSET
-        set PreviousTerrainTypedx[i] = basicterrain
-    elseif basicterrain == RSNOW then
-        //call DisplayTextToForce(bj_FORCE_PLAYER[i], "On RSnow")
-        set CanSteer[i] = true
-        
-        call RSnowMovement.Add(u)
-        
-        //momentum going onto sand from regular ice (do momentum ice later)
-        if previousterrain == FASTICE or previousterrain == MEDIUMICE or previousterrain == SLOWICE then
-            set VelocityX[i] = Cos(RSFacing[i]) * SkateSpeed[i] * ICE2MOMENTUMFACTOR
-            set VelocityY[i] = Sin(RSFacing[i]) * SkateSpeed[i] * ICE2MOMENTUMFACTOR
-        endif
-        
-        //update previous terrain type
-        //call DisplayTextToForce(bj_FORCE_PLAYER[i], "Setting PreviousTerrainTypedx[" + I2S(i) + "] as: " + I2S(basicterrain))
-        set TerrainOffset[i] = RSNOWOFFSET
-        set PreviousTerrainTypedx[i] = basicterrain
-    elseif basicterrain == LAVA then
-        //call DisplayTextToForce(bj_FORCE_PLAYER[i], "Lava")
-        call LavaDamage.Add(i)
-        
-        set TerrainOffset[i] = LAVAOFFSET
-        set PreviousTerrainTypedx[i] = basicterrain
-    elseif basicterrain == LEAVES then        
-        call SetUnitMoveSpeed(u, FastGrassSpeed)
-        
-        call SuperFastMovement.Add(u)
-        
-        set TerrainOffset[i] = LEAVESOFFSET
-        set PreviousTerrainTypedx[i] = basicterrain
-    elseif basicterrain == LRGBRICKS then
-        //call PlatformingAux_StartPlatforming(i)
-//        call StopRegularMazing(i)
-//        call Platformer.AllPlatformers[i].StartPlatforming(x, y)
-//        
-//        set TerrainOffset[i] = LRGBRICKSOFFSET
-//        set PreviousTerrainTypedx[i] = basicterrain
-        call user.SwitchGameModesDefaultLocation(Teams_GAMEMODE_PLATFORMING)
-	else
-		//otherwise set the previous terrain to the current terrain (which has no effect)
-		set PreviousTerrainTypedx[i] = basicterrain
-    endif
+			call IceMovement_Add(MazersArray[i])
+			//call DisplayTextToForce(bj_FORCE_PLAYER[i], "On Fast Ice")
+			set TerrainOffset[i] = FASTICEOFFSET
+			set PreviousTerrainTypedx[i] = basicterrain
+		elseif (basicterrain == MEDIUMICE) then
+			set CanSteer[i] = true
+			set SkateSpeed[i] = MediumIceSpeed
+			
+			call IceMovement_Add(MazersArray[i])
+			
+			set TerrainOffset[i] = MEDIUMICEOFFSET
+			set PreviousTerrainTypedx[i] = basicterrain
+		elseif (basicterrain == SLOWICE) then
+			set CanSteer[i] = true
+			set SkateSpeed[i] = SlowIceSpeed
+			
+			call IceMovement_Add(MazersArray[i])
+			
+			set TerrainOffset[i] = SLOWICEOFFSET
+			set PreviousTerrainTypedx[i] = basicterrain
+		elseif (basicterrain == VINES) then
+			call SetUnitMoveSpeed(u, SlowGrassSpeed)
+			
+			set TerrainOffset[i] = VINESOFFSET
+			set PreviousTerrainTypedx[i] = basicterrain
+		elseif (basicterrain == GRASS) then
+			call SetUnitMoveSpeed(u, MediumGrassSpeed)
+			
+			set TerrainOffset[i] = GRASSOFFSET
+			set PreviousTerrainTypedx[i] = basicterrain
+		elseif (basicterrain == D_GRASS) then
+			call SetUnitMoveSpeed(u, FastGrassSpeed)
+			
+			set TerrainOffset[i] = D_GRASSOFFSET
+			set PreviousTerrainTypedx[i] = basicterrain
+		elseif (basicterrain == RTILE) then
+			//call DisplayTextToForce(bj_FORCE_PLAYER[i], "R Tiles")
+			//call RotationCameras[i].cUnpause()
+			//functionality defined within Ice.isMoving
+			set UseTeleportMovement[i] = true
+			set terrainCenterPoint = GetTerrainCenterpoint(x, y)
+			call SetUnitX(u, terrainCenterPoint.x)
+			call SetUnitY(u, terrainCenterPoint.y)
+			call IssueImmediateOrder(u, "stop")
+			
+			set TerrainOffset[i] = RTILEOFFSET
+			set PreviousTerrainTypedx[i] = basicterrain
+			
+			call terrainCenterPoint.destroy()
+		elseif (basicterrain == SAND) then
+			//call DisplayTextToForce(bj_FORCE_PLAYER[i], "On Sand")
+			call SandMovement.Add(u)
+			call SetUnitMoveSpeed(u, SandMovement_MOVESPEED)
+			call GroupAddUnit(DestinationGroup, u)
+			
+			//momentum going onto sand from regular ice (do momentum ice later)
+			if (previousterrain == FASTICE or previousterrain == MEDIUMICE or previousterrain == SLOWICE) then
+				set facingRad = (GetUnitFacing(u)/180) * bj_PI
+				
+				set VelocityX[i] = Cos(facingRad) * SkateSpeed[i] * ICE2MOMENTUMFACTOR
+				set VelocityY[i] = Sin(facingRad) * SkateSpeed[i] * ICE2MOMENTUMFACTOR
+			endif
+			
+			//update previous terrain type
+			set TerrainOffset[i] = SANDOFFSET
+			set PreviousTerrainTypedx[i] = basicterrain
+		elseif (basicterrain == SNOW) then
+			set CanSteer[i] = true
+			call SnowMovement.Add(u)
+			
+			//momentum going onto sand from regular ice (do momentum ice later)
+			if (previousterrain == FASTICE or previousterrain == MEDIUMICE or previousterrain == SLOWICE) then
+				set facingRad = (GetUnitFacing(u)/180) * bj_PI
+				set VelocityX[i] = Cos(facingRad) * SkateSpeed[i] * ICE2MOMENTUMFACTOR
+				set VelocityY[i] = Sin(facingRad) * SkateSpeed[i] * ICE2MOMENTUMFACTOR
+			endif
+			
+			//update previous terrain type
+			set TerrainOffset[i] = SNOWOFFSET
+			set PreviousTerrainTypedx[i] = basicterrain
+		elseif basicterrain == RSNOW then
+			//call DisplayTextToForce(bj_FORCE_PLAYER[i], "On RSnow")
+			set CanSteer[i] = true
+			
+			call RSnowMovement.Add(u)
+			
+			//momentum going onto sand from regular ice (do momentum ice later)
+			if previousterrain == FASTICE or previousterrain == MEDIUMICE or previousterrain == SLOWICE then
+				set VelocityX[i] = Cos(RSFacing[i]) * SkateSpeed[i] * ICE2MOMENTUMFACTOR
+				set VelocityY[i] = Sin(RSFacing[i]) * SkateSpeed[i] * ICE2MOMENTUMFACTOR
+			endif
+			
+			//update previous terrain type
+			//call DisplayTextToForce(bj_FORCE_PLAYER[i], "Setting PreviousTerrainTypedx[" + I2S(i) + "] as: " + I2S(basicterrain))
+			set TerrainOffset[i] = RSNOWOFFSET
+			set PreviousTerrainTypedx[i] = basicterrain
+		elseif basicterrain == LAVA then
+			//call DisplayTextToForce(bj_FORCE_PLAYER[i], "Lava")
+			call LavaDamage.Add(i)
+			
+			set TerrainOffset[i] = LAVAOFFSET
+			set PreviousTerrainTypedx[i] = basicterrain
+		elseif basicterrain == LEAVES then        
+			call SetUnitMoveSpeed(u, FastGrassSpeed)
+			
+			call SuperFastMovement.Add(u)
+			
+			set TerrainOffset[i] = LEAVESOFFSET
+			set PreviousTerrainTypedx[i] = basicterrain
+		elseif basicterrain == LRGBRICKS then
+			//call PlatformingAux_StartPlatforming(i)
+	//        call StopRegularMazing(i)
+	//        call Platformer.AllPlatformers[i].StartPlatforming(x, y)
+	//        
+	//        set TerrainOffset[i] = LRGBRICKSOFFSET
+	//        set PreviousTerrainTypedx[i] = basicterrain
+			call user.SwitchGameModesDefaultLocation(Teams_GAMEMODE_PLATFORMING)
+			set PreviousTerrainTypedx[i] = basicterrain
+		else
+			//otherwise set the previous terrain to the current terrain (which has no effect)
+			set PreviousTerrainTypedx[i] = basicterrain
+		endif
+	endif   
 endfunction
 
 function GameLoop takes nothing returns nothing
