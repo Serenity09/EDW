@@ -18,6 +18,7 @@ library Wheel requires Alloc, SimpleList, locust
         //TODO convert to unit if ever want to make wheel move
         public vector2 Center
         
+		private real InitialAngle
         public real CurrentAngle
         public SimpleList_List Units
         
@@ -97,6 +98,7 @@ library Wheel requires Alloc, SimpleList, locust
                 call TimerStart(thistype.Timer, TIMEOUT, true, function thistype.Periodic)
             endif
             
+			set this.CurrentAngle = this.InitialAngle
             call thistype.ActiveWheels.addEnd(this)
             
             //TODO show all wheel units
@@ -160,6 +162,20 @@ library Wheel requires Alloc, SimpleList, locust
                 call this.AddEmptySpace(remainingInLayer)
             endif
         endmethod
+		
+		//angle in rad
+		public method SetInitialAngle takes real angle returns nothing
+			set this.InitialAngle = angle
+			set this.CurrentAngle = angle
+			
+			//TODO update existing unit locations in a more elegant way
+			if this.Units.count > 0 then
+				call this.Rotate()
+				set this.RotationSpeed = -this.RotationSpeed
+				call this.Rotate()
+				set this.RotationSpeed = -this.RotationSpeed
+			endif
+		endmethod
         
         public static method onInit takes nothing returns nothing
             set thistype.ActiveWheels = SimpleList_List.create()
@@ -174,7 +190,8 @@ library Wheel requires Alloc, SimpleList, locust
             set new.LayerCount = 1
             set new.InitialOffset = 0
             set new.RotationSpeed = DEFAULT_ROTATION_SPEED
-            set new.CurrentAngle = 0
+			set new.InitialAngle = 0
+            set new.CurrentAngle = new.InitialAngle
             set new.Units = SimpleList_List.create()
             
             return new
