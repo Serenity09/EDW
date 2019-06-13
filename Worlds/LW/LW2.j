@@ -12,6 +12,7 @@ library LW2 requires Recycle, Levels, EDWCollectibleResolveHandlers
 		
 		local Wheel wheel
 		
+		local integer lastRand
 		local integer i
 		
 		//collect all 3 to beat the level
@@ -111,11 +112,21 @@ library LW2 requires Recycle, Levels, EDWCollectibleResolveHandlers
 			set wheel.SpokeCount = R2I((2*bj_PI / wheel.AngleBetween) + .5)
 			set wheel.RotationSpeed = bj_PI / 5 * Wheel_TIMEOUT
 			
+			//facing right
+			// call wheel.AddEmptySpace(2)
+			// call wheel.AddUnits(WWWISP, wheel.SpokeCount - 4)
+			
+			//facing ?
+			set i = R2I((wheel.SpokeCount - 4) / (bj_PI * 1.5))
+			// call wheel.AddUnits(WWWISP, i)
+			// call wheel.AddEmptySpace(4)
+			// call wheel.AddUnits(WWWISP, i)
+			call wheel.SetInitialAngle(.5 * bj_PI)
 			call wheel.AddEmptySpace(2)
 			call wheel.AddUnits(WWWISP, wheel.SpokeCount - 4)
 			// call wheel.AddEmptySpace(3)
 			// call wheel.AddUnits(WWWISP, i)
-			
+			// keep this wheel static, dont start/stop it
 			//call l.AddStartable(wheel)
 			
 			//even odd inbetween
@@ -147,9 +158,9 @@ library LW2 requires Recycle, Levels, EDWCollectibleResolveHandlers
 			call SetTerrainType(GetRectCenterX(gg_rct_LW2_WW3), GetRectCenterY(gg_rct_LW2_WW3), ABYSS, 0, 4, 1)
 		endif
 		
-		set rg = RelayGenerator.createFromPoint(gg_rct_LW2_RG1, 3, 3, 270, 11, 1.5, LW2PatternSpawn1, 6)
-		call rg.AddTurnSimple(180, 4)
-		call rg.AddTurnSimple(270, 26)
+		set rg = RelayGenerator.createFromPoint(gg_rct_LW2_RG1, 3, 3, 270, 39, 1.75, LW2PatternSpawn1, 6)
+		// call rg.AddTurnSimple(180, 4)
+		// call rg.AddTurnSimple(270, 26)
 		call rg.EndTurns(270)
 		
 		call l.AddStartable(rg)
@@ -163,7 +174,7 @@ library LW2 requires Recycle, Levels, EDWCollectibleResolveHandlers
 		call l.AddStartable(rg)
 		
 		//TODO replace with SimpleGenerator
-		set rg = RelayGenerator.createFromPoint(gg_rct_LW2_RG3, 2, 2, 270, 37, 6., RelayGeneratorAllSpawn, 1)
+		set rg = RelayGenerator.createFromPoint(gg_rct_LW2_RG3, 2, 2, 270, 44, 6., RelayGeneratorAllSpawn, 1)
 		set rg.SpawnPattern.Data = ICETROLL
 		call rg.EndTurns(270)
 		
@@ -172,7 +183,7 @@ library LW2 requires Recycle, Levels, EDWCollectibleResolveHandlers
 		//MS = 2. * TERRAIN_TILE_SIZE
 		set rg = RelayGenerator.createFromPoint(gg_rct_LW2_RG4, 2, 2, 180, 5, 1.33, LW2PatternSpawn4, 3)
 		set rg.SpawnPattern.Data = ICETROLL
-		call rg.AddTurnSimple(90, 20)
+		call rg.AddTurnSimple(90, 22)
 		call rg.EndTurns(90)
 		
 		call l.AddStartable(rg)
@@ -260,6 +271,7 @@ library LW2 requires Recycle, Levels, EDWCollectibleResolveHandlers
 		//mortars
 		if RewardMode == GameModesGlobals_HARD then
 			set i = l.GetWeightedRandomInt(3, 5)
+			set lastRand = i
 		else
 			set i = 3
 		endif
@@ -270,7 +282,8 @@ library LW2 requires Recycle, Levels, EDWCollectibleResolveHandlers
 		endloop
 		
 		if RewardMode == GameModesGlobals_HARD then
-			set i = l.GetWeightedRandomInt(4, 6)
+			set i = l.GetWeightedRandomInt(lastRand, 6)
+			set lastRand = i
 		else
 			set i = 4
 		endif
@@ -281,7 +294,8 @@ library LW2 requires Recycle, Levels, EDWCollectibleResolveHandlers
 		endloop
 		
 		if RewardMode == GameModesGlobals_HARD then
-			set i = l.GetWeightedRandomInt(6, 8)
+			set i = l.GetWeightedRandomInt(lastRand, 8)
+			set lastRand = i
 		else
 			set i = 6
 		endif

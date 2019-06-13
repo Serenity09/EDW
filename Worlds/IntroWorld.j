@@ -98,7 +98,9 @@ library IntroWorld requires Recycle, Levels
 		// call Recycle_MakeUnitAndPatrolRect(LGUARD, gg_rct_Rect_271, gg_rct_Rect_272)
 		// call Recycle_MakeUnitAndPatrolRect(LGUARD, gg_rct_Rect_273, gg_rct_Rect_274)
 		
-		call Recycle_MakeUnitAndPatrolRect(LGUARD, gg_rct_Rect_047, gg_rct_Rect_048)
+		if RewardMode == GameModesGlobals_HARD then
+			call Recycle_MakeUnitAndPatrolRect(LGUARD, gg_rct_Rect_047, gg_rct_Rect_048)
+		endif
 		
 		call Recycle_MakeUnitAndPatrolRect(LGUARD, gg_rct_Rect_029, gg_rct_Rect_030)
 	endfunction
