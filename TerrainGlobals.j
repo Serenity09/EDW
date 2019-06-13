@@ -29,33 +29,12 @@ library TerrainGlobals initializer initTerrainGlobals requires GameGlobalConstan
         constant integer BOOST = RTILE
         constant integer SLIPSTREAM = LEAVES
         
-        
         //2 terrain types ago
         //integer array PreviousTerrainType2[NumberPlayers]
         //1 terrain type ago
         //integer array PreviousTerrainType[NumberPlayers]
         integer array PreviousTerrainTypedx[NumberPlayers]
         
-        //by default how much "space" should be given for terrain kill -- 26 is good
-        //should be under a tile quadrant (64) for predictable effects
-        constant real DefaultTerrainOffset = 26
-        constant real FASTICEOFFSET = 40
-        constant real MEDIUMICEOFFSET = 45
-        constant real SLOWICEOFFSET = 34
-        constant real LAVAOFFSET = 42
-        constant real RTILEOFFSET = 42
-        constant real LEAVESOFFSET = 42
-        constant real VINESOFFSET = 50
-        constant real LRGBRICKSOFFSET = 28
-        constant real SANDOFFSET = 45
-        constant real SNOWOFFSET = 45
-        constant real RSNOWOFFSET = 45
-        constant real D_GRASSOFFSET = 30
-        constant real GRASSOFFSET = 30
-        constant real RUNEBRICKSOFFSET = 40
-
-        real array TerrainOffset[NumberPlayers]
-                
         constant integer TERRAIN_QUADRANT_SIZE  = 64
         constant integer TERRAIN_TILE_SIZE      = 128
         
@@ -170,8 +149,6 @@ library TerrainGlobals initializer initTerrainGlobals requires GameGlobalConstan
             //set PreviousTerrainType2[i] = NOEFFECT
             //set PreviousTerrainType[i] = NOEFFECT
             set PreviousTerrainTypedx[i] = NOEFFECT
-            
-            set TerrainOffset[i] = DefaultTerrainOffset
             
             set i = i + 1
         endloop

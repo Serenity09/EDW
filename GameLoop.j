@@ -10,11 +10,11 @@ library StandardGameLoop initializer init requires Effects, LavaDamage, IceMovem
 	endglobals
 
 //! textmacro GetTerrainPriority takes TType, TPriority
-	if $TType$ == ABYSS or $TType$ == LRGBRICKS or $TType$ == RTILE then
+	if $TType$ == ABYSS or $TType$ == LRGBRICKS or $TType$ == RTILE or $TType$ == ROAD then
 		set $TPriority$ = 0
 	elseif $TType$ == LAVA then
 		set $TPriority$ = 1
-	elseif $TType$ == NOEFFECT or $TType$ == ROAD then
+	elseif $TType$ == NOEFFECT then
 		set $TPriority$ = 3
 	elseif $TType$ == GRASS or $TType$ == SNOW then
 		set $TPriority$ = 4
@@ -154,11 +154,7 @@ function GameLoopRemoveTerrainAction takes unit u, integer i, integer oldterrain
             set VelocityX[i] = 0
             set VelocityY[i] = 0
         endif
-    elseif oldterrain == GRASS then
-        call SetUnitMoveSpeed(u, DefaultMoveSpeed)
-    elseif (oldterrain == D_GRASS) then
-        call SetUnitMoveSpeed(u, DefaultMoveSpeed)
-    elseif (oldterrain == VINES) then
+    elseif oldterrain == GRASS or oldterrain == D_GRASS or oldterrain == VINES or oldterrain == ROAD then
         call SetUnitMoveSpeed(u, DefaultMoveSpeed)
     elseif (oldterrain == SAND) then
 		call SandMovement.Remove(u)
@@ -232,18 +228,9 @@ function GameLoopNewTerrainAction takes nothing returns nothing
     
     local real facingRad
     //local integer basicterrain = GetTerrainType(x, y)
-    
-    //local real Offset = TerrainOffset[i]
-    
+   
     //on Abyss
-    //flattened version of newTerrainCheckAdvancedFlexible(x, y, ABYSS, i)
-    /*
-    if (not AbyssImmune[i] and (GetTerrainType(x, y) == ABYSS and GetTerrainType(x + Offset, y) == ABYSS and GetTerrainType(x - Offset, y) == ABYSS and GetTerrainType(x, y + Offset) == ABYSS and GetTerrainType(x, y - Offset) == ABYSS and GetTerrainType(x + Offset, y + Offset) == ABYSS and GetTerrainType(x - Offset, y + Offset) == ABYSS and GetTerrainType(x + Offset, y - Offset) == ABYSS and GetTerrainType(x - Offset, y - Offset) == ABYSS)) then
-        call HeroKill(i)
-        return //skip remaining actions -- the player died lol
-    endif
-    */
-    
+    //flattened version of newTerrainCheckAdvancedFlexible(x, y, ABYSS, i)  
 	local integer basicterrain = GetBestTerrainForPoint(x, y)
 	//local integer basicterrain = GetBestTerrainForPoint(x, y, 32.)
 	//local integer basicterrain = GetTerrainType(x, y)
@@ -251,62 +238,6 @@ function GameLoopNewTerrainAction takes nothing returns nothing
     local vector2 terrainCenterPoint
     
     //if on abyss, then try to get the next nearest terrain
-    /*
-    if ABYSS == basicterrain then
-        set terrainOffset = TerrainOffset[i]
-        set basicterrain = GetTerrainType(x + terrainOffset, y)
-        
-        if ABYSS == basicterrain then
-            set basicterrain = GetTerrainType(x - terrainOffset, y)
-            if ABYSS == basicterrain then
-                set basicterrain = GetTerrainType(x, y + terrainOffset)
-                if ABYSS == basicterrain then
-                    set basicterrain = GetTerrainType(x, y - terrainOffset)
-                    if ABYSS == basicterrain then
-                        set basicterrain = GetTerrainType(x + terrainOffset, y + terrainOffset)
-                        if ABYSS == basicterrain then
-                            set basicterrain = GetTerrainType(x - terrainOffset, y + terrainOffset)
-                            if ABYSS == basicterrain then
-                                set basicterrain = GetTerrainType(x - terrainOffset, y - terrainOffset)
-                                if ABYSS == basicterrain then
-                                    set basicterrain = GetTerrainType(x + terrainOffset, y - terrainOffset)
-                                endif
-                            endif
-                        endif
-                    endif
-                endif
-            endif
-        endif
-    endif
-    */
-    /*
-    if ABYSS == basicterrain or LAVA == basicterrain then
-        set terrainOffset = TerrainOffset[i]
-        set basicterrain = GetTerrainType(x + terrainOffset, y)
-        
-        if ABYSS == basicterrain or LAVA == basicterrain then
-            set basicterrain = GetTerrainType(x - terrainOffset, y)
-            if ABYSS == basicterrain or LAVA == basicterrain then
-                set basicterrain = GetTerrainType(x, y + terrainOffset)
-                if ABYSS == basicterrain or LAVA == basicterrain then
-                    set basicterrain = GetTerrainType(x, y - terrainOffset)
-                    if ABYSS == basicterrain or LAVA == basicterrain then
-                        set basicterrain = GetTerrainType(x + terrainOffset, y + terrainOffset)
-                        if ABYSS == basicterrain or LAVA == basicterrain then
-                            set basicterrain = GetTerrainType(x - terrainOffset, y + terrainOffset)
-                            if ABYSS == basicterrain or LAVA == basicterrain then
-                                set basicterrain = GetTerrainType(x - terrainOffset, y - terrainOffset)
-                                if ABYSS == basicterrain or LAVA == basicterrain then
-                                    set basicterrain = GetTerrainType(x + terrainOffset, y - terrainOffset)
-                                endif
-                            endif
-                        endif
-                    endif
-                endif
-            endif
-        endif
-    endif
-    */
     if not AbyssImmune[i] and basicterrain == ABYSS then
         call HeroKill(i)
         return //skip remaining actions -- the player died lol
@@ -330,7 +261,6 @@ function GameLoopNewTerrainAction takes nothing returns nothing
 			
 			call IceMovement_Add(MazersArray[i])
 			//call DisplayTextToForce(bj_FORCE_PLAYER[i], "On Fast Ice")
-			set TerrainOffset[i] = FASTICEOFFSET
 			set PreviousTerrainTypedx[i] = basicterrain
 		elseif (basicterrain == MEDIUMICE) then
 			set CanSteer[i] = true
@@ -338,7 +268,6 @@ function GameLoopNewTerrainAction takes nothing returns nothing
 			
 			call IceMovement_Add(MazersArray[i])
 			
-			set TerrainOffset[i] = MEDIUMICEOFFSET
 			set PreviousTerrainTypedx[i] = basicterrain
 		elseif (basicterrain == SLOWICE) then
 			set CanSteer[i] = true
@@ -346,22 +275,18 @@ function GameLoopNewTerrainAction takes nothing returns nothing
 			
 			call IceMovement_Add(MazersArray[i])
 			
-			set TerrainOffset[i] = SLOWICEOFFSET
 			set PreviousTerrainTypedx[i] = basicterrain
 		elseif (basicterrain == VINES) then
 			call SetUnitMoveSpeed(u, SlowGrassSpeed)
 			
-			set TerrainOffset[i] = VINESOFFSET
 			set PreviousTerrainTypedx[i] = basicterrain
 		elseif (basicterrain == GRASS) then
 			call SetUnitMoveSpeed(u, MediumGrassSpeed)
 			
-			set TerrainOffset[i] = GRASSOFFSET
 			set PreviousTerrainTypedx[i] = basicterrain
 		elseif (basicterrain == D_GRASS) then
 			call SetUnitMoveSpeed(u, FastGrassSpeed)
 			
-			set TerrainOffset[i] = D_GRASSOFFSET
 			set PreviousTerrainTypedx[i] = basicterrain
 		elseif (basicterrain == RTILE) then
 			//call DisplayTextToForce(bj_FORCE_PLAYER[i], "R Tiles")
@@ -373,7 +298,6 @@ function GameLoopNewTerrainAction takes nothing returns nothing
 			call SetUnitY(u, terrainCenterPoint.y)
 			call IssueImmediateOrder(u, "stop")
 			
-			set TerrainOffset[i] = RTILEOFFSET
 			set PreviousTerrainTypedx[i] = basicterrain
 			
 			call terrainCenterPoint.destroy()
@@ -392,7 +316,6 @@ function GameLoopNewTerrainAction takes nothing returns nothing
 			endif
 			
 			//update previous terrain type
-			set TerrainOffset[i] = SANDOFFSET
 			set PreviousTerrainTypedx[i] = basicterrain
 		elseif (basicterrain == SNOW) then
 			set CanSteer[i] = true
@@ -406,7 +329,6 @@ function GameLoopNewTerrainAction takes nothing returns nothing
 			endif
 			
 			//update previous terrain type
-			set TerrainOffset[i] = SNOWOFFSET
 			set PreviousTerrainTypedx[i] = basicterrain
 		elseif basicterrain == RSNOW then
 			//call DisplayTextToForce(bj_FORCE_PLAYER[i], "On RSnow")
@@ -422,20 +344,17 @@ function GameLoopNewTerrainAction takes nothing returns nothing
 			
 			//update previous terrain type
 			//call DisplayTextToForce(bj_FORCE_PLAYER[i], "Setting PreviousTerrainTypedx[" + I2S(i) + "] as: " + I2S(basicterrain))
-			set TerrainOffset[i] = RSNOWOFFSET
 			set PreviousTerrainTypedx[i] = basicterrain
 		elseif basicterrain == LAVA then
 			//call DisplayTextToForce(bj_FORCE_PLAYER[i], "Lava")
 			call LavaDamage.Add(i)
 			
-			set TerrainOffset[i] = LAVAOFFSET
 			set PreviousTerrainTypedx[i] = basicterrain
 		elseif basicterrain == LEAVES then        
 			call SetUnitMoveSpeed(u, FastGrassSpeed)
 			
 			call SuperFastMovement.Add(u)
 			
-			set TerrainOffset[i] = LEAVESOFFSET
 			set PreviousTerrainTypedx[i] = basicterrain
 		elseif basicterrain == LRGBRICKS then
 			//call PlatformingAux_StartPlatforming(i)
@@ -445,6 +364,10 @@ function GameLoopNewTerrainAction takes nothing returns nothing
 	//        set TerrainOffset[i] = LRGBRICKSOFFSET
 	//        set PreviousTerrainTypedx[i] = basicterrain
 			call user.SwitchGameModesDefaultLocation(Teams_GAMEMODE_PLATFORMING)
+			set PreviousTerrainTypedx[i] = basicterrain
+		elseif basicterrain == ROAD then
+			call SetUnitMoveSpeed(u, RoadSpeed)
+			
 			set PreviousTerrainTypedx[i] = basicterrain
 		else
 			//otherwise set the previous terrain to the current terrain (which has no effect)
