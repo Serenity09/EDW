@@ -32,7 +32,7 @@ When playing in a team mode, dying will leave a revive circle in your wake. [b]A
 [otablei]
 [tr][td]Vanilla[/td][td]More continues, more checkpoints, fewer enemies, basic glory[/td][/tr]
 [tr][td]Chocolate[/td][td]Fewer continues, fewer checkpoints, more enemies, advance glory[/td][/tr]
-[tr][td]99 and None[/td][td]Like Vanilla difficulty, except you start with 99 continues and never get anymore. Meant to be a more wholesome alternative to save/loading and memory editing[/td][/tr]
+[tr][td]99 and None[/td][td]Like Vanilla difficulty, except you start with 99 continues and never get anymore. Meant to be a more wholesome alternative to save/loading and memory editing. Still only comes in Vanilla, because you're clearly too basic for Chocolate[/td][/tr]
 [/otablei]
 [/hidden]
 
@@ -68,7 +68,7 @@ As you advance through a world, you'll gain and lose continues, and (hopefully) 
 [hidden=3D]
 [otablei]
 [tr][titletd]Terrain Type[/titletd][titletd]Movement Effect[/titletd][/tr]
-[tr][td]Abyss[/td][td]Death, in a sudden but still willing to bargain sorta way[/td][/tr]
+[tr][td]Abyss[/td][td]Death, in a sudden, but still willing to bargain sorta way[/td][/tr]
 [tr][td]Lava[/td][td]PAIN[/td][/tr]
 [tr][td]Vines[/td][td]Sooooo Sloooooow[/td][/tr]
 [tr][td]Grasses[/td][td]Effects default movement speed. The darker the grass, the faster you go. Except for lumpy grass, cuz easy learning is for chumps[/td][/tr]
@@ -77,9 +77,9 @@ As you advance through a world, you'll gain and lose continues, and (hopefully) 
 [tr][td]Snow[/td][td]Causes "velocity skating" effect[/td][/tr]
 [tr][td]Rocky Snow[/td][td]Causes "velocity skating" effect, but with delays in your change in facing having any effect[/td][/tr]
 [tr][td]Sand[/td][td]Causes "velocity running" effect[/td][/tr]
-[tr][td]Diamond Tile[/td][td]Causes willful teleportation[/td][/tr]
+[tr][td]Compass Tile[/td][td]Enables willful teleportation in 4 cardinal compass directions[/td][/tr]
 [tr][td]Mossy Bricks[/td][td]Switch between 2D and 3D[/td][/tr]
-[tr][td]Runed Bricks[/td][td]A 3D Parrot[/td][/tr]
+[tr][td]The Road[/td][td]The inky asphalt of the soul. No really, it's just visual[/td][/tr]
 [/otablei]
 [/hidden]
 
@@ -96,9 +96,9 @@ As you advance through a world, you'll gain and lose continues, and (hopefully) 
 [tr][td]Snow[/td][td]Soft square terrain. Can't wall jump[/td][/tr]
 [tr][td]Rocky Snow[/td][td]Hard square terrain. Can't wall jump[/td][/tr]
 [tr][td]Sand[/td][td]Soft square terrain[/td][/tr]
-[tr][td]Diamond Tile[/td][td]Let me see ya just bounce it with me[/td][/tr]
+[tr][td]Compass Tile[/td][td]Let me see ya just bounce it with me[/td][/tr]
 [tr][td]Mossy Bricks[/td][td]Switch between 2D and 3D[/td][/tr]
-[tr][td]Runed Bricks[/td][td]A 2D Parrot[/td][/tr]
+[tr][td]The Road[/td][td]Diamond shaped but otherwise unremarkable[/td][/tr]
 [/otablei]
 [/hidden]
 
@@ -120,7 +120,7 @@ As you advance through a world, you'll gain and lose continues, and (hopefully) 
 [tr][td]Sand[/td][td][img]https://imgur.com/VEtQd3p.png[/img][/td][/tr]
 [tr][td]Diamond Tile[/td][td][img]https://imgur.com/tXETNdR.png[/img][/td][/tr]
 [tr][td]Mossy Bricks[/td][td][img]https://imgur.com/TOnqU2G.png[/img][/td][/tr]
-[tr][td]Runed Bricks[/td][td][img]https://imgur.com/CVe9vNi.png[/img][/td][/tr]
+[tr][td]The Road[/td][td][img]https://i.imgur.com/zTVDcxc.png[/img][/td][/tr]
 [/otablei]
 [/hidden]
 [/Tab]
@@ -256,7 +256,7 @@ Performance -- mostly will effect when 2+ levels are active for different teams
 
 More interesting powerups -- some of the offensive variety, and more that interact with existing terrain effects. maybe some that interact with your / other team's level content
 
-A dragged out victory process -- basically 30 seconds to gloat and chat. Either you guys want it or its not happening cuz I sure as f*** don't want to do it
+A dragged out victory process -- basically 30 seconds to gloat and chat. I know its a popular feature but I sure as f*** don't want to do it
 [/Tab]
 [Tab=FAQ]Q: there's so many terrain tiles! I can't enjoy all of them because I don't even know what's happening some of the time
 A: yeah, that's a very real problem, and at this point I can't really see it fresh. The basic premise was that the tiles should all effect gameplay to some degree, and their combinations alone should be enough to be interesting even to veteran players. I think one of the biggest issues is that I present too many tiles that have huge gameplay impacts in quick succession, especially in the tutorial. I'd love to get feedback from you all on that topic
