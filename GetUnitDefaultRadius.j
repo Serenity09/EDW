@@ -33,15 +33,18 @@ library GetUnitDefaultRadius
 		elseif unitTypeID == RKEY then
 			return 65.
 		elseif unitTypeID == RFIRE then
-			return 70.
+			//standard GameLoop defines max flex distance as 32 from edge, so use: theoretical glitchless kill radius = [terrain radius] + [terrain flex] = 64 + 32 = 96
+			//theoretical because collision runs periodically, so add in a safety margin of 4 units to compensate somewhat
+			//practical kill radius = 100, default mazer radius = 18 -> fire radius = 100 - 18 = 82
+			return 82.
 		elseif unitTypeID == BKEY then
 			return 65.
 		elseif unitTypeID == BFIRE then
-			return 70.
+			return 82.
 		elseif unitTypeID == GKEY then
 			return 65.
 		elseif unitTypeID == GFIRE then
-			return 70.
+			return 82.
 		elseif unitTypeID == BLACKHOLE then
 			return 96.
 		elseif unitTypeID == GRAVITY then
