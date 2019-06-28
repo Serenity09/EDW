@@ -1,7 +1,7 @@
 library MazerGlobals initializer Init requires GameGlobalConstants, ContinueGlobals, PlayerUtils, SimpleList
     globals
         //group of the playing mazers
-        group MazersGroup = CreateGroup()
+		SimpleList_List StandardMazingUsers
         //array of the playing mazers
         unit array MazersArray[NumberPlayers]
         //units that represents the revive circle
@@ -117,6 +117,8 @@ library MazerGlobals initializer Init requires GameGlobalConstants, ContinueGlob
         set MazersArray[5] = gg_unit_Edem_0017
         set MazersArray[6] = gg_unit_Edem_0018
         set MazersArray[7] = gg_unit_Edem_0019
+		
+		set StandardMazingUsers = SimpleList_List.create()
         
         //loop which adds playing mazing units to a group and removes the units which are not playing from the game
         loop

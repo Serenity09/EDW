@@ -30,7 +30,6 @@ library EDWPlayerSlots requires MazerGlobals, User, PlayerUtils, VisualVote, Tea
 				call IndexedUnit.create(PlayerReviveCircles[i])
 				call ShowUnit(PlayerReviveCircles[i], false)
                 
-                call GroupAddUnit(MazersGroup, MazersArray[i])
                 //(integer camOwner, unit camUnit, boolean altDir, boolean rotASAP, boolean PauseResets, real minSpd, real maxSpd, integer minTck, integer maxTck)
                 set DefaultCamera[i] = CreateCameraSetup()
                 set DefaultCameraTracking[i] = false
@@ -45,7 +44,7 @@ library EDWPlayerSlots requires MazerGlobals, User, PlayerUtils, VisualVote, Tea
                 set NumberMazing = NumberMazing + 1
 				
 				//register click events used for standard mazing
-				call RegisterMazingClickEvents(i)
+				call IsMoving.RegisterMazingClickEvents(i)
 			else
 				set User(i).IsPlaying = false
 				

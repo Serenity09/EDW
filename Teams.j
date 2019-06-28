@@ -11,6 +11,8 @@ globals
     public constant integer GAMEMODE_REVIVED_BY_TEAM = 90
     public constant integer GAMEMODE_DYING = 100
     public constant integer GAMEMODE_DEAD = 101
+	
+	private constant integer GAMEMODE_INIT = -1032132
     
     public constant real MULTIBOARD_HIDE_DELAY = 2.
 	
@@ -960,13 +962,12 @@ public struct MazingTeam
             set mt.TeamName = "TBD" //set later
             set mt.RecentlyTransferred = false //used to make sure triggers aren't run multiple times / no interrupts
             set mt.LastTransferTime = -50 //has never transferred
-            //set mt.DefaultGameMode = GAMEMODE_STANDARD
             set mt.OnLevel = TEMP_LEVEL_ID
             set mt.OnCheckpoint = -1
             set mt.Revive = Rect(0, 0, 200, 200)
             call mt.MoveRevive(gg_rct_IntroWorld_R1)
             set mt.Score = 0
-            set mt.DefaultGameMode = GAMEMODE_STANDARD
+            set mt.DefaultGameMode = GAMEMODE_INIT
             
 			set mt.Users = SimpleList_List.create()
             set mt.AllWorldProgress = SimpleList_List.create()

@@ -5,64 +5,54 @@ globals
 endglobals
 
 struct SuperFastMovement extends array
-	private static group g = null
-	private static timer t = null
+	private static SimpleList_List SuperFastUsers
+	private static timer t = CreateTimer()
 	
 	private static method FastMove takes nothing returns nothing
-		local group swap = NewGroup()
+		local SimpleList_ListNode curUserNode = SuperFastUsers.first
 		local unit u
 		local real facingRad
 		
 		loop
-		set u = FirstOfGroup(g)
-		exitwhen u == null
-			if isMoving[GetPlayerId(GetOwningPlayer(u))] then
+		exitwhen curUserNode == 0
+			if isMoving[curUserNode.value] then
+				set u = User(curUserNode.value).ActiveUnit
 				set facingRad = GetUnitFacing(u) * bj_DEGTORAD
+				
 				call SetUnitX(u, GetUnitX(u) + Cos(facingRad) * SuperFastSpeed)
 				call SetUnitY(u, GetUnitY(u) + Sin(facingRad) * SuperFastSpeed)
 			endif
-		call GroupAddUnit(swap, u)
-		call GroupRemoveUnit(g, u)
-		endloop
-		
-		call ReleaseGroup(g)
-		set g = swap
-		set swap = null
-		
-		set u = null
+		set curUserNode = curUserNode.next
+		endloop		
 	endmethod
 
-	public static method Add takes unit u returns nothing
-		if g == null then
-			set g = NewGroup()
-			set t = NewTimer()
-			
-			call TimerStart(t, TIMESTEP, true, function thistype.FastMove)
+	public static method Add takes User user returns nothing
+		if SuperFastUsers.count == 0 then
+			call TimerStart(thistype.t, TIMESTEP, true, function thistype.FastMove)
 		endif
 		
-		call GroupAddUnit(g, u)
+		call SuperFastUsers.addEnd(user)
+		call IsMoving.Add(user)
 		
 		//check if unit is moving currently, otherwise set isMoving appropriately
-		call GroupAddUnit(DestinationGroup, u)
-		
-		if GetUnitCurrentOrder(u) == OrderId("none") or GetUnitCurrentOrder(u) == OrderId("stop") then
-            set isMoving[GetPlayerId(GetOwningPlayer(u))] = false
+		if GetUnitCurrentOrder(user.ActiveUnit) == OrderId("none") or GetUnitCurrentOrder(user.ActiveUnit) == OrderId("stop") then
+            set isMoving[user] = false
         else
-            set isMoving[GetPlayerId(GetOwningPlayer(u))] = true
+            set isMoving[user] = true
         endif
 	endmethod
 	
-	public static method Remove takes unit u returns nothing
-		call GroupRemoveUnit(g, u)
-		call GroupRemoveUnit(DestinationGroup, u)
+	public static method Remove takes User user returns nothing
+		call SuperFastUsers.remove(user)
+		call IsMoving.Remove(user)
 		
-		if IsGroupEmpty(g) then
-			call ReleaseTimer(t)
-			call ReleaseGroup(g)
-			
-			set g = null
-			set t = null
+		if SuperFastUsers.count == 0 then
+			call PauseTimer(thistype.t)
 		endif
+	endmethod
+	
+	private static method onInit takes nothing returns nothing
+		set SuperFastUsers = SimpleList_List.create()
 	endmethod
 endstruct
 

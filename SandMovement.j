@@ -9,65 +9,61 @@ globals
 endglobals
 
 struct SandMovement extends array
-	private static group g = null
-	private static timer t = null
+	private static timer t = CreateTimer()
 	
-	private static method SandMove takes nothing returns nothing
-		local group swap = NewGroup()
-		local unit u = GetEnumUnit()
-		
-		local integer i
+	private static SimpleList_List SandUsers
+	
+	private static method SandMove takes nothing returns nothing	
+		local SimpleList_ListNode curUserNode = SandUsers.first
+		local User user
 		local real facingRad
 		
 		loop
-		set u = FirstOfGroup(g)
-		exitwhen u == null
-			set i = GetPlayerId(GetOwningPlayer(u))
-			set facingRad = GetUnitFacing(u) * bj_DEGTORAD
+		exitwhen curUserNode == 0
+			set user = curUserNode.value
+			set facingRad = GetUnitFacing(user.ActiveUnit) * bj_DEGTORAD
 			
-			if isMoving[i] then
-				set VelocityX[i] = VelocityX[i] + Cos(facingRad) * ACCELERATION
-				set VelocityY[i] = VelocityY[i] + Sin(facingRad) * ACCELERATION
+			if isMoving[user] then
+				set VelocityX[user] = VelocityX[user] + Cos(facingRad) * ACCELERATION
+				set VelocityY[user] = VelocityY[user] + Sin(facingRad) * ACCELERATION
 			else
-				set VelocityX[i] = VelocityX[i] / FALLOFF
-				set VelocityY[i] = VelocityY[i] / FALLOFF
+				set VelocityX[user] = VelocityX[user] / FALLOFF
+				set VelocityY[user] = VelocityY[user] / FALLOFF
 			endif
 			
-			call SetUnitX(u, GetUnitX(u) + VelocityX[i])
-			call SetUnitY(u, GetUnitY(u) + VelocityY[i])
+			call SetUnitX(user.ActiveUnit, GetUnitX(user.ActiveUnit) + VelocityX[user])
+			call SetUnitY(user.ActiveUnit, GetUnitY(user.ActiveUnit) + VelocityY[user])
 			
-		call GroupAddUnit(swap, u)
-		call GroupRemoveUnit(g, u)
-		endloop
-		
-		call ReleaseGroup(g)
-		set g = swap
-		
-		set u = null
-		set swap = null
+		set curUserNode = curUserNode.next
+		endloop		
 	endmethod
 
-	public static method Add takes unit u returns nothing
-		if g == null then
-			set g = NewGroup()
-			set t = NewTimer()
-			
+	public static method Add takes User user returns nothing
+		//register dependencies
+		call IsMoving.Add(user)
+		
+		//register self
+		if SandUsers.count == 0 then
 			call TimerStart(t, TIMESTEP, true, function thistype.SandMove)
 		endif
 		
-		call GroupAddUnit(g, u)
+		call SandUsers.addEnd(user)
 	endmethod
 	
-	public static method Remove takes unit u returns nothing
-		call GroupRemoveUnit(g, u)
+	public static method Remove takes User user returns nothing
+		//deregister dependencies
+		call IsMoving.Remove(user)
 		
-		if IsGroupEmpty(g) then
-			call ReleaseTimer(t)
-			call ReleaseGroup(g)
-			
-			set g = null
-			set t = null
+		//deregister self
+		call SandUsers.remove(user)
+		
+		if SandUsers.count == 0 then
+			call PauseTimer(t)
 		endif
+	endmethod
+	
+	private static method onInit takes nothing returns nothing
+		set SandUsers = SimpleList_List.create()
 	endmethod
 endstruct
 

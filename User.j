@@ -6,7 +6,6 @@ globals
 endglobals
 
 struct User extends array
-    //public integer PlayerID
     public boolean IsPlaying
     public boolean IsAlive
     public integer Deaths
@@ -427,13 +426,17 @@ struct User extends array
             
             //remove the old game mode
             if curGameMode == Teams_GAMEMODE_STANDARD then
-                //moves the mazing unit
+                //remove the current terrain effect
+                if PreviousTerrainTypedx[this] != NOEFFECT then
+					call GameLoopRemoveTerrainAction(MazersArray[this], this, PreviousTerrainTypedx[this], NOEFFECT)
+					set PreviousTerrainTypedx[this] = NOEFFECT
+				endif
+				
+				//moves the mazing unit
                 call SetUnitPosition(MazersArray[this], MazerGlobals_SAFE_X, MazerGlobals_SAFE_Y)
                 //removes the reg unit from the reg game loop. thereby enabling regular terrain effects
-                call GroupRemoveUnit(MazersGroup, MazersArray[this])
-                // //remove the current terrain effect
-                // call GameLoopRemoveTerrainAction(MazersArray[this], this, PreviousTerrainTypedx[this], NOEFFECT)
-                // set PreviousTerrainTypedx[this] = NOEFFECT
+				call StandardMazingUsers.remove(this)
+                
                 //updates the number of units platforming/regular mazing
                 set NumberMazing = NumberMazing - 1
                 
@@ -494,7 +497,7 @@ struct User extends array
                 //moves the mazing unit
 				call SetUnitPosition(MazersArray[this], x, y)
                 //adds the reg unit from the reg game loop. thereby enabling regular terrain effects
-                call GroupAddUnit(MazersGroup, MazersArray[this])
+				call StandardMazingUsers.addEnd(this)
                 //updates the number of units platforming/regular mazing
                 set NumberMazing = NumberMazing + 1
                 
@@ -614,7 +617,6 @@ struct User extends array
         return GetUnitX(.ActiveUnit) >= topLeft.x and GetUnitX(.ActiveUnit) <= botRight.x and GetUnitY(.ActiveUnit) >= botRight.y and GetUnitY(.ActiveUnit) <= topLeft.y
     endmethod
     
-    //TODO get rid of PlayerID field entirely
     public static method GetUserFromPlayerID takes integer playerID returns User
         return User(playerID)
     endmethod
