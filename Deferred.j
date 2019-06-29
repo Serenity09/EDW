@@ -113,6 +113,7 @@ library Deferred requires Alloc, SimpleList
 		endmethod
 		public method Remove takes DeferredAwaiter awaiter returns nothing
 			call this.Waiting.remove(awaiter)
+			call awaiter.destroy()
 		endmethod
 		
 		public static method create takes nothing returns thistype
