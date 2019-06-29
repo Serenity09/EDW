@@ -10,7 +10,7 @@ library StandardGameLoop initializer init requires Effects, LavaDamage, IceMovem
 	endglobals
 
 //! textmacro GetTerrainPriority takes TType, TPriority
-	if $TType$ == ABYSS or $TType$ == LRGBRICKS or $TType$ == RTILE or $TType$ == ROAD then
+	if $TType$ == ABYSS /* or $TType$ == LRGBRICKS */ or $TType$ == RTILE or $TType$ == ROAD then
 		set $TPriority$ = 0
 	elseif $TType$ == LAVA then
 		set $TPriority$ = 1
@@ -41,6 +41,11 @@ function GetBestTerrainForPoint takes real x, real y returns integer
 	
 	local integer curTType
 	local integer curTPriority
+	
+	//special case for platforming tile -- always use exact boundaries when that is the ttype for the current location
+	if bestTType == LRGBRICKS then
+		return bestTType
+	endif
 	
 	//initialize bestTPriority
 	//! runtextmacro GetTerrainPriority("bestTType", "bestTPriority")

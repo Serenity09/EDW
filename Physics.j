@@ -3024,9 +3024,9 @@ endglobals
                     call PlatformerSlipStream_Add(this)
                 elseif ttype == PLATFORMING then
                     call User(.PID).SwitchGameModesDefaultLocation(Teams_GAMEMODE_STANDARD)
+					//set previous terrain type to Platforming, should happen after GameMode update, incase that has its own terrain logic
+					set PreviousTerrainTypedx[this] = PLATFORMING
                     call SetDefaultCameraForPlayer(.PID, .5)
-                    //call StartRegularMazing(.PID, .XPosition, .YPosition)
-                    //call .StopPlatforming()
                     return
                 endif
                 
