@@ -280,10 +280,11 @@ library Levels requires SimpleList, Teams, GameModesGlobals, LevelIDGlobals, Cin
                         
 		public method ApplyLevelRewards takes User u, Teams_MazingTeam mt, Level nextLevel returns nothing			
 			local integer score = 0
-			
 			local integer originalContinues = mt.GetContinueCount()
 			local integer rolloverContinues = 0
 			local integer nextLevelContinues = 0
+			
+			//TODO appreciate the specific person(s) who beat the level -- if u == 0: appreciate full team equally
 			
 			//update score
 			if RewardMode == GameModesGlobals_EASY or RewardMode == GameModesGlobals_CHEAT then
@@ -378,11 +379,23 @@ library Levels requires SimpleList, Teams, GameModesGlobals, LevelIDGlobals, Cin
 		endmethod
 		
         //update level continuously or discontinuously from one to the next. IE lvl 1 -> 2 -> 3 -> 4 OR 1 -> 4 -> 2 etc
-        public method SwitchLevels takes Teams_MazingTeam mt, Level nextLevel returns nothing			
+        public method SwitchLevels takes Teams_MazingTeam mt, Level nextLevel, User activatingUser, boolean updateProgress returns nothing			
 			static if DEBUG_LEVEL_CHANGE then
 				call DisplayTextToForce(bj_FORCE_PLAYER[0], "From " + I2S(this) + " To " + I2S(nextLevel))
             endif
 			
+			if updateProgress then
+				static if DEBUG_LEVEL_CHANGE then
+					call DisplayTextToForce(bj_FORCE_PLAYER[0], "Updating progress")
+				endif
+				
+				//add continues and score
+				call this.ApplyLevelRewards(activatingUser, mt, nextLevel)
+
+				call mt.UpdateWorldProgress(this)
+			endif
+			
+			//stop current level before starting next level. some of the current level may be able to immediately recycle, and itll be easier on the CPU
 			call this.StopLevelForTeam(mt)
 			
 			call nextLevel.StartLevelForTeam(mt)
@@ -480,11 +493,8 @@ library Levels requires SimpleList, Teams, GameModesGlobals, LevelIDGlobals, Cin
 						static if DEBUG_LEVEL_CHANGE then
 							call DisplayTextToForce(bj_FORCE_PLAYER[0], "Team entered transfer leading to  " + I2S(nextLevel))
 						endif
-						call Level(curLevel.value).ApplyLevelRewards(User(curUser.value), Teams_MazingTeam(curTeam.value), nextLevel)
-						
-						call Teams_MazingTeam(curTeam.value).UpdateWorldProgress(curLevel.value)
-						
-						call Level(curLevel.value).SwitchLevels(Teams_MazingTeam(curTeam.value), nextLevel)
+
+						call Level(curLevel.value).SwitchLevels(Teams_MazingTeam(curTeam.value), nextLevel, User(curUser.value), true)
 					elseif nextCheckpointID >= 0 then
 						call Level(curLevel.value).SetCheckpointForTeam(Teams_MazingTeam(curTeam.value), nextCheckpointID)
 					endif

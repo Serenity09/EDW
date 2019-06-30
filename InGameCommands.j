@@ -232,7 +232,7 @@ function ParseCommand takes nothing returns nothing
 			set unitgroup = null
 		elseif cmd == "level" or cmd == "lvl" then
 			if Levels_Level(intVal) != 0 then
-				call Levels_Level(team.OnLevel).SwitchLevels(team, Levels_Level(intVal))
+				call Levels_Level(team.OnLevel).SwitchLevels(team, Levels_Level(intVal), u, false)
 			endif
 		elseif cmd == "checkpoint" or cmd == "cp" then
 			call Levels_Level(team.OnLevel).SetCheckpointForTeam(team, intVal)

@@ -747,7 +747,7 @@ public struct MazingTeam
 		if continueOffset != 0 then
 			if .ContinueCount + continueOffset < 0 then
 				call .PrintMessage("Your team ran out of lives!")
-				call .OnLevel.SwitchLevels(this, Levels_Level(DOORS_LEVEL_ID))
+				call .OnLevel.SwitchLevels(this, Levels_Level(DOORS_LEVEL_ID), 0, false)
 				
 				//if not in 99 and none mode, reset continues
 				if RewardMode == 0 or RewardMode == 1 then //standard mode or challenge mode

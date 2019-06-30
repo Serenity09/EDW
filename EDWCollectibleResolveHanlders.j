@@ -10,7 +10,7 @@ library EDWCollectibleResolveHandlers
 			set nextLevel = activeTeam.Team.OnLevel.NextLevel
 		endif
 		
-		call activeTeam.Team.OnLevel.SwitchLevels(activeTeam.Team, nextLevel)
+		call activeTeam.Team.OnLevel.SwitchLevels(activeTeam.Team, nextLevel, 0, true)
 		
 		return 0
 	endfunction
