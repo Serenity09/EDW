@@ -185,7 +185,7 @@ library LW1 requires Recycle, Levels
 		set pattern = LinePatternSpawn.createFromPoint(OriginSpawn, 1, gg_rct_LW1_Generator4)
 		set pattern.Data = SPIRITWALKER
 		set sg = SimpleGenerator.create(pattern, 5, 270, 14)
-		call sg.SetMoveSpeed(250.)
+		call sg.SetMoveSpeed(270.)
 		call l.AddStartable(sg)
 		
 		if RewardMode == GameModesGlobals_HARD then

@@ -394,7 +394,7 @@ library RelayGenerator requires GameGlobalConstants, SimpleList, Table, Vector2,
 				
 				if IsUnitAnimated(GetUnitTypeId(u)) then
 					call SetUnitAnimationByIndex(u, GetWalkAnimationIndex(GetUnitTypeId(u)))
-					call SetUnitTimeScale(u, GetUnitMoveSpeed(u) / GetUnitDefaultMoveSpeed(u))
+					call SetUnitTimeScale(u, IndexedUnit(GetUnitUserData(u)).GetMoveSpeed() / GetUnitDefaultMoveSpeed(u))
 				endif
 				
 				set spawnUnit.CurrentTurn = this.Turns.first.next
@@ -629,7 +629,7 @@ library RelayGenerator requires GameGlobalConstants, SimpleList, Table, Vector2,
 						call IndexedUnit(GetUnitUserData(turnUnit)).SetMoveSpeed(IndexedUnit(GetUnitUserData(turnUnit)).MoveSpeed / oldFactor * factor)
 					
 						if IsUnitAnimated(GetUnitTypeId(turnUnit)) then
-							call SetUnitTimeScale(turnUnit, GetUnitMoveSpeed(turnUnit) / GetUnitDefaultMoveSpeed(turnUnit))
+							call SetUnitTimeScale(turnUnit, IndexedUnit(GetUnitUserData(turnUnit)).GetMoveSpeed() / GetUnitDefaultMoveSpeed(turnUnit))
 						endif
 					call GroupRemoveUnit(this.Units, turnUnit)
 					call GroupAddUnit(tempGroup, turnUnit)

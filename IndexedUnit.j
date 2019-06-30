@@ -83,10 +83,18 @@ library IndexedUnit
 			
 			//defaults
 			set new.R = -1
+			set new.MoveSpeed = -1
 			
 			return new
 		endmethod
 		
+		public method GetMoveSpeed takes nothing returns real
+			if this.MoveSpeed != -1 then
+				return this.MoveSpeed
+			else
+				return GetUnitDefaultMoveSpeed(this.Unit)
+			endif
+		endmethod
 		public method UpdateMoveSpeed takes nothing returns nothing
 			set this.MoveSpeed = GetUnitMoveSpeed(this.Unit)
 		endmethod

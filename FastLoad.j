@@ -5,6 +5,8 @@ library FastLoad requires IStartable, SimpleList, RelayGenerator, SimpleGenerato
 		private constant integer LOADED = 2
 		
 		private constant real OVERCLOCK_LOADED_EXTRA_WAIT = 1.
+		
+		private constant boolean DEBUG_OVERCLOCK_PROGRESS = false
 	endglobals
 	
 	struct FastLoad extends IStartable
@@ -24,6 +26,10 @@ library FastLoad requires IStartable, SimpleList, RelayGenerator, SimpleGenerato
 		private method BroadcastOverclockFactor takes real overclockFactor returns nothing
 			local SimpleList_ListNode curNode = this.ParentLevel.Startables.first
 			
+			static if DEBUG_OVERCLOCK_PROGRESS then
+				call DisplayTextToForce(bj_FORCE_PLAYER[0], "Broadcasting overclock " + R2S(overclockFactor) + " for level " + I2S(this.ParentLevel))
+			endif
+			
 			loop
 			exitwhen curNode == 0
 				if IStartable(curNode.value).getType() == RelayGenerator.typeid then					
@@ -33,6 +39,10 @@ library FastLoad requires IStartable, SimpleList, RelayGenerator, SimpleGenerato
 				endif
 			set curNode = curNode.next
 			endloop	
+			
+			static if DEBUG_OVERCLOCK_PROGRESS then
+				call DisplayTextToForce(bj_FORCE_PLAYER[0], "Finished broadcast")
+			endif
 		endmethod
 		
 		private static method OverclockLoadPlayerCB takes nothing returns nothing
