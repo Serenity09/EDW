@@ -1,4 +1,4 @@
-library Levels requires SimpleList, Teams, GameModesGlobals, LevelIDGlobals, Cinema, User, IStartable
+library Levels requires SimpleList, Teams, GameModesGlobals, LevelIDGlobals, Cinema, User, IStartable, HandleList
     globals
 		
 		constant integer WorldCount = 7
@@ -66,7 +66,7 @@ library Levels requires SimpleList, Teams, GameModesGlobals, LevelIDGlobals, Cin
                 
         public SimpleList_List Startables
         
-        public rect        Vision          //the bounds placed on a player's vision
+		public RectList		Boundaries			//boundaries placed on a player's vision and the level's contents
         public rect LevelEnd				//rect that marks the end of this level
 		readonly SimpleList_List Checkpoints
 		
@@ -119,7 +119,6 @@ library Levels requires SimpleList, Teams, GameModesGlobals, LevelIDGlobals, Cin
         endmethod
         
         //stops this level unless someone else is on it
-        //removes units from whatever .Vision is currently set to!
         public method Stop takes nothing returns nothing
             local integer countprev = Teams_MazingTeam.GetCountOnLevel(this)
             local SimpleList_ListNode startableNode
@@ -211,22 +210,31 @@ library Levels requires SimpleList, Teams, GameModesGlobals, LevelIDGlobals, Cin
                         
         public method RemoveGreenFromLevel takes nothing returns nothing
             local unit u
-            
-            call GroupEnumUnitsInRect(TempGroup, .Vision, null)
-            
-            loop
-            set u = FirstOfGroup(TempGroup)
-			exitwhen u == null
-				if GetPlayerId(GetOwningPlayer(u)) == 10 then					
-					//reset unit to default stats based on what can currently change... at some point find a better way to unload modified units (and only them)
-					call SetUnitVertexColor(u, 255, 255, 255, 255)
-					call SetUnitMoveSpeed(u, GetUnitDefaultMoveSpeed(u))
-					call Recycle_ReleaseUnit(u)
-				endif
-            call GroupRemoveUnit(TempGroup, u)
+			local integer i = 0
+            local rect r
+			
+			loop
+			exitwhen i >= .Boundaries.size
+			set r = .Boundaries[i]
+				//call BJDebugMsg("Removing green from boundary ID: " + I2S(i))
+				
+				call GroupEnumUnitsInRect(TempGroup, r, null)
+				
+				loop
+				set u = FirstOfGroup(TempGroup)
+				exitwhen u == null
+					if GetPlayerId(GetOwningPlayer(u)) == 10 then					
+						//reset unit to default stats based on what can currently change... at some point find a better way to unload modified units (and only them)
+						call SetUnitVertexColor(u, 255, 255, 255, 255)
+						call SetUnitMoveSpeed(u, GetUnitDefaultMoveSpeed(u))
+						call Recycle_ReleaseUnit(u)
+					endif
+				call GroupRemoveUnit(TempGroup, u)
+				endloop
+			set i = i + 1
             endloop
-                
-            set u = null
+			
+			set r = null
         endmethod
 		
         public method SetCheckpointForTeam takes Teams_MazingTeam mt, integer cpID returns nothing
@@ -360,6 +368,9 @@ library Levels requires SimpleList, Teams, GameModesGlobals, LevelIDGlobals, Cin
 			endif
 		endmethod
 		public method StartLevelForTeam takes Teams_MazingTeam mt returns nothing
+			local integer i = 0
+            local rect r
+			
 			set EventCurrentLevel = this
             set this.CBTeam = mt
 			
@@ -371,8 +382,13 @@ library Levels requires SimpleList, Teams, GameModesGlobals, LevelIDGlobals, Cin
             set mt.OnLevel = this
             call this.ActiveTeams.add(mt)
             
-            call mt.AddTeamVision(this.Vision)
-			
+			loop
+			exitwhen i >= .Boundaries.size
+			set r = .Boundaries[i]
+				call mt.AddTeamVision(r)
+			set i = i + 1
+			endloop
+			set r = null
             //debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "Started")
             //team tele, respawn update, vision, pause + unpause
             call this.SetCheckpointForTeam(mt, 0)
@@ -590,7 +606,8 @@ library Levels requires SimpleList, Teams, GameModesGlobals, LevelIDGlobals, Cin
             call new.AddCheckpoint(null, startspawn)
             //set new.CPToHere = tothislevel //these might change
             //set new.StartRect = startspawn
-            set new.Vision = vision
+            set new.Boundaries = RectList.create()
+			call new.Boundaries.addEnd(vision)
                         
             set new.PrevLevel = intro
             set intro.NextLevel = new
@@ -654,7 +671,8 @@ library Levels requires SimpleList, Teams, GameModesGlobals, LevelIDGlobals, Cin
 			set new.Startables = 0
             //set new.CPToHere = tothislevel
             //set new.StartRect = startspawn
-            set new.Vision = vision
+			set new.Boundaries = RectList.create()
+			call new.Boundaries.addEnd(vision)
                                     
             set new.Cinematics = SimpleList_List.create()
             set new.ActiveTeams = SimpleList_List.create()

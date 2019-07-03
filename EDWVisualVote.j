@@ -6,6 +6,7 @@ library EDWVisualVote requires VisualVote, ContinueGlobals, Teams, PlayerUtils, 
 		private constant real VOTE_TIME_ROUND_TWO = 10
 		
 		private constant integer DEBUG_DIFFICULTY_MODE = GameModesGlobals_HARD
+		private constant boolean DEBUG_USE_FULL_VISIBILITY = true
     endglobals
     	
     public function GameModeSolo takes nothing returns nothing
@@ -80,7 +81,6 @@ library EDWVisualVote requires VisualVote, ContinueGlobals, Teams, PlayerUtils, 
 		loop
 		exitwhen fp == 0
 			call PauseUnit(MazersArray[fp.value], false)
-			//call mt.ChangePlayerVision(Levels_Levels[0].Vision)
 		set fp = fp.next
 		endloop
 				
@@ -143,8 +143,6 @@ library EDWVisualVote requires VisualVote, ContinueGlobals, Teams, PlayerUtils, 
             exitwhen fp == 0
                 set team[i] = Teams_MazingTeam.create(fp.value)
                 call team[i].AddPlayer(fp.value)
-                //call PauseUnit(MazersArray[fp.value], false)
-                //call mt.ChangePlayerVision(Levels_Levels[0].Vision)
                 set team[i].Weight = 1
             set fp = fp.next
             set i = i + 1
@@ -157,8 +155,6 @@ library EDWVisualVote requires VisualVote, ContinueGlobals, Teams, PlayerUtils, 
             loop
             exitwhen fp == 0
                 call team[0].AddPlayer(fp.value)
-                //call PauseUnit(MazersArray[fp.value], false)
-                //call mt.ChangePlayerVision(Levels_Levels[0].Vision)
             set fp = fp.next
             endloop
             
@@ -328,8 +324,7 @@ library EDWVisualVote requires VisualVote, ContinueGlobals, Teams, PlayerUtils, 
             //call team[i].SwitchTeamGameMode(team[i].DefaultGameMode, GetRandomReal(GetRectMinX(team[i].Revive), GetRectMaxX(team[i].Revive)), GetRandomReal(GetRectMinY(team[i].Revive), GetRectMaxY(team[i].Revive)))
             
             call team[i].ApplyTeamDefaultCameras()
-            //call team[i].AddTeamVision(firstLevel.Vision)			
-			
+		
 			if ShouldShowSettingVoteMenu() then
 				call team[i].AddTeamCinema(welcomeCine, team[i].FirstUser.value)
 			endif
@@ -366,7 +361,6 @@ library EDWVisualVote requires VisualVote, ContinueGlobals, Teams, PlayerUtils, 
 			loop
 			exitwhen fp == 0
 				call PauseUnit(MazersArray[fp.value], false)
-				//call mt.ChangePlayerVision(Levels_Levels[0].Vision)
 			set fp = fp.next
 			endloop
 		endif
@@ -432,7 +426,9 @@ library EDWVisualVote requires VisualVote, ContinueGlobals, Teams, PlayerUtils, 
         local VisualVote_voteOption opt        
 
 		if not ShouldShowSettingVoteMenu() then
-            call CreateFogModifierRectBJ(true, Player(0), FOG_OF_WAR_VISIBLE, GetPlayableMapRect())
+            if DEBUG_USE_FULL_VISIBILITY then
+				call CreateFogModifierRectBJ(true, Player(0), FOG_OF_WAR_VISIBLE, GetPlayableMapRect())
+			endif
 			
 			call GameModeAllIsOne()
 			//set GameMode = GameModesGlobals_TEAMALL

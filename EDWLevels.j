@@ -10,7 +10,11 @@ library EDWLevels requires LevelIDGlobals, Levels, PW4
         call l.AddCheckpoint(gg_rct_IntroWorldCP_1_2, gg_rct_IntroWorld_R3)
 		
 		//DOORS HARD CODED
-        call Levels_Level.CreateDoors(l, null, null, gg_rct_HubWorld_R, gg_rct_HubWorld_Vision)
+        set l = Levels_Level.CreateDoors(l, null, null, gg_rct_HubWorld_R, gg_rct_HubWorld_Vision)
+		call l.Boundaries.addEnd(gg_rct_HubWorld_Vision2)
+		call l.Boundaries.addEnd(gg_rct_HubWorld_Vision3)
+		call l.Boundaries.addEnd(gg_rct_HubWorld_Vision4)
+		call l.Boundaries.addEnd(gg_rct_HubWorld_Vision5)
         
         //ICE WORLD TECH / ENVY WORLD
         //LEVEL 1
@@ -80,7 +84,8 @@ library EDWLevels requires LevelIDGlobals, Levels, PW4
 		
 		//LEVEL 3
         set l = Levels_Level.create(PW3_LEVEL_ID, "Playground", 5, 4, "PW3Start", "PW3Stop", gg_rct_PWR_3_1, gg_rct_PW3_Vision, gg_rct_PW3_End, l) //gg_rct_PW1_Vision
-        set Checkpoint(l.Checkpoints.first.value).DefaultGameMode = Teams_GAMEMODE_PLATFORMING
+        call l.Boundaries.addEnd(gg_rct_PW3_Vision2)
+		set Checkpoint(l.Checkpoints.first.value).DefaultGameMode = Teams_GAMEMODE_PLATFORMING
         
 		set cp = l.AddCheckpoint(gg_rct_PWCP_3_1, gg_rct_PWR_3_2)
         set cp.DefaultGameMode = Teams_GAMEMODE_PLATFORMING
@@ -94,6 +99,7 @@ library EDWLevels requires LevelIDGlobals, Levels, PW4
 		//LEVEL 4
 		if CONFIGURATION_PROFILE != RELEASE then
 			set l = Levels_Level.create(PW4_LEVEL_ID, "Moon", 5, 4, "PW4Start", "PW4Stop", gg_rct_PWR_4_1, gg_rct_PW4_Vision, gg_rct_PW4_End, l) //gg_rct_PW1_Vision
+			call l.Boundaries.addEnd(gg_rct_PW4_Vision2)
 			set Checkpoint(l.Checkpoints.first.value).DefaultGameMode = Teams_GAMEMODE_PLATFORMING
 			call l.AddLevelStartCB(Condition(function PW4TeamStart))
 			call l.AddLevelStopCB(Condition(function PW4TeamStop))
