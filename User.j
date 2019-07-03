@@ -308,7 +308,7 @@ struct User extends array
         if GetPlayerSlotState(Player(this)) == PLAYER_SLOT_STATE_PLAYING then
 			return ColorMessage(GetPlayerName(Player(this)), hex)
         else
-			return ColorMessage("Gone", hex)
+			return ColorMessage("(Left) " + GetPlayerName(Player(this)), hex)
         endif
     endmethod
     
@@ -316,23 +316,29 @@ struct User extends array
         if GetPlayerSlotState(Player(this)) == PLAYER_SLOT_STATE_PLAYING then                
             call MultiboardSetItemValue(MultiboardGetItem(.Team.PlayerStats, this + 1, 2), I2S(.Team.GetScore()))
             call MultiboardSetItemValue(MultiboardGetItem(.Team.PlayerStats, this + 1, 3), I2S(.Team.GetContinueCount()))
-            call MultiboardSetItemValue(MultiboardGetItem(.Team.PlayerStats, this + 1, 4), I2S(.Deaths))
             
             call MultiboardReleaseItem(MultiboardGetItem(.Team.PlayerStats, this + 1, 2))
             call MultiboardReleaseItem(MultiboardGetItem(.Team.PlayerStats, this + 1, 3))
-            call MultiboardReleaseItem(MultiboardGetItem(.Team.PlayerStats, this + 1, 4))
+            
+			if RewardMode == GameModesGlobals_HARD then
+				call MultiboardSetItemValue(MultiboardGetItem(.Team.PlayerStats, this + 1, 4), I2S(.Deaths))
+				call MultiboardReleaseItem(MultiboardGetItem(.Team.PlayerStats, this + 1, 4))
+            endif
         elseif GetPlayerSlotState(Player(this)) == PLAYER_SLOT_STATE_LEFT then
             call MultiboardSetItemValue(MultiboardGetItem(.Team.PlayerStats, this + 1, 0), "Left the game")
             call MultiboardSetItemValue(MultiboardGetItem(.Team.PlayerStats, this + 1, 1), "Gone")
             call MultiboardSetItemValue(MultiboardGetItem(.Team.PlayerStats, this + 1, 2), "Negative")
             call MultiboardSetItemValue(MultiboardGetItem(.Team.PlayerStats, this + 1, 3), "Zilch")
-            call MultiboardSetItemValue(MultiboardGetItem(.Team.PlayerStats, this + 1, 4), "Too many")
             
             call MultiboardReleaseItem(MultiboardGetItem(.Team.PlayerStats, this + 1, 0))
             call MultiboardReleaseItem(MultiboardGetItem(.Team.PlayerStats, this + 1, 1))
             call MultiboardReleaseItem(MultiboardGetItem(.Team.PlayerStats, this + 1, 2))
             call MultiboardReleaseItem(MultiboardGetItem(.Team.PlayerStats, this + 1, 3))
-            call MultiboardReleaseItem(MultiboardGetItem(.Team.PlayerStats, this + 1, 4))
+            
+			if RewardMode == GameModesGlobals_HARD then
+				call MultiboardSetItemValue(MultiboardGetItem(.Team.PlayerStats, this + 1, 4), "Too many")
+				call MultiboardReleaseItem(MultiboardGetItem(.Team.PlayerStats, this + 1, 4))
+			endif
         else
             call MultiboardSetItemValue(MultiboardGetItem(.Team.PlayerStats, this + 1, 0), "Not playing")
             call MultiboardReleaseItem(MultiboardGetItem(.Team.PlayerStats, this + 1, 0))
@@ -450,12 +456,6 @@ struct User extends array
                 //call SetUnitMoveSpeed(MazersArray[this], DefaultMoveSpeed)
                 
                 //remove entangling roots on the paused mazer
-				/*
-				if .ActiveEffect != null then
-					call DestroyEffect(.ActiveEffect)
-					set .ActiveEffect = null
-				endif
-				*/
 				call .ClearActiveEffect()
 				
                 //call UnitRemoveBuffs(.ActiveUnit, true, true)
@@ -519,25 +519,11 @@ struct User extends array
                 //call SetUnitMoveSpeed(MazersArray[this], 0)
                 call ShowUnit(MazersArray[this], true)
 				
-                //cast entangling roots on the paused mazer
-                //call DummyCaster['A003'].castTarget(Player(10), 1, 'AEer', .ActiveUnit)
-                //call DummyCaster['A003'].castTarget(Player(10), 1, OrderId("entanglingroots"), .ActiveUnit)
-                //call DummyCaster['A003'].castTarget(Player(this), 1, OrderId("entanglingroots"), .ActiveUnit)
-                //call DummyCaster['A005'].castTarget(Player(this), 1, OrderId("web"), .ActiveUnit)
-                //call TimerStart(NewTimerEx(this), 0.00001, false, function thistype.ApplyRootsCB)
-				//call DummyCaster['A007'].castTarget(Player(this), 1, OrderId("slow"), .ActiveUnit)
-				
-				//TODO this is very inconsistent with whether or not it shows at all (though at least it does show...) ...maybe just manually create and destroy a special effect
+                //apply entangling roots to the paused mazer
+				//using the actual spell on a flying unit is very inconsistent so just script its effect
+                //call DummyCaster['A003'].castTarget(Player(10), 1, OrderId("entanglingroots"), .ActiveUnit)			
 				//call DummyCaster['A007'].castTarget(Player(10), 1, OrderId("slow"), .ActiveUnit)
-				/*
-				if .ActiveEffect != null then
-					call DestroyEffect(.ActiveEffect)
-					set .ActiveEffect = null
-				endif
-				set .ActiveEffect = AddSpecialEffectTarget("Abilities\\Spells\\NightElf\\EntanglingRoots\\EntanglingRootsTarget.mdl", .ActiveUnit, "origin")
-				*/
 				call .SetActiveEffect("Abilities\\Spells\\NightElf\\EntanglingRoots\\EntanglingRootsTarget.mdl", "origin")
-				
 				call SetUnitPropWindow(.ActiveUnit, 0)
 				
 				//always select the mazing unit when switching to STANDARD_PAUSED mode
