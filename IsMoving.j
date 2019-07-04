@@ -6,10 +6,14 @@ library isMoving requires TerrainGlobals, ORDER, SimpleList
 		constant real TELEPORT_MAXDISTANCE = 20
 		constant real TELEPORT_EXACTDISTANCE = TERRAIN_TILE_SIZE * 3
 		
-		private constant boolean DEBUG_STOP_MOVEMENT = true
+		private constant string TELEPORT_MOVEMENT_FROM_FX = "Abilities\\Spells\\Undead\\VampiricAura\\VampiricAuraTarget.mdl"
+		//private constant string TELEPORT_MOVEMENT_TO_FX = "Abilities\\Spells\\NightElf\\Starfall\\StarfallTarget.mdl"
+		private constant string TELEPORT_MOVEMENT_TO_FX = "Abilities\\Spells\\Undead\\VampiricAura\\VampiricAuraTarget.mdl"
+		
+		private constant boolean DEBUG_STOP_MOVEMENT = false
 	endglobals
 	
-	struct IsMoving
+	struct IsMoving extends array
 		private static trigger Click = CreateTrigger()
 		private static trigger StopEvent = CreateTrigger()
 		
@@ -78,7 +82,9 @@ library isMoving requires TerrainGlobals, ORDER, SimpleList
 				set deltaX = 0
 			endif
 			
+			call DestroyEffect(AddSpecialEffect(TELEPORT_MOVEMENT_FROM_FX, GetUnitX(pID.ActiveUnit), GetUnitY(pID.ActiveUnit)))
 			call SetUnitPosition(pID.ActiveUnit, curX + deltaX, curY + deltaY)
+			call DestroyEffect(AddSpecialEffect(TELEPORT_MOVEMENT_TO_FX, GetUnitX(pID.ActiveUnit), GetUnitY(pID.ActiveUnit)))
 			//call SetUnitX(u, OrderDestinationX[i] - x)
 			//call SetUnitY(u, OrderDestinationY[i] - y)
 			
@@ -136,6 +142,13 @@ library isMoving requires TerrainGlobals, ORDER, SimpleList
 			endif
 			
 			call DestinationUsers.addEnd(user)
+			
+			//check if unit is moving currently, set initial value for isMoving appropriately
+			if GetUnitCurrentOrder(user.ActiveUnit) == OrderId("none") or GetUnitCurrentOrder(user.ActiveUnit) == OrderId("stop") then
+				set isMoving[user] = false
+			else
+				set isMoving[user] = true
+			endif
 		endmethod
 		public static method Remove takes User user returns nothing
 			call DestinationUsers.remove(user)

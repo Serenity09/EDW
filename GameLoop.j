@@ -1,4 +1,4 @@
-library StandardGameLoop initializer init requires Effects, LavaDamage, IceMovement, SuperFastMovement, RSnowMovement, SnowMovement, SandMovement
+library StandardGameLoop initializer init requires EDWEffects, LavaDamage, IceMovement, SuperFastMovement, RSnowMovement, SnowMovement, SandMovement
 	globals
 		private constant real STD_TERRAIN_OFFSET = 32.
 		private constant real STD_DIAGONAL_TERRAIN_OFFSET = 32. * SIN_45 //32. * SIN_45 == 27, 32^2 = 2*a^2 -> a = 22.63
@@ -7,6 +7,16 @@ library StandardGameLoop initializer init requires Effects, LavaDamage, IceMovem
 		private constant real TIMESTEP = .05
 		
 		private constant boolean DEBUG_TERRAIN_CHANGE = false
+		private constant boolean DEBUG_BEST_TERRAIN = false
+		
+		private constant string LAVA_MOVEMENT_FX = "Abilities\\Spells\\Orc\\LiquidFire\\Liquidfire.mdl"
+		private constant string VINES_MOVEMENT_FX = "Abilities\\Spells\\Human\\slow\\slowtarget.mdl"
+		
+		private constant string TELEPORT_MOVEMENT_FROM_FX = "Abilities\\Spells\\Undead\\VampiricAura\\VampiricAuraTarget.mdl"
+		private constant string TELEPORT_MOVEMENT_TO_FX = "Abilities\\Spells\\NightElf\\Starfall\\StarfallTarget.mdl"
+		
+		//private constant string PLATFORMING_FX = "Abilities\\Spells\\Human\\Polymorph\\PolyMorphTarget.mdl"
+		private constant string PLATFORMING_FX = "Abilities\\Spells\\Human\\Polymorph\\PolyMorphDoneGround.mdl"
 	endglobals
 
 //! textmacro GetTerrainPriority takes TType, TPriority
@@ -121,7 +131,7 @@ function GameLoopRemoveTerrainAction takes unit u, integer i, integer oldterrain
         set CanSteer[i] = false
         call IceMovement_Remove(MazersArray[i])
                 
-        if (curterrain == SNOW or curterrain == SAND or curterrain == RSNOW) then
+        if curterrain == SNOW or curterrain == SAND or curterrain == RSNOW then
             //velocity carries over to sand, so do nothing
 //        elseif (curterrain == RSNOW) then
 //            set r = SquareRoot(RAbsBJ(VelocityX[i] * VelocityY[i]))
@@ -142,7 +152,7 @@ function GameLoopRemoveTerrainAction takes unit u, integer i, integer oldterrain
         set CanSteer[i] = false
         call IceMovement_Remove(MazersArray[i])
              
-        if (curterrain == SNOW or curterrain == SAND or curterrain == RSNOW or curterrain == MEDIUMICE or curterrain == FASTICE) then
+        if curterrain == SNOW or curterrain == SAND or curterrain == RSNOW or curterrain == MEDIUMICE or curterrain == FASTICE then
             //velocity carries over to sand, so do nothing
 //        elseif (curterrain == RSNOW) then
 //            set r = SquareRoot(RAbsBJ(VelocityX[i] * VelocityY[i]))
@@ -159,13 +169,19 @@ function GameLoopRemoveTerrainAction takes unit u, integer i, integer oldterrain
             set VelocityX[i] = 0
             set VelocityY[i] = 0
         endif
-    elseif oldterrain == GRASS or oldterrain == D_GRASS or oldterrain == VINES or oldterrain == ROAD then
+    elseif oldterrain == GRASS or oldterrain == D_GRASS or oldterrain == ROAD then
         call SetUnitMoveSpeed(u, DefaultMoveSpeed)
-    elseif (oldterrain == SAND) then
+	elseif oldterrain == VINES then
+		call SetUnitMoveSpeed(u, DefaultMoveSpeed)
+		
+		call User(i).ClearActiveEffect()
+    elseif oldterrain == SAND then
 		call SandMovement.Remove(i)
 		call SetUnitMoveSpeed(u, DefaultMoveSpeed)
+		
+		call User(i).ClearActiveEffect()
         
-        if (curterrain == SNOW or curterrain == RSNOW or curterrain == SLOWICE or curterrain == MEDIUMICE or curterrain == FASTICE) then
+        if curterrain == SNOW or curterrain == RSNOW or curterrain == SLOWICE or curterrain == MEDIUMICE or curterrain == FASTICE then
             //velocity carries over to snow
         else
             set VelocityX[i] = 0
@@ -173,11 +189,11 @@ function GameLoopRemoveTerrainAction takes unit u, integer i, integer oldterrain
         endif
         //call DisplayTextToForce(bj_FORCE_PLAYER[i], R2S(VelocityX[i]))
         //call DisplayTextToForce(bj_FORCE_PLAYER[i], R2S(VelocityY[i]))
-    elseif (oldterrain == SNOW) then
+    elseif oldterrain == SNOW then
         set CanSteer[i] = false
         call SnowMovement.Remove(u)
         
-        if (curterrain == SAND or curterrain == RSNOW or curterrain == SLOWICE or curterrain == MEDIUMICE or curterrain == FASTICE) then
+        if curterrain == SAND or curterrain == RSNOW or curterrain == SLOWICE or curterrain == MEDIUMICE or curterrain == FASTICE then
             //velocity carries over to sand, so do nothing
 //        elseif (curterrain == RSNOW) then
 //            set r = SquareRoot(RAbsBJ(VelocityX[i] * VelocityY[i]))
@@ -190,7 +206,7 @@ function GameLoopRemoveTerrainAction takes unit u, integer i, integer oldterrain
         
         //call DisplayTextToForce(bj_FORCE_PLAYER[i], "P" + I2S(i) + "X: " + R2S(VelocityX[i]))
         //call DisplayTextToForce(bj_FORCE_PLAYER[i], "Y: " + R2S(VelocityY[i]))
-    elseif (oldterrain == RSNOW) then
+    elseif oldterrain == RSNOW then
         set CanSteer[i] = false
         
         call RSnowMovement.Remove(u)
@@ -204,15 +220,17 @@ function GameLoopRemoveTerrainAction takes unit u, integer i, integer oldterrain
         
         //call DisplayTextToForce(bj_FORCE_PLAYER[i], "P" + I2S(i) + "X: " + R2S(VelocityX[i]))
         //call DisplayTextToForce(bj_FORCE_PLAYER[i], "Y: " + R2S(VelocityY[i]))
-    elseif (oldterrain == LAVA) then
+    elseif oldterrain == LAVA then
         call LavaDamage.Remove(i)
-    elseif (oldterrain == LEAVES) then
+		
+		call User(i).ClearActiveEffect()
+    elseif oldterrain == LEAVES then
         call SuperFastMovement.Remove(i)
         
         call SetUnitMoveSpeed(u, DefaultMoveSpeed)
-    elseif (oldterrain == LRGBRICKS) then
+    elseif oldterrain == LRGBRICKS then
         //should do nothing
-    elseif (oldterrain == RTILE) then
+    elseif oldterrain == RTILE then
         //call RotationCameras[i].cPause()
         set UseTeleportMovement[i] = false
     endif
@@ -233,7 +251,6 @@ function GameLoop takes nothing returns nothing
    
     //flattened version of newTerrainCheckAdvancedFlexible(x, y, ABYSS, user)  
 	local integer basicterrain
-    local real terrainOffset
     local vector2 terrainCenterPoint
 	
 	loop
@@ -245,9 +262,12 @@ function GameLoop takes nothing returns nothing
 			set x = GetUnitX(u)
 			set y = GetUnitY(u)
 			set previousterrain = PreviousTerrainTypedx[user]
-				   
+			
 			//flattened version of newTerrainCheckAdvancedFlexible(x, y, ABYSS, user)  
 			set basicterrain = GetBestTerrainForPoint(x, y)
+			static if DEBUG_BEST_TERRAIN then
+				call DisplayTextToForce(bj_FORCE_PLAYER[user], ("Best terrain: " + I2S(basicterrain)))
+			endif
 			
 			//if on abyss, then try to get the next nearest terrain
 			if not AbyssImmune[user] and basicterrain == ABYSS then
@@ -265,7 +285,7 @@ function GameLoop takes nothing returns nothing
 				
 				//remove the previous terrain effect before applying a new one
 				call GameLoopRemoveTerrainAction(u, user, previousterrain, basicterrain)
-				
+								
 				//apply new terrain logic
 				if (basicterrain == FASTICE) then
 					set CanSteer[user] = true
@@ -284,6 +304,8 @@ function GameLoop takes nothing returns nothing
 					call IceMovement_Add(MazersArray[user])
 				elseif (basicterrain == VINES) then
 					call SetUnitMoveSpeed(u, SlowGrassSpeed)
+					
+					call user.SetActiveEffect(VINES_MOVEMENT_FX, "origin")
 				elseif (basicterrain == GRASS) then
 					call SetUnitMoveSpeed(u, MediumGrassSpeed)
 				elseif (basicterrain == D_GRASS) then
@@ -311,6 +333,10 @@ function GameLoop takes nothing returns nothing
 						set VelocityX[user] = Cos(facingRad) * SkateSpeed[user] * ICE2MOMENTUMFACTOR
 						set VelocityY[user] = Sin(facingRad) * SkateSpeed[user] * ICE2MOMENTUMFACTOR
 					endif
+					
+					// if isMoving[user] or XVelocity[user] != 0 or YVelocity[user] != 0 then
+						// call user.SetActiveEffect(SAND_MOVEMENT_FX, "origin")
+					// endif
 				elseif (basicterrain == SNOW) then
 					set CanSteer[user] = true
 					call SnowMovement.Add(u)
@@ -335,11 +361,15 @@ function GameLoop takes nothing returns nothing
 				elseif basicterrain == LAVA then
 					//call DisplayTextToForce(bj_FORCE_PLAYER[user], "Lava")
 					call LavaDamage.Add(user)
+					
+					call user.SetActiveEffect(LAVA_MOVEMENT_FX, "origin")
 				elseif basicterrain == LEAVES then        
 					call SetUnitMoveSpeed(u, FastGrassSpeed)
 					
 					call SuperFastMovement.Add(user)
 				elseif basicterrain == LRGBRICKS then
+					call DestroyEffect(AddSpecialEffect(PLATFORMING_FX, GetUnitX(user.ActiveUnit), GetUnitY(user.ActiveUnit)))
+					
 					call user.SwitchGameModesDefaultLocation(Teams_GAMEMODE_PLATFORMING)
 				elseif basicterrain == ROAD then
 					call SetUnitMoveSpeed(u, RoadSpeed)

@@ -141,7 +141,7 @@ library TerrainGlobals initializer initTerrainGlobals requires GameGlobalConstan
         return centerY + TERRAIN_QUADRANT_SIZE - TERRAIN_QUADRANT_ROUND
     endfunction
     
-    function initTerrainGlobals takes nothing returns nothing
+    private function initTerrainGlobals takes nothing returns nothing
         local integer i = 0
     
         loop

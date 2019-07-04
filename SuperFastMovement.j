@@ -33,13 +33,6 @@ struct SuperFastMovement extends array
 		
 		call SuperFastUsers.addEnd(user)
 		call IsMoving.Add(user)
-		
-		//check if unit is moving currently, otherwise set isMoving appropriately
-		if GetUnitCurrentOrder(user.ActiveUnit) == OrderId("none") or GetUnitCurrentOrder(user.ActiveUnit) == OrderId("stop") then
-            set isMoving[user] = false
-        else
-            set isMoving[user] = true
-        endif
 	endmethod
 	
 	public static method Remove takes User user returns nothing

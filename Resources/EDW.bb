@@ -208,7 +208,7 @@ Ket - Soviet Truck (https://www.hiveworkshop.com/threads/soviet-truck.220028/), 
 skrab - Firetruck (https://www.hiveworkshop.com/threads/firetruck.112949/#resource-26401), Ambulance (https://www.hiveworkshop.com/threads/ambulance.112740/#resource-26389), Police Car (https://www.hiveworkshop.com/threads/police-car.112571/)
 SD_Ryoko - Corvette (https://www.hiveworkshop.com/threads/vette.47681/#resource-20459)
 Illidan(Evil)X - Jeep (https://www.hiveworkshop.com/threads/jeep.50462/#resource-23707)
-
+vile - SlidingDustWith(out)Rocks (https://www.hiveworkshop.com/threads/slidingdustwithrocks.49097/#resource-22244)
 2D Art:
 Anonymous author - Anime Sunset loadscreen art (https://www.wallpapervortex.com/wallpaper-38651_anime_scenery_anime_sunset.html)
 
