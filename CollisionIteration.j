@@ -146,7 +146,7 @@ private function CollisionIteration takes nothing returns nothing
 								//! runtextmacro IfInAxisRectEx("65.", "115.", "65.", "65.")
 									static if APPLY_RECTANGLE_COLLISION then
 										//TODO special splat if in front
-										call CollisionDeathEffect(User(curUserNode.value).ActiveUnit)
+										call CollisionDeathEffect(User(curUserNode.value).ActiveUnit, cu)
 										
 										call User(curUserNode.value).SwitchGameModesDefaultLocation(Teams_GAMEMODE_DYING)
 									else
@@ -157,7 +157,7 @@ private function CollisionIteration takes nothing returns nothing
 								//! runtextmacro IfInAxisRectEx("205.", "215.", "68.", "68.")
 									static if APPLY_RECTANGLE_COLLISION then
 										//TODO special splat if in front
-										call CollisionDeathEffect(User(curUserNode.value).ActiveUnit)
+										call CollisionDeathEffect(User(curUserNode.value).ActiveUnit, cu)
 										
 										call User(curUserNode.value).SwitchGameModesDefaultLocation(Teams_GAMEMODE_DYING)
 									else
@@ -168,7 +168,7 @@ private function CollisionIteration takes nothing returns nothing
 								//! runtextmacro IfInAxisRectEx("215.", "200.", "68.", "68.")
 									static if APPLY_RECTANGLE_COLLISION then
 										//TODO special splat if in front
-										call CollisionDeathEffect(User(curUserNode.value).ActiveUnit)
+										call CollisionDeathEffect(User(curUserNode.value).ActiveUnit, cu)
 										
 										call User(curUserNode.value).SwitchGameModesDefaultLocation(Teams_GAMEMODE_DYING)
 									else
@@ -179,7 +179,7 @@ private function CollisionIteration takes nothing returns nothing
 								//! runtextmacro IfInAxisRectEx("240.", "175.", "80.", "80.")
 									static if APPLY_RECTANGLE_COLLISION then
 										//TODO special splat if in front
-										call CollisionDeathEffect(User(curUserNode.value).ActiveUnit)
+										call CollisionDeathEffect(User(curUserNode.value).ActiveUnit, cu)
 										
 										call User(curUserNode.value).SwitchGameModesDefaultLocation(Teams_GAMEMODE_DYING)
 									else
@@ -190,7 +190,7 @@ private function CollisionIteration takes nothing returns nothing
 								//! runtextmacro IfInAxisRectEx("145.", "135.", "64.", "64.")
 									static if APPLY_RECTANGLE_COLLISION then
 										//TODO special splat if in front
-										call CollisionDeathEffect(User(curUserNode.value).ActiveUnit)
+										call CollisionDeathEffect(User(curUserNode.value).ActiveUnit, cu)
 										
 										call User(curUserNode.value).SwitchGameModesDefaultLocation(Teams_GAMEMODE_DYING)
 									else
@@ -201,7 +201,7 @@ private function CollisionIteration takes nothing returns nothing
 								//! runtextmacro IfInAxisRectEx("140.", "140.", "64.", "64.")
 									static if APPLY_RECTANGLE_COLLISION then
 										//TODO special splat if in front
-										call CollisionDeathEffect(User(curUserNode.value).ActiveUnit)
+										call CollisionDeathEffect(User(curUserNode.value).ActiveUnit, cu)
 										
 										call User(curUserNode.value).SwitchGameModesDefaultLocation(Teams_GAMEMODE_DYING)
 									else
@@ -212,7 +212,7 @@ private function CollisionIteration takes nothing returns nothing
 								//! runtextmacro IfInAxisRectEx("125.", "115.", "62.", "62.")
 									static if APPLY_RECTANGLE_COLLISION then
 										//TODO special splat if in front
-										call CollisionDeathEffect(User(curUserNode.value).ActiveUnit)
+										call CollisionDeathEffect(User(curUserNode.value).ActiveUnit, cu)
 										
 										call User(curUserNode.value).SwitchGameModesDefaultLocation(Teams_GAMEMODE_DYING)
 									else
@@ -223,7 +223,7 @@ private function CollisionIteration takes nothing returns nothing
 								//! runtextmacro IfInAxisRectEx("150.", "150.", "62.", "62.")
 									static if APPLY_RECTANGLE_COLLISION then
 										//TODO special splat if in front
-										call CollisionDeathEffect(User(curUserNode.value).ActiveUnit)
+										call CollisionDeathEffect(User(curUserNode.value).ActiveUnit, cu)
 										
 										call User(curUserNode.value).SwitchGameModesDefaultLocation(Teams_GAMEMODE_DYING)
 									else
@@ -241,13 +241,13 @@ private function CollisionIteration takes nothing returns nothing
 							
 							if dist <= User(curUserNode.value).ActiveUnitRadius + cuInfo.Radius then
 								if not MobImmune[curUserNode.value] and (cuTypeID == GUARD or cuTypeID == LGUARD or cuTypeID == ICETROLL or cuTypeID == SPIRITWALKER or cuTypeID == CLAWMAN or cuTypeID == WWWISP or cuTypeID == WWSKUL/* or (User(curUserNode.value).ActiveUnit != cu and (cuTypeID == MAZER or cuTypeID == PLATFORMERWISP))*/) then
-									call CollisionDeathEffect(User(curUserNode.value).ActiveUnit)
+									call CollisionDeathEffect(User(curUserNode.value).ActiveUnit, cu)
 									
 									call User(curUserNode.value).SwitchGameModesDefaultLocation(Teams_GAMEMODE_DYING)
 								endif
 									
 								if cuTypeID == REGRET or cuTypeID == LMEMORY or cuTypeID == GUILT then
-									call CollisionDeathEffect(User(curUserNode.value).ActiveUnit)
+									call CollisionDeathEffect(User(curUserNode.value).ActiveUnit, cu)
 									
 									call User(curUserNode.value).SwitchGameModesDefaultLocation(Teams_GAMEMODE_DYING)
 								elseif InWorldPowerup.IsPowerupUnit(cuTypeID) then
@@ -306,6 +306,8 @@ private function CollisionIteration takes nothing returns nothing
 								if User(curUserNode.value).GameMode == Teams_GAMEMODE_STANDARD then
 									if cuTypeID == RFIRE then
 										if (MazerColor[curUserNode.value] != KEY_RED) then
+											call RFireEffect(User(curUserNode.value).ActiveUnit, cu)
+											
 											call User(curUserNode.value).SwitchGameModesDefaultLocation(Teams_GAMEMODE_DYING)
 										else
 											set LastCollidedUnit[curUserNode.value] = cu
@@ -314,6 +316,8 @@ private function CollisionIteration takes nothing returns nothing
 										endif
 									elseif cuTypeID == BFIRE then
 										if (MazerColor[curUserNode.value] != KEY_BLUE) then
+											call BFireEffect(User(curUserNode.value).ActiveUnit)
+											
 											call User(curUserNode.value).SwitchGameModesDefaultLocation(Teams_GAMEMODE_DYING)
 										else
 											set LastCollidedUnit[curUserNode.value] = cu
@@ -322,6 +326,8 @@ private function CollisionIteration takes nothing returns nothing
 										endif
 									elseif cuTypeID == GFIRE then
 										if (MazerColor[curUserNode.value] != KEY_GREEN) then
+											call GFireEffect(User(curUserNode.value).ActiveUnit, cu)
+											
 											call User(curUserNode.value).SwitchGameModesDefaultLocation(Teams_GAMEMODE_DYING)
 										else
 											set LastCollidedUnit[curUserNode.value] = cu
