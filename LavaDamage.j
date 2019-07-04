@@ -1,8 +1,10 @@
-library LavaDamage requires TimerUtils, GroupUtils, SimpleList
+library LavaDamage requires TimerUtils, GroupUtils, SimpleList, SpecialEffect
 	globals	
 		private real TIMESTEP = .5
 		private constant real LAVARATE = 350 * TIMESTEP //~1.8 seconds till death
-				
+		
+		private constant string DEATH_FX = "Abilities\\Spells\\Human\\MarkOfChaos\\MarkOfChaosTarget.mdl"
+		
 		private constant boolean DEBUG_DELTA = false
 	endglobals
 
@@ -38,6 +40,10 @@ library LavaDamage requires TimerUtils, GroupUtils, SimpleList
 			
 			//update mazer life
 			call SetUnitState(MazersArray[pID], UNIT_STATE_LIFE, damagedHP)
+			
+			if damagedHP == 0 then
+				call CreateInstantSpecialEffect(DEATH_FX, GetUnitX(MazersArray[pID]), GetUnitY(MazersArray[pID]), Player(pID))
+			endif
 		endmethod		
 		private static method ApplyDamageLoop takes nothing returns nothing
 			local SimpleList_ListNode curPlayerNode = thistype.players.first
