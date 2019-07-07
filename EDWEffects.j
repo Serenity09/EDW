@@ -162,7 +162,9 @@ library EDWEffects requires SpecialEffect
 	function AddScoreEffect takes InWorldPowerup source, User target returns nothing
 		call CreateInstantSpecialEffectTarget("Abilities\\Spells\\Items\\ResourceItems\\ResourceEffectTarget.mdl", target.ActiveUnit, SpecialEffect_ORIGIN, Player(target))
 		call CreateInstantSpecialEffect("UI\\Feedback\\GoldCredit\\GoldCredit.mdl", GetUnitX(source.Unit), GetUnitY(source.Unit), Player(target))
-		//TODO play gold coin sound		
+		
+		call AttachSoundToUnit(gg_snd_ReceiveGold, target.ActiveUnit)
+		call StartSound(gg_snd_ReceiveGold)
 	endfunction
 	function StealScoreEffect takes InWorldPowerup source, User target returns nothing
 		//TODO show parasite overhead team stolen from
