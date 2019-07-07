@@ -1,4 +1,4 @@
-library IndexedUnit
+library IndexedUnit requires UnitDefaultRadius
 	struct IndexedUnit extends array
 		public unit Unit
 		public IStartable ParentStartable

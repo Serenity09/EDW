@@ -1,4 +1,4 @@
-library User requires GetUnitDefaultRadius, MazerGlobals, Platformer, TerrainHelpers, Cinema
+library User requires UnitDefaultRadius, MazerGlobals, Platformer, TerrainHelpers, Cinema
 
 globals
 	User TriggerUser //used with events
@@ -158,11 +158,11 @@ struct User extends array
         endif
     endmethod
     
-    public method ApplyDefaultCameras takes nothing returns nothing
+    public method ApplyDefaultCameras takes real time returns nothing
         if .GameMode != Teams_GAMEMODE_PLATFORMING and .GameMode != Teams_GAMEMODE_PLATFORMING_PAUSED then
             if (GetLocalPlayer() == Player(this)) then
                 call CameraSetupApply(DefaultCamera[this], false, false)
-                call PanCameraToTimed(GetUnitX(.ActiveUnit), GetUnitY(.ActiveUnit), 0.0)
+                call PanCameraToTimed(GetUnitX(.ActiveUnit), GetUnitY(.ActiveUnit), time)
                 if DefaultCameraTracking[this] then
                     call SetCameraTargetController(.ActiveUnit, 0, 0, false)
                 endif
@@ -171,6 +171,13 @@ struct User extends array
             call .Platformer.ApplyCamera()
         endif
     endmethod
+	public method ResetDefaultCamera takes nothing returns nothing
+        if (GetLocalPlayer() == Player(this)) then
+            call ResetToGameCamera(0)
+            call CameraSetupApply(DefaultCamera[this], false, false)
+        endif
+    endmethod
+	
 	public method ApplyDefaultSelections takes nothing returns nothing
 		if .GameMode != Teams_GAMEMODE_PLATFORMING and .GameMode != Teams_GAMEMODE_PLATFORMING_PAUSED then
             if GetLocalPlayer() == Player(this) then
@@ -181,13 +188,6 @@ struct User extends array
             endif
         endif
 	endmethod
-    
-    public method ResetDefaultCamera takes nothing returns nothing
-        if (GetLocalPlayer() == Player(this)) then
-            call ResetToGameCamera(0)
-            call CameraSetupApply(DefaultCamera[this], false, false)
-        endif
-    endmethod
     
     public method Pause takes boolean flag returns nothing
         if .IsPlaying and .IsAlive then

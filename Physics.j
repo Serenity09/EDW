@@ -3291,8 +3291,6 @@ endglobals
                 //call SetUnitPosition(.Unit, PlatformerGlobals_SAFE_X, PlatformerGlobals_SAFE_Y)
                 call ShowUnit(.Unit, false)
                 
-                //stop following unit with camera by resetting the default camera
-                //User(.PID).ApplyDefaultCameras()
                 static if DEBUG_GAMEMODE then
                     call DisplayTextToForce(bj_FORCE_PLAYER[0], "Stopped platforming")
                 endif

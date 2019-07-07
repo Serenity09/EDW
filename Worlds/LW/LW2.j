@@ -18,26 +18,29 @@ library LW2 requires Recycle, Levels, EDWCollectibleResolveHandlers
 		//collect all 3 to beat the level
 		set collectibleSet = CollectibleSet.create(l, EDWCollectibleResolveHandlers_AdvanceLevel)
 		
-		set collectible = Collectible.createFromPoint(ORANGEFROG, 0, gg_rct_LW2_C1, 180)
+		set collectible = Collectible.createFromPoint(ORANGEFROG, gg_rct_LW2_C1, 270)
+		// call SetUnitX(collectible.CollectedUnit, GetRectCenterX(gg_rct_LW2_C1b))
+		// call SetUnitY(collectible.CollectedUnit, GetRectCenterY(gg_rct_LW2_C1b))
+		// call SetUnitPosition(collectible.CollectedUnit, GetRectCenterX(gg_rct_LW2_C1b), GetRectCenterY(gg_rct_LW2_C1b))
 		call collectibleSet.AddCollectible(collectible)
 		
-		set collectible = Collectible.createFromPoint(GREENFROG, 0, gg_rct_LW2_C2, 180)
+		set collectible = Collectible.createFromPoint(GREENFROG, gg_rct_LW2_C2, 180)
 		//set collectible.ReturnToCheckpoint = true
 		call collectibleSet.AddCollectible(collectible)
 		
 		if RewardMode == GameModesGlobals_HARD then
-			set collectible = Collectible.createFromPoint(PURPLEFROG, 0, gg_rct_LW2_WW3, 90)
+			set collectible = Collectible.createFromPoint(PURPLEFROG, gg_rct_LW2_WW3, 90)
 		else
-			set collectible = Collectible.createFromPoint(PURPLEFROG, 0, gg_rct_LW2_WW2, 270)
+			set collectible = Collectible.createFromPoint(PURPLEFROG, gg_rct_LW2_WW2, 270)
 		endif
 		//set collectible.ReturnToCheckpoint = true
 		call collectibleSet.AddCollectible(collectible)
 		
-		set collectible = Collectible.createFromPoint(REDFROG, 0, gg_rct_LW2_C4, 180)
+		set collectible = Collectible.createFromPoint(REDFROG, gg_rct_LW2_C4, 180)
 		//set collectible.ReturnToCheckpoint = true
 		call collectibleSet.AddCollectible(collectible)
 		
-		set collectible = Collectible.createFromPoint(TURQOISEFROG, 0, gg_rct_LW2_C5, 0)
+		set collectible = Collectible.createFromPoint(TURQOISEFROG, gg_rct_LW2_C5, 0)
 		//set collectible.ReturnToCheckpoint = true
 		call collectibleSet.AddCollectible(collectible)
 				

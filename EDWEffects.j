@@ -131,4 +131,45 @@ library EDWEffects requires SpecialEffect
 			set User(p.PID).ActiveEffect = null
 		endif
 	endfunction
+	
+	function TeleportEffect takes widget source, User target returns nothing
+		call CreateInstantSpecialEffectTarget("Abilities\\Spells\\Human\\MassTeleport\\MassTeleportTarget.mdl", target.ActiveUnit, SpecialEffect_ORIGIN, Player(target))
+	endfunction
+	function CollectibleAcquireEffect takes Collectible source, User target returns nothing
+		//call CreateInstantSpecialEffectTarget("Abilities\\Spells\\Other\\Charm\\CharmTarget.mdl", source.UncollectedUnit, SpecialEffect_ORIGIN, Player(target))
+		//call CreateInstantSpecialEffect("Abilities\\Spells\\Other\\Charm\\CharmTarget.mdl", GetUnitX(source.UncollectedUnit), GetUnitY(source.UncollectedUnit), Player(target))
+		local effect fx = CreateSpecialEffect("Abilities\\Spells\\Other\\Charm\\CharmTarget.mdl", GetUnitX(source.UncollectedUnit), GetUnitY(source.UncollectedUnit), Player(target))
+		call BlzSetSpecialEffectScale(fx, .5)
+		
+		call DestroyEffect(fx)
+		set fx = null
+	endfunction
+	
+	function AddContinueEffect takes InWorldPowerup source, User target returns nothing
+		call CreateTimedSpecialEffect("Abilities\\Spells\\NightElf\\Tranquility\\Tranquility.mdl", GetUnitX(source.Unit), GetUnitY(source.Unit), Player(target), 3.)
+	endfunction
+	function StealContinueEffect takes InWorldPowerup source, User target returns nothing
+		//TODO show parasite overhead team stolen from
+		
+		local effect fx = CreateSpecialEffect("Abilities\\Spells\\Human\\Resurrect\\ResurrectCaster.mdl", GetUnitX(source.Unit), GetUnitY(source.Unit), Player(target))
+		call BlzSetSpecialEffectYaw(fx, Atan2(GetUnitY(source.Unit) - GetUnitY(target.ActiveUnit), GetUnitX(source.Unit) - GetUnitX(target.ActiveUnit)) + bj_PI)
+		call DestroyEffect(fx)
+		set fx = null
+		
+		call CreateInstantSpecialEffectTarget("Abilities\\Spells\\Human\\Resurrect\\ResurrectTarget.mdl", target.ActiveUnit, SpecialEffect_ORIGIN, Player(target))
+	endfunction
+	
+	function AddScoreEffect takes InWorldPowerup source, User target returns nothing
+		call CreateInstantSpecialEffectTarget("Abilities\\Spells\\Items\\ResourceItems\\ResourceEffectTarget.mdl", target.ActiveUnit, SpecialEffect_ORIGIN, Player(target))
+		call CreateInstantSpecialEffect("UI\\Feedback\\GoldCredit\\GoldCredit.mdl", GetUnitX(source.Unit), GetUnitY(source.Unit), Player(target))
+		//TODO play gold coin sound		
+	endfunction
+	function StealScoreEffect takes InWorldPowerup source, User target returns nothing
+		//TODO show parasite overhead team stolen from
+		
+		local effect fx = CreateSpecialEffect("Abilities\\Spells\\Other\\Transmute\\PileofGold.mdl", GetUnitX(source.Unit), GetUnitY(source.Unit), Player(target))
+		call BlzSetSpecialEffectScale(fx, 1.5)
+		call DestroyEffect(fx)
+		set fx = null
+	endfunction
 endlibrary

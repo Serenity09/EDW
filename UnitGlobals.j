@@ -68,7 +68,11 @@ library UnitGlobals
         constant integer BLACKHOLE = 's666'
         constant real BLACKHOLE_TIMESTEP = 1.5
         constant real BLACKHOLE_MAXRADIUS = 5 * 128 //this might make lag with multiple players
+		
+		constant integer TELEPORT = 'eTEL'
         
         debug constant integer DEBUG_UNIT = 'eTST' //NOT USED FOR ANYTHING IN RELEASE MODE
+		
+		constant integer INACTIVE_UNIT_OPACITY = 100
     endglobals
 endlibrary

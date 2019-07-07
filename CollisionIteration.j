@@ -299,6 +299,10 @@ private function CollisionIteration takes nothing returns nothing
 									call SetUnitVertexColor(MazersArray[curUserNode.value], 255, 255, 255, 255)
 									
 									call TimerStart(NewTimerEx(curUserNode.value), COLLISION_TIME, false, function AfterCollisionCB)
+								elseif cuTypeID == TELEPORT then
+									call TeleportEffect(cu, curUserNode.value)
+									
+									call User(curUserNode.value).RespawnAtRect(User(curUserNode.value).Team.Revive, true)
 								endif
 								
 								//check units that only collide with specific game modes / active unit types

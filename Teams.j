@@ -929,6 +929,15 @@ public struct MazingTeam
 		set curPlayerNode = curPlayerNode.next
 		endloop
 	endmethod
+	public method SetUnitLocalOpacityForTeam takes unit u, integer opacity returns nothing
+		local SimpleList_ListNode curPlayerNode = .FirstUser
+		
+		loop
+		exitwhen curPlayerNode == 0
+			call SetUnitLocalOpacity(u, curPlayerNode.value, opacity)
+		set curPlayerNode = curPlayerNode.next
+		endloop
+	endmethod
 	
 	public method PauseTeam takes boolean flag returns nothing
 		local SimpleList_ListNode curPlayerNode = .FirstUser

@@ -1,4 +1,4 @@
-library GetUnitDefaultRadius
+library UnitDefaultRadius
 	function GetUnitDefaultRadius takes integer unitTypeID returns real
 		if unitTypeID == MAZER then
 			return 18.
@@ -55,6 +55,8 @@ library GetUnitDefaultRadius
 			return 35.
 		elseif unitTypeID == SUPERSPEED then
 			return 85.
+		elseif unitTypeID == TELEPORT then
+			return 78.
 		else
 			return 0.
 		endif

@@ -1,6 +1,6 @@
 //shows/hides a unit's model for the specified player only via VertexColor. works separately from native ShowUnit/HideUnit. does NOT hide particle effects
 //the unit can still be selected by players it has been locally hidden for. you can permanently give the unit the locust ability (outside of a local block) to prevent any selection
-library UnitLocalVisibility
+library UnitLocalVisibility requires IndexedUnit
 	function SetUnitLocalOpacity takes unit u, integer playerID, integer opacity returns nothing
 		local IndexedUnit uInfo = GetUnitUserData(u)
 		

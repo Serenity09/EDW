@@ -25,7 +25,7 @@ library EDWPowerup requires Alloc, MazerGlobals, FilterFuncs, Table, PlayerUtils
     endglobals
     
     struct InWorldPowerup extends array        
-        private unit    Unit
+        readonly unit Unit
         private SimpleList_List	TeamsUsed //change to be player based and add all players on a team to list if powerup is team oriented
         
         private static Table AllPowerups
@@ -74,7 +74,6 @@ library EDWPowerup requires Alloc, MazerGlobals, FilterFuncs, Table, PlayerUtils
                 
                 set MobImmune[user] = true
                 
-                
                 call TimerStart(NewTimerEx(user), SOLO_INVULN_TIME, false, function thistype.SoloInvulnCB)
             elseif GetUnitTypeId(.Unit) == POWERUP_TEAM_INVULN then
                 call user.Team.PrintMessage(user.GetStylizedPlayerName() + " picked up a team invulnerability powerup")
@@ -91,7 +90,9 @@ library EDWPowerup requires Alloc, MazerGlobals, FilterFuncs, Table, PlayerUtils
                 
                 call TimerStart(NewTimerEx(user.Team), TEAM_INVULN_TIME, false, function thistype.TeamInvulnCB)
             elseif GetUnitTypeId(.Unit) == POWERUP_TEAM_ADDCONT then
-                call user.Team.ChangeContinueCount(TEAM_ADDCONT_COUNT)
+                call AddContinueEffect(this, user)
+				
+				call user.Team.ChangeContinueCount(TEAM_ADDCONT_COUNT)
 				call user.Team.PrintMessage(user.GetStylizedPlayerName() + " gained your team " + I2S(TEAM_ADDCONT_COUNT) + " continues")
 			elseif GetUnitTypeId(.Unit) == POWERUP_TEAM_STEALCONT then
 				set team = Teams_MazingTeam.GetRandomTeam(user.Team)
@@ -100,13 +101,18 @@ library EDWPowerup requires Alloc, MazerGlobals, FilterFuncs, Table, PlayerUtils
 					call team.ChangeContinueCount(-TEAM_STEALCONT_COUNT)
 					call team.PrintMessage(user.GetStylizedPlayerName() + " stole " + I2S(TEAM_STEALCONT_COUNT) + " continue from your team!")
 					
+					call StealContinueEffect(this, user)
 					call user.Team.ChangeContinueCount(TEAM_STEALCONT_COUNT)
 					call user.Team.PrintMessage(user.GetStylizedPlayerName() + " stole " + I2S(TEAM_STEALCONT_COUNT) + " continue from team " + team.GetTeamName() + "!")
 				else
+					call AddContinueEffect(this, user)
+					
 					call user.Team.ChangeContinueCount(TEAM_ADDCONT_COUNT)
 					call user.Team.PrintMessage(user.GetStylizedPlayerName() + " gained your team " + I2S(TEAM_ADDCONT_COUNT) + " continues")
 				endif
 			elseif GetUnitTypeId(.Unit) == POWERUP_TEAM_ADDSCORE then
+				call AddScoreEffect(this, user)
+				
 				call user.Team.ChangeScore(TEAM_ADDSCORE_COUNT)
 				call user.Team.PrintMessage(user.GetStylizedPlayerName() + " gained your team " + I2S(TEAM_ADDSCORE_COUNT) + " points")
 			elseif GetUnitTypeId(.Unit) == POWERUP_TEAM_STEALSCORE then
@@ -116,9 +122,12 @@ library EDWPowerup requires Alloc, MazerGlobals, FilterFuncs, Table, PlayerUtils
 					call team.ChangeScore(-TEAM_STEALSCORE_COUNT)
 					call team.PrintMessage(user.GetStylizedPlayerName() + " stole " + I2S(TEAM_STEALSCORE_COUNT) + " point from your team!")
 					
+					call StealScoreEffect(this, user)
 					call user.Team.ChangeScore(TEAM_STEALSCORE_COUNT)
 					call user.Team.PrintMessage(user.GetStylizedPlayerName() + " stole " + I2S(TEAM_STEALSCORE_COUNT) + " point from team " + team.GetTeamName() + "!")
 				else
+					call AddScoreEffect(this, user)
+					
 					call user.Team.ChangeScore(TEAM_ADDSCORE_COUNT)
 					call user.Team.PrintMessage(user.GetStylizedPlayerName() + " gained your team " + I2S(TEAM_ADDSCORE_COUNT) + " points")
 				endif

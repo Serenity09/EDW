@@ -1,4 +1,4 @@
-library Collectible requires Alloc, PermanentAlloc, SimpleList, Teams, IStartable, Levels, Deferred, All, TimerUtils, locust, UnitDefaultRadius
+library Collectible requires Alloc, PermanentAlloc, SimpleList, Teams, IStartable, Levels, Deferred, All, TimerUtils, locust, GetUnitDefaultRadius
 	globals
 		private constant real COLLECTIBLE_COLLISION_TIMEOUT = .15
 		private constant player COLLECTIBLE_PLAYER = Player(9)
@@ -10,11 +10,30 @@ library Collectible requires Alloc, PermanentAlloc, SimpleList, Teams, IStartabl
 	struct Collectible extends array
 		readonly unit UncollectedUnit
 		public real UncollectedUnitRadius //TODO pull from IndexedUnit.Radius
+		readonly unit CollectedUnit
 		public boolean ReturnToCheckpoint
+		
+		private Event OnCollect
+		private Event OnReset
 		
 		implement PermanentAlloc
 		
-		public static method create takes integer uncollectedUnitID, real x, real y, real facing returns thistype
+		public method RegisterCollectCallback takes conditionfunc cb returns nothing
+			if .OnCollect == 0 then
+				set .OnCollect = Event.create()
+			endif
+			
+			call .OnCollect.register(cb)
+		endmethod
+		public method RegisterResetCallback takes conditionfunc cb returns nothing
+			if .OnReset == 0 then
+				set .OnReset = Event.create()
+			endif
+			
+			call .OnReset.register(cb)
+		endmethod
+		
+		public static method create takes integer uncollectedUnitID, integer collectedUnitID, real x, real y, real facing returns thistype
 			local thistype new = thistype.allocate()
 			local IndexedUnit uInfo
 						
@@ -23,17 +42,27 @@ library Collectible requires Alloc, PermanentAlloc, SimpleList, Teams, IStartabl
 			set uInfo.Collideable = false
 			call uInfo.InitializeVertexColor()
 			call AddUnitLocust(new.UncollectedUnit)
-			set new.UncollectedUnitRadius = GetUnitDefaultRadius(uncollectedUnitID)
-			
+						
+			if collectedUnitID != 0 then
+				set new.CollectedUnit = CreateUnit(COLLECTIBLE_PLAYER, collectedUnitID, x, y, facing)
+				set uInfo = IndexedUnit.create(new.CollectedUnit)
+				set uInfo.Collideable = false
+				call uInfo.InitializeVertexColor()
+				call AddUnitLocust(new.CollectedUnit)
+			else
+				set new.CollectedUnit = null
+			endif
 			//hide the collected version of the unit on init or on level start
 			
 			//defaults
 			set new.ReturnToCheckpoint = false
+			set new.OnCollect = 0
+			set new.UncollectedUnitRadius = GetUnitDefaultRadius(uncollectedUnitID)
 						
 			return new
 		endmethod
-		public static method createFromPoint takes integer uncollectedUnitID, rect loc, real facing returns thistype
-			return thistype.create(uncollectedUnitID, GetRectCenterX(loc), GetRectCenterY(loc), facing)
+		public static method createFromPoint takes integer uncollectedUnitID, integer collectedUnitID, rect loc, real facing returns thistype
+			return thistype.create(uncollectedUnitID, collectedUnitID, GetRectCenterX(loc), GetRectCenterY(loc), facing)
 		endmethod
 	endstruct
 	
@@ -69,7 +98,12 @@ library Collectible requires Alloc, PermanentAlloc, SimpleList, Teams, IStartabl
 			exitwhen curCollectibleNode == 0
 				//show uncollected unit for local team only
 				call mt.SetUnitLocalVisibilityForTeam(Collectible(curCollectibleNode.value).UncollectedUnit, true)
-								
+				
+				//if exists, hide collected unit for local team only
+				if Collectible(curCollectibleNode.value).CollectedUnit != null then
+					call mt.SetUnitLocalVisibilityForTeam(Collectible(curCollectibleNode.value).CollectedUnit, false)
+				endif
+				
 				//create a deferred to track collection state
 				call new.CollectibleDeferreds.addEnd(Deferred.create())
 			set curCollectibleNode = curCollectibleNode.next
@@ -185,15 +219,14 @@ library Collectible requires Alloc, PermanentAlloc, SimpleList, Teams, IStartabl
 							
 							if SquareRoot(deltaX*deltaX + deltaY*deltaY) <= Collectible(curCollectibleNode.value).UncollectedUnitRadius + User(curPlayerNode.value).ActiveUnitRadius then
 								if not curCollectibleDeferred.Resolved then
-									call CollectibleAcquireEffect(curCollectibleNode.value, curPlayerNode.value)
 									call CollectibleTeam(curTeamNode.value).Team.SetUnitLocalOpacityForTeam(Collectible(curCollectibleNode.value).UncollectedUnit, INACTIVE_UNIT_OPACITY)
 									
-									call curCollectibleDeferred.Resolve(curPlayerNode.value)
-								endif
-								
-								if Collectible(curCollectibleNode.value).ReturnToCheckpoint then
-									call TeleportEffect(Collectible(curCollectibleNode.value).UncollectedUnit, curPlayerNode.value)
+									if Collectible(curCollectibleNode.value).CollectedUnit != null then
+										call CollectibleTeam(curTeamNode.value).Team.SetUnitLocalVisibilityForTeam(Collectible(curCollectibleNode.value).CollectedUnit, true)
+									endif
 									
+									call curCollectibleDeferred.Resolve(curPlayerNode.value)
+								elseif Collectible(curCollectibleNode.value).ReturnToCheckpoint then
 									call User(curPlayerNode.value).RespawnAtRect(CollectibleTeam(curTeamNode.value).Team.Revive, true)
 								endif
 							endif
