@@ -24,6 +24,7 @@ library EDWLevelContent requires LevelIDGlobals, EDWLevels, SimpleList, Teams, L
 		
 		local FastLoad fastLoad
 		
+		local unit u
 		local integer i
 				
 		//FIRST LEVEL INITS HARD CODED
@@ -208,7 +209,9 @@ library EDWLevelContent requires LevelIDGlobals, EDWLevels, SimpleList, Teams, L
         call boundedWheel.AddEmptySpace(2)
         call l.AddStartable(boundedWheel)
         
-		call Recycle_MakeUnit(BOUNCER, -554, -4840)
+		set u = Recycle_MakeUnit(BOUNCER, -554, -4840)
+		call SetUnitOwner(u, Player(11), true)
+		
         set wheel = Wheel.create(-554, -4840)
         set wheel.SpokeCount = 4
         set wheel.AngleBetween = bj_PI / 2
