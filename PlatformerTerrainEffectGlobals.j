@@ -23,6 +23,8 @@ library PlatformerTerrainEffectGlobals requires PlatformerGlobals, TerrainGlobal
         constant real PLATFORMING_MAXCHANGE = 42 //point in diagonal assumes that the test point is within 2*sqrt(16*16 + 16*16) = 45.25...
         constant boolean PLATFORMING_CHECK_HALFWAY = false //should be true if PLATFORMING_MAXCHANGE > TERRAIN_QUADRANT_SIZE (64)
         
+		constant real VELOCITY_HARDSTOP_THRESHOLD = PLATFORMING_MAXCHANGE - 18. // PLATFORMING_MAXCHANGE == 42
+		
 		constant real DIAGONAL_ESCAPEDISTANCE = 10 //should allow the player to freely escape by pressing arrow keys or jumping
         constant real DIAGONAL_STICKYDISTANCE = PLATFORMING_MAXCHANGE - 10 //amount of stickyness when transitioning between diagonals -- pretty sticky = fun
 
@@ -36,5 +38,3 @@ library PlatformerTerrainEffectGlobals requires PlatformerGlobals, TerrainGlobal
         //constant real   TERRAIN_DEADZONE_OFFSET=.51
     endglobals
 endlibrary
-
--ga 1.225

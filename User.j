@@ -3,6 +3,7 @@ library User requires GetUnitDefaultRadius, MazerGlobals, Platformer, TerrainHel
 globals
 	User TriggerUser //used with events
 	private constant boolean DEBUG_GAMEMODE_CHANGE = false
+	private constant boolean DEBUG_ACTIVE_EFFECT_CHANGE = false
 endglobals
 
 struct User extends array
@@ -32,17 +33,49 @@ struct User extends array
     
 	public method SetActiveEffect takes string strEffect, string attachPoint returns nothing
 		if .ActiveEffect != null then
+			static if DEBUG_ACTIVE_EFFECT_CHANGE then
+				call DisplayTextToForce(bj_FORCE_PLAYER[0], "Destroying active effect: " + I2S(GetHandleId(.ActiveEffect)))
+			endif
+			
 			call DestroyEffect(.ActiveEffect)
 			set .ActiveEffect = null
 		endif
 		
 		if strEffect != null then
 			set .ActiveEffect = AddSpecialEffectTarget(strEffect, .ActiveUnit, attachPoint)
+			
+			static if DEBUG_ACTIVE_EFFECT_CHANGE then
+				call DisplayTextToForce(bj_FORCE_PLAYER[0], "Set active effect: " + I2S(GetHandleId(.ActiveEffect)))
+			endif
+		endif
+	endmethod
+	public method SetActiveEffectEx takes effect fx returns nothing
+		if .ActiveEffect != null then
+			static if DEBUG_ACTIVE_EFFECT_CHANGE then
+				call DisplayTextToForce(bj_FORCE_PLAYER[0], "Destroying active effect: " + I2S(GetHandleId(.ActiveEffect)))
+			endif
+			
+			call DestroyEffect(.ActiveEffect)
+		endif
+		
+		set .ActiveEffect = fx
+		
+		static if DEBUG_ACTIVE_EFFECT_CHANGE then
+			if fx != null then
+				call DisplayTextToForce(bj_FORCE_PLAYER[0], "Set active effect: " + I2S(GetHandleId(.ActiveEffect)))
+			else
+				call DisplayTextToForce(bj_FORCE_PLAYER[0], "Set active null: " + I2S(GetHandleId(.ActiveEffect)))
+			endif
 		endif
 	endmethod
 	public method ClearActiveEffect takes nothing returns nothing
 		call .SetActiveEffect(null, null)
 	endmethod
+	
+	public method CreateUserTimedEffect takes string fxFileLocation, string attachPointName, real duration returns nothing
+		call UserActiveTimedEffect.create(fxFileLocation, attachPointName, this, duration)
+	endmethod
+
 	
     public static method DisplayMessageAll takes string message returns nothing
         local integer i = 0

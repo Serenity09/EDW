@@ -347,7 +347,9 @@ private function CollisionIteration takes nothing returns nothing
 										set User(curUserNode.value).Platformer.YVelocity = 0
 										
 										set LastCollidedUnit[curUserNode.value] = cu
-										call TimerStart(NewTimerEx(curUserNode.value), .6, false, function AfterCollisionCB)
+										call TimerStart(NewTimerEx(curUserNode.value), 1., false, function AfterCollisionCB)
+										
+										call GravityEffect(User(curUserNode.value).ActiveUnit, cu)
 									elseif cuTypeID == BOUNCER then
 										if User(curUserNode.value).Platformer.GravitationalAccel >= 0 then
 											if User(curUserNode.value).Platformer.YVelocity > 0 then
@@ -373,26 +375,36 @@ private function CollisionIteration takes nothing returns nothing
 										
 										set LastCollidedUnit[curUserNode.value] = cu
 										call TimerStart(NewTimerEx(curUserNode.value), .1, false, function AfterCollisionCB)
+										
+										call BounceEffect(User(curUserNode.value).ActiveUnit, cu)
 									elseif cuTypeID == UBOUNCE then
 										set User(curUserNode.value).Platformer.YVelocity = User(curUserNode.value).Platformer.YVelocity + DIR_BOUNCER_SPEED
 														
 										call AutoRespawningUnit.create(GetUnitX(cu), GetUnitY(cu), UBOUNCE, 90, DIR_BOUNCER_RESPAWN_TIME)
 										call Recycle_ReleaseUnit(cu)
+										
+										call DirectionalBounceEffect(User(curUserNode.value).ActiveUnit, cu)
 									elseif cuTypeID == RBOUNCE then
 										set User(curUserNode.value).Platformer.XVelocity = User(curUserNode.value).Platformer.XVelocity + DIR_BOUNCER_SPEED
 										
 										call AutoRespawningUnit.create(GetUnitX(cu), GetUnitY(cu), RBOUNCE, 0, DIR_BOUNCER_RESPAWN_TIME)
 										call Recycle_ReleaseUnit(cu)
+										
+										call DirectionalBounceEffect(User(curUserNode.value).ActiveUnit, cu)
 									elseif cuTypeID == DBOUNCE then
 										set User(curUserNode.value).Platformer.YVelocity = User(curUserNode.value).Platformer.YVelocity - DIR_BOUNCER_SPEED
 										
 										call AutoRespawningUnit.create(GetUnitX(cu), GetUnitY(cu), DBOUNCE, 270, DIR_BOUNCER_RESPAWN_TIME)
 										call Recycle_ReleaseUnit(cu)
+										
+										call DirectionalBounceEffect(User(curUserNode.value).ActiveUnit, cu)
 									elseif cuTypeID == LBOUNCE then
 										set User(curUserNode.value).Platformer.XVelocity = User(curUserNode.value).Platformer.XVelocity - DIR_BOUNCER_SPEED
 														
 										call AutoRespawningUnit.create(GetUnitX(cu), GetUnitY(cu), LBOUNCE, 180, DIR_BOUNCER_RESPAWN_TIME)
 										call Recycle_ReleaseUnit(cu)
+										
+										call DirectionalBounceEffect(User(curUserNode.value).ActiveUnit, cu)
 									elseif cuTypeID == SUPERSPEED then
 										//repurpose var for angle
 										set dx = GetUnitFacing(cu) * bj_DEGTORAD
@@ -402,7 +414,9 @@ private function CollisionIteration takes nothing returns nothing
 										//call DisplayTextToForce(bj_FORCE_PLAYER[0], "unit is angle: " + R2S(dx))
 										
 										set LastCollidedUnit[curUserNode.value] = cu
-										call TimerStart(NewTimerEx(curUserNode.value), .1, false, function AfterCollisionCB)
+										call TimerStart(NewTimerEx(curUserNode.value), 1., false, function AfterCollisionCB)
+										
+										call SuperSpeedEffect(User(curUserNode.value).ActiveUnit, cu)
 									endif
 								endif
 							endif

@@ -52,7 +52,7 @@ globals
     private constant boolean DEBUG_TERRAIN_KILL = false
     private constant boolean DEBUG_TERRAIN_CHANGE = false
     private constant boolean DEBUG_JUMPING = false
-    
+	
 	//private constant string STANDARD_FX = "Abilities\\Spells\\Human\\Polymorph\\PolyMorphTarget.mdl"
 	private constant string TERRAIN_STANDARD_FX = "Abilities\\Spells\\Human\\Polymorph\\PolyMorphDoneGround.mdl"
 	private constant string TERRAIN_VINES_FX = "Abilities\\Spells\\NightElf\\EntanglingRoots\\EntanglingRootsTarget.mdl"
@@ -1196,9 +1196,14 @@ endglobals
                             set .XTerrainPushedAgainst = pathingResult.RelevantXTerrainTypeID
                             if not TerrainGlobals_IsTerrainSoft(pathingResult.RelevantXTerrainTypeID) then
                                 static if DEBUG_VELOCITY_TERRAIN then
-                                    call DisplayTextToForce(bj_FORCE_PLAYER[0], "Colliding with hard x, setting velocity to 0")
+                                    call DisplayTextToForce(bj_FORCE_PLAYER[0], "1 Colliding with hard x, setting velocity to 0")
                                 endif
-                                set .XVelocity = 0
+								
+								if .XVelocity >= VELOCITY_HARDSTOP_THRESHOLD or .XVelocity <= -VELOCITY_HARDSTOP_THRESHOLD then
+									call HardStopEffect(this, .XVelocity)
+								endif
+								
+								set .XVelocity = 0
                             endif
                             
                             set .YTerrainPushedAgainst = 0
@@ -1216,9 +1221,14 @@ endglobals
                             set .YTerrainPushedAgainst = pathingResult.RelevantYTerrainTypeID
                             if not TerrainGlobals_IsTerrainSoft(pathingResult.RelevantYTerrainTypeID) then
                                 static if DEBUG_VELOCITY_TERRAIN then
-                                    call DisplayTextToForce(bj_FORCE_PLAYER[0], "Colliding with hard y, setting velocity to 0")
+                                    call DisplayTextToForce(bj_FORCE_PLAYER[0], "1 Colliding with hard y, setting velocity to 0")
                                 endif
-                                set .YVelocity = 0
+                                
+								if .YVelocity >= VELOCITY_HARDSTOP_THRESHOLD or .YVelocity <= -VELOCITY_HARDSTOP_THRESHOLD then
+									call HardStopEffect(this, .YVelocity)
+								endif
+								
+								set .YVelocity = 0
                             endif
                         else//if pathingResult.TerrainPathingForPoint == ComplexTerrainPathing_Square or <other> then                            
                             static if DEBUG_MODE then
@@ -1316,16 +1326,24 @@ endglobals
                                 call SetUnitY(.Unit, YPosition)
                                 
                                 if (pathingResult.TerrainPathingForPoint == ComplexTerrainPathing_Top or pathingResult.TerrainPathingForPoint == ComplexTerrainPathing_Bottom) and not TerrainGlobals_IsTerrainSoft(pathingResult.RelevantYTerrainTypeID) then
-                                    //debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "Setting Y Velocity 0") 
                                     static if DEBUG_VELOCITY_TERRAIN then
-                                        call DisplayTextToForce(bj_FORCE_PLAYER[0], "Colliding with hard y, setting velocity to 0")
+                                        call DisplayTextToForce(bj_FORCE_PLAYER[0], "2 Colliding with hard y, setting velocity to 0")
                                     endif
-                                    set .YVelocity = 0
+                                    
+									if .YVelocity >= VELOCITY_HARDSTOP_THRESHOLD or .YVelocity <= -VELOCITY_HARDSTOP_THRESHOLD then
+										call HardStopEffect(this, .YVelocity)
+									endif
+									
+									set .YVelocity = 0
                                 elseif (pathingResult.TerrainPathingForPoint == ComplexTerrainPathing_Left or pathingResult.TerrainPathingForPoint == ComplexTerrainPathing_Right) and not TerrainGlobals_IsTerrainSoft(pathingResult.RelevantXTerrainTypeID) then
-                                    //debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "Setting X Velocity 0")
                                     static if DEBUG_VELOCITY_TERRAIN then
-                                        call DisplayTextToForce(bj_FORCE_PLAYER[0], "Colliding with hard x, setting velocity to 0")
+                                        call DisplayTextToForce(bj_FORCE_PLAYER[0], "2 Colliding with hard x, setting velocity to 0")
                                     endif
+									
+									if .XVelocity >= VELOCITY_HARDSTOP_THRESHOLD or .XVelocity <= -VELOCITY_HARDSTOP_THRESHOLD then
+										call HardStopEffect(this, .XVelocity)
+									endif
+									
                                     set .XVelocity = 0
                                 endif
                             //check if no next diagonal or if escaped the transition between two different diagonals
@@ -1388,22 +1406,36 @@ endglobals
                                     //debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "Encountered a square!")
                                     
                                     //either two cases: side continues as square tile OR side makes a corner with square tile
-                                    //legal if changed only 1 of two compass directions (NE -> NW, but not NE -> SW)
+                                    //legal if changed only 1 of two compass directions (ex NE -> NW, but not NE -> SE)
                                     //check to see if hit a corner
                                     if (.DiagonalPathing.QuadrantForPoint == ComplexTerrainPathing_NE and pathingResult.QuadrantForPoint == ComplexTerrainPathing_SW) or (.DiagonalPathing.QuadrantForPoint == ComplexTerrainPathing_SE and pathingResult.QuadrantForPoint == ComplexTerrainPathing_NW) or (.DiagonalPathing.QuadrantForPoint == ComplexTerrainPathing_SW and pathingResult.QuadrantForPoint == ComplexTerrainPathing_NE) or (.DiagonalPathing.QuadrantForPoint == ComplexTerrainPathing_NW and pathingResult.QuadrantForPoint == ComplexTerrainPathing_SE) then
                                         //hit a corner, clear relevant x, y velocity
                                         if pathingResult.RelevantXTerrainTypeID != 0 and not TerrainGlobals_IsTerrainSoft(pathingResult.RelevantXTerrainTypeID) then
-                                            debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "Inside diagonal/square corner setting x velocity to 0")
-                                            
+                                            static if DEBUG_VELOCITY_TERRAIN then
+												call DisplayTextToForce(bj_FORCE_PLAYER[0], "Inside diagonal/square corner setting x velocity to 0")
+                                            endif
+											
                                             set .XTerrainPushedAgainst = pathingResult.RelevantXTerrainTypeID
+											
+											if .XVelocity >= VELOCITY_HARDSTOP_THRESHOLD or .XVelocity <= -VELOCITY_HARDSTOP_THRESHOLD then
+												call HardStopEffect(this, .XVelocity)
+											endif
+											
                                             set .XVelocity = 0
                                         endif
                                         
                                         if pathingResult.RelevantYTerrainTypeID != 0 and not TerrainGlobals_IsTerrainSoft(pathingResult.RelevantYTerrainTypeID) then
-                                            debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "Inside diagonal/square corner setting y velocity to 0")
-                                            
+                                            static if DEBUG_VELOCITY_TERRAIN then
+												call DisplayTextToForce(bj_FORCE_PLAYER[0], "Inside diagonal/square corner setting y velocity to 0")
+                                            endif
+											
                                             set .YTerrainPushedAgainst = pathingResult.RelevantYTerrainTypeID
-                                            set .YVelocity = 0
+                                           
+											if .YVelocity >= VELOCITY_HARDSTOP_THRESHOLD or .YVelocity <= -VELOCITY_HARDSTOP_THRESHOLD then
+												call HardStopEffect(this, .YVelocity)
+											endif
+											
+											set .YVelocity = 0
                                         endif
                                         
                                         //this only works when obstructing wall is square, if obstructing wall is diag then this glitches
@@ -1458,8 +1490,13 @@ endglobals
                                             
                                             if not TerrainGlobals_IsTerrainSoft(ttype) then
                                                 static if DEBUG_VELOCITY_TERRAIN then
-                                                    call DisplayTextToForce(bj_FORCE_PLAYER[0], "Colliding with hard x, setting velocity to 0")
+                                                    call DisplayTextToForce(bj_FORCE_PLAYER[0], "3 Colliding with hard x, setting velocity to 0")
                                                 endif
+												
+												if .XVelocity >= VELOCITY_HARDSTOP_THRESHOLD or .XVelocity <= -VELOCITY_HARDSTOP_THRESHOLD then
+													call HardStopEffect(this, .XVelocity)
+												endif
+												
                                                 set .XVelocity = 0
                                             endif
                                         endif
@@ -1480,10 +1517,14 @@ endglobals
                                             
                                             if not TerrainGlobals_IsTerrainSoft(ttype) then
                                                 static if DEBUG_VELOCITY_TERRAIN then
-                                                    call DisplayTextToForce(bj_FORCE_PLAYER[0], "Colliding with hard y, setting velocity to 0")
+                                                    call DisplayTextToForce(bj_FORCE_PLAYER[0], "3 Colliding with hard y, setting velocity to 0")
                                                 endif
 
-                                                set .XVelocity = 0
+												if .YVelocity >= VELOCITY_HARDSTOP_THRESHOLD or .YVelocity <= -VELOCITY_HARDSTOP_THRESHOLD then
+													call HardStopEffect(this, .YVelocity)
+												endif
+												
+                                                set .YVelocity = 0
                                             endif
                                         endif
                                         
@@ -1515,7 +1556,11 @@ endglobals
                                         set .YVelocity = .YVelocity - .XVelocity * SIN_45
                                         
                                         if not TerrainGlobals_IsTerrainSoft(pathingResult.RelevantXTerrainTypeID) then
-                                            set .XVelocity = 0
+                                            static if DEBUG_VELOCITY_TERRAIN then
+												call DisplayTextToForce(bj_FORCE_PLAYER[0], "4 Colliding with hard x, setting velocity to 0")
+											endif
+											
+											set .XVelocity = 0
                                         else
                                             set .XVelocity = .XVelocity * SIN_45
                                         endif
@@ -1523,12 +1568,24 @@ endglobals
                                         set .YVelocity = .YVelocity + .XVelocity * SIN_45
                                         
                                         if not TerrainGlobals_IsTerrainSoft(pathingResult.RelevantXTerrainTypeID) then
-                                            set .XVelocity = 0
+                                            static if DEBUG_VELOCITY_TERRAIN then
+												call DisplayTextToForce(bj_FORCE_PLAYER[0], "5 Colliding with hard x, setting velocity to 0")
+											endif
+											
+											set .XVelocity = 0
                                         else
                                             set .XVelocity = .XVelocity * SIN_45
                                         endif
                                     elseif .XVelocity != 0 and not TerrainGlobals_IsTerrainSoft(pathingResult.RelevantXTerrainTypeID) then
-                                        set .XVelocity = 0
+                                        static if DEBUG_VELOCITY_TERRAIN then
+											call DisplayTextToForce(bj_FORCE_PLAYER[0], "6 Colliding with hard x, setting velocity to 0")
+										endif
+										
+										if .XVelocity >= VELOCITY_HARDSTOP_THRESHOLD or .XVelocity <= -VELOCITY_HARDSTOP_THRESHOLD then
+											call HardStopEffect(this, .XVelocity)
+										endif
+										
+										set .XVelocity = 0
                                     endif
                                     //debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "Velocity: " + R2S(.XVelocity) + "," + R2S(.YVelocity))
                                 elseif pathingResult.TerrainPathingForPoint == ComplexTerrainPathing_Right then
@@ -1548,7 +1605,11 @@ endglobals
                                         set .YVelocity = .YVelocity + .XVelocity * SIN_45
                                         
                                         if not TerrainGlobals_IsTerrainSoft(pathingResult.RelevantXTerrainTypeID) then
-                                            set .XVelocity = 0
+                                            static if DEBUG_VELOCITY_TERRAIN then
+												call DisplayTextToForce(bj_FORCE_PLAYER[0], "7 Colliding with hard x, setting velocity to 0")
+											endif
+											
+											set .XVelocity = 0
                                         else
                                             set .XVelocity = .XVelocity * SIN_45
                                         endif
@@ -1556,12 +1617,24 @@ endglobals
                                         set .YVelocity = .YVelocity - .XVelocity * SIN_45
                                         
                                         if not TerrainGlobals_IsTerrainSoft(pathingResult.RelevantXTerrainTypeID) then
-                                            set .XVelocity = 0
+                                            static if DEBUG_VELOCITY_TERRAIN then
+												call DisplayTextToForce(bj_FORCE_PLAYER[0], "8 Colliding with hard x, setting velocity to 0")
+											endif
+											
+											set .XVelocity = 0
                                         else
                                             set .XVelocity = .XVelocity * SIN_45
                                         endif
                                     elseif .XVelocity != 0 and not TerrainGlobals_IsTerrainSoft(pathingResult.RelevantXTerrainTypeID) then
-                                        set .XVelocity = 0
+                                        static if DEBUG_VELOCITY_TERRAIN then
+											call DisplayTextToForce(bj_FORCE_PLAYER[0], "9 Colliding with hard x, setting velocity to 0")
+										endif
+										
+										if .XVelocity >= VELOCITY_HARDSTOP_THRESHOLD or .XVelocity <= -VELOCITY_HARDSTOP_THRESHOLD then
+											call HardStopEffect(this, .XVelocity)
+										endif
+										
+										set .XVelocity = 0
                                     endif
                                     //debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "Velocity: " + R2S(.XVelocity) + "," + R2S(.YVelocity))
                                 elseif pathingResult.TerrainPathingForPoint == ComplexTerrainPathing_Top then
@@ -1582,7 +1655,11 @@ endglobals
                                         set .XVelocity = .XVelocity - .YVelocity * SIN_45
                                         
                                         if not TerrainGlobals_IsTerrainSoft(pathingResult.RelevantYTerrainTypeID) then
-                                            set .YVelocity = 0
+                                            static if DEBUG_VELOCITY_TERRAIN then
+												call DisplayTextToForce(bj_FORCE_PLAYER[0], "4 Colliding with hard y, setting velocity to 0")
+											endif
+											
+											set .YVelocity = 0
                                         else
                                             set .YVelocity = .YVelocity * SIN_45
                                         endif
@@ -1590,12 +1667,24 @@ endglobals
                                         set .XVelocity = .XVelocity + .YVelocity * SIN_45
                                         
                                         if not TerrainGlobals_IsTerrainSoft(pathingResult.RelevantYTerrainTypeID) then
-                                            set .YVelocity = 0
+                                            static if DEBUG_VELOCITY_TERRAIN then
+												call DisplayTextToForce(bj_FORCE_PLAYER[0], "5 Colliding with hard y, setting velocity to 0")
+											endif
+											
+											set .YVelocity = 0
                                         else
                                             set .YVelocity = .YVelocity * SIN_45
                                         endif
                                     elseif .YVelocity != 0 and not TerrainGlobals_IsTerrainSoft(pathingResult.RelevantYTerrainTypeID) then
-                                        set .YVelocity = 0
+                                        static if DEBUG_VELOCITY_TERRAIN then
+											call DisplayTextToForce(bj_FORCE_PLAYER[0], "6 Colliding with hard y, setting velocity to 0")
+										endif
+										
+										if .YVelocity >= VELOCITY_HARDSTOP_THRESHOLD or .YVelocity <= -VELOCITY_HARDSTOP_THRESHOLD then
+											call HardStopEffect(this, .YVelocity)
+										endif
+										
+										set .YVelocity = 0
                                     endif
                                 elseif pathingResult.TerrainPathingForPoint == ComplexTerrainPathing_Bottom then
                                     set .XTerrainPushedAgainst = pathingResult.RelevantXTerrainTypeID
@@ -1613,7 +1702,11 @@ endglobals
                                         set .XVelocity = .XVelocity + .YVelocity * SIN_45
                                         
                                         if not TerrainGlobals_IsTerrainSoft(pathingResult.RelevantYTerrainTypeID) then
-                                            set .YVelocity = 0
+                                            static if DEBUG_VELOCITY_TERRAIN then
+												call DisplayTextToForce(bj_FORCE_PLAYER[0], "7 Colliding with hard y, setting velocity to 0")
+											endif
+											
+											set .YVelocity = 0
                                         else
                                             set .YVelocity = .YVelocity * SIN_45
                                         endif
@@ -1621,12 +1714,24 @@ endglobals
                                         set .XVelocity = .XVelocity - .YVelocity * SIN_45
                                         
                                         if not TerrainGlobals_IsTerrainSoft(pathingResult.RelevantYTerrainTypeID) then
-                                            set .YVelocity = 0
+                                            static if DEBUG_VELOCITY_TERRAIN then
+												call DisplayTextToForce(bj_FORCE_PLAYER[0], "8 Colliding with hard y, setting velocity to 0")
+											endif
+											
+											set .YVelocity = 0
                                         else
                                             set .YVelocity = .YVelocity * SIN_45
                                         endif
                                     elseif .YVelocity != 0 and not TerrainGlobals_IsTerrainSoft(pathingResult.RelevantYTerrainTypeID) then
-                                        set .YVelocity = 0
+                                        static if DEBUG_VELOCITY_TERRAIN then
+											call DisplayTextToForce(bj_FORCE_PLAYER[0], "9 Colliding with hard y, setting velocity to 0")
+										endif
+										
+										if .YVelocity >= VELOCITY_HARDSTOP_THRESHOLD or .YVelocity <= -VELOCITY_HARDSTOP_THRESHOLD then
+											call HardStopEffect(this, .YVelocity)
+										endif
+										
+										set .YVelocity = 0
                                     endif
                                 elseif (.DiagonalPathing.TerrainPathingForPoint == ComplexTerrainPathing_NE and (pathingResult.TerrainPathingForPoint == ComplexTerrainPathing_SE or pathingResult.TerrainPathingForPoint == ComplexTerrainPathing_NW)) or (.DiagonalPathing.TerrainPathingForPoint == ComplexTerrainPathing_SE and (pathingResult.TerrainPathingForPoint == ComplexTerrainPathing_SW or pathingResult.TerrainPathingForPoint == ComplexTerrainPathing_NE)) or (.DiagonalPathing.TerrainPathingForPoint == ComplexTerrainPathing_SW and (pathingResult.TerrainPathingForPoint == ComplexTerrainPathing_NW or pathingResult.TerrainPathingForPoint == ComplexTerrainPathing_SE)) or (.DiagonalPathing.TerrainPathingForPoint == ComplexTerrainPathing_NW and (pathingResult.TerrainPathingForPoint == ComplexTerrainPathing_SW or pathingResult.TerrainPathingForPoint == ComplexTerrainPathing_NE)) then
                                     //hit an inside corner
@@ -1647,10 +1752,26 @@ endglobals
                                     
                                     //check if velocity should be zeroed
                                     if not TerrainGlobals_IsTerrainSoft(pathingResult.RelevantXTerrainTypeID) then
-                                        set .XVelocity = 0
+                                        static if DEBUG_VELOCITY_TERRAIN then
+											call DisplayTextToForce(bj_FORCE_PLAYER[0], "10 Colliding with hard x, setting velocity to 0")
+										endif
+										
+										if .XVelocity >= VELOCITY_HARDSTOP_THRESHOLD or .XVelocity <= -VELOCITY_HARDSTOP_THRESHOLD then
+											call HardStopEffect(this, .XVelocity)
+										endif
+										
+										set .XVelocity = 0
                                     endif
                                     if not TerrainGlobals_IsTerrainSoft(pathingResult.RelevantYTerrainTypeID) then
-                                        set .YVelocity = 0
+                                        static if DEBUG_VELOCITY_TERRAIN then
+											call DisplayTextToForce(bj_FORCE_PLAYER[0], "10 Colliding with hard y, setting velocity to 0")
+										endif
+										
+										if .YVelocity >= VELOCITY_HARDSTOP_THRESHOLD or .YVelocity <= -VELOCITY_HARDSTOP_THRESHOLD then
+											call HardStopEffect(this, .YVelocity)
+										endif
+										
+										set .YVelocity = 0
                                     endif
                                 elseif pathingResult.TerrainPathingForPoint == ComplexTerrainPathing_NE then
                                     //debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "1 current x: " + R2S(.XPosition) + " x delta: " + R2S(newPosition.x) + " terrain center Y: " + R2S(pathingResult.TerrainMidpointY))
@@ -1770,26 +1891,12 @@ endglobals
                                     elseif .DiagonalPathing.TerrainPathingForPoint == ComplexTerrainPathing_Left then
                                         set .YVelocity = .YVelocity * SIN_45
                                         set .XVelocity = .XVelocity + .YVelocity
-//                                    else
-//                                        if .YVelocity != 0 and not TerrainGlobals_IsTerrainSoft(pathingResult.RelevantYTerrainTypeID) then
-//                                            set .YVelocity = 0
-//                                        endif
-//                                        
-//                                        if .XVelocity != 0 and not TerrainGlobals_IsTerrainSoft(pathingResult.RelevantXTerrainTypeID) then
-//                                            set .XVelocity = 0
-//                                        else
                                     endif
-                                    //endif
-                                    //debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "Velocity: " + R2S(.XVelocity) + "," + R2S(.YVelocity))
                                 else
                                     static if DEBUG_DIAGONAL_TRANSITION then
                                         call DisplayTextToForce(bj_FORCE_PLAYER[0], "Change Diagonals: Invalid Diagonal -- " + I2S(pathingResult.TerrainPathingForPoint))
                                     endif
-                                endif
-                                
-                                //debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "New push vector: " + I2S(.PushedAgainstVector))
-                                
-                                //update velocity
+                                endif                                
                             endif
                             
                             //debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "Finished pathing!") 
@@ -1808,24 +1915,44 @@ endglobals
                             //debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "Projected position couldn't move") 
                             if .DiagonalPathing.TerrainPathingForPoint == ComplexTerrainPathing_Top and .YVelocity < 0 and not TerrainGlobals_IsTerrainSoft(.DiagonalPathing.RelevantYTerrainTypeID) then
                                 static if DEBUG_VELOCITY_TERRAIN then
-                                    call DisplayTextToForce(bj_FORCE_PLAYER[0], "Colliding with hard y, setting velocity to 0")
+                                    call DisplayTextToForce(bj_FORCE_PLAYER[0], "11 Colliding with hard y, setting velocity to 0")
                                 endif
-                                set .YVelocity = 0
+                                
+								if .YVelocity >= VELOCITY_HARDSTOP_THRESHOLD or .YVelocity <= -VELOCITY_HARDSTOP_THRESHOLD then
+									call HardStopEffect(this, .YVelocity)
+								endif
+								
+								set .YVelocity = 0
                             elseif .DiagonalPathing.TerrainPathingForPoint == ComplexTerrainPathing_Bottom and .YVelocity > 0 and not TerrainGlobals_IsTerrainSoft(.DiagonalPathing.RelevantYTerrainTypeID) then
                                 static if DEBUG_VELOCITY_TERRAIN then
-                                    call DisplayTextToForce(bj_FORCE_PLAYER[0], "Colliding with hard y, setting velocity to 0")
+                                    call DisplayTextToForce(bj_FORCE_PLAYER[0], "12 Colliding with hard y, setting velocity to 0")
                                 endif
-                                set .YVelocity = 0
+                                
+								if .YVelocity >= VELOCITY_HARDSTOP_THRESHOLD or .YVelocity <= -VELOCITY_HARDSTOP_THRESHOLD then
+									call HardStopEffect(this, .YVelocity)
+								endif
+								
+								set .YVelocity = 0
                             elseif .DiagonalPathing.TerrainPathingForPoint == ComplexTerrainPathing_Left and .XVelocity > 0 and not TerrainGlobals_IsTerrainSoft(.DiagonalPathing.RelevantXTerrainTypeID) then
                                 static if DEBUG_VELOCITY_TERRAIN then
-                                    call DisplayTextToForce(bj_FORCE_PLAYER[0], "Colliding with hard x, setting velocity to 0")
+                                    call DisplayTextToForce(bj_FORCE_PLAYER[0], "11 Colliding with hard x, setting velocity to 0")
                                 endif
-                                set .XVelocity = 0
+                                
+								if .XVelocity >= VELOCITY_HARDSTOP_THRESHOLD or .XVelocity <= -VELOCITY_HARDSTOP_THRESHOLD then
+									call HardStopEffect(this, .XVelocity)
+								endif
+								
+								set .XVelocity = 0
                             elseif .DiagonalPathing.TerrainPathingForPoint == ComplexTerrainPathing_Right and .XVelocity < 0 and not TerrainGlobals_IsTerrainSoft(.DiagonalPathing.RelevantXTerrainTypeID) then
                                 static if DEBUG_VELOCITY_TERRAIN then
-                                    call DisplayTextToForce(bj_FORCE_PLAYER[0], "Colliding with hard x, setting velocity to 0")
+                                    call DisplayTextToForce(bj_FORCE_PLAYER[0], "12 Colliding with hard x, setting velocity to 0")
                                 endif
-                                set .XVelocity = 0
+                                
+								if .XVelocity >= VELOCITY_HARDSTOP_THRESHOLD or .XVelocity <= -VELOCITY_HARDSTOP_THRESHOLD then
+									call HardStopEffect(this, .XVelocity)
+								endif
+								
+								set .XVelocity = 0
                             endif
                         endif
                         
@@ -1902,6 +2029,10 @@ endglobals
                                             call DisplayTextToForce(bj_FORCE_PLAYER[0], "Open Setting x velocity to 0")
                                         endif
                                         
+										if .XVelocity >= VELOCITY_HARDSTOP_THRESHOLD or .XVelocity <= -VELOCITY_HARDSTOP_THRESHOLD then
+											call HardStopEffect(this, .XVelocity)
+										endif
+										
                                         set .XVelocity = 0
                                     endif
                                 endif
@@ -1931,6 +2062,10 @@ endglobals
                                             call DisplayTextToForce(bj_FORCE_PLAYER[0], "Open Setting y velocity to 0")
                                         endif
                                         
+										if .YVelocity >= VELOCITY_HARDSTOP_THRESHOLD or .YVelocity <= -VELOCITY_HARDSTOP_THRESHOLD then
+											call HardStopEffect(this, .YVelocity)
+										endif
+										
                                         set .YVelocity = 0
                                     endif
                                 endif
@@ -2000,35 +2135,17 @@ endglobals
                                 endif
                                 
                                 if not TerrainGlobals_IsTerrainSoft(.XTerrainPushedAgainst) then
-                                    //debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "Setting x velocity to 0")
-                                    set .XVelocity = 0
+                                    static if DEBUG_VELOCITY_TERRAIN then
+										call DisplayTextToForce(bj_FORCE_PLAYER[0], "Colliding with hard square x, setting velocity to 0")
+									endif
+									
+									if .XVelocity >= VELOCITY_HARDSTOP_THRESHOLD or .XVelocity <= -VELOCITY_HARDSTOP_THRESHOLD then
+										call HardStopEffect(this, .XVelocity)
+									endif
+									
+									set .XVelocity = 0
                                 endif
-                            endif
-                            
-                            /*
-                            set ttype = GetTerrainType(.XPosition + newPosition.x, .YPosition)
-                            if TerrainGlobals_IsTerrainPathable(ttype) then
-                                set .XTerrainPushedAgainst = 0
-                                set .XPosition = .XPosition + newPosition.x
-                                call SetUnitX(.Unit, .XPosition)
-                            else
-                                set .XTerrainPushedAgainst = ttype
-                                
-                                //needs a more accurate GetTerrainCenter
-                                if newPosition.x >= 0 then
-                                    set .XPosition = GetTerrainLeft(pathingResult.TerrainMidpointX) - wOFFSET
-                                else
-                                    set .XPosition = GetTerrainRight(pathingResult.TerrainMidpointX) + wOFFSET
-                                endif
-                                call SetUnitX(.Unit, .XPosition)
-                                
-                                
-                                if not TerrainGlobals_IsTerrainSoft(ttype) then
-                                    //debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "Setting x velocity to 0")
-                                    set .XVelocity = 0
-                                endif
-                            endif
-                            */
+                            endif                            
                         else
                             set .XTerrainPushedAgainst = 0
                         endif
@@ -2066,35 +2183,17 @@ endglobals
                                 endif
 								
                                 if not TerrainGlobals_IsTerrainSoft(.YTerrainPushedAgainst) then
-                                    //debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "Square Setting y velocity to 0")
-                                    set .YVelocity = 0
+                                    static if DEBUG_VELOCITY_TERRAIN then
+                                        call DisplayTextToForce(bj_FORCE_PLAYER[0], "Colliding with hard square y, setting velocity to 0")
+                                    endif
+                                    
+									if .YVelocity >= VELOCITY_HARDSTOP_THRESHOLD or .YVelocity <= -VELOCITY_HARDSTOP_THRESHOLD then
+										call HardStopEffect(this, .YVelocity)
+									endif
+									
+									set .YVelocity = 0
                                 endif
-                            endif
-                            
-                            /*
-                            set ttype = GetTerrainType(.XPosition, .YPosition + newPosition.y)
-                            if TerrainGlobals_IsTerrainPathable(ttype) then
-                                set .YTerrainPushedAgainst = 0
-                                set .YPosition = .YPosition + newPosition.y
-                                call SetUnitY(.Unit, .YPosition)
-                            else
-                                set .YTerrainPushedAgainst = ttype
-                                
-                                //needs a more accurate GetTerrainCenter
-                                if newPosition.y >= 0 then
-                                    set .YPosition = GetTerrainBottom(pathingResult.TerrainMidpointY) - wOFFSET
-                                else
-                                    set .YPosition = GetTerrainTop(pathingResult.TerrainMidpointY) + wOFFSET
-                                endif
-                                call SetUnitY(.Unit, .YPosition)
-                                
-                                
-                                if not TerrainGlobals_IsTerrainSoft(ttype) then
-                                    //debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "Square Setting y velocity to 0")
-                                    set .YVelocity = 0
-                                endif
-                            endif
-                            */
+                            endif                            
                         else
                             set .YTerrainPushedAgainst = 0
                         endif
@@ -2266,11 +2365,25 @@ endglobals
                         //check to see if velocity should be zeroed out
                         if .XVelocity != 0 or .YVelocity != 0 then
                             if (pathingResult.TerrainPathingForPoint == ComplexTerrainPathing_Top or pathingResult.TerrainPathingForPoint == ComplexTerrainPathing_Bottom) and not TerrainGlobals_IsTerrainSoft(pathingResult.RelevantYTerrainTypeID) then
-                                //debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "Setting Y Velocity 0") 
-                                set .YVelocity = 0
+                                static if DEBUG_VELOCITY_TERRAIN then
+									call DisplayTextToForce(bj_FORCE_PLAYER[0], "Colliding with hard top/bottom y, setting velocity to 0")
+								endif
+                                
+								if .YVelocity >= VELOCITY_HARDSTOP_THRESHOLD or .YVelocity <= -VELOCITY_HARDSTOP_THRESHOLD then
+									call HardStopEffect(this, .YVelocity)
+								endif
+								
+								set .YVelocity = 0
                             elseif (pathingResult.TerrainPathingForPoint == ComplexTerrainPathing_Left or pathingResult.TerrainPathingForPoint == ComplexTerrainPathing_Right) and not TerrainGlobals_IsTerrainSoft(pathingResult.RelevantXTerrainTypeID) then
-                                //debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "Setting X Velocity 0") 
-                                set .XVelocity = 0
+                                static if DEBUG_VELOCITY_TERRAIN then
+                                    call DisplayTextToForce(bj_FORCE_PLAYER[0], "Colliding with hard left/right, setting velocity to 0")
+                                endif
+                                
+								if .XVelocity >= VELOCITY_HARDSTOP_THRESHOLD or .XVelocity <= -VELOCITY_HARDSTOP_THRESHOLD then
+									call HardStopEffect(this, .XVelocity)
+								endif
+								
+								set .XVelocity = 0
                             else
                                 static if DEBUG_DIAGONAL_START then
                                     //get the angle (in rads) representing the target diagonals slope
@@ -2356,12 +2469,6 @@ endglobals
                 if .XVelocity > 0 then //velocity going right
                     if .XVelocity < xMINVELOCITY then //going super slow
                         set .XVelocity = 0
-                    //TODO replace with 3rd power easing
-                    /*
-					elseif .XVelocity > .TerminalVelocityX then //going very fast
-                        //debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "Exceeding terminal velocity")
-                        set .XVelocity = .XVelocity - .XFalloff * .XFalloff
-					*/
                     //TODO replace with 2nd power easing
                     else //anywhere inbetween
                         set .XVelocity = .XVelocity - .XFalloff * applyTimeDelta
@@ -2374,11 +2481,6 @@ endglobals
                 else //velocity going left
                     if .XVelocity > -xMINVELOCITY then
                         set .XVelocity = 0
-                    /*
-					elseif .XVelocity < -.TerminalVelocityX then
-                        //debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "Exceeding terminal velocity")
-                        set .XVelocity = .XVelocity + .XFalloff * XFalloff
-					*/
                     else
                         set .XVelocity = .XVelocity + .XFalloff * applyTimeDelta
                     endif
