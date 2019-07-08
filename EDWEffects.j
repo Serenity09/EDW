@@ -81,6 +81,18 @@ library EDWEffects requires SpecialEffect
 		call BlzSetSpecialEffectScale(fx, 2.)
 		set fx = null
 		
+		set fx = CreateSpecialEffect("Abilities\\Spells\\Items\\SpellShieldAmulet\\SpellShieldCaster.mdl", GetUnitX(source), GetUnitY(source), GetOwningPlayer(target))
+		// call BlzSetSpecialEffectAlpha(fx, 0)
+		// call BlzSetSpecialEffectYaw(fx, Atan2(GetUnitY(source) - GetUnitY(target), GetUnitX(source) - GetUnitX(target)) + bj_PI)
+		if User(GetPlayerId(GetOwningPlayer(target))).Platformer.GravitationalAccel > 0 then
+			call BlzSetSpecialEffectYaw(fx, bj_PI * 1.5)
+		else
+			call BlzSetSpecialEffectYaw(fx, bj_PI * .5)
+		endif
+		
+		call DestroyEffect(fx)
+		set fx = null
+		
 		//play spell steal target sound
 		
 		// call CreateInstantSpecialEffectTarget("Abilities\\Spells\\Orc\\Bloodlust\\BloodlustTarget.mdl", source, SpecialEffect_CHEST, GetOwningPlayer(target))

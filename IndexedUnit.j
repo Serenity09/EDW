@@ -7,6 +7,7 @@ library IndexedUnit requires UnitDefaultRadius
 		public boolean Collideable
 		public boolean RectangularGeometry
 		readonly real Radius //only applies for circular collision, caching rectangular collision is probably not worth the overhead of 4 reals
+		readonly real Scale
 		
 		readonly integer R
 		readonly integer G
@@ -42,6 +43,7 @@ library IndexedUnit requires UnitDefaultRadius
 			set new.RectangularGeometry = unitTypeID == TANK or unitTypeID == TRUCK or unitTypeID == FIRETRUCK or unitTypeID == AMBULANCE or unitTypeID == JEEP or unitTypeID == PASSENGERCAR or unitTypeID == CORVETTE or unitTypeID == POLICECAR
 			if not new.RectangularGeometry then
 				set new.Radius = GetUnitDefaultRadius(unitTypeID)
+				set new.Scale = 1.
 			endif
 			
 			if unitTypeID == PASSENGERCAR then
@@ -86,6 +88,22 @@ library IndexedUnit requires UnitDefaultRadius
 			set new.MoveSpeed = -1
 			
 			return new
+		endmethod
+		
+		public method SetScale takes real scale returns nothing		
+			static if DEBUG_MODE then
+				if this == 0 then
+					call DisplayTextToForce(bj_FORCE_PLAYER[0], "WARNING: Setting scale for an unindexed unit")
+				endif
+			endif
+			
+			//update related properties. TODO consider supporting scale on rectangular geomtries in the future
+			if not this.RectangularGeometry then
+				set this.Radius = this.Radius * scale / this.Scale
+			endif
+			
+			set this.Scale = scale
+			call SetUnitScale(this.Unit, scale, scale, scale)
 		endmethod
 		
 		public method GetMoveSpeed takes nothing returns real

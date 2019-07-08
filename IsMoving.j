@@ -6,9 +6,13 @@ library isMoving requires TerrainGlobals, ORDER, SimpleList
 		constant real TELEPORT_MAXDISTANCE = 20
 		constant real TELEPORT_EXACTDISTANCE = TERRAIN_TILE_SIZE * 3
 		
-		private constant string TELEPORT_MOVEMENT_FROM_FX = "Abilities\\Spells\\Undead\\VampiricAura\\VampiricAuraTarget.mdl"
-		//private constant string TELEPORT_MOVEMENT_TO_FX = "Abilities\\Spells\\NightElf\\Starfall\\StarfallTarget.mdl"
-		private constant string TELEPORT_MOVEMENT_TO_FX = "Abilities\\Spells\\Undead\\VampiricAura\\VampiricAuraTarget.mdl"
+		private constant string TELEPORT_MOVEMENT_FROM_FX = "Abilities\\Spells\\NightElf\\Blink\\BlinkCaster.mdl"
+		private constant string TELEPORT_MOVEMENT_TO_FX = "Abilities\\Spells\\NightElf\\Blink\\BlinkTarget.mdl"
+		// private constant string TELEPORT_MOVEMENT_FX = "Abilities\\Spells\\NightElf\\Blink\\BlinkTarget.mdl"
+		// private constant string TELEPORT_MOVEMENT_FX = "Abilities\\Spells\\NightElf\\Blink\\BlinkCaster.mdl"
+		// private constant string TELEPORT_MOVEMENT_FROM_FX = "Abilities\\Spells\\Undead\\VampiricAura\\VampiricAuraTarget.mdl"
+		// private constant string TELEPORT_MOVEMENT_TO_FX = "Abilities\\Spells\\NightElf\\Starfall\\StarfallTarget.mdl"
+		// private constant string TELEPORT_MOVEMENT_TO_FX = "Abilities\\Spells\\Undead\\VampiricAura\\VampiricAuraTarget.mdl"
 		
 		private constant boolean DEBUG_STOP_MOVEMENT = false
 	endglobals
@@ -83,6 +87,7 @@ library isMoving requires TerrainGlobals, ORDER, SimpleList
 			endif
 			
 			call DestroyEffect(AddSpecialEffect(TELEPORT_MOVEMENT_FROM_FX, GetUnitX(pID.ActiveUnit), GetUnitY(pID.ActiveUnit)))
+			// call CreateInstantSpecialEffect(TELEPORT_MOVEMENT_FX, GetUnitX(pID.ActiveUnit), GetUnitY(pID.ActiveUnit), Player(pID))
 			call SetUnitPosition(pID.ActiveUnit, curX + deltaX, curY + deltaY)
 			call DestroyEffect(AddSpecialEffect(TELEPORT_MOVEMENT_TO_FX, GetUnitX(pID.ActiveUnit), GetUnitY(pID.ActiveUnit)))
 			//call SetUnitX(u, OrderDestinationX[i] - x)

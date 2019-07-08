@@ -11,10 +11,7 @@ library StandardGameLoop initializer init requires EDWEffects, LavaDamage, IceMo
 		
 		private constant string LAVA_MOVEMENT_FX = "Abilities\\Spells\\Orc\\LiquidFire\\Liquidfire.mdl"
 		private constant string VINES_MOVEMENT_FX = "Abilities\\Spells\\Human\\slow\\slowtarget.mdl"
-		
-		private constant string TELEPORT_MOVEMENT_FROM_FX = "Abilities\\Spells\\Undead\\VampiricAura\\VampiricAuraTarget.mdl"
-		private constant string TELEPORT_MOVEMENT_TO_FX = "Abilities\\Spells\\NightElf\\Starfall\\StarfallTarget.mdl"
-		
+			
 		//private constant string PLATFORMING_FX = "Abilities\\Spells\\Human\\Polymorph\\PolyMorphTarget.mdl"
 		private constant string PLATFORMING_FX = "Abilities\\Spells\\Human\\Polymorph\\PolyMorphDoneGround.mdl"
 	endglobals

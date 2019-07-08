@@ -102,6 +102,8 @@ struct RespawningGateway extends IStartable
 					loop
 					exitwhen curUser == 0
 						if RectContainsCoords(thistype(curGateway.value).ActivationArea, GetUnitX(User(curUser.value).ActiveUnit), GetUnitY(User(curUser.value).ActiveUnit)) then
+							call CreateInstantSpecialEffect("Abilities\\Spells\\Demon\\DarkPortal\\DarkPortalTarget.mdl", GetUnitX(thistype(curGateway.value).WallUnit), GetUnitY(thistype(curGateway.value).WallUnit), Player(curUser.value))
+							
 							set thistype(curGateway.value).WallRespawnData = RespawningUnit.create(GetUnitX(thistype(curGateway.value).WallUnit), GetUnitY(thistype(curGateway.value).WallUnit), thistype(curGateway.value).WallUnitID, GetUnitFacing(thistype(curGateway.value).WallUnit))
 							call Recycle_ReleaseUnit(thistype(curGateway.value).WallUnit)
 							set thistype(curGateway.value).WallUnit = null

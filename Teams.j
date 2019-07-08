@@ -957,6 +957,30 @@ public struct MazingTeam
 		set curPlayerNode = curPlayerNode.next
 		endloop
 	endmethod
+	
+	public method PlaySoundForTeam takes sound sfx returns nothing
+		local SimpleList_ListNode curPlayerNode = .FirstUser
+		
+		loop
+		exitwhen curPlayerNode == 0
+			if GetLocalPlayer() == Player(curPlayerNode.value) then
+				call StartSound(sfx)
+			endif
+		set curPlayerNode = curPlayerNode.next
+		endloop
+	endmethod
+	
+	public method PanCameraForTeam takes real x, real y, real duration returns nothing
+		local SimpleList_ListNode curPlayerNode = .FirstUser
+		
+		loop
+		exitwhen curPlayerNode == 0
+			if GetLocalPlayer() == Player(curPlayerNode.value) then
+				call PanCameraToTimed(x, y, duration)
+			endif
+		set curPlayerNode = curPlayerNode.next
+		endloop
+	endmethod
     
     public static method create takes integer teamID returns thistype
         local thistype mt = thistype.allocate()
