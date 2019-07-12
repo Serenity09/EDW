@@ -37,7 +37,7 @@ library SpecialEffect requires Alloc
 			static if APPLY_LOCAL then
 				local string localFXFileLocation = fxFileLocation
 				
-				if GetLocalPlayer() != viewer then
+				if viewer != null and GetLocalPlayer() != viewer then
 					set localFXFileLocation = ""
 				endif
 				
@@ -56,7 +56,7 @@ library SpecialEffect requires Alloc
 			static if APPLY_LOCAL then
 				local string localFXFileLocation = fxFileLocation
 				
-				if GetLocalPlayer() != viewer then
+				if viewer != null and GetLocalPlayer() != viewer then
 					set localFXFileLocation = ""
 				endif
 				
@@ -101,7 +101,7 @@ library SpecialEffect requires Alloc
 			static if APPLY_LOCAL then
 				local string localFXFileLocation = fxFileLocation
 				
-				if GetLocalPlayer() != Player(viewer) then
+				if viewer != null and GetLocalPlayer() != Player(viewer) then
 					set localFXFileLocation = ""
 				endif
 				
@@ -123,7 +123,7 @@ library SpecialEffect requires Alloc
 		static if APPLY_LOCAL then
 			local string localFXFileLocation = fxFileLocation
 			
-			if GetLocalPlayer() != viewer then
+			if viewer != null and GetLocalPlayer() != viewer then
 				set localFXFileLocation = ""
 			endif
 			
@@ -136,7 +136,7 @@ library SpecialEffect requires Alloc
 		static if APPLY_LOCAL then
 			local string localFXFileLocation = fxFileLocation
 			
-			if GetLocalPlayer() != viewer then
+			if viewer != null and GetLocalPlayer() != viewer then
 				set localFXFileLocation = ""
 			endif
 			
@@ -157,7 +157,7 @@ library SpecialEffect requires Alloc
 		static if APPLY_LOCAL then
 			local string localFXFileLocation = fxFileLocation
 			
-			if GetLocalPlayer() != viewer then
+			if viewer != null and GetLocalPlayer() != viewer then
 				set localFXFileLocation = ""
 			endif
 			
@@ -170,7 +170,7 @@ library SpecialEffect requires Alloc
 		static if APPLY_LOCAL then
 			local string localFXFileLocation = fxFileLocation
 			
-			if GetLocalPlayer() != viewer then
+			if viewer != null and GetLocalPlayer() != viewer then
 				set localFXFileLocation = ""
 			endif
 			

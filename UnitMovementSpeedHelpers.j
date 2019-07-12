@@ -15,7 +15,33 @@ library MovementSpeedHelpers requires UnitGlobals, IndexedUnit, Alloc
 		elseif unitID == MAZER then
 			return 4
 		else
+			static if DEBUG_MODE then
+				call DisplayTextToForce(bj_FORCE_PLAYER[0], "GetWalkAnimationIndex with unrecognized unitID: " + I2S(unitID))
+			endif
+			
 			return 0
+		endif
+	endfunction
+	//the existing GetUnitDefaultMoveSpeed native seems a little weird
+	function GetDefaultMoveSpeed takes integer unitID returns real
+		if unitID == LGUARD then
+			return 140.
+		elseif unitID == GUARD then
+			return 270.
+		elseif unitID == ICETROLL then
+			return 230.
+		elseif unitID == SPIRITWALKER then
+			return 270.
+		elseif unitID == CLAWMAN then
+			return 270.
+		elseif unitID == MAZER then
+			return 320.
+		else
+			static if DEBUG_MODE then
+				call DisplayTextToForce(bj_FORCE_PLAYER[0], "GetDefaultMoveSpeed with unrecognized unitID: " + I2S(unitID))
+			endif
+			
+			return 0.
 		endif
 	endfunction
 endlibrary

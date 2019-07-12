@@ -1,6 +1,15 @@
 library DrunkWalker requires Recycle, TimerUtils, IStartable
     globals
-        public constant integer MAXIMUM_VALID_LOCATION_ATTEMPTS = 200
+        public constant integer MAXIMUM_VALID_LOCATION_ATTEMPTS = 12
+		public constant real STOP_TIMEOUT_BUFFER_MINIMUM = .3
+		public constant real STOP_TIMEOUT_BUFFER_MAXIMUM = .7
+		
+		private constant real IDEAL_BEER_MODEL_RADIUS = 80.
+		private constant real STATIC_BEER_VFX_SCALE = 1.75
+		private constant real STATIC_BEER_VFX_HEIGHT = 50.
+		private constant real PCT_BEFORE_ANGRY = .75
+		
+		private constant boolean DEBUG_EXCEED_DESTINATION_ATTEMPT = false
     endglobals
     
 	public keyword DrunkWalkerSpawn
@@ -11,10 +20,7 @@ library DrunkWalker requires Recycle, TimerUtils, IStartable
 		
 		readonly real TimeAlive
         readonly unit Walker
-        
-        public  real minDist
-        //public  real maxDist
-        
+                
         private real lastTimeoutRand
         private effect beer
         
@@ -31,7 +37,12 @@ library DrunkWalker requires Recycle, TimerUtils, IStartable
             
             local real newX
             local real newY
+			
+			local real dx
+			local real dy
+			
             local real dist //approx dist we dont need perfection here boys
+			
 			local integer destinationAttempt = 0
                         
             call DestroyEffect(dw.beer)
@@ -39,20 +50,28 @@ library DrunkWalker requires Recycle, TimerUtils, IStartable
             
             //TODO get random point in ring around unit -- generate a random for radius, and a random for angle and then check that the point is legal afterwards
             loop
+			set destinationAttempt = destinationAttempt + 1
                 set newX = GetRandomReal(GetRectMinX(dw.Parent.SpawnArea), GetRectMaxX(dw.Parent.SpawnArea))
                 set newY = GetRandomReal(GetRectMinY(dw.Parent.SpawnArea), GetRectMaxY(dw.Parent.SpawnArea))
-                
-                set dist = (newX - curX) * (newY - curY) / 2 //good nuff
-                set destinationAttempt = destinationAttempt + 1
-                
-				exitwhen destinationAttempt > MAXIMUM_VALID_LOCATION_ATTEMPTS or (dist > dw.minDist and GetTerrainType(newX, newY) != ABYSS and GetTerrainType(newX, newY) != LAVA)
+				
+                // set dist = (newX - curX) * (newY - curY) / 2 //good nuff
+				set dx = newX - curX
+				set dy = newY - curY
+				set dist = SquareRoot(dx*dx + dy*dy)
+			exitwhen destinationAttempt > MAXIMUM_VALID_LOCATION_ATTEMPTS or (dist > dw.Parent.MinDistance and GetTerrainType(newX, newY) != ABYSS and GetTerrainType(newX, newY) != LAVA)
 			endloop
             
+			static if DEBUG_EXCEED_DESTINATION_ATTEMPT then
+				if destinationAttempt > MAXIMUM_VALID_LOCATION_ATTEMPTS then
+					call DisplayTextToForce(bj_FORCE_PLAYER[0], "Drunk (" + I2S(dw) + ") exceeded destination attempt check")
+				endif
+			endif
+			
             call IssuePointOrder(dw.Walker, "move", newX, newY)
             
-            set dw.TimeAlive = dw.TimeAlive + dw.lastTimeoutRand + dw.Parent.WalkerTimeout
-            
-            call TimerStart(t, dw.Parent.WalkerTimeout, false, function DrunkWalker.drinkEffect)
+			set dx = (dist / IndexedUnit(GetUnitUserData(dw.Walker)).GetMoveSpeed()) + GetRandomReal(STOP_TIMEOUT_BUFFER_MINIMUM, STOP_TIMEOUT_BUFFER_MAXIMUM)
+            set dw.TimeAlive = dw.TimeAlive + dx
+            call TimerStart(t, dx, false, function DrunkWalker.drinkEffect)
             
             set t = null
         endmethod
@@ -62,14 +81,22 @@ library DrunkWalker requires Recycle, TimerUtils, IStartable
             local thistype dw = thistype(GetTimerData(t))
             
             if dw.TimeAlive < dw.Parent.WalkerLife then
-                set dw.beer = AddSpecialEffectTarget("Abilities\\Spells\\Other\\StrongDrink\\BrewmasterMissile.mdl", dw.Walker, "overhead")
-                
-                set dw.lastTimeoutRand = GetRandomReal(0.05, 3)
-                if dw.lastTimeoutRand < .35 then
-                    call DestroyEffect(dw.beer)
-                    set dw.beer = AddSpecialEffectTarget("Abilities\\Spells\\Items\\TomeOfRetraining\\TomeOfRetrainingCaster.mdl", dw.Walker, "chest")
-                    call SetUnitVertexColor(dw.Walker, 255, 0, 0, 255)
-                    call SetUnitMoveSpeed(dw.Walker, GetUnitDefaultMoveSpeed(dw.Walker) * 1.5)
+                //set dw.beer = AddSpecialEffectTarget("Abilities\\Spells\\Other\\StrongDrink\\BrewmasterMissile.mdl", dw.Walker, "overhead")
+                set dw.beer = AddSpecialEffect("Abilities\\Spells\\Other\\StrongDrink\\BrewmasterMissile.mdl", GetUnitX(dw.Walker), GetUnitY(dw.Walker))
+				call BlzSetSpecialEffectScale(dw.beer, STATIC_BEER_VFX_SCALE)
+				call BlzSetSpecialEffectHeight(dw.beer, STATIC_BEER_VFX_HEIGHT)
+				//call BlzSetSpecialEffectScale(dw.beer, IDEAL_BEER_MODEL_RADIUS / GetUnitDefaultRadius(dw.Parent.uID))
+				
+                set dw.lastTimeoutRand = GetRandomReal(1, 3)
+				set dw.TimeAlive = dw.TimeAlive + dw.lastTimeoutRand
+				
+                if dw.TimeAlive / dw.Parent.WalkerLife >= PCT_BEFORE_ANGRY and GetRandomInt(0, 1) == 1 then
+                    // call DestroyEffect(AddSpecialEffectTarget("Abilities\\Spells\\Items\\TomeOfRetraining\\TomeOfRetrainingCaster.mdl", dw.Walker, "chest"))
+					//call DestroyEffect(AddSpecialEffectTarget("Abilities\\Spells\\Orc\\AncestralSpirit\\AncestralSpiritCaster.mdl", dw.Walker, "chest"))
+					call CreateTimedSpecialEffectTarget("Abilities\\Spells\\Orc\\AncestralSpirit\\AncestralSpiritCaster.mdl", dw.Walker, SpecialEffect_ORIGIN, null, dw.lastTimeoutRand - .05)
+					call SetUnitVertexColor(dw.Walker, 255, 0, 0, 255)
+                    call IndexedUnit(GetUnitUserData(dw.Walker)).SetMoveSpeed(GetDefaultMoveSpeed(dw.Parent.uID) * 1.5)
+					//call SetUnitMoveSpeed(dw.Walker, GetUnitDefaultMoveSpeed(dw.Walker) * 1.5)
                 endif
                 call TimerStart(t, dw.lastTimeoutRand, false, function DrunkWalker.move)
                 set t = null
@@ -85,6 +112,7 @@ library DrunkWalker requires Recycle, TimerUtils, IStartable
 			endif
 			
 			call SetUnitVertexColor(.Walker, 255, 255, 255, 255)
+			call IndexedUnit(GetUnitUserData(.Walker)).SetMoveSpeed(GetDefaultMoveSpeed(.Parent.uID))
 			//call SetUnitMoveSpeed(.Walker, GetUnitDefaultMoveSpeed(.Walker))
 			
 			call Recycle_ReleaseUnit(.Walker)
@@ -110,8 +138,6 @@ library DrunkWalker requires Recycle, TimerUtils, IStartable
 			call parent.Drunks.addEnd(new)
 			set new.Parent = parent
 			            
-            set new.minDist = ((GetRectMaxX(parent.SpawnArea) - GetRectMinX(parent.SpawnArea)) * (GetRectMaxY(parent.SpawnArea) - GetRectMinY(parent.SpawnArea))) / 100
-            
             loop
                 set tempX = GetRandomReal(GetRectMinX(parent.SpawnArea), GetRectMaxX(parent.SpawnArea))
                 set tempY = GetRandomReal(GetRectMinY(parent.SpawnArea), GetRectMaxY(parent.SpawnArea))
@@ -137,11 +163,10 @@ library DrunkWalker requires Recycle, TimerUtils, IStartable
 		
 		public rect SpawnArea
         public real SpawnTimeout
-        public real WalkerTimeout
         public real WalkerLife
         public integer uID
 		
-		private boolean Active
+		readonly real MinDistance
         private timer t
 		
         public static method periodic takes nothing returns nothing
@@ -152,39 +177,36 @@ library DrunkWalker requires Recycle, TimerUtils, IStartable
         endmethod
         
         public method Stop takes nothing returns nothing			
-			if .Active then
-				loop
-				exitwhen .Drunks.first == 0
-					call DrunkWalker(.Drunks.first.value).destroy()
-				endloop
-			
-                set .Active = false
-                //call PauseTimer(.t)
-                call ReleaseTimer(.t)
-                set .t = null
-            endif
+			loop
+			exitwhen .Drunks.first == 0
+				call DrunkWalker(.Drunks.first.value).destroy()
+			endloop
+		
+			//call PauseTimer(.t)
+			call ReleaseTimer(.t)
+			set .t = null
         endmethod
         
         public method Start takes nothing returns nothing
-            if not .Active then
-                set .Active = true
-                set .t = NewTimerEx(this)
-                call TimerStart(t, .SpawnTimeout, true, function DrunkWalkerSpawn.periodic)
-            endif
+			set .t = NewTimerEx(this)
+			call TimerStart(t, .SpawnTimeout, true, function DrunkWalkerSpawn.periodic)
         endmethod
         
-        public static method create takes rect spawn, real spawntimeout, real walktimeout, integer uid, real lifespan returns thistype
+        public static method create takes rect spawn, real spawntimeout, integer uid, real lifespan returns thistype
             local thistype new = thistype.allocate()
             
 			set new.Drunks = SimpleList_List.create()
 			
             set new.SpawnArea = spawn
             set new.SpawnTimeout = spawntimeout
-            set new.WalkerTimeout = walktimeout
             set new.uID = uid
             set new.WalkerLife = lifespan
             
-            set new.Active = false
+			set new.MinDistance = RAbsBJ((GetRectMaxX(spawn) - GetRectMinX(spawn)))
+			if RAbsBJ((GetRectMaxY(spawn) - GetRectMinY(spawn))) >= new.MinDistance then
+				set new.MinDistance = RAbsBJ((GetRectMaxY(spawn) - GetRectMinY(spawn)))
+			endif
+			set new.MinDistance = new.MinDistance / 10.
             
             return new
         endmethod
