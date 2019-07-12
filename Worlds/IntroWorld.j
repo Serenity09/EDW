@@ -58,6 +58,7 @@ library IntroWorld requires Recycle, Levels
 			set jtimber.AllOrders.last.next = jtimber.AllOrders.first
 		
 			call l.AddStartable(MortarNTarget.create(SMLMORT, SMLTARG, Player(8), gg_rct_IntroWorld_Mortar1 , gg_rct_IntroWorld_Target1))
+		else
 			call SetTerrainType(GetRectCenterX(gg_rct_IntroWorld_TC1), GetRectCenterY(gg_rct_IntroWorld_TC1), ABYSS, 0, 1, 0)
 		endif
 		

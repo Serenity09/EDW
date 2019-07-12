@@ -21,7 +21,6 @@ library DrunkWalker requires Recycle, TimerUtils, IStartable
 		readonly real TimeAlive
         readonly unit Walker
                 
-        private real lastTimeoutRand
         private effect beer
         
         private timer t
@@ -79,6 +78,8 @@ library DrunkWalker requires Recycle, TimerUtils, IStartable
         private static method drinkEffect takes nothing returns nothing
             local timer t = GetExpiredTimer()
             local thistype dw = thistype(GetTimerData(t))
+			
+			local real timeoutRand
             
             if dw.TimeAlive < dw.Parent.WalkerLife then
                 //set dw.beer = AddSpecialEffectTarget("Abilities\\Spells\\Other\\StrongDrink\\BrewmasterMissile.mdl", dw.Walker, "overhead")
@@ -87,18 +88,18 @@ library DrunkWalker requires Recycle, TimerUtils, IStartable
 				call BlzSetSpecialEffectHeight(dw.beer, STATIC_BEER_VFX_HEIGHT)
 				//call BlzSetSpecialEffectScale(dw.beer, IDEAL_BEER_MODEL_RADIUS / GetUnitDefaultRadius(dw.Parent.uID))
 				
-                set dw.lastTimeoutRand = GetRandomReal(1, 3)
-				set dw.TimeAlive = dw.TimeAlive + dw.lastTimeoutRand
+                set timeoutRand = GetRandomReal(1, 3)
+				set dw.TimeAlive = dw.TimeAlive + timeoutRand
 				
                 if dw.TimeAlive / dw.Parent.WalkerLife >= PCT_BEFORE_ANGRY and GetRandomInt(0, 1) == 1 then
                     // call DestroyEffect(AddSpecialEffectTarget("Abilities\\Spells\\Items\\TomeOfRetraining\\TomeOfRetrainingCaster.mdl", dw.Walker, "chest"))
 					//call DestroyEffect(AddSpecialEffectTarget("Abilities\\Spells\\Orc\\AncestralSpirit\\AncestralSpiritCaster.mdl", dw.Walker, "chest"))
-					call CreateTimedSpecialEffectTarget("Abilities\\Spells\\Orc\\AncestralSpirit\\AncestralSpiritCaster.mdl", dw.Walker, SpecialEffect_ORIGIN, null, dw.lastTimeoutRand - .05)
+					call CreateTimedSpecialEffectTarget("Abilities\\Spells\\Orc\\AncestralSpirit\\AncestralSpiritCaster.mdl", dw.Walker, SpecialEffect_ORIGIN, null, timeoutRand - .05)
 					call SetUnitVertexColor(dw.Walker, 255, 0, 0, 255)
                     call IndexedUnit(GetUnitUserData(dw.Walker)).SetMoveSpeed(GetDefaultMoveSpeed(dw.Parent.uID) * 1.5)
 					//call SetUnitMoveSpeed(dw.Walker, GetUnitDefaultMoveSpeed(dw.Walker) * 1.5)
                 endif
-                call TimerStart(t, dw.lastTimeoutRand, false, function DrunkWalker.move)
+                call TimerStart(t, timeoutRand, false, function DrunkWalker.move)
                 set t = null
             else
                 call dw.destroy()
@@ -149,7 +150,6 @@ library DrunkWalker requires Recycle, TimerUtils, IStartable
             
             set new.Walker = Recycle_MakeUnit(parent.uID, tempX, tempY)
             set new.TimeAlive = GetRandomReal(.75, 2.25)
-            set new.lastTimeoutRand = new.TimeAlive
             
             set new.t = NewTimerEx(new)
             call TimerStart(new.t, new.TimeAlive, false, function DrunkWalker.drinkEffect)
