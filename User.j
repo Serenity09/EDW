@@ -298,7 +298,7 @@ struct User extends array
         endif
         
 		//it's least jarring to call apply default cameras only when it's extremely important
-        call this.ApplyDefaultCameras()
+        call this.ApplyDefaultCameras(0.0)
 		
 		//call DisplayTextToForce(bj_FORCE_PLAYER[0], "respawn end for player " + I2S(this))
 		// if this == 1 then
@@ -402,12 +402,15 @@ struct User extends array
                     debug call DisplayTextToPlayer(Player(0), 0, 0, "Switching from dead gamemode to invalid new gamemode: " + I2S(newGameMode))
                 endif
             endloop
-        else
+        elseif .ActiveUnit != null then
             set x = GetUnitX(.ActiveUnit)
             set y = GetUnitY(.ActiveUnit)
+		else 
+			set x = 0
+			set y = 0
         endif
         
-        call SwitchGameModes(newGameMode, x, y)
+        call .SwitchGameModes(newGameMode, x, y)
     endmethod
     
     private method ApplyDeathMode takes real x, real y, real facing, integer oldGameMode returns nothing
@@ -600,7 +603,7 @@ struct User extends array
     
     private method SetCurrentGameMode takes integer newGameMode returns nothing
         if newGameMode != .GameMode then
-            if .GameMode != Teams_GAMEMODE_DYING then
+            if .GameMode >= 0 then
                 set .PreviousGameMode = .GameMode
             endif
             

@@ -37,14 +37,16 @@ library EDWCollectibleResolveHandlers requires TimerUtils, User
 		set t = null
 	endfunction
 	
-	public function AdvanceLevel takes integer result, CollectibleTeam activeTeam returns integer
+	public function AdvanceLevel takes User user, CollectibleTeam activeTeam returns integer
+		set activeTeam.Team.LastEventUser = user
+		
 		//pause team
 		call activeTeam.Team.PauseTeam(true)
 		
 		//pan team's cameras to last collected
-		call activeTeam.Team.PanCameraForTeam(GetUnitX(User(result).ActiveUnit), GetUnitY(User(result).ActiveUnit), ADVANCE_LEVEL_PAN_CAMERA_DURATION)
+		call activeTeam.Team.PanCameraForTeam(GetUnitX(user.ActiveUnit), GetUnitY(user.ActiveUnit), ADVANCE_LEVEL_PAN_CAMERA_DURATION)
 		
-		call TimerStart(NewTimerEx(result), ADVANCE_LEVEL_PAN_CAMERA_DURATION, false, function AdvanceLevelPlaySFX)
+		call TimerStart(NewTimerEx(user), ADVANCE_LEVEL_PAN_CAMERA_DURATION, false, function AdvanceLevelPlaySFX)
 		
 		return 0
 	endfunction
@@ -54,7 +56,7 @@ library EDWCollectibleResolveHandlers requires TimerUtils, User
 		if activeTeam.Team.OnCheckpoint >= activeTeam.Team.OnLevel.Checkpoints.count then
 			call AdvanceLevel(result, activeTeam)
 		else
-			call activeTeam.Team.OnLevel.SetCheckpointForTeam(activeTeam.Team, activeTeam.Team.OnCheckpoint + 1)
+			call activeTeam.Team.OnLevel.AnimatedSetCheckpointForTeam(activeTeam.Team, activeTeam.Team.OnCheckpoint + 1)
 		endif
 		
 		return 0

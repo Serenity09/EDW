@@ -16,6 +16,7 @@ library Levels requires SimpleList, Teams, GameModesGlobals, LevelIDGlobals, Cin
         
 		private constant boolean DEBUG_START_STOP = false
 		private constant boolean DEBUG_LEVEL_CHANGE = false
+		private constant boolean DEBUG_CHECKPOINT_CHANGE = false
 		
 		//used with events
 		Levels_Level EventCurrentLevel
@@ -267,6 +268,102 @@ library Levels requires SimpleList, Teams, GameModesGlobals, LevelIDGlobals, Cin
             //TODO add team wide CP effect instead of CP effect on first user in team
             //call CPEffect(mt.FirstUser.value)
         endmethod
+		
+		private static method OnCheckpointChangeFX_Respawn takes nothing returns nothing
+			local timer t = GetExpiredTimer()
+			local Teams_MazingTeam mt = GetTimerData(t)
+			
+			call mt.OnLevel.SetCheckpointForTeam(mt, mt.OnCheckpoint)
+			
+			call ReleaseTimer(t)
+			set t = null
+		endmethod
+		private static method OnCheckpointChangeFX_Pan takes nothing returns nothing
+			local timer t = GetExpiredTimer()
+			local Teams_MazingTeam mt = GetTimerData(t)
+			
+			call mt.PanCameraForTeam(GetUnitX(mt.LastEventUser.ActiveUnit), GetUnitY(mt.LastEventUser.ActiveUnit), 1.0)
+			
+			call TimerStart(t, 1.0 + 0.5, false, function thistype.OnCheckpointChangeFX_Respawn)
+		endmethod
+		private static method OnCheckpointChangeFX_Hide takes nothing returns nothing
+			local timer t = GetExpiredTimer()
+			local Teams_MazingTeam mt = GetTimerData(t)
+			local SimpleList_ListNode u = mt.FirstUser
+			
+			loop
+			exitwhen u == 0
+				if u.value != mt.LastEventUser then
+					call User(u.value).SwitchGameModes(Teams_GAMEMODE_HIDDEN, GetUnitX(mt.LastEventUser.ActiveUnit), GetUnitY(mt.LastEventUser.ActiveUnit))
+				endif
+			set u = u.next
+			endloop
+			
+			call TimerStart(t, .5, false, function thistype.OnCheckpointChangeFX_Pan)
+		endmethod
+		private static method OnCheckpointChangeFX_HideAndPan takes nothing returns nothing
+			local timer t = GetExpiredTimer()
+			local Teams_MazingTeam mt = GetTimerData(t)
+			local SimpleList_ListNode u = mt.FirstUser
+			
+			loop
+			exitwhen u == 0
+				if u.value != mt.LastEventUser then
+					call User(u.value).SwitchGameModes(Teams_GAMEMODE_HIDDEN, GetUnitX(mt.LastEventUser.ActiveUnit), GetUnitY(mt.LastEventUser.ActiveUnit))
+				endif
+			set u = u.next
+			endloop
+			
+			call mt.PanCameraForTeam(GetUnitX(mt.LastEventUser.ActiveUnit), GetUnitY(mt.LastEventUser.ActiveUnit), 1.0)
+			
+			call TimerStart(t, 1.0 + 0.75, false, function thistype.OnCheckpointChangeFX_Respawn)
+		endmethod
+		private static method OnCheckpointChangeFX_DisappearingVFX takes nothing returns nothing
+			local timer t = GetExpiredTimer()
+			local Teams_MazingTeam mt = GetTimerData(t)
+			local SimpleList_ListNode u = mt.FirstUser
+			local effect fx
+			
+			// call mt.CreateInstantEffectForTeam("Abilities\\Spells\\Items\\AIso\\AIsoTarget.mdl", mt.LastEventUser)
+			// call mt.CreateInstantEffectForTeam("Abilities\\Spells\\Items\\TomeOfRetraining\\TomeOfRetrainingCaster.mdl", mt.LastEventUser)
+			
+			loop
+			exitwhen u == 0
+				if u.value != mt.LastEventUser and User(u.value).ActiveUnit != null then
+					set fx = CreateSpecialEffect("Abilities\\Spells\\Items\\AIso\\AIsoTarget.mdl", GetUnitX(User(u.value).ActiveUnit), GetUnitY(User(u.value).ActiveUnit), null)
+					call BlzSetSpecialEffectScale(fx, 1.5)
+					// call BlzSetSpecialEffectTime(fx, .8)
+					call BlzSetSpecialEffectTimeScale(fx, 1.25)
+					call DestroyEffect(fx)
+					// call CreateInstantSpecialEffect("Abilities\\Spells\\Items\\AIso\\AIsoTarget.mdl", GetUnitX(User(u.value).ActiveUnit), GetUnitY(User(u.value).ActiveUnit), null)
+				endif
+			set u = u.next
+			endloop
+			
+			call TimerStart(t, 2.15, false, function thistype.OnCheckpointChangeFX_HideAndPan)
+		endmethod
+		public method AnimatedSetCheckpointForTeam takes Teams_MazingTeam mt, integer cpID returns nothing
+			local Checkpoint cp = Checkpoint(.Checkpoints.get(cpID).value)
+			
+			//call DisplayTextToForce(bj_FORCE_PLAYER[0], "Started setting CP for team " + I2S(mt) + ", index " + I2S(cpID) + ", cp " + I2S(cp))
+			if mt.Users.count > 1 then
+				if cp != 0 then
+					call mt.PauseTeam(true)
+					if mt.LastEventUser != -1 then
+						call mt.PrintMessage(mt.LastEventUser.GetStylizedPlayerName() + " has reached a checkpoint!")
+					endif
+					
+					//just for safety
+					set mt.OnCheckpoint = cpID
+					set mt.DefaultGameMode = cp.DefaultGameMode
+					call mt.MoveRevive(cp.ReviveCenter)
+									
+					call TimerStart(NewTimerEx(mt), .25, false, function thistype.OnCheckpointChangeFX_DisappearingVFX)
+				endif
+			else
+				call this.SetCheckpointForTeam(mt, cpID)
+			endif
+		endmethod
                         
         public method AddCheckpoint takes rect gate, rect center returns Checkpoint
             local Checkpoint cp = Checkpoint.create(gate, center)
@@ -470,6 +567,8 @@ library Levels requires SimpleList, Teams, GameModesGlobals, LevelIDGlobals, Cin
 											set nextLevel = 0
 											call User(curUser.value).RespawnAtRect(Teams_MazingTeam(curTeam.value).Revive, true)
 										else
+											set Teams_MazingTeam(curTeam.value).LastEventUser = curUser.value
+											
 											set nextLevel = worldProgress.FurthestLevel.NextLevel
 										endif
 									endif
@@ -478,6 +577,8 @@ library Levels requires SimpleList, Teams, GameModesGlobals, LevelIDGlobals, Cin
 							endloop
 						else
 							if Level(curLevel.value).LevelEnd != null and RectContainsCoords(Level(curLevel.value).LevelEnd, x, y) then
+								set Teams_MazingTeam(curTeam.value).LastEventUser = curUser.value
+								
 								//check if there's a sequential level after the current one
 								if Level(curLevel.value).NextLevel != 0 then
 									set nextLevel = Level(curLevel.value).NextLevel
@@ -495,6 +596,8 @@ library Levels requires SimpleList, Teams, GameModesGlobals, LevelIDGlobals, Cin
 							loop
 							exitwhen curCheckpoint == 0 or nextCheckpointID >= 0
 								if i > Teams_MazingTeam(curTeam.value).OnCheckpoint and (not Checkpoint(curCheckpoint.value).RequiresSameGameMode or User(curUser.value).GameMode == Checkpoint(curCheckpoint.value).DefaultGameMode) and Checkpoint(curCheckpoint.value).Gate != null and RectContainsCoords(Checkpoint(curCheckpoint.value).Gate, x, y) then
+									set Teams_MazingTeam(curTeam.value).LastEventUser = curUser.value
+									
 									set nextCheckpointID = i
 								endif
 							set i = i + 1
@@ -509,10 +612,16 @@ library Levels requires SimpleList, Teams, GameModesGlobals, LevelIDGlobals, Cin
 						static if DEBUG_LEVEL_CHANGE then
 							call DisplayTextToForce(bj_FORCE_PLAYER[0], "Team entered transfer leading to  " + I2S(nextLevel))
 						endif
-
-						call Level(curLevel.value).SwitchLevels(Teams_MazingTeam(curTeam.value), nextLevel, User(curUser.value), true)
+						
+						call Level(curLevel.value).SwitchLevels(Teams_MazingTeam(curTeam.value), nextLevel, curUser.value, true)
 					elseif nextCheckpointID >= 0 then
-						call Level(curLevel.value).SetCheckpointForTeam(Teams_MazingTeam(curTeam.value), nextCheckpointID)
+						static if DEBUG_CHECKPOINT_CHANGE then
+							call DisplayTextToForce(bj_FORCE_PLAYER[0], "Activated by User  " + I2S(Teams_MazingTeam(curTeam.value).LastEventUser))
+							call DisplayTextToForce(bj_FORCE_PLAYER[0], "Team entered checkpoint with ID  " + I2S(nextCheckpointID))
+						endif
+						
+						//call Level(curLevel.value).SetCheckpointForTeam(Teams_MazingTeam(curTeam.value), nextCheckpointID)
+						call Level(curLevel.value).AnimatedSetCheckpointForTeam(Teams_MazingTeam(curTeam.value), nextCheckpointID)
 					endif
 					
 				set curTeam = curTeam.next

@@ -315,27 +315,13 @@ library EDWVisualVote requires VisualVote, ContinueGlobals, Teams, PlayerUtils, 
 		set welcomeCineTime = welcomeCineTime + 2 * DEFAULT_TINY_TEXT_SPEED //don't include last message, more dramatic that way
 		
         set i = 0
-        loop
-            // set team[i].OnLevel = firstLevel
-            //call team[i].ChangeContinueCount(team[i].GetInitialContinues())
-            
-            //call team[i].MoveRevive(firstLevel.CPCenters[0])
-            //set team[i].DefaultGameMode = firstLevel.CPDefaultGameModes[0]
-            //call team[i].SwitchTeamGameMode(team[i].DefaultGameMode, GetRandomReal(GetRectMinX(team[i].Revive), GetRectMaxX(team[i].Revive)), GetRandomReal(GetRectMinY(team[i].Revive), GetRectMaxY(team[i].Revive)))
-            
+        loop            
             call team[i].ApplyTeamDefaultCameras()
 		
 			if ShouldShowSettingVoteMenu() then
 				call team[i].AddTeamCinema(welcomeCine, team[i].FirstUser.value)
 			endif
-			
-            // call firstLevel.ActiveTeams.add(team[i])
-			// if firstLevel.OnLevelStart != 0 then
-				// call firstLevel.OnLevelStart.fire()
-			// endif
-			
-			// call firstLevel.SetCheckpointForTeam(team[i], GetFirstCheckpoint())
-			
+						
 			call firstLevel.StartLevelForTeam(team[i])
 			
             //debug call DisplayTextToPlayer(Player(0), 0, 0, "Team " + I2S(team[i]) + " on level: " + I2S(team[i].OnLevel))

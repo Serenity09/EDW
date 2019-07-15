@@ -3,15 +3,18 @@ globals
     private constant real VOTE_TOP_LEFT_X = -15000
 	private constant real VOTE_TOP_LEFT_Y = -4220
 	
+	//stable gamestates, a user in one of these gamestates will not transition to another one without a user or npc action
+	//all these gamemodes should be >= 0
     public constant integer GAMEMODE_STANDARD = 0
     public constant integer GAMEMODE_PLATFORMING = 1
-    public constant integer GAMEMODE_MINIGAMES = 5
     public constant integer GAMEMODE_STANDARD_PAUSED = 10
     public constant integer GAMEMODE_PLATFORMING_PAUSED = 11
-    public constant integer GAMEMODE_REVIVED_BY_TEAM = 90
-    public constant integer GAMEMODE_DYING = 100
     public constant integer GAMEMODE_DEAD = 101
 	
+	//special gamestates that support unstable transitions. IE a user will never intentionally be left in one of these states indefinitely
+	//all these gamemodes should be < 0
+	public constant integer GAMEMODE_DYING = -1
+	public constant integer GAMEMODE_HIDDEN = -2
 	private constant integer GAMEMODE_INIT = -1032132
     
     public constant real MULTIBOARD_HIDE_DELAY = 2.
@@ -46,6 +49,7 @@ public struct MazingTeam
     public SimpleList_List Users
     public SimpleList_ListNode FirstUser
     
+	public User LastEventUser
     readonly boolean IsTeamPlaying
     readonly rect Revive
     private integer ContinueCount
@@ -981,6 +985,18 @@ public struct MazingTeam
 		set curPlayerNode = curPlayerNode.next
 		endloop
 	endmethod
+	
+	public method CreateInstantEffectForTeam takes string fxFileLocation, User filter returns nothing
+		local SimpleList_ListNode curPlayerNode = .FirstUser
+		
+		loop
+		exitwhen curPlayerNode == 0
+			if (filter == -1 or curPlayerNode.value != filter) and User(curPlayerNode.value).ActiveUnit != null then
+				call CreateInstantSpecialEffect(fxFileLocation, GetUnitX(User(curPlayerNode.value).ActiveUnit), GetUnitY(User(curPlayerNode.value).ActiveUnit), Player(curPlayerNode.value))
+			endif
+		set curPlayerNode = curPlayerNode.next
+		endloop
+	endmethod
     
     public static method create takes integer teamID returns thistype
         local thistype mt = thistype.allocate()
@@ -996,6 +1012,7 @@ public struct MazingTeam
             call mt.MoveRevive(gg_rct_IntroWorld_R1)
             set mt.Score = 0
             set mt.DefaultGameMode = GAMEMODE_INIT
+			set mt.LastEventUser = -1
             
 			set mt.Users = SimpleList_List.create()
             set mt.AllWorldProgress = SimpleList_List.create()
