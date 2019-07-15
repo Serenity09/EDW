@@ -53,18 +53,18 @@ globals
     private constant boolean DEBUG_TERRAIN_CHANGE = false
     private constant boolean DEBUG_JUMPING = false
 	
-	//private constant string STANDARD_FX = "Abilities\\Spells\\Human\\Polymorph\\PolyMorphTarget.mdl"
-	private constant string TERRAIN_STANDARD_FX = "Abilities\\Spells\\Human\\Polymorph\\PolyMorphDoneGround.mdl"
-	private constant string TERRAIN_VINES_FX = "Abilities\\Spells\\NightElf\\EntanglingRoots\\EntanglingRootsTarget.mdl"
-	private constant string TERRAIN_SUPERBOUNCE_FX = "Abilities\\Spells\\Undead\\AnimateDead\\AnimateDeadTarget.mdl"
+	//public constant string STANDARD_FX = "Abilities\\Spells\\Human\\Polymorph\\PolyMorphTarget.mdl"
+	public constant string TERRAIN_STANDARD_FX = "Abilities\\Spells\\Human\\Polymorph\\PolyMorphDoneGround.mdl"
+	public constant string TERRAIN_VINES_FX = "Abilities\\Spells\\NightElf\\EntanglingRoots\\EntanglingRootsTarget.mdl"
+	public constant string TERRAIN_SUPERBOUNCE_FX = "Abilities\\Spells\\Undead\\AnimateDead\\AnimateDeadTarget.mdl"
 	
-	private constant string VERTICAL_JUMP_FX = "Abilities\\Spells\\Human\\Polymorph\\PolyMorphTarget.mdl"
-	//private constant string VERTICAL_JUMP_FX = "Abilities\\Spells\\Human\\Polymorph\\PolyMorphDoneGround.mdl"
-	private constant string NON_VERTICAL_JUMP_FX = "Abilities\\Spells\\Orc\\FeralSpirit\\feralspirittarget.mdl"
-	private constant string OCEAN_JUMP_FX = "Abilities\\Spells\\Other\\CrushingWave\\CrushingWaveDamage.mdl"
+	public constant string VERTICAL_JUMP_FX = "Abilities\\Spells\\Human\\Polymorph\\PolyMorphTarget.mdl"
+	//public constant string VERTICAL_JUMP_FX = "Abilities\\Spells\\Human\\Polymorph\\PolyMorphDoneGround.mdl"
+	public constant string NON_VERTICAL_JUMP_FX = "Abilities\\Spells\\Orc\\FeralSpirit\\feralspirittarget.mdl"
+	public constant string OCEAN_JUMP_FX = "Abilities\\Spells\\Other\\CrushingWave\\CrushingWaveDamage.mdl"
 	
-	private constant string TERRAIN_KILL_FX = "Abilities\\Spells\\Other\\Incinerate\\FireLordDeathExplode.mdl"
-    private constant string DEBUG_TERRAIN_KILL_FX = "Abilities\\Spells\\Other\\Incinerate\\FireLordDeathExplode.mdl"
+	public constant string TERRAIN_KILL_FX = "Abilities\\Spells\\Other\\Incinerate\\FireLordDeathExplode.mdl"
+    public constant string DEBUG_TERRAIN_KILL_FX = "Abilities\\Spells\\Other\\Incinerate\\FireLordDeathExplode.mdl"
 endglobals
 
     struct Platformer extends array
@@ -2787,7 +2787,7 @@ endglobals
                                             call DisplayTextToForce(bj_FORCE_PLAYER[0], "On lava, top left side")
                                             call DestroyEffect(AddSpecialEffect(DEBUG_TERRAIN_KILL_FX, .XPosition, .YPosition))
                                         else
-                                            call DestroyEffect(AddSpecialEffect("Abilities\\Spells\\Other\\Incinerate\\FireLordDeathExplode.mdl", .XPosition, .YPosition))
+                                            call DestroyEffect(AddSpecialEffect(TERRAIN_KILL_FX, .XPosition, .YPosition))
                                         endif
                                         
                                         static if APPLY_TERRAIN_KILL then
@@ -2809,7 +2809,7 @@ endglobals
                                             call DisplayTextToForce(bj_FORCE_PLAYER[0], "On lava, bottom left side")
                                             call DestroyEffect(AddSpecialEffect(DEBUG_TERRAIN_KILL_FX, .XPosition, .YPosition))
                                         else
-                                            call DestroyEffect(AddSpecialEffect("Abilities\\Spells\\Other\\Incinerate\\FireLordDeathExplode.mdl", .XPosition, .YPosition))
+                                            call DestroyEffect(AddSpecialEffect(TERRAIN_KILL_FX, .XPosition, .YPosition))
                                         endif
                                         
                                         static if APPLY_TERRAIN_KILL then
@@ -2831,7 +2831,7 @@ endglobals
                                             call DisplayTextToForce(bj_FORCE_PLAYER[0], "On lava, left side")
                                             call DestroyEffect(AddSpecialEffect(DEBUG_TERRAIN_KILL_FX, .XPosition, .YPosition))
                                         else
-                                            call DestroyEffect(AddSpecialEffect("Abilities\\Spells\\Other\\Incinerate\\FireLordDeathExplode.mdl", .XPosition, .YPosition))
+                                            call DestroyEffect(AddSpecialEffect(TERRAIN_KILL_FX, .XPosition, .YPosition))
                                         endif
                                         
                                         static if APPLY_TERRAIN_KILL then
@@ -2857,7 +2857,7 @@ endglobals
                                         call DisplayTextToForce(bj_FORCE_PLAYER[0], "On lava, top side")
                                         call DestroyEffect(AddSpecialEffect(DEBUG_TERRAIN_KILL_FX, .XPosition, .YPosition))
                                     else
-                                        call DestroyEffect(AddSpecialEffect("Abilities\\Spells\\Other\\Incinerate\\FireLordDeathExplode.mdl", .XPosition, .YPosition))
+                                        call DestroyEffect(AddSpecialEffect(TERRAIN_KILL_FX, .XPosition, .YPosition))
                                     endif
                                     
                                     static if APPLY_TERRAIN_KILL then
@@ -2882,7 +2882,7 @@ endglobals
                                         call DisplayTextToForce(bj_FORCE_PLAYER[0], "On lava, bottom side")
                                         call DestroyEffect(AddSpecialEffect(DEBUG_TERRAIN_KILL_FX, .XPosition, .YPosition))
                                     else
-                                        call DestroyEffect(AddSpecialEffect("Abilities\\Spells\\Other\\Incinerate\\FireLordDeathExplode.mdl", .XPosition, .YPosition))
+                                        call DestroyEffect(AddSpecialEffect(TERRAIN_KILL_FX, .XPosition, .YPosition))
                                     endif
                                     
                                     static if APPLY_TERRAIN_KILL then

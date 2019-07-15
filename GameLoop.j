@@ -9,11 +9,11 @@ library StandardGameLoop initializer init requires EDWEffects, LavaDamage, IceMo
 		private constant boolean DEBUG_TERRAIN_CHANGE = false
 		private constant boolean DEBUG_BEST_TERRAIN = false
 		
-		private constant string LAVA_MOVEMENT_FX = "Abilities\\Spells\\Orc\\LiquidFire\\Liquidfire.mdl"
-		private constant string VINES_MOVEMENT_FX = "Abilities\\Spells\\Human\\slow\\slowtarget.mdl"
+		public constant string LAVA_MOVEMENT_FX = "Abilities\\Spells\\Orc\\LiquidFire\\Liquidfire.mdl"
+		public constant string VINES_MOVEMENT_FX = "Abilities\\Spells\\Human\\slow\\slowtarget.mdl"
 			
-		//private constant string PLATFORMING_FX = "Abilities\\Spells\\Human\\Polymorph\\PolyMorphTarget.mdl"
-		private constant string PLATFORMING_FX = "Abilities\\Spells\\Human\\Polymorph\\PolyMorphDoneGround.mdl"
+		//public constant string PLATFORMING_FX = "Abilities\\Spells\\Human\\Polymorph\\PolyMorphTarget.mdl"
+		public constant string PLATFORMING_FX = "Abilities\\Spells\\Human\\Polymorph\\PolyMorphDoneGround.mdl"
 	endglobals
 
 //! textmacro GetTerrainPriority takes TType, TPriority
