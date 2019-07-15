@@ -58,6 +58,8 @@ private function AfterMazerReviveCB takes nothing returns nothing
     //check that the unit is still paused
     if User(pID).GameMode == Teams_GAMEMODE_STANDARD_PAUSED then
         call User(pID).SwitchGameModesDefaultLocation(Teams_GAMEMODE_STANDARD)
+	elseif User(pID).GameMode == Teams_GAMEMODE_PLATFORMING_PAUSED then
+		call User(pID).SwitchGameModesDefaultLocation(Teams_GAMEMODE_PLATFORMING)
     endif
     
     //set immune for 1 sec and create effect
@@ -286,8 +288,12 @@ private function CollisionIteration takes nothing returns nothing
 									//currently you will revive anyone whose circle you hit, this may change how you play
 									if CanReviveOthers[curUserNode.value] then
 										//revive unit at position of mazer to avoid reviving in an illegal position
-										call User(GetPlayerId(GetOwningPlayer(cu))).SwitchGameModes(Teams_GAMEMODE_STANDARD_PAUSED, GetUnitX(User(curUserNode.value).ActiveUnit), GetUnitY(User(curUserNode.value).ActiveUnit))
-										call SetDefaultCameraForPlayer(GetPlayerId(GetOwningPlayer(cu)), .5)
+										if User(curUserNode.value).GameMode == Teams_GAMEMODE_STANDARD then
+											call User(GetPlayerId(GetOwningPlayer(cu))).SwitchGameModes(Teams_GAMEMODE_STANDARD_PAUSED, GetUnitX(User(GetPlayerId(GetOwningPlayer(cu))).ActiveUnit), GetUnitY(User(GetPlayerId(GetOwningPlayer(cu))).ActiveUnit))
+											call SetDefaultCameraForPlayer(GetPlayerId(GetOwningPlayer(cu)), .5)
+										elseif User(curUserNode.value).GameMode == Teams_GAMEMODE_PLATFORMING then
+											call User(GetPlayerId(GetOwningPlayer(cu))).SwitchGameModes(Teams_GAMEMODE_PLATFORMING_PAUSED, GetUnitX(User(GetPlayerId(GetOwningPlayer(cu))).ActiveUnit), GetUnitY(User(GetPlayerId(GetOwningPlayer(cu))).ActiveUnit))
+										endif
 										
 										call TimerStart(NewTimerEx(GetPlayerId(GetOwningPlayer(cu))), P2P_REVIVE_PAUSE_TIME, false, function AfterMazerReviveCB)
 									endif
