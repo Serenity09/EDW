@@ -1,5 +1,10 @@
 library EDWVFXPreload initializer init requires SpecialEffect, Platformer, SandMovement
 	private function init takes nothing returns nothing
+		//gamemode changes
+		call DestroyEffect(AddSpecialEffect("Abilities\\Spells\\NightElf\\EntanglingRoots\\EntanglingRootsTarget.mdl", 0, 0))
+		call DestroyEffect(AddSpecialEffect(StandardGameLoop_PLATFORMING_FX, 0, 0))
+		call DestroyEffect(AddSpecialEffect(Platformer_TERRAIN_STANDARD_FX, 0, 0))
+		
 		//collision effects
 		call DestroyEffect(AddSpecialEffect("Abilities\\Spells\\Human\\Flare\\FlareTarget.mdl", 0, 0))
 		call DestroyEffect(AddSpecialEffect("Abilities\\Weapons\\Bolt\\BoltImpact.mdl", 0, 0))
@@ -29,17 +34,16 @@ library EDWVFXPreload initializer init requires SpecialEffect, Platformer, SandM
 		call DestroyEffect(AddSpecialEffect("UI\\Feedback\\GoldCredit\\GoldCredit.mdl", 0, 0))
 		call DestroyEffect(AddSpecialEffect("Abilities\\Spells\\Other\\Transmute\\PileofGold.mdl", 0, 0))
 		call DestroyEffect(AddSpecialEffect("Abilities\\Spells\\Other\\Doom\\DoomDeath.mdl", 0, 0))
+		call DestroyEffect(AddSpecialEffect("Abilities\\Spells\\Other\\StrongDrink\\BrewmasterMissile.mdl", 0, 0))
 		
 		//standard mazing terrain effects
 		call DestroyEffect(AddSpecialEffect(StandardGameLoop_LAVA_MOVEMENT_FX, 0, 0))
 		call DestroyEffect(AddSpecialEffect(StandardGameLoop_VINES_MOVEMENT_FX, 0, 0))
-		call DestroyEffect(AddSpecialEffect(StandardGameLoop_PLATFORMING_FX, 0, 0))
 		call DestroyEffect(AddSpecialEffect(SAND_MOVEMENT_FX, 0, 0))
 	
 		//platforming terrain effects
 		call DestroyEffect(AddSpecialEffect("Abilities\\Spells\\Undead\\FrostArmor\\FrostArmorDamage.mdl", 0, 0))
 		call DestroyEffect(AddSpecialEffect("Doodads\\Icecrown\\Water\\BubbleGeyserSteam\\BubbleGeyserSteam.mdl", 0, 0))
-		call DestroyEffect(AddSpecialEffect(Platformer_TERRAIN_STANDARD_FX, 0, 0))
 		call DestroyEffect(AddSpecialEffect(Platformer_TERRAIN_VINES_FX, 0, 0))
 		call DestroyEffect(AddSpecialEffect(Platformer_TERRAIN_SUPERBOUNCE_FX, 0, 0))
 		call DestroyEffect(AddSpecialEffect(Platformer_VERTICAL_JUMP_FX, 0, 0))
