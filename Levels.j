@@ -332,15 +332,15 @@ library Levels requires SimpleList, Teams, GameModesGlobals, LevelIDGlobals, Cin
 				if u.value != mt.LastEventUser and User(u.value).ActiveUnit != null then
 					set fx = CreateSpecialEffect("Abilities\\Spells\\Items\\AIso\\AIsoTarget.mdl", GetUnitX(User(u.value).ActiveUnit), GetUnitY(User(u.value).ActiveUnit), null)
 					call BlzSetSpecialEffectScale(fx, 1.5)
-					// call BlzSetSpecialEffectTime(fx, .8)
-					call BlzSetSpecialEffectTimeScale(fx, 1.25)
+					call BlzSetSpecialEffectTime(fx, 1.)
+					call BlzSetSpecialEffectTimeScale(fx, 1.75)
 					call DestroyEffect(fx)
 					// call CreateInstantSpecialEffect("Abilities\\Spells\\Items\\AIso\\AIsoTarget.mdl", GetUnitX(User(u.value).ActiveUnit), GetUnitY(User(u.value).ActiveUnit), null)
 				endif
 			set u = u.next
 			endloop
 			
-			call TimerStart(t, 2.15, false, function thistype.OnCheckpointChangeFX_HideAndPan)
+			call TimerStart(t, 1.15, false, function thistype.OnCheckpointChangeFX_HideAndPan)
 		endmethod
 		public method AnimatedSetCheckpointForTeam takes Teams_MazingTeam mt, integer cpID returns nothing
 			local Checkpoint cp = Checkpoint(.Checkpoints.get(cpID).value)
