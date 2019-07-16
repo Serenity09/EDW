@@ -6,6 +6,14 @@ library GameMessage
         constant string HAPPY_TEXT_COLOR = "dcefd5"
         constant string SAD_TEXT_COLOR = "c1c9ff"
         constant string ANGRY_TEXT_COLOR = "772929"
+		
+		constant string INTRO_TEXT_COLOR = HAPPY_TEXT_COLOR
+		constant string DOORS_TEXT_COLOR = HAPPY_TEXT_COLOR
+		constant string EASY_ICE_WORLD_COLOR = "a7abf2"
+		constant string HARD_ICE_WORLD_COLOR = "bdd3f0"
+		constant string PLATFORMING_WORLD_COLOR = "f7870f"
+		constant string FOUR_SEASONS_WORLD_COLOR = HAPPY_TEXT_COLOR
+		constant string LAND_WORLD_COLOR = "67e676"
         
         constant string PRIMARY_SPEAKER_NAME = "SARGE"
         constant string SECONDARY_SPEAKER_NAME = "Cupcake"

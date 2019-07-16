@@ -4,6 +4,8 @@ library EDWVFXPreload initializer init requires SpecialEffect, Platformer, SandM
 		call DestroyEffect(AddSpecialEffect("Abilities\\Spells\\NightElf\\EntanglingRoots\\EntanglingRootsTarget.mdl", 0, 0))
 		call DestroyEffect(AddSpecialEffect(StandardGameLoop_PLATFORMING_FX, 0, 0))
 		call DestroyEffect(AddSpecialEffect(Platformer_TERRAIN_STANDARD_FX, 0, 0))
+		call DestroyEffect(AddSpecialEffect("Abilities\\Spells\\Human\\Resurrect\\ResurrectCaster.mdl", 0, 0))
+		call DestroyEffect(AddSpecialEffect("Abilities\\Spells\\Items\\AIso\\AIsoTarget.mdl", 0, 0))
 		
 		//collision effects
 		call DestroyEffect(AddSpecialEffect("Abilities\\Spells\\Human\\Flare\\FlareTarget.mdl", 0, 0))
@@ -28,7 +30,6 @@ library EDWVFXPreload initializer init requires SpecialEffect, Platformer, SandM
 		call DestroyEffect(AddSpecialEffect("Abilities\\Spells\\Human\\MassTeleport\\MassTeleportTarget.mdl", 0, 0))
 		call DestroyEffect(AddSpecialEffect("Abilities\\Spells\\Other\\Charm\\CharmTarget.mdl", 0, 0))
 		call DestroyEffect(AddSpecialEffect("Abilities\\Spells\\NightElf\\Tranquility\\Tranquility.mdl", 0, 0))
-		call DestroyEffect(AddSpecialEffect("Abilities\\Spells\\Human\\Resurrect\\ResurrectCaster.mdl", 0, 0))
 		call DestroyEffect(AddSpecialEffect("Abilities\\Spells\\Human\\Resurrect\\ResurrectTarget.mdl", 0, 0))
 		call DestroyEffect(AddSpecialEffect("Abilities\\Spells\\Items\\ResourceItems\\ResourceEffectTarget.mdl", 0, 0))
 		call DestroyEffect(AddSpecialEffect("UI\\Feedback\\GoldCredit\\GoldCredit.mdl", 0, 0))

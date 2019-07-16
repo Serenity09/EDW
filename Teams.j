@@ -183,29 +183,7 @@ public struct MazingTeam
         endif
     endmethod
     
-    private static method UnpauseTeam takes nothing returns nothing
-        local timer t = GetExpiredTimer()
-        local thistype mt = thistype(GetTimerData(t))
-        local SimpleList_ListNode fp = mt.FirstUser
-        local User u
-        
-        if mt.IsTeamPlaying then
-            loop
-            exitwhen fp == 0
-                set u = fp.value
-                if u.IsPlaying then
-                    call DisplayTextToForce(bj_FORCE_PLAYER[0], "unpausing " + I2S(u))
-                    call PauseUnit(u.ActiveUnit, false)
-                    call IssueImmediateOrder(u.ActiveUnit, "stop")
-                endif
-                
-            set fp = fp.next
-            endloop
-        endif
-        
-        call ReleaseTimer(t)
-        set t = null
-    endmethod
+	
 	
     public method ApplyTeamDefaultCameras takes nothing returns nothing
         local SimpleList_ListNode fp = .FirstUser
@@ -216,20 +194,7 @@ public struct MazingTeam
             exitwhen fp == 0
                 set u = fp.value
                 
-                if u.GameMode == GAMEMODE_STANDARD or u.GameMode == GAMEMODE_STANDARD_PAUSED then
-                    if (GetLocalPlayer() == Player(u)) then
-                        call CameraSetupApply(DefaultCamera[u], false, false)
-                        call PanCameraToTimed(GetUnitX(u.ActiveUnit), GetUnitY(u.ActiveUnit), 0.0)
-                        if DefaultCameraTracking[u] then
-                            call SetCameraTargetController(u.ActiveUnit, 0, 0, false)
-                        endif
-                        
-                        call ClearSelection()
-                        call SelectUnit(u.ActiveUnit, true)
-                    endif
-                elseif u.GameMode == GAMEMODE_PLATFORMING or u.GameMode == GAMEMODE_PLATFORMING_PAUSED then
-                    call u.Platformer.ApplyCamera()
-                endif
+                call User(fp.value).ApplyDefaultCameras(0.)
                 
             set fp = fp.next
             endloop
@@ -617,8 +582,7 @@ public struct MazingTeam
 		
 		return hex
 	endmethod
-	public method GetTeamName takes nothing returns string
-		local string hex = .GetTeamColor()
+	public method GetDefaultTeamName takes nothing returns string
 		local string name
 		
 		if .TeamID == 0 then
@@ -641,15 +605,13 @@ public struct MazingTeam
 			set name = ""
 		endif
 		
-		return ColorMessage(name, hex)
+		return ColorMessage(name, .GetTeamColor())
 	endmethod
     public method GetStylizedPlayerName takes integer pID returns string
-        local string hex = .GetTeamColor()
-        
         if GetPlayerSlotState(Player(pID)) == PLAYER_SLOT_STATE_PLAYING then
-			return ColorMessage(GetPlayerName(Player(pID)), hex)
+			return ColorMessage(GetPlayerName(Player(pID)), .GetTeamColor())
         else
-			return ColorMessage("Gone", hex)
+			return ColorMessage("Gone", .GetTeamColor())
         endif
     endmethod
     
@@ -782,12 +744,12 @@ public struct MazingTeam
 				if VictoryScore - .Score <= 0 then
 					call MazingTeam.ApplyEndGameAll(this)
 				elseif (VictoryScore - .Score <= 10 and ogScore > 10) or (VictoryScore - .Score <= 5 and ogScore > 5) then
-					call MazingTeam.PrintMessageAll("Team " + this.GetTeamName() + " needs " + ColorValue(I2S(VictoryScore - .Score)) + " more points to win", 0)
+					call MazingTeam.PrintMessageAll("Team " + this.TeamName + " needs " + ColorValue(I2S(VictoryScore - .Score)) + " more points to win", 0)
 				elseif VictoryScore - .Score <= 3 and ogScore > 3 then
 					if VictoryScore - .Score == 1 then
-						call MazingTeam.PrintMessageAll("Team " + this.GetTeamName() + " only needs " + ColorValue(I2S(VictoryScore - .Score)) + " more point to win!", 0)
+						call MazingTeam.PrintMessageAll("Team " + this.TeamName + " only needs " + ColorValue(I2S(VictoryScore - .Score)) + " more point to win!", 0)
 					else
-						call MazingTeam.PrintMessageAll("Team " + this.GetTeamName() + " only needs " + ColorValue(I2S(VictoryScore - .Score)) + " more points to win!", 0)
+						call MazingTeam.PrintMessageAll("Team " + this.TeamName + " only needs " + ColorValue(I2S(VictoryScore - .Score)) + " more points to win!", 0)
 					endif
 				endif
 			endif
@@ -924,25 +886,6 @@ public struct MazingTeam
         endloop
 	endmethod
 	
-	public method SetUnitLocalVisibilityForTeam takes unit u, boolean visible returns nothing
-		local SimpleList_ListNode curPlayerNode = .FirstUser
-		
-		loop
-		exitwhen curPlayerNode == 0
-			call SetUnitLocalVisibility(u, curPlayerNode.value, visible)
-		set curPlayerNode = curPlayerNode.next
-		endloop
-	endmethod
-	public method SetUnitLocalOpacityForTeam takes unit u, integer opacity returns nothing
-		local SimpleList_ListNode curPlayerNode = .FirstUser
-		
-		loop
-		exitwhen curPlayerNode == 0
-			call SetUnitLocalOpacity(u, curPlayerNode.value, opacity)
-		set curPlayerNode = curPlayerNode.next
-		endloop
-	endmethod
-	
 	public method PauseTeam takes boolean flag returns nothing
 		local SimpleList_ListNode curPlayerNode = .FirstUser
 		
@@ -961,7 +904,35 @@ public struct MazingTeam
 		set curPlayerNode = curPlayerNode.next
 		endloop
 	endmethod
+	private method RegisterAutoUnpauseForTeam takes real timeout returns nothing
+		local SimpleList_ListNode curPlayerNode = .FirstUser
+		
+		loop
+		exitwhen curPlayerNode == 0
+			call User(curPlayerNode.value).RegisterAutoUnpause(timeout)
+		set curPlayerNode = curPlayerNode.next
+		endloop
+	endmethod
 	
+	public method SetUnitLocalVisibilityForTeam takes unit u, boolean visible returns nothing
+		local SimpleList_ListNode curPlayerNode = .FirstUser
+		
+		loop
+		exitwhen curPlayerNode == 0
+			call SetUnitLocalVisibility(u, curPlayerNode.value, visible)
+		set curPlayerNode = curPlayerNode.next
+		endloop
+	endmethod
+	public method SetUnitLocalOpacityForTeam takes unit u, integer opacity returns nothing
+		local SimpleList_ListNode curPlayerNode = .FirstUser
+		
+		loop
+		exitwhen curPlayerNode == 0
+			call SetUnitLocalOpacity(u, curPlayerNode.value, opacity)
+		set curPlayerNode = curPlayerNode.next
+		endloop
+	endmethod
+		
 	public method PlaySoundForTeam takes sound sfx returns nothing
 		local SimpleList_ListNode curPlayerNode = .FirstUser
 		
@@ -986,6 +957,72 @@ public struct MazingTeam
 		endloop
 	endmethod
 	
+	private static method FadeInForTeamCB takes nothing returns nothing
+		local timer t = GetExpiredTimer()
+		local MazingTeam mt = GetTimerData(t)
+		local SimpleList_ListNode curPlayerNode = mt.FirstUser
+		
+		loop
+		exitwhen curPlayerNode == 0
+			if GetLocalPlayer() == Player(curPlayerNode.value) then
+				call DisplayCineFilter(false)
+				call EnableUserUI(true)
+			endif
+		set curPlayerNode = curPlayerNode.next
+		endloop
+		
+		call ReleaseTimer(t)
+		set t = null
+	endmethod
+	public method FadeInForTeam takes real duration returns nothing
+		local string filterTexture = "ReplaceableTextures\\CameraMasks\\Black_mask.blp"
+		local SimpleList_ListNode curPlayerNode = .FirstUser
+		
+		loop
+		exitwhen curPlayerNode == 0
+			if GetLocalPlayer() == Player(curPlayerNode.value) then
+				call EnableUserUI(false)
+				
+				call SetCineFilterTexture(filterTexture)
+				call SetCineFilterBlendMode(BLEND_MODE_BLEND)
+				call SetCineFilterTexMapFlags(TEXMAP_FLAG_NONE)
+				call SetCineFilterStartUV(0, 0, 1, 1)
+				call SetCineFilterEndUV(0, 0, 1, 1)
+				call SetCineFilterStartColor(PercentTo255(100), PercentTo255(100), PercentTo255(100), PercentTo255(100))
+				call SetCineFilterEndColor(PercentTo255(100), PercentTo255(100), PercentTo255(100), PercentTo255(0))
+				call SetCineFilterDuration(duration)
+				
+				call DisplayCineFilter(true)
+			endif
+		set curPlayerNode = curPlayerNode.next
+		endloop
+		
+		call TimerStart(NewTimerEx(this), duration, false, function thistype.FadeInForTeamCB)
+	endmethod
+	public method FadeOutForTeam takes real duration returns nothing
+		local string filterTexture = "ReplaceableTextures\\CameraMasks\\Black_mask.blp"
+		local SimpleList_ListNode curPlayerNode = .FirstUser
+		
+		loop
+		exitwhen curPlayerNode == 0
+			if GetLocalPlayer() == Player(curPlayerNode.value) then
+				call EnableUserUI(false)
+				
+				call SetCineFilterTexture(filterTexture)
+				call SetCineFilterBlendMode(BLEND_MODE_BLEND)
+				call SetCineFilterTexMapFlags(TEXMAP_FLAG_NONE)
+				call SetCineFilterStartUV(0, 0, 1, 1)
+				call SetCineFilterEndUV(0, 0, 1, 1)
+				call SetCineFilterStartColor(PercentTo255(100), PercentTo255(100), PercentTo255(100), PercentTo255(0))
+				call SetCineFilterEndColor(PercentTo255(100), PercentTo255(100), PercentTo255(100), PercentTo255(100))
+				call SetCineFilterDuration(duration)
+				
+				call DisplayCineFilter(true)
+			endif
+		set curPlayerNode = curPlayerNode.next
+		endloop
+	endmethod
+	
 	public method CreateInstantEffectForTeam takes string fxFileLocation, User filter returns nothing
 		local SimpleList_ListNode curPlayerNode = .FirstUser
 		
@@ -1003,7 +1040,7 @@ public struct MazingTeam
         
         if .AllTeams[teamID] == 0 then
             set mt.TeamID = teamID
-            set mt.TeamName = "TBD" //set later
+            set mt.TeamName = mt.GetDefaultTeamName() //set later
             set mt.RecentlyTransferred = false //used to make sure triggers aren't run multiple times / no interrupts
             set mt.LastTransferTime = -50 //has never transferred
             set mt.OnLevel = TEMP_LEVEL_ID

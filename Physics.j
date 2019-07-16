@@ -53,6 +53,8 @@ globals
     private constant boolean DEBUG_TERRAIN_CHANGE = false
     private constant boolean DEBUG_JUMPING = false
 	
+	private constant boolean DEBUG_CAMERA = false
+	
 	//public constant string STANDARD_FX = "Abilities\\Spells\\Human\\Polymorph\\PolyMorphTarget.mdl"
 	public constant string TERRAIN_STANDARD_FX = "Abilities\\Spells\\Human\\Polymorph\\PolyMorphDoneGround.mdl"
 	public constant string TERRAIN_VINES_FX = "Abilities\\Spells\\NightElf\\EntanglingRoots\\EntanglingRootsTarget.mdl"
@@ -3150,7 +3152,8 @@ endglobals
 					call terrainCenter.destroy()
 					
 					call User(.PID).SwitchGameModes(Teams_GAMEMODE_STANDARD, x, y)
-                    call SetDefaultCameraForPlayer(.PID, .5)
+					call User(.PID).ApplyDefaultCameras(1.)
+                    // call SetDefaultCameraForPlayer(.PID, .5)
 					set PreviousTerrainTypedx[.PID] = PLATFORMING
 					call DestroyEffect(AddSpecialEffect(TERRAIN_STANDARD_FX, x, y))
 					
@@ -3205,12 +3208,11 @@ endglobals
         endmethod
         
         public method ApplyCamera takes nothing returns nothing
-            if GetLocalPlayer() == Player(.PID) and GetCameraField(CAMERA_FIELD_ANGLE_OF_ATTACK) != 270 then
-                call CameraSetupApply(thistype.PlatformingCamera, false, false) //orients the camera to face down from above
-                call SetCameraTargetController(.Unit, 0, 0, false) //fixes the camera to platforming unit
+			if GetLocalPlayer() == Player(.PID) and GetCameraField(CAMERA_FIELD_ANGLE_OF_ATTACK) != 270 then
+                call CameraSetupApply(thistype.PlatformingCamera, true, true) //orients the camera to face down from above
+				call SetCameraTargetController(.Unit, 0, 0, false) //fixes the camera to platforming unit
             endif
         endmethod
-		
 		private static method ApplyAllCameras takes nothing returns nothing
 			local SimpleList_ListNode p = thistype.ActivePlatformers.first
             
@@ -3252,8 +3254,20 @@ endglobals
 
                 call thistype.ActivePlatformers.add(this)
                 
+				static if DEBUG_CAMERA then
+					if GetLocalPlayer() == Player(0) then
+						call DisplayTextToForce(bj_FORCE_PLAYER[0], "Before plat apply, camera destination x: " + R2S(GetCameraTargetPositionX()) + ", y: " + R2S(GetCameraTargetPositionY()))
+					endif
+                endif
+				
                 call this.ApplyCamera()
                 
+				static if DEBUG_CAMERA then
+					if GetLocalPlayer() == Player(0) then
+						call DisplayTextToForce(bj_FORCE_PLAYER[0], "After plat apply, camera destination x: " + R2S(GetCameraTargetPositionX()) + ", y: " + R2S(GetCameraTargetPositionY()))
+					endif
+                endif
+				
                 static if DEBUG_GAMEMODE then
                     call DisplayTextToForce(bj_FORCE_PLAYER[0], "Started platforming")
                 endif
@@ -3286,10 +3300,22 @@ endglobals
 					call PauseTimer(.CameraTimer)
                 endif
                 
-                call User(.PID).ResetDefaultCamera()
-                
-                //call SetUnitPosition(.Unit, PlatformerGlobals_SAFE_X, PlatformerGlobals_SAFE_Y)
-                call ShowUnit(.Unit, false)
+				static if DEBUG_CAMERA then
+					if GetLocalPlayer() == Player(0) then
+						call DisplayTextToForce(bj_FORCE_PLAYER[0], "Before plat reset, camera destination x: " + R2S(GetCameraTargetPositionX()) + ", y: " + R2S(GetCameraTargetPositionY()))
+					endif
+                endif
+				
+				call User(.PID).ResetDefaultCamera(0.)
+				
+				call ShowUnit(.Unit, false)
+				//call SetUnitPosition(.Unit, PlatformerGlobals_SAFE_X, PlatformerGlobals_SAFE_Y)
+				
+				static if DEBUG_CAMERA then
+					if GetLocalPlayer() == Player(0) then
+						call DisplayTextToForce(bj_FORCE_PLAYER[0], "After plat reset, camera destination x: " + R2S(GetCameraTargetPositionX()) + ", y: " + R2S(GetCameraTargetPositionY()))
+					endif
+                endif                
                 
                 static if DEBUG_GAMEMODE then
                     call DisplayTextToForce(bj_FORCE_PLAYER[0], "Stopped platforming")

@@ -17,7 +17,7 @@ library EDWCollectibleResolveHandlers requires TimerUtils, User
 			set nextLevel = team.OnLevel.NextLevel
 		endif
 		
-		call team.OnLevel.SwitchLevels(team, nextLevel, 0, true)
+		call team.OnLevel.SwitchLevelsAnimated(team, nextLevel, true)
 		
 		call ReleaseTimer(t)
 		set t = null
@@ -31,15 +31,18 @@ library EDWCollectibleResolveHandlers requires TimerUtils, User
 		//call StartSound(gg_snd_FroggerPS1Victory_EDW)
 		call user.Team.PlaySoundForTeam(gg_snd_FroggerPS1Victory_EDW)
 		
-		call user.Team.PrintMessage("Level cleared!")
+		if user.Team.Users.count > 1 then
+			set user.Team.LastEventUser = -1
+			call user.Team.PrintMessage("Your team has cleared the level!")
+		else
+			set user.Team.LastEventUser = user
+		endif
 		
 		call TimerStart(t, ADVANCE_LEVEL_FROGGER_SFX_DURATION, false, function AdvanceLevelSwitchLevel)
 		set t = null
 	endfunction
 	
-	public function AdvanceLevel takes User user, CollectibleTeam activeTeam returns integer
-		set activeTeam.Team.LastEventUser = user
-		
+	public function AdvanceLevel takes User user, CollectibleTeam activeTeam returns integer		
 		//pause team
 		call activeTeam.Team.PauseTeam(true)
 		

@@ -4,6 +4,7 @@ globals
 	User TriggerUser //used with events
 	private constant boolean DEBUG_GAMEMODE_CHANGE = false
 	private constant boolean DEBUG_ACTIVE_EFFECT_CHANGE = false
+	private constant boolean DEBUG_CAMERA = false
 endglobals
 
 struct User extends array
@@ -19,7 +20,7 @@ struct User extends array
     public Cinematic CinematicPlaying
     public SimpleList_List CinematicQueue //FiFo
 	public effect ActiveEffect
-	public timer UnpauseTimer
+	private timer UnpauseTimer
     
     public static integer ActivePlayers
 	
@@ -159,7 +160,13 @@ struct User extends array
     endmethod
     
     public method ApplyDefaultCameras takes real time returns nothing
-        if .GameMode != Teams_GAMEMODE_PLATFORMING and .GameMode != Teams_GAMEMODE_PLATFORMING_PAUSED then
+        static if DEBUG_CAMERA then
+			if GetLocalPlayer() == Player(0) then
+				call DisplayTextToForce(bj_FORCE_PLAYER[0], "Before apply, camera destination x: " + R2S(GetCameraTargetPositionX()) + ", y: " + R2S(GetCameraTargetPositionY()))
+			endif
+		endif
+		
+		if .GameMode != Teams_GAMEMODE_PLATFORMING and .GameMode != Teams_GAMEMODE_PLATFORMING_PAUSED then
             if (GetLocalPlayer() == Player(this)) then
                 call CameraSetupApply(DefaultCamera[this], false, false)
                 call PanCameraToTimed(GetUnitX(.ActiveUnit), GetUnitY(.ActiveUnit), time)
@@ -170,12 +177,34 @@ struct User extends array
         else
             call .Platformer.ApplyCamera()
         endif
+		
+		static if DEBUG_CAMERA then
+			if GetLocalPlayer() == Player(0) then
+				call DisplayTextToForce(bj_FORCE_PLAYER[0], "After apply, camera destination x: " + R2S(GetCameraTargetPositionX()) + ", y: " + R2S(GetCameraTargetPositionY()))
+			endif
+		endif
     endmethod
-	public method ResetDefaultCamera takes nothing returns nothing
-        if (GetLocalPlayer() == Player(this)) then
-            call ResetToGameCamera(0)
-            call CameraSetupApply(DefaultCamera[this], false, false)
+	public method ResetDefaultCamera takes real duration returns nothing
+        static if DEBUG_CAMERA then
+			if GetLocalPlayer() == Player(0) then
+				call DisplayTextToForce(bj_FORCE_PLAYER[0], "Before reset, camera destination x: " + R2S(GetCameraTargetPositionX()) + ", y: " + R2S(GetCameraTargetPositionY()))
+			endif
+		endif
+		
+		if (GetLocalPlayer() == Player(this)) then
+            call ResetToGameCamera(duration)
+			if duration > 0 then
+				call CameraSetupApply(DefaultCamera[this], false, false)
+			else
+				call CameraSetupApply(DefaultCamera[this], false, false)
+			endif
         endif
+		
+		static if DEBUG_CAMERA then
+			if GetLocalPlayer() == Player(0) then
+				call DisplayTextToForce(bj_FORCE_PLAYER[0], "After reset, camera destination x: " + R2S(GetCameraTargetPositionX()) + ", y: " + R2S(GetCameraTargetPositionY()))
+			endif
+		endif
     endmethod
 	
 	public method ApplyDefaultSelections takes nothing returns nothing
@@ -241,7 +270,13 @@ struct User extends array
         set t = null
 		set u.UnpauseTimer = null
     endmethod
-	    
+	public method RegisterAutoUnpause takes real timeout returns nothing
+		call .CancelAutoUnpause()
+		
+		set .UnpauseTimer = NewTimerEx(this)
+		call TimerStart(.UnpauseTimer, timeout, false, function thistype.UnpauseUserCB)
+	endmethod
+	
     public method RespawnAtRect takes rect r, boolean moveliving returns nothing
         local real x = GetRectMinX(r)
         local real y = GetRectMinY(r)
@@ -271,26 +306,19 @@ struct User extends array
 				// call DisplayTextToForce(bj_FORCE_PLAYER[0], "reviving at x: " + R2S(x) + ", y: " + R2S(y))
 			// endif
 			
-            if .Team.DefaultGameMode == Teams_GAMEMODE_STANDARD or .Team.DefaultGameMode == Teams_GAMEMODE_STANDARD_PAUSED then
-                call .CancelAutoUnpause()
-				set .UnpauseTimer = NewTimerEx(this)
-			
+            if .Team.DefaultGameMode == Teams_GAMEMODE_STANDARD or .Team.DefaultGameMode == Teams_GAMEMODE_STANDARD_PAUSED then			
 				call this.SwitchGameModes(Teams_GAMEMODE_STANDARD_PAUSED, x, y)
                 
-				call TimerStart(.UnpauseTimer, RespawnPauseTime, false, function User.UnpauseUserCB)
+				call .RegisterAutoUnpause(RespawnPauseTime)
 			elseif .Team.DefaultGameMode == Teams_GAMEMODE_PLATFORMING_PAUSED then
-				call .CancelAutoUnpause()
-				set .UnpauseTimer = NewTimerEx(this)
+				call this.SwitchGameModes(Teams_GAMEMODE_PLATFORMING_PAUSED, x, y)
 				
-				call TimerStart(.UnpauseTimer, RespawnPauseTime, false, function User.UnpauseUserCB)
+				call .RegisterAutoUnpause(RespawnPauseTime)
             /*
             elseif .Team.DefaultGameMode == Teams_GAMEMODE_PLATFORMING then
-                call .CancelAutoUnpause()
-				set .UnpauseTimer = NewTimerEx(this)
-				
 				call this.SwitchGameModes(Teams_GAMEMODE_PLATFORMING_PAUSED, x, y)
                 
-                call TimerStart(.UnpauseTimer, RespawnPauseTime, false, function User.UnpauseUserCB)
+                call .RegisterAutoUnpause(RespawnPauseTime)
             */
             else
                 call this.SwitchGameModes(.Team.DefaultGameMode, x, y)
@@ -417,7 +445,7 @@ struct User extends array
         local vector2 respawnPoint
                 
         //disable camera tracking if that player has it enabled
-        call ResetDefaultCamera()
+        call ResetDefaultCamera(1.)
         
         //check if respawn circles should be used
         if not RespawnASAPMode and .IsPlaying then
@@ -460,6 +488,8 @@ struct User extends array
                 if not RespawnASAPMode then
                     set facing = GetUnitFacing(.ActiveUnit)
                 endif
+			elseif newGameMode == Teams_GAMEMODE_HIDDEN then
+				call .ResetDefaultCamera(0.)
             endif
 			
 			// if this == 1 then
@@ -468,12 +498,14 @@ struct User extends array
             
             //remove the old game mode
             if curGameMode == Teams_GAMEMODE_STANDARD then
-                //remove the current terrain effect
+                call ShowUnit(MazersArray[this], false)
+				
+				//remove the current terrain effect
                 if PreviousTerrainTypedx[this] != NOEFFECT then
 					call GameLoopRemoveTerrainAction(MazersArray[this], this, PreviousTerrainTypedx[this], NOEFFECT)
 					set PreviousTerrainTypedx[this] = NOEFFECT
 				endif
-				
+								
 				//moves the mazing unit
                 call SetUnitPosition(MazersArray[this], MazerGlobals_SAFE_X, MazerGlobals_SAFE_Y)
                 //removes the reg unit from the reg game loop. thereby enabling regular terrain effects
@@ -481,10 +513,6 @@ struct User extends array
                 
                 //updates the number of units platforming/regular mazing
                 set NumberMazing = NumberMazing - 1
-                
-                //debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "Number mazing removing standard: " + I2S(NumberMazing))
-                //hides the DH
-                call ShowUnit(MazersArray[this], false)
             elseif curGameMode == Teams_GAMEMODE_PLATFORMING then
                 call .Platformer.StopPlatforming()
             elseif curGameMode == Teams_GAMEMODE_STANDARD_PAUSED then
@@ -499,15 +527,15 @@ struct User extends array
 				call SetUnitPropWindow(.ActiveUnit, GetUnitDefaultPropWindow(.ActiveUnit) * bj_DEGTORAD)
                 
                 //if the new gamemode isnt to unpause the unit then we need to undo the pause effect
-                if newGameMode != Teams_GAMEMODE_STANDARD then
-                    call SetUnitPosition(MazersArray[this], MazerGlobals_SAFE_X, MazerGlobals_SAFE_Y)
-                    call ShowUnit(MazersArray[this], false)
+                if newGameMode != Teams_GAMEMODE_STANDARD then					
+					call ShowUnit(MazersArray[this], false)
+					call SetUnitPosition(MazersArray[this], MazerGlobals_SAFE_X, MazerGlobals_SAFE_Y)
                 endif
             elseif curGameMode == Teams_GAMEMODE_PLATFORMING_PAUSED then
                 //if the new gamemode isnt to unpause the unit then we need to undo the pause effect
                 if newGameMode != Teams_GAMEMODE_PLATFORMING then
-                    call SetUnitPosition(.Platformer.Unit, PlatformerGlobals_SAFE_X, PlatformerGlobals_SAFE_Y)
                     call ShowUnit(.Platformer.Unit, false)
+					call SetUnitPosition(.Platformer.Unit, PlatformerGlobals_SAFE_X, PlatformerGlobals_SAFE_Y)
                 endif
             elseif curGameMode == Teams_GAMEMODE_DYING then
 				//no actions removing dying gamemode
@@ -628,6 +656,8 @@ struct User extends array
                     set .ActiveUnit = PlayerReviveCircles[this]
 					set .ActiveUnitRadius = GetUnitDefaultRadius(GetUnitTypeId(.ActiveUnit))
                 endif
+			elseif newGameMode < 0 then
+				set .ActiveUnit = null
             endif
         endif
     endmethod

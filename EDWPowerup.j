@@ -103,7 +103,7 @@ library EDWPowerup requires Alloc, MazerGlobals, FilterFuncs, Table, PlayerUtils
 					
 					call StealContinueEffect(this, user)
 					call user.Team.ChangeContinueCount(TEAM_STEALCONT_COUNT)
-					call user.Team.PrintMessage(user.GetStylizedPlayerName() + " stole " + I2S(TEAM_STEALCONT_COUNT) + " continue from team " + team.GetTeamName() + "!")
+					call user.Team.PrintMessage(user.GetStylizedPlayerName() + " stole " + I2S(TEAM_STEALCONT_COUNT) + " continue from team " + team.TeamName + "!")
 				else
 					call AddContinueEffect(this, user)
 					
@@ -124,7 +124,7 @@ library EDWPowerup requires Alloc, MazerGlobals, FilterFuncs, Table, PlayerUtils
 					
 					call StealScoreEffect(this, user)
 					call user.Team.ChangeScore(TEAM_STEALSCORE_COUNT)
-					call user.Team.PrintMessage(user.GetStylizedPlayerName() + " stole " + I2S(TEAM_STEALSCORE_COUNT) + " point from team " + team.GetTeamName() + "!")
+					call user.Team.PrintMessage(user.GetStylizedPlayerName() + " stole " + I2S(TEAM_STEALSCORE_COUNT) + " point from team " + team.TeamName + "!")
 				else
 					call AddScoreEffect(this, user)
 					

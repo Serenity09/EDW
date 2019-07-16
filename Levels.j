@@ -14,6 +14,9 @@ library Levels requires SimpleList, Teams, GameModesGlobals, LevelIDGlobals, Cin
 		public constant integer HARD_MAX_CONTINUE_ROLLOVER = 1
         public constant real HARD_CONTINUE_MODIFIER = .8
         
+		private constant real LEVEL_TRANSFER_MESSAGE_DELAY = 2.5
+		private constant real LEVEL_TRANSFER_FADE_DURATION = 1.5
+		
 		private constant boolean DEBUG_START_STOP = false
 		private constant boolean DEBUG_LEVEL_CHANGE = false
 		private constant boolean DEBUG_CHECKPOINT_CHANGE = false
@@ -56,9 +59,19 @@ library Levels requires SimpleList, Teams, GameModesGlobals, LevelIDGlobals, Cin
 			return CreateDestructable('B006', GetRectCenterX(this.Gate), GetRectCenterY(this.Gate), angle, scale, 1)
 		endmethod
     endstruct
+	
+	public keyword Level
+	
+	private struct AnimatedLevelTransferData extends array
+		public Teams_MazingTeam Team
+		public Level NextLevel
+		public boolean UpdateProgress
+		
+		implement Alloc
+	endstruct
     
 	public struct Level extends array //extends IStartable
-        public string      Name            //a levels name, only used in the multiboard
+        public string      Name            //a levels name
         public integer     RawContinues      //refers to the difficulty of a level
         public integer     RawScore
         
@@ -164,35 +177,62 @@ library Levels requires SimpleList, Teams, GameModesGlobals, LevelIDGlobals, Cin
         
         public method GetWorldID takes nothing returns integer
             //World levels follow this format
-			if this >= 3 and this <= 38 then //last level ID
+			if this >= 3 /* and this <= 38 */ then //last level ID
                 return ModuloInteger(this - 3, 7) + 1
 			else
-				return 0
+				return -this
             endif
         endmethod
-        
+		public method GetWorldColor takes nothing returns string
+			local integer onWorld = .GetWorldID()
+            
+            if onWorld == -1 then
+                return INTRO_TEXT_COLOR
+			elseif onWorld == -2 then
+				return DOORS_TEXT_COLOR
+            elseif onWorld == 1 then
+                return HARD_ICE_WORLD_COLOR
+            elseif onWorld == 2 then
+                return EASY_ICE_WORLD_COLOR
+            elseif onWorld == 3 then
+                return LAND_WORLD_COLOR
+            elseif onWorld == 4 then
+                return ""
+            elseif onWorld == 5 then
+                return ""
+            elseif onWorld == 6 then
+                return FOUR_SEASONS_WORLD_COLOR
+            else//if onWorld == 7
+                return PLATFORMING_WORLD_COLOR
+            endif
+		endmethod
         public method GetWorldString takes nothing returns string
             local integer onWorld = .GetWorldID()
+			local string worldName = ""
             
-            if onWorld == 0 then
-                return ""
+            if onWorld == -1 then
+                set worldName = "???"
+			elseif onWorld == -2 then
+				set worldName = "Doors"
             elseif onWorld == 1 then
-                return ColorMessage("Black Ice", SAD_TEXT_COLOR)
+                set worldName = "Black Ice"
             elseif onWorld == 2 then
-                return ColorMessage("Icetown", SAD_TEXT_COLOR)
+                set worldName = "Icetown"
             elseif onWorld == 3 then
-                return "Sloth"
+                set worldName = "Landlubber"
             elseif onWorld == 4 then
-                return "Greed"
+                set worldName = "Greed"
             elseif onWorld == 5 then
-                return "Wrath"
+                set worldName = "Sloth"
             elseif onWorld == 6 then
-                return "Gluttony"
+                set worldName = "Four Seasons"
             else//if onWorld == 7
-                return ColorMessage("2.5 Dimensions", HAPPY_TEXT_COLOR)
+                set worldName = "2.5 Dimensions"
             endif
+			
+			return ColorMessage(worldName, .GetWorldColor())
         endmethod
-        
+		
         public method ToString takes nothing returns string
             local string name
             
@@ -382,25 +422,28 @@ library Levels requires SimpleList, Teams, GameModesGlobals, LevelIDGlobals, Cin
 			
 			return cp
 		endmethod
-                        
-		public method ApplyLevelRewards takes User u, Teams_MazingTeam mt, Level nextLevel returns nothing			
-			local integer score = 0
-			local integer originalContinues = mt.GetContinueCount()
-			local integer rolloverContinues = 0
-			local integer nextLevelContinues = 0
-			
-			//TODO appreciate the specific person(s) who beat the level -- if u == 0: appreciate full team equally
-			
-			//update score
+        
+		public method GetWeightedScore takes nothing returns integer
+			local integer score
+					
 			if RewardMode == GameModesGlobals_EASY or RewardMode == GameModesGlobals_CHEAT then
 				set score = R2I(.RawScore*EASY_SCORE_MODIFIER + .5)
 			elseif RewardMode == GameModesGlobals_HARD then
 				set score = R2I(.RawScore*HARD_SCORE_MODIFIER + .5)
+			else
+				set score = .RawScore
 			endif
-            if score > 0 then
-				call mt.PrintMessage("Your score has increased by " + ColorMessage(I2S(score), SPEAKER_COLOR))
-				call mt.ChangeScore(score)
-			endif
+			
+			return score
+		endmethod
+		public method ApplyLevelRewards takes User u, Teams_MazingTeam mt, Level nextLevel returns nothing			
+			local integer score = .GetWeightedScore()
+			local integer originalContinues = mt.GetContinueCount()
+			local integer rolloverContinues = 0
+			local integer nextLevelContinues = 0
+			
+			//update score
+			call mt.ChangeScore(score)
 			
 			//update continues
 			if ShouldShowSettingVoteMenu() and RewardMode != GameModesGlobals_CHEAT then				
@@ -431,24 +474,24 @@ library Levels requires SimpleList, Teams, GameModesGlobals, LevelIDGlobals, Cin
 				endif
 			endif
 			
-			if this == DOORS_LEVEL_ID then
-				//call mt.PrintMessage("Starting level " + ColorMessage(nextLevel.Name, SPEAKER_COLOR) + "!")
-				if not ShouldShowSettingVoteMenu() or RewardMode == GameModesGlobals_CHEAT then
-					call mt.PrintMessage("Starting " + nextLevel.GetWorldString())
-				else
-					call mt.PrintMessage("Starting " + nextLevel.GetWorldString() + " with " + ColorMessage(I2S(mt.GetContinueCount()), SPEAKER_COLOR) + " continues")
-				endif
-			else
-				if ShouldShowSettingVoteMenu() and RewardMode != GameModesGlobals_CHEAT then
-					if originalContinues == 1 and rolloverContinues == 1 then
-						call mt.PrintMessage("You kept your " + ColorMessage(I2S(1), SPEAKER_COLOR) + " continue, and gained " + ColorMessage(I2S(nextLevelContinues), SPEAKER_COLOR) + " extra continues to boot")
-					elseif originalContinues > 0 and originalContinues != rolloverContinues + nextLevelContinues then
-						call mt.PrintMessage("You kept " + ColorMessage(I2S(rolloverContinues), SPEAKER_COLOR) + " of your " + ColorMessage(I2S(originalContinues), SPEAKER_COLOR) + " continues, and gained " + ColorMessage(I2S(nextLevelContinues), SPEAKER_COLOR) + " extra continues to boot")
-					else
-						call mt.PrintMessage("You have " + ColorMessage(I2S(rolloverContinues + nextLevelContinues), SPEAKER_COLOR) + " continues")
-					endif
-				endif
-			endif
+			// if this == DOORS_LEVEL_ID then
+				// //call mt.PrintMessage("Starting level " + ColorMessage(nextLevel.Name, SPEAKER_COLOR) + "!")
+				// // if not ShouldShowSettingVoteMenu() or RewardMode == GameModesGlobals_CHEAT then
+					// // call mt.PrintMessage("Starting " + nextLevel.GetWorldString())
+				// // else
+					// // call mt.PrintMessage("Starting " + nextLevel.GetWorldString() + " with " + ColorMessage(I2S(mt.GetContinueCount()), SPEAKER_COLOR) + " continues")
+				// // endif
+			// else
+				// if ShouldShowSettingVoteMenu() and RewardMode != GameModesGlobals_CHEAT then
+					// if originalContinues == 1 and rolloverContinues == 1 then
+						// call mt.PrintMessage("You kept your " + ColorMessage(I2S(1), SPEAKER_COLOR) + " continue, and gained " + ColorMessage(I2S(nextLevelContinues), SPEAKER_COLOR) + " extra continues to boot")
+					// elseif originalContinues > 0 and originalContinues != rolloverContinues + nextLevelContinues then
+						// call mt.PrintMessage("You kept " + ColorMessage(I2S(rolloverContinues), SPEAKER_COLOR) + " of your " + ColorMessage(I2S(originalContinues), SPEAKER_COLOR) + " continues, and gained " + ColorMessage(I2S(nextLevelContinues), SPEAKER_COLOR) + " extra continues to boot")
+					// else
+						// call mt.PrintMessage("You have " + ColorMessage(I2S(rolloverContinues + nextLevelContinues), SPEAKER_COLOR) + " continues")
+					// endif
+				// endif
+			// endif
 		endmethod
 		
 		public method StopLevelForTeam takes Teams_MazingTeam mt returns nothing
@@ -513,6 +556,154 @@ library Levels requires SimpleList, Teams, GameModesGlobals, LevelIDGlobals, Cin
 			
 			call nextLevel.StartLevelForTeam(mt)
         endmethod
+		
+		private static method SwitchLevels_FadeIn takes nothing returns nothing
+			local timer t = GetExpiredTimer()
+			local AnimatedLevelTransferData transferData = GetTimerData(t)
+			
+			// call transferData.Team.PrintMessage(transferData.NextLevel.Name)
+			call transferData.Team.FadeInForTeam(LEVEL_TRANSFER_FADE_DURATION)
+			
+			call transferData.deallocate()
+			call ReleaseTimer(t)
+			set t = null
+		endmethod
+		private static method SwitchLevels_Message3 takes nothing returns nothing
+			local timer t = GetExpiredTimer()
+			local AnimatedLevelTransferData transferData = GetTimerData(t)
+						
+			call transferData.Team.PrintMessage("Now starting: " + transferData.NextLevel.Name)
+			
+			call transferData.Team.FadeInForTeam(LEVEL_TRANSFER_FADE_DURATION)
+			
+			call transferData.deallocate()
+			call ReleaseTimer(t)
+			set t = null
+			// call TimerStart(t, LEVEL_TRANSFER_MESSAGE_DELAY, false, function thistype.SwitchLevels_FadeIn)
+		endmethod
+		private static method SwitchLevels_Message2 takes nothing returns nothing
+			local timer t = GetExpiredTimer()
+			local AnimatedLevelTransferData transferData = GetTimerData(t)
+			
+			call transferData.Team.PrintMessage("You have " + ColorValue(I2S(transferData.Team.GetContinueCount())) + " continues left")
+			
+			call TimerStart(t, LEVEL_TRANSFER_MESSAGE_DELAY, false, function thistype.SwitchLevels_Message3)
+		endmethod
+		private static method SwitchLevels_Message1 takes nothing returns nothing
+			local timer t = GetExpiredTimer()
+			local AnimatedLevelTransferData transferData = GetTimerData(t)
+			
+			if transferData.Team.OnLevel.GetWeightedScore() > 0 then				
+				if transferData.Team.GetScore() > 0 then
+					call transferData.Team.PrintMessage("You gained " + ColorValue(I2S(transferData.Team.OnLevel.GetWeightedScore())) + " points (" + ColorValue(I2S(transferData.Team.GetScore() + transferData.Team.OnLevel.GetWeightedScore())) + " total)")
+				else
+					call transferData.Team.PrintMessage("You gained " + ColorValue(I2S(transferData.Team.OnLevel.GetWeightedScore())) + " points")
+				endif
+			endif
+			
+			call transferData.Team.OnLevel.SwitchLevels(transferData.Team, transferData.NextLevel, transferData.Team.LastEventUser, true)
+						
+			if ShouldShowSettingVoteMenu() and RewardMode != GameModesGlobals_CHEAT and transferData.Team.OnLevel != DOORS_LEVEL_ID then
+				call TimerStart(t, LEVEL_TRANSFER_MESSAGE_DELAY, false, function thistype.SwitchLevels_Message2)
+			else
+				call TimerStart(t, LEVEL_TRANSFER_MESSAGE_DELAY, false, function thistype.SwitchLevels_Message3)
+			endif
+		endmethod
+		// private static method SwitchLevels_Message takes nothing returns nothing
+			// local timer t = GetExpiredTimer()
+			// local AnimatedLevelTransferData transferData = GetTimerData(t)
+			
+			// if transferData.Team.GetScore() > 0 then
+				// call transferData.Team.PrintMessage("You gained " + ColorValue(I2S(transferData.Team.OnLevel.GetWeightedScore())) + " points (" + ColorValue(I2S(transferData.Team.GetScore() + transferData.Team.OnLevel.GetWeightedScore())) + " total)")
+			// else
+				// call transferData.Team.PrintMessage("You gained " + ColorValue(I2S(transferData.Team.OnLevel.GetWeightedScore())) + " points")
+			// endif
+			// call transferData.Team.OnLevel.SwitchLevels(transferData.Team, transferData.NextLevel, transferData.Team.LastEventUser, true)
+			
+			// if ShouldShowSettingVoteMenu() and RewardMode != GameModesGlobals_CHEAT then
+				// call transferData.Team.PrintMessage("You have " + ColorValue(I2S(transferData.Team.GetContinueCount())) + " continues left")
+			// endif
+			// // call transferData.Team.PrintMessage("Now starting: " + transferData.NextLevel.Name)
+			
+			// call transferData.Team.PrintMessage("Now starting:")
+			
+			// call TimerStart(t, 1., false, function thistype.SwitchLevels_FadeIn)
+		// endmethod
+		private static method SwitchLevels_GameMode takes nothing returns nothing
+			local timer t = GetExpiredTimer()
+			local AnimatedLevelTransferData transferData = GetTimerData(t)
+						
+			call transferData.Team.SwitchTeamGameMode(Teams_GAMEMODE_HIDDEN, GetUnitX(transferData.Team.LastEventUser.ActiveUnit), GetUnitY(transferData.Team.LastEventUser.ActiveUnit))
+			
+			if transferData.Team.OnLevel != DOORS_LEVEL_ID then
+				call TimerStart(t, LEVEL_TRANSFER_FADE_DURATION, false, function thistype.SwitchLevels_Message1)
+			else
+				// call TimerStart(t, 0., false, function thistype.SwitchLevels_Message1)
+				call thistype.SwitchLevels_Message1()
+			endif
+		endmethod
+		private static method SwitchLevels_FadeOut takes nothing returns nothing
+			local timer t = GetExpiredTimer()
+			local AnimatedLevelTransferData transferData = GetTimerData(t)
+						
+			// call transferData.Team.SwitchTeamGameMode(Teams_GAMEMODE_HIDDEN, GetUnitX(transferData.Team.LastEventUser.ActiveUnit), GetUnitY(transferData.Team.LastEventUser.ActiveUnit))
+			call transferData.Team.FadeOutForTeam(LEVEL_TRANSFER_FADE_DURATION)
+			
+			call TimerStart(t, LEVEL_TRANSFER_FADE_DURATION, false, function thistype.SwitchLevels_GameMode)
+		endmethod
+		// private static method SwitchLevels_FadeOut takes nothing returns nothing
+			// local timer t = GetExpiredTimer()
+			// local AnimatedLevelTransferData transferData = GetTimerData(t)
+						
+			// call transferData.Team.SwitchTeamGameMode(Teams_GAMEMODE_HIDDEN, GetUnitX(transferData.Team.LastEventUser.ActiveUnit), GetUnitY(transferData.Team.LastEventUser.ActiveUnit))
+			// call transferData.Team.FadeOutForTeam(LEVEL_TRANSFER_FADE_DURATION)
+			
+			// if transferData.Team.OnLevel != DOORS_LEVEL_ID then
+				// call TimerStart(t, 2. * LEVEL_TRANSFER_FADE_DURATION, false, function thistype.SwitchLevels_Message1)
+			// else
+				// call TimerStart(t, LEVEL_TRANSFER_FADE_DURATION, false, function thistype.SwitchLevels_Message1)
+			// endif
+		// endmethod
+		private static method SwitchLevels_DisappearingVFX takes nothing returns nothing
+			local timer t = GetExpiredTimer()
+			local AnimatedLevelTransferData transferData = GetTimerData(t)
+			local SimpleList_ListNode u = transferData.Team.FirstUser
+			local effect fx
+						
+			loop
+			exitwhen u == 0
+				if User(u.value).ActiveUnit != null then
+					// set fx = CreateSpecialEffect("Abilities\\Spells\\Items\\AIso\\AIsoTarget.mdl", GetUnitX(User(u.value).ActiveUnit), GetUnitY(User(u.value).ActiveUnit), null)
+					// call BlzSetSpecialEffectScale(fx, 1.5)
+					// call BlzSetSpecialEffectTime(fx, 1.)
+					// call BlzSetSpecialEffectTimeScale(fx, 1.75)
+					// call DestroyEffect(fx)
+					call CreateInstantSpecialEffect("Abilities\\Spells\\Human\\Resurrect\\ResurrectCaster.mdl", GetUnitX(User(u.value).ActiveUnit), GetUnitY(User(u.value).ActiveUnit), null)
+				endif
+			set u = u.next
+			endloop
+			
+			call TimerStart(t, 1.15, false, function thistype.SwitchLevels_FadeOut)
+		endmethod
+		public method SwitchLevelsAnimated takes Teams_MazingTeam mt, Level nextLevel, boolean updateProgress returns nothing
+			local AnimatedLevelTransferData transferData = AnimatedLevelTransferData.allocate()
+			set transferData.Team = mt
+			set transferData.NextLevel = nextLevel
+			set transferData.UpdateProgress = updateProgress
+			
+			call mt.PauseTeam(true)
+			if this != DOORS_LEVEL_ID then
+				if mt.LastEventUser != -1 and this != DOORS_LEVEL_ID then
+					call mt.PrintMessage(mt.LastEventUser.GetStylizedPlayerName() + " has cleared the level!")
+				endif
+			else
+				//TODO remove when there's a less intrusive and more relevant way to convey what team is where via the Doors level
+				call Teams_MazingTeam.PrintMessageAll(mt.TeamName + " team has just started " + nextLevel.GetWorldString(), mt)
+				call mt.PrintMessage("Entering new world: " + nextLevel.GetWorldString())
+			endif
+			
+			call TimerStart(NewTimerEx(transferData), .5, false, function thistype.SwitchLevels_DisappearingVFX)
+		endmethod
         		
 		private static method CheckTransfers takes nothing returns nothing
             local SimpleList_ListNode curLevel = thistype.ActiveLevels.first
@@ -544,65 +735,66 @@ library Levels requires SimpleList, Teams, GameModesGlobals, LevelIDGlobals, Cin
 					loop
 					exitwhen curUser == 0 or nextLevel != 0
 						//call DisplayTextToForce(bj_FORCE_PLAYER[0], "Checking player " + I2S(curUser.value))
-						
-						set x = GetUnitX(User(curUser.value).ActiveUnit)
-						set y = GetUnitY(User(curUser.value).ActiveUnit)
-						
-						//check level transfer(s)
-						if Level(curLevel.value) == DOORS_LEVEL_ID then
-							set i = 0
-							loop
-							exitwhen i == WorldCount or nextLevel != 0
-								if DoorRects[i] != null and RectContainsCoords(DoorRects[i], x, y) then
-									set nextLevel = Level(i + DOORS_LEVEL_ID + 1) //levels take standard structure after the DOORS level
-									
-									//check if the team has already made progress into that world
-									set worldProgress = Teams_MazingTeam(curTeam.value).GetWorldProgress(nextLevel.GetWorldID())
-									//call DisplayTextToForce(bj_FORCE_PLAYER[0], "World ID " + I2S(nextLevel.GetWorldID()))
-									//call DisplayTextToForce(bj_FORCE_PLAYER[0], "World Progress " + I2S(worldProgress))
-									if worldProgress != 0 then
-										if worldProgress.FurthestLevel.NextLevel == 0 then
-											//team has already beaten this world!
-											call DisplayTextToForce(bj_FORCE_PLAYER[0], "You've already beaten that world!")
-											set nextLevel = 0
-											call User(curUser.value).RespawnAtRect(Teams_MazingTeam(curTeam.value).Revive, true)
-										else
-											set Teams_MazingTeam(curTeam.value).LastEventUser = curUser.value
-											
-											set nextLevel = worldProgress.FurthestLevel.NextLevel
+						if User(curUser.value).GameMode == Teams_GAMEMODE_STANDARD or User(curUser.value).GameMode == Teams_GAMEMODE_PLATFORMING then
+							set x = GetUnitX(User(curUser.value).ActiveUnit)
+							set y = GetUnitY(User(curUser.value).ActiveUnit)
+							
+							//check level transfer(s)
+							if Level(curLevel.value) == DOORS_LEVEL_ID then
+								set i = 0
+								loop
+								exitwhen i == WorldCount or nextLevel != 0
+									if DoorRects[i] != null and RectContainsCoords(DoorRects[i], x, y) then
+										set nextLevel = Level(i + DOORS_LEVEL_ID + 1) //levels take standard structure after the DOORS level
+										
+										//check if the team has already made progress into that world
+										set worldProgress = Teams_MazingTeam(curTeam.value).GetWorldProgress(nextLevel.GetWorldID())
+										//call DisplayTextToForce(bj_FORCE_PLAYER[0], "World ID " + I2S(nextLevel.GetWorldID()))
+										//call DisplayTextToForce(bj_FORCE_PLAYER[0], "World Progress " + I2S(worldProgress))
+										if worldProgress != 0 then
+											if worldProgress.FurthestLevel.NextLevel == 0 then
+												//team has already beaten this world!
+												call DisplayTextToForce(bj_FORCE_PLAYER[0], "You've already beaten that world!")
+												set nextLevel = 0
+												call User(curUser.value).RespawnAtRect(Teams_MazingTeam(curTeam.value).Revive, true)
+											else
+												set Teams_MazingTeam(curTeam.value).LastEventUser = curUser.value
+												
+												set nextLevel = worldProgress.FurthestLevel.NextLevel
+											endif
 										endif
 									endif
-								endif
-							set i = i + 1
-							endloop
-						else
-							if Level(curLevel.value).LevelEnd != null and RectContainsCoords(Level(curLevel.value).LevelEnd, x, y) then
-								set Teams_MazingTeam(curTeam.value).LastEventUser = curUser.value
-								
-								//check if there's a sequential level after the current one
-								if Level(curLevel.value).NextLevel != 0 then
-									set nextLevel = Level(curLevel.value).NextLevel
-								else
-									//finished all available levels in world, returning to Doors
-									set nextLevel = Level(DOORS_LEVEL_ID)
-								endif
-							endif
-						endif
-						
-						///check for any checkpoints if nothing has been found yet
-						if nextLevel == 0 and nextCheckpointID == -1 then
-							set i = 0
-							set curCheckpoint = Level(curLevel.value).Checkpoints.first
-							loop
-							exitwhen curCheckpoint == 0 or nextCheckpointID >= 0
-								if i > Teams_MazingTeam(curTeam.value).OnCheckpoint and (not Checkpoint(curCheckpoint.value).RequiresSameGameMode or User(curUser.value).GameMode == Checkpoint(curCheckpoint.value).DefaultGameMode) and Checkpoint(curCheckpoint.value).Gate != null and RectContainsCoords(Checkpoint(curCheckpoint.value).Gate, x, y) then
+								set i = i + 1
+								endloop
+							else
+								if Level(curLevel.value).LevelEnd != null and RectContainsCoords(Level(curLevel.value).LevelEnd, x, y) then
 									set Teams_MazingTeam(curTeam.value).LastEventUser = curUser.value
 									
-									set nextCheckpointID = i
+									//check if there's a sequential level after the current one
+									if Level(curLevel.value).NextLevel != 0 then
+										set nextLevel = Level(curLevel.value).NextLevel
+									else
+										//finished all available levels in world, returning to Doors
+										set nextLevel = Level(DOORS_LEVEL_ID)
+									endif
 								endif
-							set i = i + 1
-							set curCheckpoint = curCheckpoint.next
-							endloop
+							endif
+							
+							///check for any checkpoints if nothing has been found yet
+							if nextLevel == 0 and nextCheckpointID == -1 then
+								set i = 0
+								set curCheckpoint = Level(curLevel.value).Checkpoints.first
+								loop
+								exitwhen curCheckpoint == 0 or nextCheckpointID >= 0
+									if i > Teams_MazingTeam(curTeam.value).OnCheckpoint and (not Checkpoint(curCheckpoint.value).RequiresSameGameMode or User(curUser.value).GameMode == Checkpoint(curCheckpoint.value).DefaultGameMode) and Checkpoint(curCheckpoint.value).Gate != null and RectContainsCoords(Checkpoint(curCheckpoint.value).Gate, x, y) then
+										set Teams_MazingTeam(curTeam.value).LastEventUser = curUser.value
+										
+										set nextCheckpointID = i
+									endif
+								set i = i + 1
+								set curCheckpoint = curCheckpoint.next
+								endloop
+							endif
 						endif
 					set curUser = curUser.next
 					endloop
@@ -613,7 +805,7 @@ library Levels requires SimpleList, Teams, GameModesGlobals, LevelIDGlobals, Cin
 							call DisplayTextToForce(bj_FORCE_PLAYER[0], "Team entered transfer leading to  " + I2S(nextLevel))
 						endif
 						
-						call Level(curLevel.value).SwitchLevels(Teams_MazingTeam(curTeam.value), nextLevel, curUser.value, true)
+						call Level(curLevel.value).SwitchLevelsAnimated(Teams_MazingTeam(curTeam.value), nextLevel, true)
 					elseif nextCheckpointID >= 0 then
 						static if DEBUG_CHECKPOINT_CHANGE then
 							call DisplayTextToForce(bj_FORCE_PLAYER[0], "Activated by User  " + I2S(Teams_MazingTeam(curTeam.value).LastEventUser))
