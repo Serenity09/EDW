@@ -16,6 +16,7 @@ library Levels requires SimpleList, Teams, GameModesGlobals, LevelIDGlobals, Cin
         
 		private constant real LEVEL_TRANSFER_MESSAGE_DELAY = 2.5
 		private constant real LEVEL_TRANSFER_FADE_DURATION = 1.5
+		private constant real LEVEL_TRANSFER_UNPAUSE_DELAY = 1.
 		
 		private constant boolean DEBUG_START_STOP = false
 		private constant boolean DEBUG_LEVEL_CHANGE = false
@@ -557,24 +558,24 @@ library Levels requires SimpleList, Teams, GameModesGlobals, LevelIDGlobals, Cin
 			call nextLevel.StartLevelForTeam(mt)
         endmethod
 		
-		private static method SwitchLevels_FadeIn takes nothing returns nothing
-			local timer t = GetExpiredTimer()
-			local AnimatedLevelTransferData transferData = GetTimerData(t)
+		// private static method SwitchLevels_FadeIn takes nothing returns nothing
+			// local timer t = GetExpiredTimer()
+			// local AnimatedLevelTransferData transferData = GetTimerData(t)
 			
-			// call transferData.Team.PrintMessage(transferData.NextLevel.Name)
-			call transferData.Team.FadeInForTeam(LEVEL_TRANSFER_FADE_DURATION)
+			// // call transferData.Team.PrintMessage(transferData.NextLevel.Name)
+			// call transferData.Team.FadeInForTeam(LEVEL_TRANSFER_FADE_DURATION)
 			
-			call transferData.deallocate()
-			call ReleaseTimer(t)
-			set t = null
-		endmethod
+			// call transferData.deallocate()
+			// call ReleaseTimer(t)
+			// set t = null
+		// endmethod
 		private static method SwitchLevels_Message3 takes nothing returns nothing
 			local timer t = GetExpiredTimer()
 			local AnimatedLevelTransferData transferData = GetTimerData(t)
 						
 			call transferData.Team.PrintMessage("Now starting: " + transferData.NextLevel.Name)
-			
 			call transferData.Team.FadeInForTeam(LEVEL_TRANSFER_FADE_DURATION)
+			call transferData.Team.RegisterAutoUnpauseForTeam(LEVEL_TRANSFER_FADE_DURATION + LEVEL_TRANSFER_UNPAUSE_DELAY)
 			
 			call transferData.deallocate()
 			call ReleaseTimer(t)
@@ -602,7 +603,8 @@ library Levels requires SimpleList, Teams, GameModesGlobals, LevelIDGlobals, Cin
 			endif
 			
 			call transferData.Team.OnLevel.SwitchLevels(transferData.Team, transferData.NextLevel, transferData.Team.LastEventUser, true)
-						
+			call transferData.Team.CancelAutoUnpauseForTeam()
+			
 			if ShouldShowSettingVoteMenu() and RewardMode != GameModesGlobals_CHEAT and transferData.Team.OnLevel != DOORS_LEVEL_ID then
 				call TimerStart(t, LEVEL_TRANSFER_MESSAGE_DELAY, false, function thistype.SwitchLevels_Message2)
 			else

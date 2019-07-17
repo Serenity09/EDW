@@ -904,7 +904,7 @@ public struct MazingTeam
 		set curPlayerNode = curPlayerNode.next
 		endloop
 	endmethod
-	private method RegisterAutoUnpauseForTeam takes real timeout returns nothing
+	public method RegisterAutoUnpauseForTeam takes real timeout returns nothing
 		local SimpleList_ListNode curPlayerNode = .FirstUser
 		
 		loop
@@ -912,6 +912,22 @@ public struct MazingTeam
 			call User(curPlayerNode.value).RegisterAutoUnpause(timeout)
 		set curPlayerNode = curPlayerNode.next
 		endloop
+	endmethod
+	public method GetAutoUnpauseLeastRemainingTime takes nothing returns real
+		local SimpleList_ListNode curPlayerNode = .FirstUser
+		local real leastTime = -1.
+		local real curPlayerTime
+		
+		loop
+		exitwhen curPlayerNode == 0
+		set curPlayerTime = User(curPlayerNode.value).GetAutoUnpauseRemainingTime()
+			if leastTime == -1. or (curPlayerTime != -1. and curPlayerTime < leastTime) then
+				set leastTime = curPlayerTime
+			endif
+		set curPlayerNode = curPlayerNode.next
+		endloop
+				
+		return leastTime
 	endmethod
 	
 	public method SetUnitLocalVisibilityForTeam takes unit u, boolean visible returns nothing

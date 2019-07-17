@@ -73,17 +73,10 @@ library EDWVisualVote requires VisualVote, ContinueGlobals, Teams, PlayerUtils, 
 	
 	private function FadeCBTwo takes nothing returns nothing
 		local timer t = GetExpiredTimer()
-		local SimpleList_ListNode fp = PlayerUtils_FirstPlayer
 		
 		call DisplayCineFilter(false)
 		call EnableUserUI(true)
-		
-		loop
-		exitwhen fp == 0
-			call PauseUnit(MazersArray[fp.value], false)
-		set fp = fp.next
-		endloop
-				
+						
 		call DestroyTimer(t)
 		set t = null
 	endfunction
@@ -323,6 +316,10 @@ library EDWVisualVote requires VisualVote, ContinueGlobals, Teams, PlayerUtils, 
 			endif
 						
 			call firstLevel.StartLevelForTeam(team[i])
+			
+			if ShouldShowSettingVoteMenu() then
+				call team[i].CancelAutoUnpauseForTeam()
+			endif
 			
             //debug call DisplayTextToPlayer(Player(0), 0, 0, "Team " + I2S(team[i]) + " on level: " + I2S(team[i].OnLevel))
         set i = i + 1

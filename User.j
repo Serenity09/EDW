@@ -251,7 +251,7 @@ struct User extends array
     private static method UnpauseUserCB takes nothing returns nothing
         local timer t = GetExpiredTimer()
         local thistype u = thistype(GetTimerData(t))
-        
+        		
         if u.IsPlaying then
             //debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "unpausing " + I2S(u))
             //call PauseUnit(u.ActiveUnit, false)
@@ -272,9 +272,15 @@ struct User extends array
     endmethod
 	public method RegisterAutoUnpause takes real timeout returns nothing
 		call .CancelAutoUnpause()
-		
 		set .UnpauseTimer = NewTimerEx(this)
 		call TimerStart(.UnpauseTimer, timeout, false, function thistype.UnpauseUserCB)
+	endmethod
+	public method GetAutoUnpauseRemainingTime takes nothing returns real
+		if .UnpauseTimer != null then
+			return TimerGetRemaining(.UnpauseTimer)
+		else
+			return -1.
+		endif
 	endmethod
 	
     public method RespawnAtRect takes rect r, boolean moveliving returns nothing

@@ -94,7 +94,7 @@ library FastLoad requires IStartable, SimpleList, RelayGenerator, SimpleGenerato
 			local thistype fastLoad = thistype.GetCheckpointFastLoad(EventCurrentLevel, EventCheckpoint)
 			local SimpleList_ListNode curNode
 						
-			if fastLoad != 0 and fastLoad.LoadState != LOADED and (TimerGetRemaining(fastLoad.OverclockTimer) + OVERCLOCK_LOADED_EXTRA_WAIT) > RespawnPauseTime then
+			if fastLoad != 0 and fastLoad.LoadState != LOADED and (TimerGetRemaining(fastLoad.OverclockTimer) + OVERCLOCK_LOADED_EXTRA_WAIT) > Levels_Level.CBTeam.GetAutoUnpauseLeastRemainingTime() then
 				call fastLoad.AwaitingTeams.addEnd(Levels_Level.CBTeam)
 				
 				call Levels_Level.CBTeam.CancelAutoUnpauseForTeam()
