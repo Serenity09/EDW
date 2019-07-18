@@ -175,6 +175,21 @@ struct ComplexTerrainPathingResult extends array
 		call DisplayTextToForce(bj_FORCE_PLAYER[0], "Pathing: " + I2S(.TerrainPathingForPoint) + ", Quadrant " + I2S(.QuadrantForPoint))
 	endmethod
     
+	public method GetXTerrainType takes nothing returns integer
+		if .TerrainPathingForPoint == ComplexTerrainPathing_Square then
+			return GetTerrainType(.TerrainMidpointX, .TerrainMidpointY)
+		else
+			return .RelevantXTerrainTypeID
+		endif
+	endmethod
+	public method GetYTerrainType takes nothing returns integer
+		if .TerrainPathingForPoint == ComplexTerrainPathing_Square then
+			return GetTerrainType(.TerrainMidpointX, .TerrainMidpointY)
+		else
+			return .RelevantYTerrainTypeID
+		endif
+	endmethod
+	
     public static method CreateSimple takes integer pathingType, real terrainMidX, real terrainMidY returns thistype
         local thistype new 
 

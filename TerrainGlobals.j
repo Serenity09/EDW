@@ -41,6 +41,48 @@ library TerrainGlobals initializer initTerrainGlobals requires GameGlobalConstan
         constant real TERRAIN_QUADRANT_ROUND = .5
     endglobals
     
+	function TerrainID2S takes integer ttype returns string
+		if ttype == ABYSS then
+			return "abyss"
+		elseif ttype == LRGBRICKS then 
+			return "large bricks"
+		elseif ttype == RTILE then
+			return "round tile"
+		elseif ttype == ROAD then
+			return "road"
+		elseif ttype == LAVA then
+			return "lava"
+		elseif ttype == NOEFFECT then
+			return "no effect"
+		elseif ttype == GRASS then
+			return "grass"
+		elseif ttype == SNOW then
+			return "snow"
+		elseif ttype == D_GRASS then
+			return "dark grass"
+		elseif ttype == SLOWICE then
+			return "slow ice"
+		elseif ttype == LEAVES then
+			return "leaves"
+		elseif ttype == MEDIUMICE then
+			return "medium ice"
+		elseif ttype == FASTICE then
+			return "fast ice"
+		elseif ttype == VINES then
+			return "vines"
+		elseif ttype == SAND then
+			return "sand"
+		elseif ttype == RSNOW then
+			return "rocky snow"
+		else
+			static if DEBUG_MODE then
+				call DisplayTextToForce(bj_FORCE_PLAYER[0], "Undefined ttype: " + I2S(ttype))
+			endif
+			
+			return ""
+		endif
+	endfunction
+	
     public function IsTerrainPathable takes integer ttype returns boolean
         return ttype == DEATH or ttype == PATHABLE or ttype == OCEAN or ttype == PLATFORMING or ttype == VINES or ttype == RTILE or ttype == LEAVES
     endfunction

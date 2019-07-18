@@ -51,6 +51,7 @@ globals
 	
     private constant boolean DEBUG_TERRAIN_KILL = false
     private constant boolean DEBUG_TERRAIN_CHANGE = false
+	private constant boolean DEBUG_GRASS_GRAVITY = false
     private constant boolean DEBUG_JUMPING = false
 	
 	private constant boolean DEBUG_CAMERA = false
@@ -1116,9 +1117,7 @@ endglobals
 
             //apply X velocity
             set newX = newX + .XVelocity
-            
-            //apply constant Y forces
-             
+                         
             //apply y velocity
             set newY = newY + .YVelocity
 			 
@@ -2956,7 +2955,7 @@ endglobals
             //effects from terrain the platformer is pushed against should be multiplicative so that they're compatible with the main terrain effects, and anything else that effects physic variables
             if .XTerrainPushedAgainst != .XAppliedTerrainPushedAgainst then
                 static if DEBUG_TERRAIN_CHANGE then
-                    call DisplayTextToForce(bj_FORCE_PLAYER[0], "Removing X terrain: " + I2S(.XAppliedTerrainPushedAgainst) + ", applying terrain: " + I2S(.XTerrainPushedAgainst))
+                    call DisplayTextToForce(bj_FORCE_PLAYER[0], "Removing X terrain: " + TerrainID2S(.XAppliedTerrainPushedAgainst) + ", applying terrain: " + TerrainID2S(.XTerrainPushedAgainst))
                 endif
                 
                 call .RemoveXSurfaceTerrainEffect()
@@ -2986,7 +2985,7 @@ endglobals
             
             if .YTerrainPushedAgainst != .YAppliedTerrainPushedAgainst then
                 static if DEBUG_TERRAIN_CHANGE then
-                    call DisplayTextToForce(bj_FORCE_PLAYER[0], "Removing Y terrain: " + I2S(.YAppliedTerrainPushedAgainst) + ", applying terrain: " + I2S(.YTerrainPushedAgainst))
+                    call DisplayTextToForce(bj_FORCE_PLAYER[0], "Removing Y terrain: " + TerrainID2S(.YAppliedTerrainPushedAgainst) + ", applying terrain: " + TerrainID2S(.YTerrainPushedAgainst))
                 endif
                 
                 call .RemoveYSurfaceTerrainEffect()
@@ -3000,18 +2999,26 @@ endglobals
 					call .MSEquation.addAdjustment(PlatformerPropertyEquation_MULTIPLY_ADJUSTMENT, GRASS, GRASS_MS)
                     set .MoveSpeed = .MSEquation.calculateAdjustedValue(.BaseProfile.MoveSpeed)
 					
-                    if (.GravitationalAccel > 0 and (.DiagonalPathing.TerrainPathingForPoint == ComplexTerrainPathing_SE or .DiagonalPathing.TerrainPathingForPoint == ComplexTerrainPathing_SW)) or (.GravitationalAccel < 0 and (.DiagonalPathing.TerrainPathingForPoint == ComplexTerrainPathing_NE or .DiagonalPathing.TerrainPathingForPoint == ComplexTerrainPathing_NW)) then
-                        call .TVYEquation.addAdjustment(PlatformerPropertyEquation_MULTIPLY_ADJUSTMENT, GRASS, GRASS_TVY)
+                    if (.GravitationalAccel > 0 and (.DiagonalPathing.TerrainPathingForPoint == ComplexTerrainPathing_Bottom or .DiagonalPathing.TerrainPathingForPoint == ComplexTerrainPathing_SE or .DiagonalPathing.TerrainPathingForPoint == ComplexTerrainPathing_SW)) or (.GravitationalAccel < 0 and (.DiagonalPathing.TerrainPathingForPoint == ComplexTerrainPathing_Top or .DiagonalPathing.TerrainPathingForPoint == ComplexTerrainPathing_NE or .DiagonalPathing.TerrainPathingForPoint == ComplexTerrainPathing_NW)) then
+						call .TVYEquation.addAdjustment(PlatformerPropertyEquation_MULTIPLY_ADJUSTMENT, GRASS, GRASS_TVY)
                         set .TerminalVelocityY = .TVYEquation.calculateAdjustedValue(.BaseProfile.TerminalVelocityY)
+						
+						static if DEBUG_GRASS_GRAVITY then
+							call DisplayTextToForce(bj_FORCE_PLAYER[0], "Grass adding terminal velocity adjustment, new value: " + R2S(.TerminalVelocityY))
+						endif
                     endif
                 elseif .YTerrainPushedAgainst == DGRASS then
                     call .MSEquation.addAdjustment(PlatformerPropertyEquation_MULTIPLY_ADJUSTMENT, DGRASS, DGRASS_MS)
                     set .MoveSpeed = .MSEquation.calculateAdjustedValue(.BaseProfile.MoveSpeed)
 					//set .MoveSpeed = .MoveSpeed * DGRASS_MS
 					
-                    if (.GravitationalAccel > 0 and (.DiagonalPathing.TerrainPathingForPoint == ComplexTerrainPathing_SE or .DiagonalPathing.TerrainPathingForPoint == ComplexTerrainPathing_SW)) or (.GravitationalAccel < 0 and (.DiagonalPathing.TerrainPathingForPoint == ComplexTerrainPathing_NE or .DiagonalPathing.TerrainPathingForPoint == ComplexTerrainPathing_NW)) then
+                    if (.GravitationalAccel > 0 and (.DiagonalPathing.TerrainPathingForPoint == ComplexTerrainPathing_Bottom or .DiagonalPathing.TerrainPathingForPoint == ComplexTerrainPathing_SE or .DiagonalPathing.TerrainPathingForPoint == ComplexTerrainPathing_SW)) or (.GravitationalAccel < 0 and (.DiagonalPathing.TerrainPathingForPoint == ComplexTerrainPathing_Top or .DiagonalPathing.TerrainPathingForPoint == ComplexTerrainPathing_NE or .DiagonalPathing.TerrainPathingForPoint == ComplexTerrainPathing_NW)) then
                         call .TVYEquation.addAdjustment(PlatformerPropertyEquation_MULTIPLY_ADJUSTMENT, DGRASS, DGRASS_TVY)
                         set .TerminalVelocityY = .TVYEquation.calculateAdjustedValue(.BaseProfile.TerminalVelocityY)
+						
+						static if DEBUG_GRASS_GRAVITY then
+							call DisplayTextToForce(bj_FORCE_PLAYER[0], "Grass adding terminal velocity adjustment, new value: " + R2S(.TerminalVelocityY))
+						endif
                     endif
                 elseif .YTerrainPushedAgainst == SLOWICE then
                     call .XFalloffEquation.addAdjustment(PlatformerPropertyEquation_MULTIPLY_ADJUSTMENT, SLOWICE, PlatformerIce_SLOW_XFALLOFF)
@@ -3040,7 +3047,7 @@ endglobals
                 return
             elseif ttype != .TerrainDX then
                 static if DEBUG_TERRAIN_CHANGE then
-                    call DisplayTextToForce(bj_FORCE_PLAYER[0], "Removing terrain: " + I2S(.TerrainDX) + ", applying terrain: " + I2S(ttype))
+                    call DisplayTextToForce(bj_FORCE_PLAYER[0], "Removing terrain: " + TerrainID2S(.TerrainDX) + ", applying terrain: " + TerrainID2S(ttype))
                     call DisplayTextToForce(bj_FORCE_PLAYER[0], "-----")
                 endif
                 
@@ -3477,6 +3484,8 @@ endglobals
         private static method Up_PRESSED takes nothing returns boolean
             local integer pID = GetPlayerId(GetTriggerPlayer())
             local Platformer p = User(pID).Platformer
+			local ComplexTerrainPathingResult pathingResult
+			//ComplexTerrainPathing_GetPathingForPoint(.XPosition + newX, .YPosition + newY)
             local real l
             
             static if DEBUG_JUMPING then
@@ -3485,11 +3494,10 @@ endglobals
             
             //only apply logic if player is platforming
             if p.IsPlatforming then                
-                //overhaul for jumping against the surface you're pushed into
                 static if DEBUG_JUMPING then
-                    debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "Push vector: " + p.PushedAgainstVector.toString())
-                    debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "Y Terrain: " + I2S(p.YTerrainPushedAgainst))
-                    debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "X Terrain: " + I2S(p.XTerrainPushedAgainst))
+                    call DisplayTextToForce(bj_FORCE_PLAYER[0], "Push vector: " + p.PushedAgainstVector.toString())
+                    call DisplayTextToForce(bj_FORCE_PLAYER[0], "Y Terrain: " + I2S(p.YTerrainPushedAgainst))
+                    call DisplayTextToForce(bj_FORCE_PLAYER[0], "X Terrain: " + I2S(p.XTerrainPushedAgainst))
                 endif
                 
                 if p.OnDiagonal or p.PushedAgainstVector != 0 then
@@ -3588,39 +3596,88 @@ endglobals
                     endif
                 else
                     //double check that there's nothing close by for the sake of playability -- this only applies when not on a diagonal
-                    //physics loop lags behind key even too much
+                    //physics loop lags behind key event too much
                     
-                    //check below and above y
+                    //check below or above y, assuming 
                     //p.YPosition
-                    
-                    
-                    if p.GravitationalAccel > 0 then
-                        if TerrainGlobals_IsTerrainJumpable(GetTerrainType(p.XPosition, p.YPosition + vjBUFFER)) then
-                            set p.YVelocity = -p.vJumpSpeed
+					static if DEBUG_JUMPING then
+						call DisplayTextToForce(bj_FORCE_PLAYER[0], "Not on diagonal, checking for jump opposition elsewhere")
+					endif
+					
+                    if (p.YVelocity == 0 and p.GravitationalAccel > 0) or p.YVelocity > 0 then
+                        set pathingResult = ComplexTerrainPathing_GetPathingForPoint(p.XPosition, p.YPosition + vjBUFFER)
+						
+						if (pathingResult.TerrainPathingForPoint == ComplexTerrainPathing_Square or pathingResult.TerrainPathingForPoint == ComplexTerrainPathing_Bottom) and TerrainGlobals_IsTerrainJumpable(pathingResult.GetYTerrainType()) then
+							set p.YVelocity = -p.vJumpSpeed
                             
                             //Objects\Spawnmodels\Other\ToonBoom\ToonBoom.mdl
                             call DestroyEffect(AddSpecialEffect(VERTICAL_JUMP_FX, p.XPosition, p.YPosition))
                             //debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "Vert jump " + R2S(p.YVelocity))
                             
-                            return false
-                        endif
-                    elseif p.GravitationalAccel < 0 then
-                        if TerrainGlobals_IsTerrainJumpable(GetTerrainType(p.XPosition, p.YPosition - vjBUFFER)) then                    
-                            set p.YVelocity = p.vJumpSpeed
-                        
+							static if DEBUG_JUMPING then
+								call DisplayTextToForce(bj_FORCE_PLAYER[0], "Found vertical opposition above")
+							endif
+							
+							call pathingResult.destroy()
+							return false
+						endif
+						
+						call pathingResult.destroy()
+						
+						// if TerrainGlobals_IsTerrainJumpable(GetTerrainType(p.XPosition, p.YPosition + vjBUFFER)) then
+                            // set p.YVelocity = -p.vJumpSpeed
+                            
+                            // //Objects\Spawnmodels\Other\ToonBoom\ToonBoom.mdl
+                            // call DestroyEffect(AddSpecialEffect(VERTICAL_JUMP_FX, p.XPosition, p.YPosition))
+                            // //debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "Vert jump " + R2S(p.YVelocity))
+                            
+							// static if DEBUG_JUMPING then
+								// call DisplayTextToForce(bj_FORCE_PLAYER[0], "Found vertical opposition above")
+							// endif
+							
+                            // return false
+                        // endif
+                    elseif (p.YVelocity == 0 and p.GravitationalAccel < 0) or p.YVelocity < 0 then
+                        set pathingResult = ComplexTerrainPathing_GetPathingForPoint(p.XPosition, p.YPosition - vjBUFFER)
+						// call DisplayTextToForce(bj_FORCE_PLAYER[0], "Pathing below: " + I2S(pathingResult.TerrainPathingForPoint))
+						
+						if (pathingResult.TerrainPathingForPoint == ComplexTerrainPathing_Square or pathingResult.TerrainPathingForPoint == ComplexTerrainPathing_Top) and TerrainGlobals_IsTerrainJumpable(pathingResult.GetYTerrainType()) then
+							set p.YVelocity = p.vJumpSpeed
+                            
+                            //Objects\Spawnmodels\Other\ToonBoom\ToonBoom.mdl
                             call DestroyEffect(AddSpecialEffect(VERTICAL_JUMP_FX, p.XPosition, p.YPosition))
                             //debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "Vert jump " + R2S(p.YVelocity))
                             
-                            return false
-                        endif
-                    else
-                        return false
+							static if DEBUG_JUMPING then
+								call DisplayTextToForce(bj_FORCE_PLAYER[0], "Found vertical opposition below")
+							endif
+							
+							call pathingResult.destroy()
+							return false
+						endif
+						
+						call pathingResult.destroy()
+						
+						// if TerrainGlobals_IsTerrainJumpable(GetTerrainType(p.XPosition, p.YPosition - vjBUFFER)) then                    
+                            // set p.YVelocity = p.vJumpSpeed
+                        
+                            // call DestroyEffect(AddSpecialEffect(VERTICAL_JUMP_FX, p.XPosition, p.YPosition))
+                            // //debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "Vert jump " + R2S(p.YVelocity))
+                            
+							// static if DEBUG_JUMPING then
+								// call DisplayTextToForce(bj_FORCE_PLAYER[0], "Found vertical opposition below")
+							// endif
+							
+                            // return false
+                        // endif
                     endif
                     
                     //check left of x
-                    if TerrainGlobals_IsTerrainWallJumpable(GetTerrainType(p.XPosition - hjBUFFER, p.YPosition)) and TerrainGlobals_IsTerrainSquare(GetTerrainType(p.XPosition - hjBUFFER, p.YPosition)) then
-                        //apply a percentage, given by v2hJumpRatio, of vJumpSpeed as immediate YVelocity
-                        if TerrainGlobals_IsTerrainGoodFooting(GetTerrainType(p.XPosition - hjBUFFER, p.YPosition)) then
+					set pathingResult = ComplexTerrainPathing_GetPathingForPoint(p.XPosition - hjBUFFER, p.YPosition)
+						
+					if (pathingResult.TerrainPathingForPoint == ComplexTerrainPathing_Square or pathingResult.TerrainPathingForPoint == ComplexTerrainPathing_Right) and TerrainGlobals_IsTerrainWallJumpable(pathingResult.GetXTerrainType()) then
+						//apply a percentage, given by v2hJumpRatio, of vJumpSpeed as immediate YVelocity
+                        if TerrainGlobals_IsTerrainGoodFooting(pathingResult.GetXTerrainType()) then
 							if p.GravitationalAccel < 0 then
 								set p.YVelocity = p.vJumpSpeed * p.v2hJumpRatio
 							elseif p.GravitationalAccel > 0 then
@@ -3634,19 +3691,27 @@ endglobals
 							endif
 						endif
                         
+						static if DEBUG_JUMPING then
+							call DisplayTextToForce(bj_FORCE_PLAYER[0], "Found horizontal opposition left")
+						endif
+						
                         //apply full horizontal jump speed (this is the only use for it)
                         set p.XVelocity = p.hJumpSpeed
                         
                         call DestroyEffect(AddSpecialEffect(NON_VERTICAL_JUMP_FX, p.XPosition, p.YPosition))
-                        //debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "Left wall jump " + R2S(p.YVelocity) + ", " + R2S(p.XVelocity))
-                        
-                        return false
-                    endif
-                    
-                    //otherwise check if can right wall jump
-                    if TerrainGlobals_IsTerrainWallJumpable(GetTerrainType(p.XPosition + hjBUFFER, p.YPosition)) and TerrainGlobals_IsTerrainSquare(GetTerrainType(p.XPosition + hjBUFFER, p.YPosition)) then
-                        //apply a percentage, given by v2hJumpRatio, of vJumpSpeed as immediate YVelocity
-						if TerrainGlobals_IsTerrainGoodFooting(GetTerrainType(p.XPosition + hjBUFFER, p.YPosition)) then
+						
+						call pathingResult.destroy()
+						return false
+					endif
+					
+					call pathingResult.destroy()
+					
+					//check right of x
+					set pathingResult = ComplexTerrainPathing_GetPathingForPoint(p.XPosition + hjBUFFER, p.YPosition)
+						
+					if (pathingResult.TerrainPathingForPoint == ComplexTerrainPathing_Square or pathingResult.TerrainPathingForPoint == ComplexTerrainPathing_Left) and TerrainGlobals_IsTerrainWallJumpable(pathingResult.GetXTerrainType()) then
+						//apply a percentage, given by v2hJumpRatio, of vJumpSpeed as immediate YVelocity
+						if TerrainGlobals_IsTerrainGoodFooting(pathingResult.GetXTerrainType()) then
 							if p.GravitationalAccel < 0 then
 								set p.YVelocity = p.vJumpSpeed * p.v2hJumpRatio
 							elseif p.GravitationalAccel > 0 then
@@ -3660,14 +3725,79 @@ endglobals
 							endif
 						endif
                         
+						static if DEBUG_JUMPING then
+							call DisplayTextToForce(bj_FORCE_PLAYER[0], "Found horizontal opposition right")
+						endif
+						
                         //apply full horizontal jump speed (this is the only use for it)
                         set p.XVelocity = -p.hJumpSpeed
                         
                         call DestroyEffect(AddSpecialEffect(NON_VERTICAL_JUMP_FX, p.XPosition, p.YPosition))
-                        //debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "Right wall jump " + R2S(p.YVelocity) + ", " + R2S(p.XVelocity))
+						
+						call pathingResult.destroy()
+						return false
+					endif
+					
+					call pathingResult.destroy()
+										
+                    // if TerrainGlobals_IsTerrainWallJumpable(GetTerrainType(p.XPosition - hjBUFFER, p.YPosition)) and TerrainGlobals_IsTerrainSquare(GetTerrainType(p.XPosition - hjBUFFER, p.YPosition)) then
+                        // //apply a percentage, given by v2hJumpRatio, of vJumpSpeed as immediate YVelocity
+                        // if TerrainGlobals_IsTerrainGoodFooting(GetTerrainType(p.XPosition - hjBUFFER, p.YPosition)) then
+							// if p.GravitationalAccel < 0 then
+								// set p.YVelocity = p.vJumpSpeed * p.v2hJumpRatio
+							// elseif p.GravitationalAccel > 0 then
+								// set p.YVelocity = -p.vJumpSpeed * p.v2hJumpRatio
+							// endif
+						// else
+							// if p.GravitationalAccel < 0 then
+								// set p.YVelocity = p.YVelocity + p.vJumpSpeed * p.v2hJumpRatio
+							// elseif p.GravitationalAccel > 0 then
+								// set p.YVelocity = p.YVelocity + -p.vJumpSpeed * p.v2hJumpRatio
+							// endif
+						// endif
                         
-                        return false
-                    endif
+						// static if DEBUG_JUMPING then
+							// call DisplayTextToForce(bj_FORCE_PLAYER[0], "Found horizontal opposition left")
+						// endif
+						
+                        // //apply full horizontal jump speed (this is the only use for it)
+                        // set p.XVelocity = p.hJumpSpeed
+                        
+                        // call DestroyEffect(AddSpecialEffect(NON_VERTICAL_JUMP_FX, p.XPosition, p.YPosition))
+                        // //debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "Left wall jump " + R2S(p.YVelocity) + ", " + R2S(p.XVelocity))
+                        
+                        // return false
+                    // endif
+                    
+                    //otherwise check if can right wall jump
+                    // if TerrainGlobals_IsTerrainWallJumpable(GetTerrainType(p.XPosition + hjBUFFER, p.YPosition)) and TerrainGlobals_IsTerrainSquare(GetTerrainType(p.XPosition + hjBUFFER, p.YPosition)) then
+                        // //apply a percentage, given by v2hJumpRatio, of vJumpSpeed as immediate YVelocity
+						// if TerrainGlobals_IsTerrainGoodFooting(GetTerrainType(p.XPosition + hjBUFFER, p.YPosition)) then
+							// if p.GravitationalAccel < 0 then
+								// set p.YVelocity = p.vJumpSpeed * p.v2hJumpRatio
+							// elseif p.GravitationalAccel > 0 then
+								// set p.YVelocity = -p.vJumpSpeed * p.v2hJumpRatio
+							// endif
+						// else
+							// if p.GravitationalAccel < 0 then
+								// set p.YVelocity = p.YVelocity + p.vJumpSpeed * p.v2hJumpRatio
+							// elseif p.GravitationalAccel > 0 then
+								// set p.YVelocity = p.YVelocity + -p.vJumpSpeed * p.v2hJumpRatio
+							// endif
+						// endif
+                        
+						// static if DEBUG_JUMPING then
+							// call DisplayTextToForce(bj_FORCE_PLAYER[0], "Found horizontal opposition right")
+						// endif
+						
+                        // //apply full horizontal jump speed (this is the only use for it)
+                        // set p.XVelocity = -p.hJumpSpeed
+                        
+                        // call DestroyEffect(AddSpecialEffect(NON_VERTICAL_JUMP_FX, p.XPosition, p.YPosition))
+                        // //debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "Right wall jump " + R2S(p.YVelocity) + ", " + R2S(p.XVelocity))
+                        
+                        // return false
+                    // endif
                 endif
                 
                 if p.TerrainDX == OCEAN and p.CanOceanJump then
