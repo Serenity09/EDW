@@ -296,6 +296,7 @@ library Levels requires SimpleList, Teams, GameModesGlobals, LevelIDGlobals, Cin
                 call mt.MoveRevive(cp.ReviveCenter)
                 call mt.RespawnTeamAtRect(cp.ReviveCenter, true)
                 call mt.ApplyKeyToTeam(cp.DefaultColor)
+				call mt.ResetHealthForTeam()
                 
                 call mt.UpdateMultiboard()
 				

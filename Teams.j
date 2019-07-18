@@ -1039,6 +1039,18 @@ public struct MazingTeam
 		endloop
 	endmethod
 	
+	public method ResetHealthForTeam takes nothing returns nothing
+		local SimpleList_ListNode curPlayerNode = .FirstUser
+		
+		loop
+		exitwhen curPlayerNode == 0
+			if User(curPlayerNode.value).IsAlive then
+				call SetUnitState(MazersArray[curPlayerNode.value], UNIT_STATE_LIFE, GetUnitState(MazersArray[curPlayerNode.value], UNIT_STATE_MAX_LIFE))
+			endif
+		set curPlayerNode = curPlayerNode.next
+		endloop
+	endmethod
+	
 	public method CreateInstantEffectForTeam takes string fxFileLocation, User filter returns nothing
 		local SimpleList_ListNode curPlayerNode = .FirstUser
 		
