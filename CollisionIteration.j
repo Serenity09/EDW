@@ -290,7 +290,9 @@ private function CollisionIteration takes nothing returns nothing
 										//revive unit at position of mazer to avoid reviving in an illegal position
 										if User(curUserNode.value).GameMode == Teams_GAMEMODE_STANDARD then
 											call User(GetPlayerId(GetOwningPlayer(cu))).SwitchGameModes(Teams_GAMEMODE_STANDARD_PAUSED, GetUnitX(User(GetPlayerId(GetOwningPlayer(cu))).ActiveUnit), GetUnitY(User(GetPlayerId(GetOwningPlayer(cu))).ActiveUnit))
-											call SetDefaultCameraForPlayer(GetPlayerId(GetOwningPlayer(cu)), .5)
+											// call SetDefaultCameraForPlayer(GetPlayerId(GetOwningPlayer(cu)), .5)
+											call User(GetPlayerId(GetOwningPlayer(cu))).ApplyDefaultCameras(.5)
+											call User(GetPlayerId(GetOwningPlayer(cu))).ApplyDefaultSelections()
 										elseif User(curUserNode.value).GameMode == Teams_GAMEMODE_PLATFORMING then
 											call User(GetPlayerId(GetOwningPlayer(cu))).SwitchGameModes(Teams_GAMEMODE_PLATFORMING_PAUSED, GetUnitX(User(GetPlayerId(GetOwningPlayer(cu))).ActiveUnit), GetUnitY(User(GetPlayerId(GetOwningPlayer(cu))).ActiveUnit))
 										endif

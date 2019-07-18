@@ -159,6 +159,20 @@ struct User extends array
         endif
     endmethod
     
+	public method ToggleDefaultTracking takes nothing returns nothing
+        set DefaultCameraTracking[this] = not DefaultCameraTracking[this]
+		
+		if GetLocalPlayer() == Player(this) then
+            if DefaultCameraTracking[this] then
+				//enable
+                call SetCameraTargetController(MazersArray[this], 0, 0, false)
+            else
+                //disable
+                call ResetToGameCamera(0)
+                call CameraSetupApply(DefaultCamera[this], false, false)
+            endif
+        endif
+    endmethod
     public method ApplyDefaultCameras takes real time returns nothing
         static if DEBUG_CAMERA then
 			if GetLocalPlayer() == Player(0) then
@@ -566,7 +580,7 @@ struct User extends array
             if newGameMode == Teams_GAMEMODE_STANDARD then
                 //moves the mazing unit
 				call SetUnitPosition(MazersArray[this], x, y)
-                //adds the reg unit from the reg game loop. thereby enabling regular terrain effects
+				//adds the reg unit from the reg game loop. thereby enabling regular terrain effects
 				call StandardMazingUsers.addEnd(this)
                 //updates the number of units platforming/regular mazing
                 set NumberMazing = NumberMazing + 1
@@ -647,7 +661,7 @@ struct User extends array
 				set .IsAlive = true
 			endif
 			
-            if newGameMode == Teams_GAMEMODE_STANDARD or newGameMode == Teams_GAMEMODE_STANDARD_PAUSED then
+            if newGameMode == Teams_GAMEMODE_STANDARD or newGameMode == Teams_GAMEMODE_STANDARD_PAUSED or newGameMode == Teams_GAMEMODE_DYING then
                 set .ActiveUnit = MazersArray[this]
 				set .ActiveUnitRadius = GetUnitDefaultRadius(GetUnitTypeId(.ActiveUnit))
             elseif newGameMode == Teams_GAMEMODE_PLATFORMING or newGameMode == Teams_GAMEMODE_PLATFORMING_PAUSED then
@@ -662,7 +676,7 @@ struct User extends array
                     set .ActiveUnit = PlayerReviveCircles[this]
 					set .ActiveUnitRadius = GetUnitDefaultRadius(GetUnitTypeId(.ActiveUnit))
                 endif
-			elseif newGameMode < 0 then
+			elseif newGameMode == Teams_GAMEMODE_HIDDEN then
 				set .ActiveUnit = null
             endif
         endif

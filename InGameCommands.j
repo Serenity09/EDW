@@ -277,7 +277,7 @@ function ParseCommand takes nothing returns nothing
     endif
 	
     if cmd == "track" or cmd == "t" or cmd == "follow" or cmd == "f" then
-        call ToggleDefaultTracking(p.PID)
+        call u.ToggleDefaultTracking()
     endif
 endfunction
 

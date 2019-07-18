@@ -51,59 +51,7 @@ library MazerGlobals initializer Init requires GameGlobalConstants, ContinueGlob
 		private constant boolean FORCE_DEBUG_TELE = false
 		private constant integer DEBUG_TELE_ITEM_ID = 'I001'
     endglobals
-    
-    function SetDefaultCameraForPlayer takes integer pID, real panTime returns nothing
-        if GetLocalPlayer() == Player(pID) then
-            call ClearSelection()
-            call SelectUnit(MazersArray[pID], true)
             
-            if panTime >= 0 then
-                call CameraSetupApplyForceDuration(DefaultCamera[pID], true, panTime)
-                call PanCameraToTimed(GetUnitX(MazersArray[pID]), GetUnitY(MazersArray[pID]), panTime)
-            else
-                call CameraSetupApply(DefaultCamera[pID], false, false)
-            endif
-            
-            if DefaultCameraTracking[pID] then
-                call SetCameraTargetController(MazersArray[pID], 0, 0, false)
-            endif
-        endif
-    endfunction
-    
-    function SetDefaultTracking takes integer pID, boolean flag returns nothing
-        if flag != DefaultCameraTracking[pID] then
-            if GetLocalPlayer() == Player(pID) then
-                if flag then
-                    //enable
-                    call SetCameraTargetController(MazersArray[pID], 0, 0, false)
-                else
-                    //disable
-                    call ResetToGameCamera(0)
-                    call CameraSetupApply(DefaultCamera[pID], false, false)
-                endif
-            endif
-            
-            set DefaultCameraTracking[pID] = flag
-        endif
-    endfunction
-    function ToggleDefaultTracking takes integer pID returns nothing
-        call DisplayTextToPlayer(Player(pID), 0, 0, "Toggle tracking for " + I2S(pID))
-        if GetLocalPlayer() == Player(pID) then
-            if DefaultCameraTracking[pID] then
-                call DisplayTextToPlayer(Player(pID), 0, 0, "Disable")
-                //disable
-                call ResetToGameCamera(0)
-                call CameraSetupApply(DefaultCamera[pID], false, false)
-            else
-                call DisplayTextToPlayer(Player(pID), 0, 0, "Enable")
-                //enable
-                call SetCameraTargetController(MazersArray[pID], 0, 0, false)
-            endif
-        endif
-        
-        set DefaultCameraTracking[pID] = not DefaultCameraTracking[pID]
-    endfunction
-    
     public function Init takes nothing returns nothing
         local integer i = 0
         //local trigger t = CreateTrigger()
