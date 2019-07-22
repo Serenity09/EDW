@@ -17,12 +17,14 @@ struct User extends array
     public integer GameMode //0: regular DH mazing, 1: wisp platforming, 9: mini-games?
     public integer PreviousGameMode //only standard or platforming
     public Teams_MazingTeam Team
-    public Cinematic CinematicPlaying
+    public CinemaCallbackModel CinematicPlaying
     public SimpleList_List CinematicQueue //FiFo
 	public effect ActiveEffect
 	private timer UnpauseTimer
     
     public static integer ActivePlayers
+	
+	private static Cinematic ToggleCameraTrackingTutorial
 	
     //TODO
     //public integer TotalScore
@@ -88,15 +90,22 @@ struct User extends array
         endloop
     endmethod
     
-    public static method OnCinemaEndCB takes nothing returns boolean
-        local User user = EventUser
-        
-        //call DisplayTextToForce(bj_FORCE_PLAYER[0], "Inside On Cinema End CB for user " + I2S(user))
-        set user.CinematicPlaying = 0
-        call user.CheckCinematicQueue()
-        
+    public static method OnCinemaEndCB takes nothing returns boolean       
+        set EventUser.CinematicPlaying = 0
+        call EventUser.CheckCinematicQueue()
+		
         return false
     endmethod
+	public method ShortcutCinematicQueue takes Cinematic cine returns nothing
+		//remove currently playing cinematic
+		if .CinematicPlaying != 0 then
+			call .CinematicPlaying.EndCallbackStack()
+		endif
+		
+		call .CinematicQueue.add(cine)
+		
+		call .CheckCinematicQueue()
+	endmethod
     public method AddCinematicToQueue takes Cinematic cine returns nothing
         //call DisplayTextToForce(bj_FORCE_PLAYER[0], "Adding cinematic for user: " + I2S(this))
         
@@ -114,8 +123,8 @@ struct User extends array
         if .CinematicPlaying == 0 and .CinematicQueue.count > 0 then
             //call DisplayTextToForce(bj_FORCE_PLAYER[0], "popping next cinematic for user: " + I2S(this))
             
-            set .CinematicPlaying = .CinematicQueue.pop().value
-            call .CinematicPlaying.Activate(this)
+            set .CinematicPlaying = Cinematic(.CinematicQueue.pop().value).Activate(this)
+            // call .CinematicPlaying.Activate(this)
         endif
     endmethod
     
@@ -162,16 +171,32 @@ struct User extends array
 	public method ToggleDefaultTracking takes nothing returns nothing
         set DefaultCameraTracking[this] = not DefaultCameraTracking[this]
 		
-		if GetLocalPlayer() == Player(this) then
-            if DefaultCameraTracking[this] then
-				//enable
-                call SetCameraTargetController(MazersArray[this], 0, 0, false)
-            else
-                //disable
-                call ResetToGameCamera(0)
-                call CameraSetupApply(DefaultCamera[this], false, false)
-            endif
-        endif
+		if .GameMode == Teams_GAMEMODE_STANDARD or .GameMode == Teams_GAMEMODE_STANDARD_PAUSED then
+			if GetLocalPlayer() == Player(this) then
+				if DefaultCameraTracking[this] then
+					//enable
+					call SetCameraTargetController(MazersArray[this], 0, 0, false)
+					
+					if .CinematicPlaying.Cinematic != thistype.ToggleCameraTrackingTutorial or thistype.ToggleCameraTrackingTutorial == 0 then
+						call .DisplayMessage("Camera tracking: " + ColorMessage("ON", TOGGLE_ON_COLOR), 1.)
+					endif
+				else
+					//disable
+					call ResetToGameCamera(0)
+					call CameraSetupApply(DefaultCamera[this], false, false)
+					
+					if .CinematicPlaying.Cinematic != thistype.ToggleCameraTrackingTutorial or thistype.ToggleCameraTrackingTutorial == 0 then
+						call .DisplayMessage("Camera tracking: " + ColorMessage("OFF", TOGGLE_OFF_COLOR), 1.)
+					endif
+				endif
+			endif
+			
+			if thistype.ToggleCameraTrackingTutorial != 0 then
+				if not thistype.ToggleCameraTrackingTutorial.HasUserViewed(this) then
+					call this.ShortcutCinematicQueue(thistype.ToggleCameraTrackingTutorial)
+				endif
+			endif
+		endif
     endmethod
     public method ApplyDefaultCameras takes real time returns nothing
         static if DEBUG_CAMERA then
@@ -180,7 +205,9 @@ struct User extends array
 			endif
 		endif
 		
-		if .GameMode != Teams_GAMEMODE_PLATFORMING and .GameMode != Teams_GAMEMODE_PLATFORMING_PAUSED then
+		if .GameMode == Teams_GAMEMODE_PLATFORMING or .GameMode == Teams_GAMEMODE_PLATFORMING_PAUSED then
+            call .Platformer.ApplyCamera()
+        elseif .GameMode == Teams_GAMEMODE_STANDARD or .GameMode == Teams_GAMEMODE_STANDARD_PAUSED then
             if (GetLocalPlayer() == Player(this)) then
                 call CameraSetupApply(DefaultCamera[this], false, false)
                 call PanCameraToTimed(GetUnitX(.ActiveUnit), GetUnitY(.ActiveUnit), time)
@@ -188,8 +215,6 @@ struct User extends array
                     call SetCameraTargetController(.ActiveUnit, 0, 0, false)
                 endif
             endif
-        else
-            call .Platformer.ApplyCamera()
         endif
 		
 		static if DEBUG_CAMERA then
@@ -722,9 +747,16 @@ struct User extends array
 		        
         return new
     endmethod
-
+	
+	private static method ToggleCameraTrackingCinematicCleanup takes nothing returns boolean
+		if EventCinematic == thistype.ToggleCameraTrackingTutorial then
+			set thistype.ToggleCameraTrackingTutorial = 0
+		endif
+		
+		return false
+	endmethod
 	//currently assumes that the human players are all the first n players
-    public static method onInit takes nothing returns nothing
+    private static method onInit takes nothing returns nothing
         local integer n = 0
         set User.ActivePlayers = 0
         
@@ -744,6 +776,14 @@ struct User extends array
         //call DisplayTextToPlayer(Player(0), 0, 0, "Trying to register user cinematic CB")
         //call Cinematic.OnCinemaEnd.register(Condition(function thistype.OnCinemaEndCB))
         //call DisplayTextToPlayer(Player(0), 0, 0, "Registered user cinematic CB")
+		
+		//register camera tracking cinematic
+		set ToggleCameraTrackingTutorial = Cinematic.create(null, false, false, CinemaMessage.create(null, GetEDWSpeakerMessage(PRIMARY_SPEAKER_NAME, "Nice, you've enabled camera tracking!", DEFAULT_TEXT_COLOR), DEFAULT_SHORT_TEXT_SPEED))
+		call ToggleCameraTrackingTutorial.AddMessage(null, GetEDWSpeakerMessage(PRIMARY_SPEAKER_NAME, "Turn tracking on and off by pressing the escape key", DEFAULT_TEXT_COLOR), DEFAULT_LONG_TEXT_SPEED)
+		call ToggleCameraTrackingTutorial.AddMessage(null, GetEDWSpeakerMessage(PRIMARY_SPEAKER_NAME, "Each mode has different advantages and disadvantages", DEFAULT_TEXT_COLOR), DEFAULT_MEDIUM_TEXT_SPEED)
+		call ToggleCameraTrackingTutorial.AddMessage(null, GetEDWSpeakerMessage(PRIMARY_SPEAKER_NAME, "Try getting good at both!", DEFAULT_TEXT_COLOR), DEFAULT_SHORT_TEXT_SPEED)
+		
+		call Cinematic.OnCinemaEnd.register(Condition(function thistype.ToggleCameraTrackingCinematicCleanup))
     endmethod
 endstruct
 

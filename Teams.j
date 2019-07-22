@@ -131,6 +131,19 @@ public struct MazingTeam
 		set fp = fp.next
 		endloop
 	endmethod
+	public method ClearAllCinematicsForTeam takes nothing returns nothing
+		local SimpleList_ListNode fp = .FirstUser
+		
+		loop
+		exitwhen fp == 0
+			call User(fp.value).CinematicQueue.clear()
+			
+			if User(fp.value).CinematicPlaying != 0 then
+				call User(fp.value).CinematicPlaying.EndCallbackStack()
+			endif
+		set fp = fp.next
+		endloop
+	endmethod
     
 //    public method SetDefaultTeamGameMode takes integer gameMode returns nothing
 //        local SimpleList_ListNode u = .FirstUser

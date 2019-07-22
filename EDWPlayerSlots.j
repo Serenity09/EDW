@@ -1,10 +1,8 @@
-library EDWPlayerSlots requires MazerGlobals, User, PlayerUtils, VisualVote, Teams
+library EDWPlayerSlots requires MazerGlobals, User, PlayerUtils, VisualVote, Teams, CameraTrackingEvents
 	function EDWPlayerSlotsInit takes nothing returns nothing
 		local integer i = 0
-		local trigger playerLeaves = CreateTrigger()
-		local trigger visualVoteSelected = CreateTrigger()
-		
-		call ReleaseTimer(GetExpiredTimer())
+		// local trigger playerLeaves = CreateTrigger()
+		// local trigger visualVoteSelected = CreateTrigger()
         
 		//TODO remove -- functionality deprecated / replaced by User
 		//initialize player utility collection
@@ -32,7 +30,7 @@ library EDWPlayerSlots requires MazerGlobals, User, PlayerUtils, VisualVote, Tea
                 
                 //(integer camOwner, unit camUnit, boolean altDir, boolean rotASAP, boolean PauseResets, real minSpd, real maxSpd, integer minTck, integer maxTck)
                 set DefaultCamera[i] = CreateCameraSetup()
-                set DefaultCameraTracking[i] = false
+                
                 call CameraSetupSetField(DefaultCamera[i], CAMERA_FIELD_TARGET_DISTANCE, 1800, 0)
                 call CameraSetupSetField(DefaultCamera[i], CAMERA_FIELD_FARZ, 5000, 0)
                 call CameraSetupSetField(DefaultCamera[i], CAMERA_FIELD_ANGLE_OF_ATTACK, 304, 0)
@@ -45,6 +43,10 @@ library EDWPlayerSlots requires MazerGlobals, User, PlayerUtils, VisualVote, Tea
 				
 				//register click events used for standard mazing
 				call IsMoving.RegisterMazingClickEvents(i)
+				
+				//register camera toggle events
+				set DefaultCameraTracking[i] = false
+				call RegisterCameraToggleEvents(i)
 			else
 				set User(i).IsPlaying = false
 				

@@ -20,15 +20,38 @@ struct CinemaCallbackModel extends array
     public Cinematic Cinematic
     public SimpleList_ListNode CurrentMessage
     public User User
+	public timer Timer
     
     implement Alloc
     
-    public static method create takes Cinematic cinematic, SimpleList_ListNode currentMessage, User user returns thistype
+	public method EndCallbackStack takes nothing returns nothing
+		//call DisplayTextToForce(bj_FORCE_PLAYER[0], "No more messages for CB Model " + I2S(cinemaCBModel))
+		call .Cinematic.PreviousViewers.add(.User)
+		
+		if .Cinematic.PauseViewers then
+			call .User.Pause(false)
+		endif
+		
+		set EventCinematic = .Cinematic
+		set EventUser = .User
+		call Cinematic.OnCinemaEnd.fire()
+		
+		call .destroy()
+	endmethod
+	public method destroy takes nothing returns nothing
+		//recycle cb model and its handle properties
+		call ReleaseTimer(.Timer)
+		set .Timer = null
+		call .deallocate()
+	endmethod
+	
+    public static method create takes Cinematic cinematic, SimpleList_ListNode currentMessage, User user, timer time returns thistype
         local thistype new = thistype.allocate()
         
         set new.Cinematic = cinematic
         set new.CurrentMessage = currentMessage
         set new.User = user
+		set new.Timer = time
         
         return new
     endmethod
@@ -93,7 +116,7 @@ struct Cinematic extends array
         endloop
         
         //check the user's currently playing cinematic
-        if user.CinematicPlaying == this then
+        if user.CinematicPlaying.Cinematic == this then
             return true
         endif
         
@@ -130,27 +153,15 @@ struct Cinematic extends array
         local real time
         local SimpleList_ListNode curEndCB
         
-        if cinemaCBModel.CurrentMessage == 0 then
-            //call DisplayTextToForce(bj_FORCE_PLAYER[0], "No more messages for CB Model " + I2S(cinemaCBModel))
-            call cinemaCBModel.Cinematic.PreviousViewers.add(cinemaCBModel.User)
-            
-            if cinemaCBModel.Cinematic.PauseViewers then
-                call cinemaCBModel.User.Pause(false)
-            endif
-            
-            call ReleaseTimer(t)
-            
-            set EventCinematic = cinemaCBModel.Cinematic
-            set EventUser = cinemaCBModel.User
-            call thistype.OnCinemaEnd.fire()
-            
-            //reached last message in cinematic, recycle CB object and release viewers
-            call cinemaCBModel.deallocate()
-        else
-            set time = CinemaMessage(cinemaCBModel.CurrentMessage.value).MessageTime
+		//it would be safer to just store the timer and release it as part of EndCallbackStack
+		if cinemaCBModel.CurrentMessage == 0 then
+			//call DisplayTextToForce(bj_FORCE_PLAYER[0], "No more messages for CB Model " + I2S(cinemaCBModel))
+			call cinemaCBModel.EndCallbackStack()
+		else
+			set time = CinemaMessage(cinemaCBModel.CurrentMessage.value).MessageTime
 			//add MESSAGE_ALIVE_BUFFER here instead of in the message's buffer because it's specifically for dealing with the DisplayMessage API adding in a default buffer
-            call cinemaCBModel.User.DisplayMessage(CinemaMessage(cinemaCBModel.CurrentMessage.value).Text, time + MESSAGE_ALIVE_BUFFER)
-            
+			call cinemaCBModel.User.DisplayMessage(CinemaMessage(cinemaCBModel.CurrentMessage.value).Text, time + MESSAGE_ALIVE_BUFFER)
+			
 			//add the message's display time to the buffer time between this message and the next
 			//allows cinematics to show more than one message at once, while still controlling their display time
 			set time = time + CinemaMessage(cinemaCBModel.CurrentMessage.value).NextMessageBuffer
@@ -158,12 +169,12 @@ struct Cinematic extends array
 				set time = 0
 			endif
 			
-            //finished current message in cinematic but there's still more
-            set cinemaCBModel.CurrentMessage = cinemaCBModel.CurrentMessage.next
-            //call SetTimerData(t, cinemaCBModel) //re-using same model, so original ID attached to timer is still applicable
-            
-            call TimerStart(t, time, false, function thistype.PlayMessageCallback)
-        endif
+			//finished current message in cinematic but there's still more
+			set cinemaCBModel.CurrentMessage = cinemaCBModel.CurrentMessage.next
+			//call SetTimerData(t, cinemaCBModel) //re-using same model, so original ID attached to timer is still applicable
+			
+			call TimerStart(t, time, false, function thistype.PlayMessageCallback)
+		endif
         
         set t = null
     endmethod
@@ -172,9 +183,10 @@ struct Cinematic extends array
         return not .HasUserViewed(user) and user.IsActiveUnitInRect(.ActivationArea) and (.ActivationCondition == 0 or .ActivationCondition.evaluate(user))
     endmethod
     
-    public method Activate takes User user returns nothing
-        local CinemaCallbackModel cbModel = CinemaCallbackModel.create(this, .CinemaMessages.first, user)
-        local timer t = NewTimerEx(cbModel)
+    public method Activate takes User user returns CinemaCallbackModel
+        local timer t = NewTimer()
+		local CinemaCallbackModel cbModel = CinemaCallbackModel.create(this, .CinemaMessages.first, user, t)
+        call SetTimerData(t, cbModel)
         
         if .PauseViewers then
             call user.Pause(true)
@@ -182,6 +194,8 @@ struct Cinematic extends array
                 
         call TimerStart(t, .0, false, function thistype.PlayMessageCallback)
         set t = null
+		
+		return cbModel
     endmethod
     
     public method destroy takes nothing returns nothing

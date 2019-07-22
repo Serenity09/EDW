@@ -1,8 +1,7 @@
-library EDWGameStart initializer Init requires Levels, EDWVisualVote, UnitGlobals, MazerGlobals, GameMessage, EDWLevelContent, EDWCinematicContent, Recycle
+library EDWGameStart initializer Init requires TimerUtils, Levels, EDWVisualVote, UnitGlobals, MazerGlobals, GameMessage, EDWLevelContent, EDWCinematicContent, Recycle
     globals
         constant real GAME_INIT_TIME_INITIAL = 0.01 //how long into the game before we start
         //constant real GAME_INIT_TIME_STEP = .5
-        public timer GameInitTimer     
 		
 		private boolean FinishedPreLoad = false
 		private boolean FinishedPostLoad = false
@@ -120,11 +119,12 @@ library EDWGameStart initializer Init requires Levels, EDWVisualVote, UnitGlobal
 		static if DEBUG_POSTLOAD then
 			call DisplayTextToForce(bj_FORCE_PLAYER[0], "Finished Game Start postload callback")
 		endif
+		
+		call ReleaseTimer(GetExpiredTimer())
     endfunction	
             
     private function Init takes nothing returns nothing
-        set GameInitTimer = CreateTimer()
-        call TimerStart(GameInitTimer, GAME_INIT_TIME_INITIAL, false, function First)
+        call TimerStart(NewTimer(), GAME_INIT_TIME_INITIAL, false, function First)
         
 		static if DEBUG_MODE then
 			call TimerStart(CreateTimer(), 1.0, false, function CheckInitFinished)

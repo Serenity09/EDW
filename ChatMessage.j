@@ -14,6 +14,9 @@ library GameMessage
 		constant string PLATFORMING_WORLD_COLOR = "f7870f"
 		constant string FOUR_SEASONS_WORLD_COLOR = HAPPY_TEXT_COLOR
 		constant string LAND_WORLD_COLOR = "67e676"
+		
+		constant string TOGGLE_ON_COLOR = "5cb85c"
+		constant string TOGGLE_OFF_COLOR = "d9534f"
         
         constant string PRIMARY_SPEAKER_NAME = "SARGE"
         constant string SECONDARY_SPEAKER_NAME = "Cupcake"

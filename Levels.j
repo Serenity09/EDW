@@ -500,7 +500,7 @@ library Levels requires SimpleList, Teams, GameModesGlobals, LevelIDGlobals, Cin
 			set EventPreviousLevel = this
 			set this.CBTeam = mt
 			
-			call mt.ClearCinematicQueue()
+			call mt.ClearAllCinematicsForTeam()
             call this.ActiveTeams.remove(mt)
 			
 			set mt.OnLevel = TEMP_LEVEL_ID
@@ -648,7 +648,8 @@ library Levels requires SimpleList, Teams, GameModesGlobals, LevelIDGlobals, Cin
 		private static method SwitchLevels_FadeOut takes nothing returns nothing
 			local timer t = GetExpiredTimer()
 			local AnimatedLevelTransferData transferData = GetTimerData(t)
-						
+			
+			call transferData.Team.ClearAllCinematicsForTeam()
 			// call transferData.Team.SwitchTeamGameMode(Teams_GAMEMODE_HIDDEN, GetUnitX(transferData.Team.LastEventUser.ActiveUnit), GetUnitY(transferData.Team.LastEventUser.ActiveUnit))
 			call transferData.Team.FadeOutForTeam(LEVEL_TRANSFER_FADE_DURATION)
 			
