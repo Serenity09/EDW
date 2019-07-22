@@ -105,7 +105,7 @@ library EDWCinematicContent requires EDWLevelContent, Cinema, EDWGameTime
         set cine = Cinematic.create(gg_rct_IceTutorial, false, false, cineMsg)
         call cine.AddMessage(null, GetEDWSpeakerMessage(PRIMARY_SPEAKER_NAME, "Remember to hold your head high, and always face towards your future", DEFAULT_TEXT_COLOR), DEFAULT_MEDIUM_TEXT_SPEED)
         call cine.AddMessage(null, GetEDWSpeakerMessage(PRIMARY_SPEAKER_NAME, "There's no stopping, just relentless progress towards that future", DEFAULT_TEXT_COLOR), DEFAULT_MEDIUM_TEXT_SPEED)
-        call cine.AddMessage(null, GetEDWSpeakerMessage(PRIMARY_SPEAKER_NAME, "Keep track of yourself using the arrow keys or mouse, or type '-track' or '-t'", DEFAULT_TEXT_COLOR), DEFAULT_MEDIUM_TEXT_SPEED)
+        call cine.AddMessage(null, GetEDWSpeakerMessage(PRIMARY_SPEAKER_NAME, "Keep track of yourself using the arrow keys or mouse, or press the 'escape' key", DEFAULT_TEXT_COLOR), DEFAULT_MEDIUM_TEXT_SPEED)
         call cine.SetLastMessageDefaults()
 		call Levels_Level(1).AddCinematic(cine)
         
