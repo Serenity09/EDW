@@ -166,6 +166,7 @@ library InGameCommands initializer init requires MazerGlobals, Platformer, Relay
 		local Platformer p = u.Platformer
 		local Teams_MazingTeam team = User(pID).Team
 		local group unitgroup
+		local unit gunit
 		
 		
 		//debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "msg: " + msg)
@@ -269,6 +270,21 @@ library InGameCommands initializer init requires MazerGlobals, Platformer, Relay
 				elseif u.GameMode == Teams_GAMEMODE_STANDARD_PAUSED or u.GameMode == Teams_GAMEMODE_PLATFORMING_PAUSED then
 					call u.Pause(false)
 				endif
+			elseif cmd == "a" or cmd == "animate" then
+				set unitgroup = CreateGroup()
+				call GroupEnumUnitsSelected(unitgroup, Player(pID), null)
+				set gunit = FirstOfGroup(unitgroup)
+				
+				loop
+				exitwhen gunit == null
+					call SetUnitAnimationByIndex(gunit, R2I(val))
+				call GroupRemoveUnit(unitgroup, gunit)
+				set gunit = FirstOfGroup(unitgroup)
+				endloop
+				
+				call DestroyGroup(unitgroup)
+				set unitgroup = null
+				set gunit = null
 			endif
 		endif		
 	endfunction
