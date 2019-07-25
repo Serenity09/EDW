@@ -63,6 +63,8 @@ library EDWPowerup requires Alloc, MazerGlobals, FilterFuncs, Table, PlayerUtils
 			
             if not .TeamsUsed.contains(user.Team) then
                 call .TeamsUsed.add(user.Team)
+				
+				call user.Team.SetUnitLocalOpacityForTeam(.Unit, INACTIVE_UNIT_OPACITY)
             else
                 return
             endif

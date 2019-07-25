@@ -697,7 +697,7 @@ library Levels requires SimpleList, Teams, GameModesGlobals, LevelIDGlobals, Cin
 			
 			call mt.PauseTeam(true)
 			if this != DOORS_LEVEL_ID then
-				if mt.LastEventUser != -1 and this != DOORS_LEVEL_ID then
+				if mt.LastEventUser != -1 then
 					call mt.PrintMessage(mt.LastEventUser.GetStylizedPlayerName() + " has cleared the level!")
 				endif
 			else

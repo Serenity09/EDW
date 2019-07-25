@@ -43,8 +43,10 @@ library Deferred requires Alloc, SimpleList
 	
 	struct Deferred extends array
 		readonly boolean Resolved
-		public SimpleList_List Waiting
 		public integer Result
+		public DeferredCallback Cancel
+		
+		public SimpleList_List Waiting
 		
 		implement Alloc
 		
@@ -80,7 +82,7 @@ library Deferred requires Alloc, SimpleList
 					if DeferredAwaiter(curAwaiter.value).Success != 0 then
 						set awaiterResult = DeferredAwaiter(curAwaiter.value).Success.evaluate(result, DeferredAwaiter(curAwaiter.value).CallbackData)
 						
-						//TODO check if awaiterResult is a Deferred and chain it if it is
+						//TODO check if awaiterResult is a Deferred and chain it if it is. this would need a way to inherently type an arbitrary int ref at runtime
 						
 						call DeferredAwaiter(curAwaiter.value).Promise.Resolve(awaiterResult)
 					endif
@@ -120,6 +122,7 @@ library Deferred requires Alloc, SimpleList
 			local thistype new = thistype.allocate()
 			
 			set new.Resolved = false
+			set new.Cancel = 0
 			set new.Result = 0
 			set new.Waiting = SimpleList_List.create()
 			
@@ -127,7 +130,7 @@ library Deferred requires Alloc, SimpleList
 		endmethod
 		
 		//Calling destroy will recycle the entire tree of deferreds and their awaiters depending on this one. This often makes sense to do because if a Deferred parent is destroyed before resolving then it's children will also never resolve. But a deferred which has resolved may have children which have not; in thise case, killing off the parent may make sense, but its children should still have a chance at life
-		//Still, recycling trees of deferreds will be annoying, and I think it will always be okay to keep the full tree in memory until the last Deferred is ready to destroy it
+		//Still, recycling trees of deferreds will be annoying to do in chunks, and it should almost always be okay to keep a full tree of Deferreds in memory until ready to be recycled, and for use cases where it isn't, the tree can be broken up by defining multiple root deferreds and resolving/destroying them appropriately
 		//SO the current intended use is to construct a deferred tree in whatever way makes sense, and then to keep it entirely around until no node in the tree needs it anymore
 		//Otherwise, with no auto garbage collection, the implementing code will be responsible for recycling every parent deferred and its children awaiters (repeat recursively)
 		//TODO a Canceled/Destroyed callback would be useful for handling this situation as a child of the deferred tree, otherwise all destroy logic for all child deferreds needs to be handled at the same level as the destroy call, which may not always make sense or be possible
@@ -135,15 +138,20 @@ library Deferred requires Alloc, SimpleList
 		//Deferreds that can be destroyed and then later accessed as if they were not destroyed need code protecting them from that exact use case
 		//Ex. Deferred "A" will resolve when async functionality "X" is finished. When this happens, neither the async function "X" nor the resolve call guarantees conditions required by listening Then calls
 		//This is problematic when Deferred "A" will execute Then code that can crash if certain conditions aren't met
-		//Solution. Destroy parent deferred as soon as none of its descendents will need it again
+		//Solution to recycling Deferreds. Only destroy deferreds that are not depended on anymore. Coordinating logic flow for a set of deferred's can be achieved using the All/Any wrappers, or combinations thereof
 		public method destroy takes nothing returns nothing
 			local SimpleList_ListNode curAwaiterNode
+			local integer awaiterResult
 			
 			//call DisplayTextToPlayer(Player(0), 0, 0, "Deferred destroying - " + I2S(this) + ", awaiter count - " + I2S(this.Waiting.count))
 			
 			loop
 			set curAwaiterNode = this.Waiting.pop()
 			exitwhen curAwaiterNode == 0
+				if not this.Resolved and this.Cancel != 0 then
+					call this.Cancel.evaluate(this.Result, DeferredAwaiter(curAwaiterNode.value).CallbackData)
+				endif
+				
 				call DeferredAwaiter(curAwaiterNode.value).destroy()
 				call curAwaiterNode.deallocate()
 			endloop
