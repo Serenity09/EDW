@@ -2687,6 +2687,7 @@ endglobals
                 
                 //debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "offset: " + R2S(offsetZone) + "; x, y: " + R2S(terrainCenter.x) + ", " + R2S(terrainCenter.y))
                 
+				//check if unit is within a much smaller square centered on this tile
                 if terrainCenter.x < offsetZone and terrainCenter.x > -offsetZone and terrainCenter.y < offsetZone and terrainCenter.y > -offsetZone then
                     static if DEBUG_TERRAIN_KILL then
                         call DisplayTextToForce(bj_FORCE_PLAYER[0], "On lava, center")
@@ -2702,6 +2703,7 @@ endglobals
 					call terrainCenter.destroy()
                     return
                 else
+					//check if unit is within a larger rectangle, formed by multiple squares of adjoining lava or non pathable tiles
                     if terrainCenter.x <= -offsetZone then
                         //on right side -- either of two corners or the middle
                         set ttype = GetTerrainType(x + tOFFSET, y)
@@ -3853,6 +3855,7 @@ endglobals
             set new.Unit = CreateUnit(Player(pID), PLATFORMERWISP, PlatformerGlobals_SAFE_X, PlatformerGlobals_SAFE_Y, 0)
             call UnitAddAbility(new.Unit, 'Aloc')
             call ShowUnit(new.Unit, false)
+			call UnitRemoveAbility(new.Unit, 'Aloc')
             //sets the directions the unit is allowed to turn in, 0 means it move in no direction
             call SetUnitPropWindow(new.Unit, 0)
             
@@ -3872,9 +3875,24 @@ endglobals
             return new
         endmethod
         
+		private static method OnUnitDamaged takes nothing returns boolean
+			local unit source = GetEventDamageSource()
+			local unit target = GetTriggerUnit()
+			
+			// call DisplayTextToForce(bj_FORCE_PLAYER[0], "damage taken somewhere!")
+			
+			if GetUnitTypeId(source) == SMLMORT and GetUnitTypeId(target) == PLATFORMERWISP then
+				call User(GetPlayerId(GetOwningPlayer(target))).Platformer.KillPlatformer()
+			endif
+			
+			set source = null
+			set target = null
+			return false
+		endmethod
         private static method onInit takes nothing returns nothing
             local integer i = 0
             local Platformer p
+			local trigger damageEvent = CreateTrigger()
             
 			set thistype.PlatformingCamera = CreateCameraSetup()
             call CameraSetupSetField(thistype.PlatformingCamera, CAMERA_FIELD_ANGLE_OF_ATTACK, 270, 0)
@@ -3897,6 +3915,11 @@ endglobals
             set .GameloopTimer = CreateTimer()
             set .TerrainloopTimer = CreateTimer()
 			set .CameraTimer = CreateTimer()
+			
+			//TODO, depending on the number of damage events that are fired during gameplay, it might be more performant to declare a global trigger for plat damage and register each individual wisp with a damaged event
+			//Currently, there are very few damage events resolving
+			call TriggerRegisterAnyUnitEventBJ(damageEvent, EVENT_PLAYER_UNIT_DAMAGED)
+			call TriggerAddCondition(damageEvent, Condition(function thistype.OnUnitDamaged))
         endmethod
     endstruct
 endlibrary
