@@ -3920,6 +3920,7 @@ endglobals
 			//Currently, there are very few damage events resolving
 			call TriggerRegisterAnyUnitEventBJ(damageEvent, EVENT_PLAYER_UNIT_DAMAGED)
 			call TriggerAddCondition(damageEvent, Condition(function thistype.OnUnitDamaged))
+			set damageEvent = null
         endmethod
     endstruct
 endlibrary

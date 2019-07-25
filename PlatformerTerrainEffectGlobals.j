@@ -20,7 +20,7 @@ library PlatformerTerrainEffectGlobals requires PlatformerGlobals, TerrainGlobal
         
         //needs to be compatible with GetNextDiagonal assumptions -- namely won't change more than 1 quadrant per loop
         //constant real DIAGONAL_MAXCHANGE = TERRAIN_QUADRANT_SIZE - 4
-        constant real PLATFORMING_MAXCHANGE = 42 //point in diagonal assumes that the test point is within 2*sqrt(16*16 + 16*16) = 45.25...
+        constant real PLATFORMING_MAXCHANGE = 1200. * PlatformerGlobals_GAMELOOP_TIMESTEP //point in diagonal assumes that the test point is within 2*sqrt(16*16 + 16*16) = 45.25...
         constant boolean PLATFORMING_CHECK_HALFWAY = false //should be true if PLATFORMING_MAXCHANGE > TERRAIN_QUADRANT_SIZE (64)
         
 		constant real VELOCITY_HARDSTOP_THRESHOLD = PLATFORMING_MAXCHANGE - 18. // PLATFORMING_MAXCHANGE == 42
