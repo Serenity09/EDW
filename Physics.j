@@ -111,7 +111,7 @@ endglobals
         
         //all properties that support terrain mechanics
         public integer     TerrainDX              //current terrain tile the unit is on TODO rename to CurrentTerrainOn
-        public integer     XTerrainPushedAgainst    //set by physics loop
+		public integer     XTerrainPushedAgainst    //set by physics loop
         public integer     XAppliedTerrainPushedAgainst     //set by terrain loop
         public integer     YTerrainPushedAgainst        //set by physics loop
         public integer     YAppliedTerrainPushedAgainst     //set by terrain loop
@@ -2576,6 +2576,8 @@ endglobals
                 //set .GravitationalAccel = .GravitationalAccel * 10
                     
                 call PlatformerSlipStream_Remove(this)
+			elseif .TerrainDX == BOOST then
+				call PlatformerBounce.Remove(this)
             endif
         endmethod
         
@@ -3129,9 +3131,7 @@ endglobals
                         set .YVelocity = BOOST_SPEED
                     endif
 					
-					call DestroyEffect(AddSpecialEffect(TERRAIN_SUPERBOUNCE_FX, x, y))
-                    
-                    return
+					call PlatformerBounce.Add(this)
                 elseif ttype == SLIPSTREAM then
                     call .GravityEquation.addAdjustment(PlatformerPropertyEquation_MULTIPLY_ADJUSTMENT, SLIPSTREAM, 0)
                     set .GravitationalAccel = .GravityEquation.calculateAdjustedValue(.BaseProfile.GravitationalAccel)
@@ -3170,6 +3170,13 @@ endglobals
                 endif
                 
                 set .TerrainDX = ttype
+			elseif .TerrainDX == BOOST then
+				//this is too inconsistent inside this loop, will need to move it out to its own timer after all...
+				if .GravitationalAccel > 0 then
+					set .YVelocity = -BOOST_SPEED
+				elseif .GravitationalAccel < 0 then
+					set .YVelocity = BOOST_SPEED
+				endif
             endif
             
             //debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "Finished updating terrain")
