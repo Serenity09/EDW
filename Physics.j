@@ -3057,6 +3057,8 @@ endglobals
                 
                 //remove old effect
                 call .RemoveTerrainEffect()
+				
+				set .TerrainDX = ttype
                 
                 //add new effect
                 if ttype == OCEAN then
@@ -3168,8 +3170,6 @@ endglobals
 					
                     return
                 endif
-                
-                set .TerrainDX = ttype
 			elseif .TerrainDX == BOOST then
 				//this is too inconsistent inside this loop, will need to move it out to its own timer after all...
 				if .GravitationalAccel > 0 then

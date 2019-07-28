@@ -21,7 +21,7 @@ struct PlatformerBounce extends array
 			// set .YVelocity = BOOST_SPEED
 		// endif
 		
-		if GetTerrainType(plat.XPosition, plat.YPosition) == BOOST then
+		if plat.TerrainDX == BOOST or GetTerrainType(plat.XPosition, plat.YPosition) == BOOST then
 			call DestroyEffect(AddSpecialEffect(TERRAIN_SUPERBOUNCE_FX, plat.XPosition, plat.YPosition))
 		endif
 	endmethod
