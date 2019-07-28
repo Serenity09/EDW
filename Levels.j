@@ -576,7 +576,12 @@ library Levels requires SimpleList, Teams, GameModesGlobals, LevelIDGlobals, Cin
 						
 			call transferData.Team.PrintMessage("Now starting: " + transferData.NextLevel.Name)
 			call transferData.Team.FadeInForTeam(LEVEL_TRANSFER_FADE_DURATION)
-			call transferData.Team.RegisterAutoUnpauseForTeam(LEVEL_TRANSFER_FADE_DURATION + LEVEL_TRANSFER_UNPAUSE_DELAY)
+			
+			if transferData.Team.DefaultGameMode == Teams_GAMEMODE_PLATFORMING then
+				call transferData.Team.PauseTeam(false)
+			else
+				call transferData.Team.RegisterAutoUnpauseForTeam(LEVEL_TRANSFER_FADE_DURATION + LEVEL_TRANSFER_UNPAUSE_DELAY)
+			endif
 			
 			call transferData.deallocate()
 			call ReleaseTimer(t)
@@ -605,6 +610,7 @@ library Levels requires SimpleList, Teams, GameModesGlobals, LevelIDGlobals, Cin
 			
 			call transferData.Team.OnLevel.SwitchLevels(transferData.Team, transferData.NextLevel, transferData.Team.LastEventUser, true)
 			call transferData.Team.CancelAutoUnpauseForTeam()
+			call transferData.Team.PauseTeam(true)
 			
 			if ShouldShowSettingVoteMenu() and RewardMode != GameModesGlobals_CHEAT and transferData.Team.OnLevel != DOORS_LEVEL_ID then
 				call TimerStart(t, LEVEL_TRANSFER_MESSAGE_DELAY, false, function thistype.SwitchLevels_Message2)

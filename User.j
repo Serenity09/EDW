@@ -261,12 +261,12 @@ struct User extends array
         if .IsPlaying and .IsAlive then
             //debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "unpausing " + I2S(u))
             //call PauseUnit(.ActiveUnit, flag)
-			call PauseUnit(MazersArray[this], true)
-			call PauseUnit(MazersArray[this], false)
-            call IssueImmediateOrder(.ActiveUnit, "stop")
-            
             if flag then
                 if .GameMode == Teams_GAMEMODE_STANDARD then
+					call PauseUnit(MazersArray[this], true)
+					call PauseUnit(MazersArray[this], false)
+					call IssueImmediateOrder(.ActiveUnit, "stop")
+					
                     call this.SwitchGameModesDefaultLocation(Teams_GAMEMODE_STANDARD_PAUSED)
                 elseif .GameMode == Teams_GAMEMODE_PLATFORMING then
                     call this.SwitchGameModesDefaultLocation(Teams_GAMEMODE_PLATFORMING_PAUSED)
