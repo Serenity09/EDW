@@ -46,7 +46,7 @@ library EDWVFXPreload initializer init requires SpecialEffect, Platformer, SandM
 		call DestroyEffect(AddSpecialEffect("Abilities\\Spells\\Undead\\FrostArmor\\FrostArmorDamage.mdl", 0, 0))
 		call DestroyEffect(AddSpecialEffect("Doodads\\Icecrown\\Water\\BubbleGeyserSteam\\BubbleGeyserSteam.mdl", 0, 0))
 		call DestroyEffect(AddSpecialEffect(Platformer_TERRAIN_VINES_FX, 0, 0))
-		call DestroyEffect(AddSpecialEffect(Platformer_TERRAIN_SUPERBOUNCE_FX, 0, 0))
+		call DestroyEffect(AddSpecialEffect(PlatformerBounce_TERRAIN_SUPERBOUNCE_FX, 0, 0))
 		call DestroyEffect(AddSpecialEffect(Platformer_VERTICAL_JUMP_FX, 0, 0))
 		call DestroyEffect(AddSpecialEffect(Platformer_NON_VERTICAL_JUMP_FX, 0, 0))
 		call DestroyEffect(AddSpecialEffect(Platformer_OCEAN_JUMP_FX, 0, 0))

@@ -274,6 +274,9 @@ struct SimpleGenerator extends IStartable
         call thistype.ActiveWidgets.addEnd(this)
         set this.SpawnTimer = NewTimerEx(this)
         set this.SpawnedUnits = NewGroup()
+		if this.SpawnPattern != 0 then
+			call this.SpawnPattern.Reset()
+		endif
 		
 		static if DEBUG_START then
 			call DisplayTextToForce(bj_FORCE_PLAYER[0], "Starting generator " + I2S(this) + " with group " + I2S(GetHandleId(this.SpawnedUnits)))
@@ -291,11 +294,7 @@ struct SimpleGenerator extends IStartable
 		set this.SpawnedUnits = null
         
 		set this.OverclockFactor = 1.
-		
-		if this.SpawnPattern != 0 then
-			call this.SpawnPattern.Reset()
-		endif
-		
+				
         if thistype.ActiveWidgets.count == 0 then
             call PauseTimer(thistype.MoveTimer)
         endif

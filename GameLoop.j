@@ -31,7 +31,7 @@ library StandardGameLoop initializer init requires EDWEffects, LavaDamage, IceMo
 		set $TPriority$ = 6
 	elseif $TType$ == FASTICE then
 		set $TPriority$ = 7
-	else //if $TType$ == VINES or $TType$ == SAND or $TType$ == RSNOW then
+	else //if $TType$ == VINES or $TType$ == SAND or $TType$ == RSNOW or $TType$ == LRGBRICKS then
 		set $TPriority$ = 2
 	endif
 //! endtextmacro

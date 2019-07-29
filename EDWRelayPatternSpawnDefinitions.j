@@ -154,7 +154,7 @@ library EDWRelayPatternSpawnDefinitions requires RelayPatternSpawn, GroupUtils, 
 			
 			call IndexedUnit(GetUnitUserData(u)).SetMoveSpeed(LW2_RG3_BASEMS * spawn.Parent.OverclockFactor)
 			call GroupAddUnit(g, u)
-		elseif spawn.CurrentCycle == 1 or spawn.CurrentCycle == 2 then
+		elseif spawn.CurrentCycle == 1 then
 			set u = Recycle_MakeUnit(JEEP, spawnTurn.FirstLane.x, spawnTurn.FirstLane.y)
 			
 			call IndexedUnit(GetUnitUserData(u)).SetMoveSpeed(1.5 * LW2_RG3_BASEMS * spawn.Parent.OverclockFactor)
@@ -168,10 +168,10 @@ library EDWRelayPatternSpawnDefinitions requires RelayPatternSpawn, GroupUtils, 
 		local RelayTurn spawnTurn = spawn.Parent.Turns.first.value
 		local unit u
 		
-		if spawn.CurrentCycle == 0 or spawn.CurrentCycle == 1 then
+		if spawn.CurrentCycle == 0 or spawn.CurrentCycle == 2 then
 			if spawn.CurrentCycle == 0 then
 				set u = Recycle_MakeUnit(PASSENGERCAR, spawnTurn.FirstLane.x, spawnTurn.FirstLane.y)
-			else
+			elseif spawn.CurrentCycle == 2 then
 				set u = Recycle_MakeUnit(PASSENGERCAR, spawnTurn.FirstLane.x, spawnTurn.FirstLane.y + spawnTurn.FirstLaneY*spawn.Parent.UnitLaneSize)
 			endif
 			

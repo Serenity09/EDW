@@ -59,7 +59,6 @@ globals
 	//public constant string STANDARD_FX = "Abilities\\Spells\\Human\\Polymorph\\PolyMorphTarget.mdl"
 	public constant string TERRAIN_STANDARD_FX = "Abilities\\Spells\\Human\\Polymorph\\PolyMorphDoneGround.mdl"
 	public constant string TERRAIN_VINES_FX = "Abilities\\Spells\\NightElf\\EntanglingRoots\\EntanglingRootsTarget.mdl"
-	public constant string TERRAIN_SUPERBOUNCE_FX = "Abilities\\Spells\\Undead\\AnimateDead\\AnimateDeadTarget.mdl"
 	
 	public constant string VERTICAL_JUMP_FX = "Abilities\\Spells\\Human\\Polymorph\\PolyMorphTarget.mdl"
 	//public constant string VERTICAL_JUMP_FX = "Abilities\\Spells\\Human\\Polymorph\\PolyMorphDoneGround.mdl"

@@ -7,7 +7,7 @@ library PatternSpawn requires Draw
 	
 	struct PatternSpawn extends array
 		private IPatternSpawn SpawnCB
-		private integer CycleCount
+		public integer CycleCount
 		
 		//assumes every variation has the same number of cycles
 		public integer CurrentCycle

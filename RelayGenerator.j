@@ -655,6 +655,7 @@ library RelayGenerator requires GameGlobalConstants, SimpleList, Table, Vector2,
                 call ActiveRelays.add(this)
                 
 				set this.Units = NewGroup()
+				call this.SpawnPattern.Reset()
 				
                 set this.UnitTimer = NewTimerEx(this)
                 call TimerStart(this.UnitTimer, this.UnitTimeout / this.OverclockFactor, true, function RelayGenerator.CreateUnitCB)
