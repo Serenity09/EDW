@@ -122,10 +122,10 @@ library TerrainGlobals initializer initTerrainGlobals requires GameGlobalConstan
     */
 	
     public function IsTerrainDiagonal takes integer ttype returns boolean
-        return ttype == SLOWICE or ttype == FASTICE or ttype == GRASS or ttype == DGRASS or ttype == ROAD
+        return ttype == SLOWICE or ttype == FASTICE or ttype == GRASS or ttype == DGRASS
     endfunction
     public function IsTerrainSquare takes integer ttype returns boolean
-        return ttype == WALL or ttype == SNOW or ttype == SAND or ttype == RSNOW
+        return ttype == WALL or ttype == SNOW or ttype == SAND or ttype == RSNOW or ttype == ROAD
     endfunction
     
     function GetTerrainCenterpoint takes real x, real y returns vector2
