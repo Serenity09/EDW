@@ -103,7 +103,7 @@ library isMoving requires TerrainGlobals, ORDER, SimpleList
 			set OrderDestinationX[i] = GetOrderPointX()
 			set OrderDestinationY[i] = GetOrderPointY()
 			
-			if UseTeleportMovement[i] then        
+			if UseTeleportMovement[i] and GetTerrainType(GetUnitX(GetTriggerUnit()), GetUnitY(GetTriggerUnit())) == RTILE then        
 				call thistype.applyTeleportMovement(i)
 			endif
 			
