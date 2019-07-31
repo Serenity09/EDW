@@ -92,6 +92,7 @@ struct Cinematic extends array
     public boolean PauseViewers
     public SimpleList_List PreviousViewers //list of Users (do not destroy User instances, just the list)
     public SimpleList_List CinemaMessages //list of Cinema Messages (cascade destroy)
+	public integer Priority
     
     //TODO move into CinemaMessage for at least equal, but ideally greater control
     //public CinemaCallback OnCinemaStart
@@ -253,6 +254,7 @@ struct Cinematic extends array
         set new.PauseViewers = pause
         		
         set new.ActivationCondition = 0
+		set new.Priority = 1
         //set new.OnCinemaStart = 0
         //set new.OnCinemaEnd = 0
         //set new.OnCinemaEnd = Event.create()

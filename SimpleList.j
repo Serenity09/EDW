@@ -5,7 +5,7 @@ library SimpleList requires Alloc, Table
         public thistype prev
         public thistype next
         
-        implement Alloc        
+        implement Alloc
     endstruct
     
     public struct List extends array

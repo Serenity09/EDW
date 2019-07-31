@@ -107,14 +107,28 @@ struct User extends array
 		call .CheckCinematicQueue()
 	endmethod
     public method AddCinematicToQueue takes Cinematic cine returns nothing
-        //call DisplayTextToForce(bj_FORCE_PLAYER[0], "Adding cinematic for user: " + I2S(this))
-        
-        //call cine.PreviousViewers.add(this)
-        //call cine.OnCinemaEndCBs.add(thistype.OnCinemaEndCB)
-        
-        call .CinematicQueue.addEnd(cine)
-        
-        call .CheckCinematicQueue()
+        local integer priorityIndex = 0
+		local SimpleList_ListNode curCinematicNode = .CinematicQueue.first
+		
+		if .CinematicPlaying == 0 then
+			call .CinematicQueue.add(cine)
+			call .CheckCinematicQueue()
+		else
+			if cine.Priority - .CinematicPlaying.Cinematic.Priority >= 2 then
+				call ShortcutCinematicQueue(cine)
+			else
+				//iterate list until we find the position in user's queue to place the cinema (comparing priorities)
+				loop
+				exitwhen curCinematicNode == 0 or Cinematic(curCinematicNode.value).Priority < cine.Priority
+				
+				set curCinematicNode = curCinematicNode.next
+				set priorityIndex = priorityIndex + 1
+				endloop
+				
+				//add the new cinema at the priority sorted index. no need to check queue as already established its non null
+				call .CinematicQueue.insert(cine, priorityIndex)
+			endif
+		endif        
     endmethod
     public method CheckCinematicQueue takes nothing returns nothing
         //call DisplayTextToForce(bj_FORCE_PLAYER[0], "Checking cinema queue for user:" + I2S(this))
