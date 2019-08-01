@@ -3,7 +3,7 @@ library Continues initializer Init requires Levels, Teams, GameModesGlobals, Maz
 public function onPlayerUnitDiedCB takes nothing returns nothing
     local timer t = GetExpiredTimer()
     local integer pID = GetTimerData(t)
-    local User user = User.GetUserFromPlayerID(pID)
+    local User user = User(pID)
 	
     local Teams_MazingTeam mt = user.Team
     local Levels_Level level = mt.OnLevel

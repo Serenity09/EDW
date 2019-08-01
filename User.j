@@ -206,7 +206,7 @@ struct User extends array
 			endif
 			
 			if thistype.ToggleCameraTrackingTutorial != 0 then
-				if not thistype.ToggleCameraTrackingTutorial.HasUserViewed(this) then
+				if DefaultCameraTracking[this] and not thistype.ToggleCameraTrackingTutorial.HasUserViewed(this) then
 					call this.ShortcutCinematicQueue(thistype.ToggleCameraTrackingTutorial)
 				endif
 			endif
@@ -727,11 +727,7 @@ struct User extends array
     public method IsActiveUnitInArea takes vector2 topLeft, vector2 botRight returns boolean
         return GetUnitX(.ActiveUnit) >= topLeft.x and GetUnitX(.ActiveUnit) <= botRight.x and GetUnitY(.ActiveUnit) >= botRight.y and GetUnitY(.ActiveUnit) <= topLeft.y
     endmethod
-    
-    public static method GetUserFromPlayerID takes integer playerID returns User
-        return User(playerID)
-    endmethod
-    
+        
     static method allocate takes nothing returns thistype
         set .count = .count + 1
         return .count

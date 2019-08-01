@@ -459,7 +459,7 @@ public struct MazingTeam
     public static method PlayerLeaves takes nothing returns nothing
         local player p = GetTriggerPlayer()
         local integer pID = GetPlayerId(p)
-        local User u = User.GetUserFromPlayerID(pID)
+        local User u = User(pID)
         local thistype mt = u.Team
         
         //call mt.Users.remove(u)
@@ -835,7 +835,7 @@ public struct MazingTeam
             endif
 			
             if GetPlayerSlotState(Player(i)) == PLAYER_SLOT_STATE_PLAYING then
-                set u = User.GetUserFromPlayerID(i)
+                set u = User(i)
                 set mt = u.Team
                 
                 call MultiboardSetItemValue(MultiboardGetItem(.PlayerStats, i + 1, 0), mt.GetStylizedPlayerName(i))
