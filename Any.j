@@ -1,5 +1,6 @@
-library Any
-	struct Any	
+library Any requires Deferred
+	//All/Any objects need to be cleaned up IN ADDITION TO / separately from the deferreds that they wrap around (just need to call destroy)
+	struct Any extends array
 		public delegate Deferred Promise
 				
 		private static method onPromiseResolve takes integer result, Any any returns integer

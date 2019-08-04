@@ -3226,6 +3226,11 @@ endglobals
 			if GetLocalPlayer() == Player(.PID) and GetCameraField(CAMERA_FIELD_ANGLE_OF_ATTACK) != 270 then
                 call CameraSetupApply(thistype.PlatformingCamera, true, true) //orients the camera to face down from above
 				call SetCameraTargetController(.Unit, 0, 0, false) //fixes the camera to platforming unit
+				
+				if User(.PID).IsAFK then
+					set User.LocalCameraTargetPosition.x = GetUnitX(.Unit)
+					set User.LocalCameraTargetPosition.y = GetUnitY(.Unit)
+				endif
             endif
         endmethod
 		private static method ApplyAllCameras takes nothing returns nothing

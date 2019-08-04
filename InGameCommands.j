@@ -102,6 +102,42 @@ library InGameCommands initializer init requires MazerGlobals, Platformer, Relay
 		set selectedUnit = null
 		set playerUnit = null
 	endfunction
+	
+	// function Vector2AssertEquals takes vector2 v1, vector2 v2 returns nothing
+		// if v1.x == v2.x then
+			// call BJDebugMsg("vectors equal for x")
+		// elseif v1.x != v2.x then
+			// call BJDebugMsg("vectors not equal for v1.x: " + R2S(v1.x) + ", v2.x: " + R2S(v2.x) + ", diff: " + R2S(v1.x - v2.x))
+		// endif
+		
+		// if v1.y == v2.y then
+			// call BJDebugMsg("vectors equal for y")
+		// elseif v1.y != v2.y then
+			// call BJDebugMsg("vectors not equal for v1.y: " + R2S(v1.y) + ", v2.y: " + R2S(v2.y) + ", diff: " + R2S(v1.y - v2.y))
+		// endif
+	// endfunction
+	// function Vector2UnitTest takes nothing returns nothing
+		// local vector2 vector = vector2.create(-1.1, -123.456)
+		// local string strVector = vector.toString()
+		// local vector2 parsedVector = vector2.fromString(strVector)
+		
+		// call Vector2AssertEquals(vector, parsedVector)
+		// call vector.deallocate()
+		
+		// set vector = vector2.create(-123.456, -1.1)
+		// set strVector = vector.toString()
+		// set parsedVector = vector2.fromString(strVector)
+		
+		// call Vector2AssertEquals(vector, parsedVector)
+		// call vector.deallocate()
+		
+		// set vector = vector2.create(-1, -1)
+		// set strVector = vector.toString()
+		// set parsedVector = vector2.fromString(strVector)
+		
+		// call Vector2AssertEquals(vector, parsedVector)
+		// call vector.deallocate()
+	// endfunction
 
 	function DebugRelay takes integer pID returns nothing
 		local Levels_Level platformerLevel = User(pID).Team.OnLevel
@@ -285,10 +321,12 @@ library InGameCommands initializer init requires MazerGlobals, Platformer, Relay
 				call DestroyGroup(unitgroup)
 				set unitgroup = null
 				set gunit = null
+			elseif cmd == "share" then
+				call SetPlayerAllianceBJ(Player(intVal), ALLIANCE_SHARED_CONTROL, true, Player(pID))
 			endif
 		endif		
 	endfunction
-
+	
 
 	//===========================================================================
 	private function init takes nothing returns nothing

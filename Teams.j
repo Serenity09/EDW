@@ -980,7 +980,17 @@ public struct MazingTeam
 		loop
 		exitwhen curPlayerNode == 0
 			if GetLocalPlayer() == Player(curPlayerNode.value) then
-				call PanCameraToTimed(x, y, duration)
+				if User(curPlayerNode.value).IsAFK then
+					call SetCameraPosition(x, y)
+					
+					//these don't return the updated value until a timeout of 0 for some reason
+					// set User.LocalCameraTargetPosition.x = GetCameraTargetPositionX()
+					// set User.LocalCameraTargetPosition.y = GetCameraTargetPositionY()
+					set User.LocalCameraTargetPosition.x = x
+					set User.LocalCameraTargetPosition.y = y
+				else
+					call PanCameraToTimed(x, y, duration)
+				endif
 			endif
 		set curPlayerNode = curPlayerNode.next
 		endloop
@@ -1052,6 +1062,18 @@ public struct MazingTeam
 		endloop
 	endmethod
 	
+	public method SetSharedControlForTeam takes User user, boolean flag returns nothing
+		local SimpleList_ListNode curPlayerNode = .FirstUser
+		
+		loop
+		exitwhen curPlayerNode == 0
+			if curPlayerNode.value != user then
+				call SetPlayerAlliance(Player(user), Player(curPlayerNode.value), ALLIANCE_SHARED_CONTROL, flag)
+			endif
+		set curPlayerNode = curPlayerNode.next
+		endloop
+	endmethod
+	
 	public method ResetHealthForTeam takes nothing returns nothing
 		local SimpleList_ListNode curPlayerNode = .FirstUser
 		
@@ -1075,7 +1097,7 @@ public struct MazingTeam
 		set curPlayerNode = curPlayerNode.next
 		endloop
 	endmethod
-    
+	    
     public static method create takes integer teamID returns thistype
         local thistype mt = thistype.allocate()
         

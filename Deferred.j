@@ -100,8 +100,8 @@ library Deferred requires Alloc, SimpleList
 			if this.Resolved then
 				call success.evaluate(this.Result, callbackData)
 				
-				//should this still return an awaiter so that it can be depended on properly?
-				return 0
+				//this should still return an awaiter so that it can be depended on properly
+				return DeferredAwaiter.create(this, callbackData)
 			else
 				set awaiter = DeferredAwaiter.create(this, callbackData)
 				set awaiter.Success = success

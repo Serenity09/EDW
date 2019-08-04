@@ -1,5 +1,6 @@
 library All requires Deferred
-	struct All
+	//All/Any objects need to be cleaned up IN ADDITION TO / separately from the deferreds that they wrap around (just need to call destroy)
+	struct All extends array
 		public integer CountFinished
 		public integer CountWaiting
 		

@@ -63,7 +63,7 @@ public function onPlayerUnitDied takes nothing returns nothing
 endfunction
 
 private function Init takes nothing returns nothing
-    local integer i = 0
+	local integer i = 0
     local trigger t = CreateTrigger()
     
     loop

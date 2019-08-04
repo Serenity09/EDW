@@ -115,8 +115,33 @@ library Vector2
         endmethod
         
         method toString takes nothing returns string
-            return "x: " + R2S(.x) + ", y: " + R2S(.y)
+            return R2S(.x) + "," + R2S(.y)
         endmethod
+		static method fromString takes string s returns thistype
+			local thistype v = thistype.allocate()
+			local integer length = StringLength(s)
+			local integer position = -1
+			local integer mid = length / 2
+			local integer i = 0
+			
+			loop
+			exitwhen mid + i > length or position != -1
+				if mid + i + 1 < length and SubString(s, mid + i, mid + i + 1) == "," then
+					set position = mid + i
+				elseif mid - i - 1 >= 0 and SubString(s, mid - i - 1, mid - i) == "," then
+					set position = mid - i - 1
+				endif
+			set i = i + 1
+			endloop
+			
+			// call BJDebugMsg("Position starting up: " + SubString(s, position, position + 1) + ", down" + SubString(s, position - 1, position))
+			// call BJDebugMsg("First part: " + SubString(s, 0, position) + ", second part: " + SubString(s, position + 1, length))
+			
+			set v.x = S2R(SubString(s, 0, position))
+			set v.y = S2R(SubString(s, position + 1, length))
+			
+			return v
+		endmethod
         
         static method dotProduct takes vector2 a, vector2 b returns real
             return (a.x*b.x+a.y*b.y)
