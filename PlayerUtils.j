@@ -26,7 +26,7 @@ library PlayerUtils requires SimpleList, GameGlobalConstants
             private integer      ACTIVE_COMPUTER_PLAYERS_COUNT = 0
             
             //only really need the first player, will always iterate from there
-            private SimpleList_List PlayerList                 = 0
+            public SimpleList_List PlayerList                 = 0
             public SimpleList_ListNode FirstPlayer             = 0
         endglobals
         
@@ -53,7 +53,7 @@ library PlayerUtils requires SimpleList, GameGlobalConstants
     //=======================================================================
         private function DetectLeavers takes nothing returns nothing
             local integer pID = GetPlayerId(GetTriggerPlayer())
-            
+			
             set ACTIVE_PLAYERS_COUNT=ACTIVE_PLAYERS_COUNT-1
             set ACTIVE_HUMAN_PLAYERS_COUNT=ACTIVE_HUMAN_PLAYERS_COUNT-1
             

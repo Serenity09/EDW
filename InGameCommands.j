@@ -189,6 +189,48 @@ library InGameCommands initializer init requires MazerGlobals, Platformer, Relay
 		set curNode = curNode.next
 		endloop	
 	endfunction
+	
+	function OnAllCameraSync takes integer result, All all returns integer
+		// call DisplayTextToForce(bj_FORCE_PLAYER[0], "On all camera sync")
+		
+		local SimpleList_ListNode curTeamNode = Teams_MazingTeam.AllTeams.first
+		local SimpleList_ListNode curUserNode
+		
+		local boolean anyNonAFK
+		
+		loop
+		exitwhen curTeamNode == 0
+			set curUserNode = Teams_MazingTeam(curTeamNode.value).Users.first
+			set anyNonAFK = false
+			
+			loop
+			exitwhen curUserNode == 0 or anyNonAFK
+				// call DisplayTextToPlayer(Player(0), 0, 0, "User: " + I2S(curUserNode.value))
+				
+				if not User(curUserNode.value).IsAFK and not User(curUserNode.value).IsAFKSync() and User(curUserNode.value).IsAlive then
+					set anyNonAFK = true
+				endif
+			set curUserNode = curUserNode.next
+			endloop
+			
+			if not anyNonAFK then
+				set curUserNode = Teams_MazingTeam(curTeamNode.value).Users.first
+				
+				loop
+				exitwhen curUserNode == 0
+					if not User(curUserNode.value).IsAFK and User(curUserNode.value).IsAFKSync() then
+						call User(curUserNode.value).ToggleAFK()
+					endif
+				set curUserNode = curUserNode.next
+				endloop
+			endif
+		set curTeamNode = curTeamNode.next
+		endloop
+		
+		call all.destroy()
+		
+		return 0
+	endfunction
 
 	function ParseCommand takes nothing returns nothing
 		local string msg = GetEventPlayerChatString()
@@ -204,6 +246,8 @@ library InGameCommands initializer init requires MazerGlobals, Platformer, Relay
 		local group unitgroup
 		local unit gunit
 		
+		local Deferred async
+		local All all
 		
 		//debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "msg: " + msg)
 		
@@ -223,7 +267,14 @@ library InGameCommands initializer init requires MazerGlobals, Platformer, Relay
 			set intVal = R2I(val)
 		endif
 		
-		if CONFIGURATION_PROFILE != RELEASE then
+		if cmd == "afk" then
+			call DisplayTextToPlayer(Player(0), 0, 0, "AFK manual check")
+			set all = User.SyncLocalCameraIdleTime()
+			call DisplayTextToPlayer(Player(0), 0, 0, "all async: " + I2S(all))
+			call all.Promise.Then(OnAllCameraSync, 0, all)
+		endif
+		
+		if CONFIGURATION_PROFILE == RELEASE then
 			//debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "msg: " + msg + " cmd: " + cmd + " val: " + R2S(val))
 			if cmd == "tvy" then
 				set p.TerminalVelocityY = val
@@ -323,6 +374,8 @@ library InGameCommands initializer init requires MazerGlobals, Platformer, Relay
 				set gunit = null
 			elseif cmd == "share" then
 				call SetPlayerAllianceBJ(Player(intVal), ALLIANCE_SHARED_CONTROL, true, Player(pID))
+			elseif cmd == "sync" then
+				set async = User.SyncLocalCameraIdleTime()
 			endif
 		endif		
 	endfunction

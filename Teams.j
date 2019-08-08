@@ -44,17 +44,16 @@ struct WorldProgress extends array
 	endmethod
 endstruct
 
-public struct MazingTeam
-    readonly integer TeamID
+public struct MazingTeam extends array
     public SimpleList_List Users
     public SimpleList_ListNode FirstUser
     
 	public User LastEventUser
     readonly boolean IsTeamPlaying
     readonly rect Revive
-    private integer ContinueCount
-    public boolean RecentlyTransferred
-    public real LastTransferTime
+    readonly integer ContinueCount
+    // public boolean RecentlyTransferred
+    // public real LastTransferTime
     public Levels_Level OnLevel
     public string TeamName
     public integer OnCheckpoint //Used purely in conjunction with levels struct. ==0 refers to the initial CP for a level
@@ -68,9 +67,12 @@ public struct MazingTeam
     
     public static multiboard PlayerStats
     
-    readonly static MazingTeam array AllTeams[NumberPlayers]
     readonly static integer NumberTeams = 0
-        
+	
+	readonly static SimpleList_List AllTeams
+    
+	implement Alloc
+	
     public method MoveRevive takes rect newlocation returns nothing
         call MoveRectTo(.Revive, GetRectCenterX(newlocation), GetRectCenterY(newlocation))
     endmethod
@@ -80,8 +82,8 @@ public struct MazingTeam
     endmethod
     
     public method CreateMenu takes real time, string optionCB returns nothing
-        local real x = VOTE_TOP_LEFT_X + R2I((TeamID + 1) / 4)
-        local real y = VOTE_TOP_LEFT_Y + R2I((TeamID + 1) / 2)
+        local real x = VOTE_TOP_LEFT_X + R2I((this + 1) / 4)
+        local real y = VOTE_TOP_LEFT_Y + R2I((this + 1) / 2)
         local SimpleList_ListNode cur = .FirstUser
                 
         set .VoteMenu = VisualVote_voteMenu.create(x, y, time, optionCB)
@@ -196,8 +198,6 @@ public struct MazingTeam
         endif
     endmethod
     
-	
-	
     public method ApplyTeamDefaultCameras takes nothing returns nothing
         local SimpleList_ListNode fp = .FirstUser
         local User u
@@ -314,15 +314,15 @@ public struct MazingTeam
         endloop
     endmethod
 	public static method PrintMessageAll takes string message, MazingTeam filterTeam returns nothing
-		local integer i = 0
+		local SimpleList_ListNode curTeamNode = thistype.AllTeams.first
         
         loop
-        exitwhen i >= .NumberTeams
-            if filterTeam == 0 or .AllTeams[i] != filterTeam then
-				call .AllTeams[i].PrintMessage(message)
+        exitwhen curTeamNode == 0
+            if filterTeam == 0 or curTeamNode.value != filterTeam then
+				call MazingTeam(curTeamNode.value).PrintMessage(message)
 			endif
 			
-            set i = i + 1
+            set curTeamNode = curTeamNode.next
         endloop
 	endmethod
     
@@ -391,37 +391,39 @@ public struct MazingTeam
     endmethod
         
     public static method GetCountOnLevel takes integer levelID returns integer
-        local integer i = 0
+        local SimpleList_ListNode curTeamNode = thistype.AllTeams.first
         local integer count = 0
         
         loop
-        exitwhen i >= .NumberTeams
-            //call DisplayTextToForce(bj_FORCE_PLAYER[0], "Team " + I2S(AllTeams[i].TeamID) + " on level: " + I2S(.AllTeams[i].OnLevel))
-            //call DisplayTextToForce(bj_FORCE_PLAYER[0], "Checking " + I2S(levelID))
-            if .AllTeams[i].OnLevel == levelID then
-                set count = count + .AllTeams[i].Users.count
+        exitwhen curTeamNode == 0
+            call DisplayTextToForce(bj_FORCE_PLAYER[0], "Team " + I2S(MazingTeam(curTeamNode.value)) + " on level: " + I2S(MazingTeam(curTeamNode.value).OnLevel))
+            call DisplayTextToForce(bj_FORCE_PLAYER[0], "Checking " + I2S(levelID))
+            if MazingTeam(curTeamNode.value).OnLevel == levelID then
+                set count = count + MazingTeam(curTeamNode.value).Users.count
             endif
-            set i = i + 1
+			
+		set curTeamNode = curTeamNode.next
         endloop
         
-        //call DisplayTextToForce(bj_FORCE_PLAYER[0], "Count on level " + I2S(count))
+        call DisplayTextToForce(bj_FORCE_PLAYER[0], "Count on level " + I2S(count))
         
         return count
     endmethod
     
     public static method IsLevelEmpty takes integer levelID returns boolean
-        local integer i = 0
+        local SimpleList_ListNode curTeamNode = thistype.AllTeams.first
         
         loop
-        exitwhen i >= .NumberTeams
+        exitwhen curTeamNode == 0
             //call DisplayTextToForce(bj_FORCE_PLAYER[0], "Team " + I2S(AllTeams[i].TeamID) + " on level: " + I2S(.AllTeams[i].OnLevel))
             //call DisplayTextToForce(bj_FORCE_PLAYER[0], "Checking " + I2S(levelID))
-            if .AllTeams[i].OnLevel == levelID then
+            if MazingTeam(curTeamNode.value).OnLevel == levelID then
                 return false
             endif
-            set i = i + 1
+			
+		set curTeamNode = curTeamNode.next
         endloop
-        
+				
         //call DisplayTextToForce(bj_FORCE_PLAYER[0], "Count on level " + I2S(count))
         
         return true
@@ -461,6 +463,9 @@ public struct MazingTeam
         local integer pID = GetPlayerId(p)
         local User u = User(pID)
         local thistype mt = u.Team
+		
+		local SimpleList_ListNode curUserNode = mt.Users.first
+		local boolean anyActive = false
         
         //call mt.Users.remove(u)
         call u.OnLeave()
@@ -470,32 +475,43 @@ public struct MazingTeam
         set mt.ContinueCount = mt.ContinueCount + R2I(1 * mt.Weight + .5)
         
         call mt.UpdateMultiboard()
-        
+		
+		loop
+        exitwhen curUserNode == 0 or anyActive
+			if User(curUserNode.value).IsPlaying then
+				set anyActive = User(curUserNode.value).IsPlaying
+			endif
+		set curUserNode = curUserNode.next
+		endloop
+		
+		if not anyActive then
+			set mt.IsTeamPlaying = false
+		endif
         //set MazersArray[pID] = null
     endmethod
     
     public method AddPlayer takes integer pID returns nothing
         static if (DEBUG_MODE) then
-            local integer i = 0
+            local SimpleList_ListNode curTeamNode = thistype.AllTeams.first
             local SimpleList_ListNode user
             local MazingTeam mt
             
             loop
-            exitwhen i >= .NumberTeams
-                set mt = .AllTeams[i]
+            exitwhen curTeamNode == 0
+                set mt = curTeamNode.value
                 set user = mt.FirstUser
                 
                 loop
                 exitwhen user == 0
                     if User(user.value) == pID then
-                        debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "WARNING: CURRENTLY ADDING PLAYER ID " + I2S(pID) + " TO TEAM " + I2S(.TeamID) + ", BUT THEY ARE ALREADY A MEMBER OF TEAM: " + I2S(mt.TeamID))
+                        debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "WARNING: CURRENTLY ADDING PLAYER ID " + I2S(pID) + " TO TEAM " + I2S(this) + ", BUT THEY ARE ALREADY A MEMBER OF TEAM: " + I2S(mt))
                     endif
                     
                 set user = user.next
                 endloop
                 
-                set i = i + 1
-            endloop
+                set curTeamNode = curTeamNode.next
+            endloop        
         endif
                 
         //debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "Adding user: " + I2S(User(pID)) + " to team: " + I2S(this))
@@ -511,7 +527,7 @@ public struct MazingTeam
             set .IsTeamPlaying = true
         endif
         
-        //debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "Player count of team " + I2S(.TeamID) + ", is now: " + I2S(.PlayerCount))
+        //debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "Player count of team " + I2S(this) + ", is now: " + I2S(.PlayerCount))
     endmethod
     
     public method UpdateMultiboard takes nothing returns nothing
@@ -573,21 +589,21 @@ public struct MazingTeam
 	public method GetTeamColor takes nothing returns string
 		local string hex
         
-        if .TeamID == 0 then
+        if this == 1 then
             set hex = "FF0000"
-        elseif .TeamID == 1 then
+        elseif this == 2 then
             set hex = "0000FF"
-        elseif .TeamID == 2 then
+        elseif this == 3 then
             set hex = "00FFCC"
-        elseif .TeamID == 3 then
+        elseif this == 4 then
             set hex = "FF66CC"
-        elseif .TeamID == 4 then
+        elseif this == 5 then
             set hex = "FFFF66"
-        elseif .TeamID == 5 then
+        elseif this == 6 then
             set hex = "FF9933"
-        elseif .TeamID == 6 then
+        elseif this == 7 then
             set hex = "00CC00"
-        elseif .TeamID == 7 then
+        elseif this == 8 then
             set hex = "FF66CC"
         else
             set hex = ""
@@ -598,21 +614,21 @@ public struct MazingTeam
 	public method GetDefaultTeamName takes nothing returns string
 		local string name
 		
-		if .TeamID == 0 then
+		if this == 1 then
 			set name = "Red"
-		elseif .TeamID == 1 then
+		elseif this == 2 then
 			set name = "Blue"
-		elseif .TeamID == 2 then
+		elseif this == 3 then
 			set name = "Teal"
-		elseif .TeamID == 3 then
+		elseif this == 4 then
 			set name = "Purple"
-		elseif .TeamID == 4 then
+		elseif this == 5 then
 			set name = "Yellow"
-		elseif .TeamID == 5 then
+		elseif this == 6 then
 			set name = "Orange"
-		elseif .TeamID == 6 then
+		elseif this == 7 then
 			set name = "Green"
-		elseif .TeamID == 7 then
+		elseif this == 8 then
 			set name = "Pink"
 		else
 			set name = ""
@@ -629,35 +645,36 @@ public struct MazingTeam
     endmethod
     
     public static method ComputeTeamWeights takes nothing returns nothing
-        local integer i = 0
+        local SimpleList_ListNode curTeamNode = thistype.AllTeams.first
         local real avgSize = 0
         
         //debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "computing team weights")
         
         //compute average team size
         loop
-        exitwhen i >= .NumberTeams
-            set avgSize = avgSize + .AllTeams[i].Users.count
-            set i = i + 1
+        exitwhen curTeamNode == 0
+            set avgSize = avgSize + MazingTeam(curTeamNode.value).Users.count
+            
+		set curTeamNode = curTeamNode.next
         endloop
         set avgSize = avgSize / .NumberTeams
         
         //TODO also include individual player scores in weight
         
-        set i = 0
+        set curTeamNode = thistype.AllTeams.first
         loop
-        exitwhen i >= .NumberTeams
-            if .AllTeams[i].Users.count > avgSize then
-                set .AllTeams[i].Weight = 1.0 / (.AllTeams[i].Users.count - avgSize)
-            elseif .AllTeams[i].Users.count < avgSize then
-                set .AllTeams[i].Weight = 1.0 * (avgSize - .AllTeams[i].Users.count)
+        exitwhen curTeamNode == 0
+            if MazingTeam(curTeamNode.value).Users.count > avgSize then
+                set MazingTeam(curTeamNode.value).Weight = 1.0 / (MazingTeam(curTeamNode.value).Users.count - avgSize)
+            elseif MazingTeam(curTeamNode.value).Users.count < avgSize then
+                set MazingTeam(curTeamNode.value).Weight = 1.0 * (avgSize - MazingTeam(curTeamNode.value).Users.count)
             else // team size == avg size
-                set .AllTeams[i].Weight = 1.
+                set MazingTeam(curTeamNode.value).Weight = 1.
             endif
             
             //debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "team: " + I2S(i) + ", weight: " + R2S(.AllTeams[i].Weight))
             
-            set i = i + 1
+		set curTeamNode = curTeamNode.next
         endloop
     endmethod
 	
@@ -672,7 +689,7 @@ public struct MazingTeam
 				endloop
 			endif
 			
-			return AllTeams[rand]
+			return AllTeams.get(rand).value
 		else
 			return 0
 		endif
@@ -685,21 +702,21 @@ public struct MazingTeam
 		local integer leadScore = -1
 		local boolean tie = false
 		
-		local integer i = 0
+		local SimpleList_ListNode curTeamNode = thistype.AllTeams.first
 		
 		loop
-        exitwhen i >= .NumberTeams
-            if .AllTeams[i].Score > leadScore then
+        exitwhen curTeamNode == 0
+            if MazingTeam(curTeamNode.value).Score > leadScore then
 				set tie = false
-				set leader = .AllTeams[i]
+				set leader = MazingTeam(curTeamNode.value)
 				set leadScore = leader.Score
-			elseif .AllTeams[i].Score == leadScore then
+			elseif MazingTeam(curTeamNode.value).Score == leadScore then
 				set tie = true
 			endif
 			
-            set i = i + 1
+            set curTeamNode = curTeamNode.next
         endloop
-		
+				
 		return leader
 	endmethod
 	
@@ -885,17 +902,17 @@ public struct MazingTeam
 		endloop
 	endmethod
 	public static method ApplyEndGameAll takes MazingTeam victor returns nothing
-		local integer i = 0
+		local SimpleList_ListNode curTeamNode = thistype.AllTeams.first
 		
 		loop
-        exitwhen i >= .NumberTeams
-            if .AllTeams[i] == victor then
-				call .AllTeams[i].ApplyEndGame(true)
+        exitwhen curTeamNode == 0
+            if MazingTeam(curTeamNode.value) == victor then
+				call MazingTeam(curTeamNode.value).ApplyEndGame(true)
 			else
-				call .AllTeams[i].ApplyEndGame(false)
+				call MazingTeam(curTeamNode.value).ApplyEndGame(false)
 			endif
 			
-            set i = i + 1
+            set curTeamNode = curTeamNode.next
         endloop
 	endmethod
 	
@@ -1097,19 +1114,18 @@ public struct MazingTeam
 		set curPlayerNode = curPlayerNode.next
 		endloop
 	endmethod
-	    
-    public static method create takes integer teamID returns thistype
+		
+    public static method create takes nothing returns thistype
         local thistype mt = thistype.allocate()
-        
-        if .AllTeams[teamID] == 0 then
-            set mt.TeamID = teamID
+		
+        if not .AllTeams.contains(mt) then
             set mt.TeamName = mt.GetDefaultTeamName() //set later
-            set mt.RecentlyTransferred = false //used to make sure triggers aren't run multiple times / no interrupts
-            set mt.LastTransferTime = -50 //has never transferred
+            // set mt.RecentlyTransferred = false //used to make sure triggers aren't run multiple times / no interrupts
+            // set mt.LastTransferTime = -50 //has never transferred
             set mt.OnLevel = TEMP_LEVEL_ID
             set mt.OnCheckpoint = -1
             set mt.Revive = Rect(0, 0, 200, 200)
-            call mt.MoveRevive(gg_rct_IntroWorld_R1)
+            // call mt.MoveRevive(gg_rct_IntroWorld_R1)
             set mt.Score = 0
             set mt.DefaultGameMode = GAMEMODE_INIT
 			set mt.LastEventUser = -1
@@ -1117,16 +1133,22 @@ public struct MazingTeam
 			set mt.Users = SimpleList_List.create()
             set mt.AllWorldProgress = SimpleList_List.create()
 			
-            set .AllTeams[teamID] = mt
+            call thistype.AllTeams.addEnd(mt)
             //set .NumberTeams = .NumberTeams + 1
             set Teams_MazingTeam.NumberTeams = Teams_MazingTeam.NumberTeams + 1
-            //call DisplayTextToForce(bj_FORCE_PLAYER[0], "3")
+            
+			call DisplayTextToForce(bj_FORCE_PLAYER[0], "Created team " + I2S(mt))
+			call thistype.AllTeams.print(0)
         else
-            call DisplayTextToForce(bj_FORCE_PLAYER[0], "Overlapping team ID -- invalid game state")
+            call DisplayTextToForce(bj_FORCE_PLAYER[0], "Overlapping team ID: " + I2S(mt) + " -- invalid game state")
             return 0 //team already exists
         endif
         return mt
     endmethod
+	
+	private static method onInit takes nothing returns nothing
+		set thistype.AllTeams = SimpleList_List.create()
+	endmethod
 endstruct
 
 public function Init takes nothing returns nothing
@@ -1138,8 +1160,9 @@ public function Init takes nothing returns nothing
             call TriggerRegisterPlayerEvent(t, Player(i), EVENT_PLAYER_DEFEAT)
             call TriggerRegisterPlayerEvent(t, Player(i), EVENT_PLAYER_LEAVE)
         endif
-        set i = i + 1
-        exitwhen i >= NumberPlayers
+
+	set i = i + 1
+	exitwhen i >= NumberPlayers
     endloop
     
     call TriggerAddAction(t, function MazingTeam.PlayerLeaves)

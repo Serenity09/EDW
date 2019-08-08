@@ -134,7 +134,7 @@ library EDWVisualVote requires VisualVote, ContinueGlobals, Teams, PlayerUtils, 
             set i = 0
             loop
             exitwhen fp == 0
-                set team[i] = Teams_MazingTeam.create(fp.value)
+                set team[i] = Teams_MazingTeam.create()
                 call team[i].AddPlayer(fp.value)
                 set team[i].Weight = 1
             set fp = fp.next
@@ -144,7 +144,7 @@ library EDWVisualVote requires VisualVote, ContinueGlobals, Teams, PlayerUtils, 
             set teamCount = i
         elseif GameMode == 1 then
             //one team for all players
-            set team[0] = Teams_MazingTeam.create(0)
+            set team[0] = Teams_MazingTeam.create()
             loop
             exitwhen fp == 0
                 call team[0].AddPlayer(fp.value)
@@ -224,7 +224,7 @@ library EDWVisualVote requires VisualVote, ContinueGlobals, Teams, PlayerUtils, 
             set i = 0
             loop
                 //debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "Team Size: " + I2S(teamSize[i]))
-                set team[i] = Teams_MazingTeam.create(i)
+                set team[i] = Teams_MazingTeam.create()
                 set teamSlotsRemaining[i] = teamSize[i]
                 
                 set i = i + 1

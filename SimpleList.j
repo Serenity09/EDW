@@ -220,7 +220,6 @@ library SimpleList requires Alloc, Table
             return -1
         endmethod
         
-        static if DEBUG_MODE then
         public method checkCircular takes nothing returns boolean
             local ListNode cur 
             
@@ -238,7 +237,6 @@ library SimpleList requires Alloc, Table
             
             return false
         endmethod
-        
         public method print takes integer pID returns nothing
             local ListNode cur
             if .count == 0 then
@@ -258,7 +256,6 @@ library SimpleList requires Alloc, Table
                 endif
             endif
         endmethod
-        endif
         
         public method destroy takes nothing returns nothing
             call this.clear()

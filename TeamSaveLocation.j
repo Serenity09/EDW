@@ -91,7 +91,7 @@ struct TeamSaveLocation extends array
         local SimpleList_ListNode iPlayer = team.FirstUser
         
         set new.SaveName = saveName
-        set new.TeamID = team.TeamID
+        set new.TeamID = team
         set new.LevelID = team.OnLevel
         set new.CheckpointID = team.OnCheckpoint
         set new.ContinueCount = team.ContinueCount

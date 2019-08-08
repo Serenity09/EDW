@@ -3,9 +3,10 @@ library User requires UnitDefaultRadius, MazerGlobals, Platformer, TerrainHelper
 globals
 	User TriggerUser //used with events
 	
-	private constant real AFK_CAMERA_CHECK_TIMEOUT = 5.
+	private constant real AFK_CAMERA_CHECK_TIMEOUT = 1.
 	// private constant real AFK_CAMERA_MAX_TIMEOUT = 30.
 	private constant real AFK_CAMERA_MAX_TIMEOUT = 10.
+	private constant real AFK_MANUAL_CHECK_FACTOR = .5
 	private constant string AFK_SYNC_EVENT_PREFIX = "AFK"
 	
 	public constant string LOCAL_CAMERA_IDLE_TIME_EVENT_PREFIX = "CAM"
@@ -18,7 +19,7 @@ endglobals
 struct User extends array
     public boolean IsPlaying
     public boolean IsAlive
-	public boolean IsAFK
+	readonly boolean IsAFK
     public integer Deaths
     public unit ActiveUnit
 	public real ActiveUnitRadius
@@ -35,7 +36,9 @@ struct User extends array
 	
     public static integer ActivePlayers
 	
+	private static trigger AFKLocalCameraTimeSyncEvent
 	private static SimpleList_List AFKSyncLocalCameraTimePromises
+	
 	private static trigger AFKSyncEvent
 	readonly static vector2 LocalCameraTargetPosition
 	private static real LocalCameraIdleTime
@@ -44,7 +47,7 @@ struct User extends array
 	// public static vector2 LocalUserMousePosition
 	
 	private static Cinematic ToggleCameraTrackingTutorial
-	    
+		    
     //MOST IMPORTANT that "this" returns the exact player ID without having to remember to add / subtract 1
     //also no need to recycle users, let's just keep a basic count
     private static integer count = -1
@@ -112,14 +115,15 @@ struct User extends array
         return false
     endmethod
 	public method ShortcutCinematicQueue takes Cinematic cine returns nothing
+		call .CinematicQueue.add(cine)
+		
 		//remove currently playing cinematic
 		if .CinematicPlaying != 0 then
 			call .CinematicPlaying.EndCallbackStack()
 		endif
-		
-		call .CinematicQueue.add(cine)
-		
-		call .CheckCinematicQueue()
+				
+		//automatically happens as part of ending the previous cinematic
+		// call .CheckCinematicQueue()
 	endmethod
     public method AddCinematicToQueue takes Cinematic cine returns nothing
         local integer priorityIndex = 0
@@ -129,6 +133,8 @@ struct User extends array
 			call .CinematicQueue.add(cine)
 			call .CheckCinematicQueue()
 		else
+			// call DisplayTextToPlayer(Player(0), 0, 0, "Cinematic priority difference: " + I2S(cine.Priority - .CinematicPlaying.Cinematic.Priority))
+			
 			if cine.Priority - .CinematicPlaying.Cinematic.Priority >= 2 then
 				call ShortcutCinematicQueue(cine)
 			else
@@ -757,36 +763,35 @@ struct User extends array
     public method IsActiveUnitInArea takes vector2 topLeft, vector2 botRight returns boolean
         return GetUnitX(.ActiveUnit) >= topLeft.x and GetUnitX(.ActiveUnit) <= botRight.x and GetUnitY(.ActiveUnit) >= botRight.y and GetUnitY(.ActiveUnit) <= topLeft.y
     endmethod
+	
+	//User AFK synced event callback and async logic for checking/tracking idle state
+	public method ToggleAFK takes nothing returns nothing
+		set .IsAFK = not .IsAFK
 		
-	private static method ToggleAFKCallback takes nothing returns boolean
-		local thistype u = S2I(BlzGetTriggerSyncData())
-		
-		set u.IsAFK = not u.IsAFK
-		
-		if u.IsAFK then
-			if u.Team.Users.count > 0 then
-				call u.Team.PrintMessage(u.GetStylizedPlayerName() + " is now AFK!")
+		if .IsAFK then
+			if .Team.Users.count > 0 then
+				call .Team.PrintMessage(.GetStylizedPlayerName() + " is now AFK!")
 				
-				if u.GameMode == Teams_GAMEMODE_STANDARD or u.GameMode == Teams_GAMEMODE_STANDARD_PAUSED then
-					call u.Team.SetSharedControlForTeam(u, true)
+				if .GameMode == Teams_GAMEMODE_STANDARD or .GameMode == Teams_GAMEMODE_STANDARD_PAUSED then
+					call .Team.SetSharedControlForTeam(this, true)
 				//TODO this won't fully work, because a user could start by getting control of a AFK standard player, then switch to Platforming via a terrain tile
-				elseif u.GameMode == Teams_GAMEMODE_PLATFORMING or u.GameMode == Teams_GAMEMODE_PLATFORMING_PAUSED then
+				elseif .GameMode == Teams_GAMEMODE_PLATFORMING or .GameMode == Teams_GAMEMODE_PLATFORMING_PAUSED then
 					//no way to support sharing control via keyboard actions
 					//TODO show 3.2.1 texttag countdown before killing
-					call u.SwitchGameModesDefaultLocation(Teams_GAMEMODE_DYING)
+					call .SwitchGameModesDefaultLocation(Teams_GAMEMODE_DYING)
 				endif
 				
 				//disable default camera tracking so as to not interact with shared control
-				if DefaultCameraTracking[u] then
-					call u.ToggleDefaultTracking()
+				if DefaultCameraTracking[this] then
+					call .ToggleDefaultTracking()
 				endif
 			endif
 			
 			//TODO append " (AFK)" in gray or non colored text at the end of the player's name in the multiboard
 		else
-			if u.Team.Users.count > 0 then
-				call u.Team.PrintMessage(u.GetStylizedPlayerName() + " is no longer AFK")
-				call u.Team.SetSharedControlForTeam(u, false)
+			if .Team.Users.count > 0 then
+				call .Team.PrintMessage(.GetStylizedPlayerName() + " is no longer AFK")
+				call .Team.SetSharedControlForTeam(this, false)
 				//TODO pause active gamemode, pan camera to active unit, show 3.2.1 countdown, then unpause
 				
 				//TODO cancel 3.2.1 kill textag countdown if it exists
@@ -795,159 +800,144 @@ struct User extends array
 			
 			//TODO reset player's name in multiboard
 		endif
+	endmethod
+	private static method ToggleAFKCallback takes nothing returns boolean
+		// local thistype u = S2I(BlzGetTriggerSyncData())
+		call User(S2I(BlzGetTriggerSyncData())).ToggleAFK()
 		
 		return false
 	endmethod
 		
-	// private static method CheckAFKMouseEventCallback takes nothing returns boolean
-		// local User u = User(GetPlayerId(GetTriggerPlayer()))
-		// local location mouseLocation = BlzGetTriggerPlayerMousePosition()
+	private method CheckAFKPlayer takes real timeElapsed returns nothing
+		//call sync AFK checks, sync wrappers around async data
 		
-		// call DisplayTextToForce(bj_FORCE_PLAYER[0], "AFK event callback for user: " + I2S(u))
-		// call DisplayTextToForce(bj_FORCE_PLAYER[0], "Mouse location x: " + R2S(GetLocationX(mouseLocation)) + ", y: " + R2S(GetLocationY(mouseLocation)))
-		
-		// if GetLocalPlayer() == Player(u) then
-			// if thistype.LocalUserMousePosition.x != GetLocationX(mouseLocation) or thistype.LocalUserMousePosition.y != GetLocationY(mouseLocation) then
-				// set thistype.LocalCameraIdleTime = 0
+		//call async AFK checks
+		if GetLocalPlayer() == Player(this) then
+			if this.GameMode == Teams_GAMEMODE_PLATFORMING then
+				if not thistype.PlatformerStartStable and (this.Platformer.YVelocity == 0 or this.Platformer.HorizontalAxisState != 0) then
+					set thistype.PlatformerStartStable = true
+					
+					if this.Platformer.HorizontalAxisState == 0 then
+						set thistype.LocalCameraTargetPosition.x = GetCameraTargetPositionX()
+						set thistype.LocalCameraTargetPosition.y = GetCameraTargetPositionY()
+					endif
+				endif
 				
-				// set thistype.LocalUserMousePosition.x = GetLocationX(mouseLocation)
-				// set thistype.LocalUserMousePosition.y = GetLocationY(mouseLocation)
-			// else
-				// set thistype.LocalCameraIdleTime = thistype.LocalCameraIdleTime + AFK_CAMERA_CHECK_TIMEOUT
-			// endif
-		// endif
-		
-		// call RemoveLocation(mouseLocation)
-		// set mouseLocation = null
-		
-		// return false
-	// endmethod
-	// private static method CheckAFKMouseForceCallback takes nothing returns nothing
-		// call DisplayTextToForce(bj_FORCE_PLAYER[0], "AFK force callback for user: " + I2S(GetPlayerId(GetEnumPlayer())))
-		
-		// call SetPlayerState(GetEnumPlayer(), PLAYER_STATE_OBSERVER_ON_DEATH, B2I(not I2B(GetPlayerState(GetEnumPlayer(), PLAYER_STATE_OBSERVER_ON_DEATH))))
-	// endmethod
-	// private method CheckAFKPlayer takes nothing returns nothing
-		
-	// endmethod
+				if this.Platformer.HorizontalAxisState != 0 or (thistype.PlatformerStartStable and (GetCameraTargetPositionX() != LocalCameraTargetPosition.x or GetCameraTargetPositionY() != LocalCameraTargetPosition.y)) then
+					set thistype.LocalCameraIdleTime = 0
+					
+					set thistype.LocalCameraTargetPosition.x = GetCameraTargetPositionX()
+					set thistype.LocalCameraTargetPosition.y = GetCameraTargetPositionY()
+				else
+					set thistype.LocalCameraIdleTime = thistype.LocalCameraIdleTime + timeElapsed
+				endif
+			else
+				if GetCameraTargetPositionX() != LocalCameraTargetPosition.x or GetCameraTargetPositionY() != LocalCameraTargetPosition.y then
+					set thistype.LocalCameraIdleTime = 0
+					
+					set thistype.LocalCameraTargetPosition.x = GetCameraTargetPositionX()
+					set thistype.LocalCameraTargetPosition.y = GetCameraTargetPositionY()
+				else
+					set thistype.LocalCameraIdleTime = thistype.LocalCameraIdleTime + timeElapsed
+				endif
+			endif
+						
+			if (this.IsAFK and thistype.LocalCameraIdleTime < AFK_CAMERA_MAX_TIMEOUT) or /*
+				*/(not this.IsAFK and /*
+				*/((thistype.LocalCameraIdleTime >= AFK_CAMERA_MAX_TIMEOUT) or /*
+				*/(thistype.LocalCameraIdleTime >= AFK_MANUAL_CHECK_FACTOR * AFK_CAMERA_MAX_TIMEOUT)) then
+				call BlzSendSyncData(AFK_SYNC_EVENT_PREFIX, I2S(this))
+			endif
+		endif
+	endmethod
 	private static method CheckAFKPlayers takes nothing returns nothing
 		local SimpleList_ListNode curUserNode = PlayerUtils_FirstPlayer
-		local User u
-		
+		local real timeElapsed = TimerGetElapsed(GetExpiredTimer())
+				
 		loop
 		exitwhen curUserNode == 0
-			set u = User(curUserNode.value)
-			
-			//call async AFK checks
-			if GetLocalPlayer() == Player(u) then
-				if u.GameMode == Teams_GAMEMODE_PLATFORMING then
-					if not thistype.PlatformerStartStable and (u.Platformer.YVelocity == 0 or u.Platformer.HorizontalAxisState != 0) then
-						set thistype.PlatformerStartStable = true
-						
-						if u.Platformer.HorizontalAxisState == 0 then
-							set thistype.LocalCameraTargetPosition.x = GetCameraTargetPositionX()
-							set thistype.LocalCameraTargetPosition.y = GetCameraTargetPositionY()
-						endif
-					endif
-					
-					if u.Platformer.HorizontalAxisState != 0 or (thistype.PlatformerStartStable and (GetCameraTargetPositionX() != LocalCameraTargetPosition.x or GetCameraTargetPositionY() != LocalCameraTargetPosition.y)) then
-						set thistype.LocalCameraIdleTime = 0
-						
-						set thistype.LocalCameraTargetPosition.x = GetCameraTargetPositionX()
-						set thistype.LocalCameraTargetPosition.y = GetCameraTargetPositionY()
-					else
-						set thistype.LocalCameraIdleTime = thistype.LocalCameraIdleTime + TimerGetElapsed(GetExpiredTimer())
-					endif
-				else
-					if GetCameraTargetPositionX() != LocalCameraTargetPosition.x or GetCameraTargetPositionY() != LocalCameraTargetPosition.y then
-						set thistype.LocalCameraIdleTime = 0
-						
-						set thistype.LocalCameraTargetPosition.x = GetCameraTargetPositionX()
-						set thistype.LocalCameraTargetPosition.y = GetCameraTargetPositionY()
-					else
-						set thistype.LocalCameraIdleTime = thistype.LocalCameraIdleTime + TimerGetElapsed(GetExpiredTimer())
-					endif
-				endif
-				
-				// if GetCameraTargetPositionX() != LocalCameraTargetPosition.x or GetCameraTargetPositionY() != LocalCameraTargetPosition.y then
-					// set thistype.LocalCameraIdleTime = 0
-					
-					// set thistype.LocalCameraTargetPosition.x = GetCameraTargetPositionX()
-					// set thistype.LocalCameraTargetPosition.y = GetCameraTargetPositionY()
-				// else
-					// set thistype.LocalCameraIdleTime = thistype.LocalCameraIdleTime + AFK_CAMERA_CHECK_TIMEOUT
-				// endif
-				
-				// if (u.IsAFK and thistype.LocalCameraIdleTime < AFK_CAMERA_MAX_TIMEOUT) or (not u.IsAFK and thistype.LocalCameraIdleTime >= AFK_CAMERA_MAX_TIMEOUT) then
-					// call BlzSendSyncData(AFK_SYNC_EVENT_PREFIX, I2S(u))
-				// endif
-			endif
-			
-			//call sync AFK checks, sync wrappers around async data
-			// call ForForce(bj_FORCE_ALL_PLAYERS, function thistype.CheckAFKMouseForceCallback)
-			
-			//final check for distributing the event
-			if GetLocalPlayer() == Player(u) then
-				if (u.IsAFK and thistype.LocalCameraIdleTime < AFK_CAMERA_MAX_TIMEOUT) or (not u.IsAFK and thistype.LocalCameraIdleTime >= AFK_CAMERA_MAX_TIMEOUT) then
-					call BlzSendSyncData(AFK_SYNC_EVENT_PREFIX, I2S(u))
-				endif
-			endif
+			call User(curUserNode.value).CheckAFKPlayer(timeElapsed)
 		set curUserNode = curUserNode.next
 		endloop
 	endmethod
 	
-	// private static method ClearSyncLocalCameraPromises takes nothing returns nothing
-		// local SimpleList_ListNode curCameraPromiseNode
+	private static method ClearSyncLocalCameraPromises takes nothing returns nothing
+		local SimpleList_ListNode curCameraPromiseNode
 		
-		// loop
-		// set curCameraPromiseNode = AFKSyncLocalCameraTimePromises.pop()
-		// exitwhen curCameraPromiseNode == 0
-			// call Deferred(curCameraPromiseNode.value).destroy()
+		loop
+		set curCameraPromiseNode = AFKSyncLocalCameraTimePromises.pop()
+		exitwhen curCameraPromiseNode == 0
+			call Deferred(curCameraPromiseNode.value).destroy()
 			
-			// call curCameraPromiseNode.deallocate()
-		// endloop
-	// endmethod
+			call curCameraPromiseNode.deallocate()
+		endloop
+	endmethod
 	// private static method OnSyncAll takes integer result, All allCameraTimeSynced returns integer
-		// call DisplayTextToPlayer(Player(0), 0, 0, "All camera idle times synced")
-		
-		// call allCameraTimeSynced.destroy()
-		
-		// return 0
-	// endmethod
-	// private static method OnSyncLocal takes nothing returns nothing
-		// local string data = BlzGetTriggerSyncData()
-		// local integer uIndex = S2I(SubString(data, 0, 1))
-		// local User u = PlayerUtils_PlayerList.get(uIndex)
-		// local real time = S2R(SubString(data, 0, StringLength(data)))
-		
-		// set u.CameraIdleTime = time
-		// call Deferred(thistype.AFKSyncLocalCameraTimePromises.get(uIndex).value).Resolve(0)
-	// endmethod
-	// public static method SyncLocalCameraIdleTime takes nothing returns Deferred	
 		// local SimpleList_ListNode curUserNode = PlayerUtils_FirstPlayer
-		// local integer i = 0
-		// local All allCameraTimeSynced
 		
-		// call ClearSyncLocalCameraPromises()
+		// call DisplayTextToPlayer(Player(0), 0, 0, "All camera idle times synced (all: " + I2S(allCameraTimeSynced) + ")")
 		
 		// loop
 		// exitwhen curUserNode == 0
-			// call AFKSyncLocalCameraTimePromises.addEnd(Deferred.create())
-			
-			// if GetLocalPlayer() == Player(this) then
-				// //TODO encode to base-whatever to support max possible players
-				// call BlzSendSyncData(LOCAL_CAMERA_IDLE_TIME_EVENT_PREFIX, I2S(i) + R2S(thistype.LocalCameraIdleTime))
-			// endif
+			// call DisplayTextToPlayer(Player(0), 0, 0, "Idle time: " + R2S(User(curUserNode.value).CameraIdleTime))
 		// set curUserNode = curUserNode.next
-		// set i = i + 1
 		// endloop
 		
-		// set allCameraTimeSynced = All.create(AFKSyncLocalCameraTimePromises)
+		// // call allCameraTimeSynced.destroy()
+		
+		// return 0
+	// endmethod
+	private static method OnSyncLocal takes nothing returns boolean
+		local string data = BlzGetTriggerSyncData()
+		local integer uIndex = S2I(SubString(data, 0, 1))
+		local User u = PlayerUtils_PlayerList.get(uIndex).value
+		// local real time = S2R(SubString(data, 1, StringLength(data)))
+		
+		// // call DisplayTextToPlayer(Player(0), 0, 0, "user index: " + I2S(uIndex) + ", user: " + I2S(u) + ", time: " + R2S(time))
+		
+		// set u.CameraIdleTime = time
+		
+		// call DisplayTextToPlayer(Player(0), 0, 0, "user index: " + I2S(uIndex) + ", user: " + I2S(u) + ", time: " + R2S(S2R(SubString(data, 1, StringLength(data)))))
+		
+		set u.CameraIdleTime = S2R(SubString(data, 1, StringLength(data)))
+		call Deferred(thistype.AFKSyncLocalCameraTimePromises.get(uIndex).value).Resolve(u)
+		
+		return false
+	endmethod
+	
+	public method IsAFKSync takes nothing returns boolean
+		// call DisplayTextToPlayer(Player(0), 0, 0, "User: " + I2S(this) + ", idle time: " + R2S(.CameraIdleTime) + ", threshold: " + R2S(AFK_MANUAL_CHECK_FACTOR * AFK_CAMERA_MAX_TIMEOUT))
+		
+		return .CameraIdleTime >=  AFK_MANUAL_CHECK_FACTOR * AFK_CAMERA_MAX_TIMEOUT
+	endmethod
+	public static method SyncLocalCameraIdleTime takes nothing returns All
+		local SimpleList_ListNode curUserNode = PlayerUtils_FirstPlayer
+		local integer i = 0
+		local All allCameraTimeSynced
+		
+		call ClearSyncLocalCameraPromises()
+		
+		loop
+		exitwhen curUserNode == 0
+			call AFKSyncLocalCameraTimePromises.addEnd(Deferred.create())
+			
+			if GetLocalPlayer() == Player(curUserNode.value) then
+				//TODO encode to base-whatever to support max possible players
+				call BlzSendSyncData(LOCAL_CAMERA_IDLE_TIME_EVENT_PREFIX, I2S(i) + R2S(thistype.LocalCameraIdleTime))
+			endif
+		set curUserNode = curUserNode.next
+		set i = i + 1
+		endloop
+		
+		set allCameraTimeSynced = All.create(AFKSyncLocalCameraTimePromises)
+		//TODO move this to the caller
 		// call allCameraTimeSynced.Then(thistype.OnSyncAll, 0, allCameraTimeSynced)
 		
-		// return allCameraTimeSynced
-	// endmethod
-        
+		return allCameraTimeSynced
+		
+		// return All.create(AFKSyncLocalCameraTimePromises)
+	endmethod
+	        
     static method allocate takes nothing returns thistype
         set .count = .count + 1
         return .count
@@ -967,6 +957,7 @@ struct User extends array
 		set new.IsAFK = false
 		set new.CameraIdleTime = 0.
 		call BlzTriggerRegisterPlayerSyncEvent(thistype.AFKSyncEvent, Player(new), AFK_SYNC_EVENT_PREFIX, false)
+		call BlzTriggerRegisterPlayerSyncEvent(thistype.AFKLocalCameraTimeSyncEvent, Player(new), LOCAL_CAMERA_IDLE_TIME_EVENT_PREFIX, false)
 		// call TriggerRegisterPlayerStateEvent(thistype.AFKMouseEvent, Player(new), PLAYER_STATE_OBSERVER_ON_DEATH, GREATER_THAN_OR_EQUAL, 0)
         
         set new.CinematicPlaying = 0
@@ -994,7 +985,10 @@ struct User extends array
         local integer n = 0
         set User.ActivePlayers = 0
         
+		set User.AFKLocalCameraTimeSyncEvent = CreateTrigger()
 		set User.AFKSyncLocalCameraTimePromises = SimpleList_List.create()
+		call TriggerAddCondition(User.AFKLocalCameraTimeSyncEvent, Condition(function thistype.OnSyncLocal))
+		
 		set User.AFKSyncEvent = CreateTrigger()
 		call TriggerAddCondition(thistype.AFKSyncEvent, Condition(function thistype.ToggleAFKCallback))
 		set User.LocalCameraIdleTime = 0.
