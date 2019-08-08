@@ -1,34 +1,25 @@
 library Any requires Deferred
-	//All/Any objects need to be cleaned up IN ADDITION TO / separately from the deferreds that they wrap around (just need to call destroy)
-	struct Any extends array
-		public delegate Deferred Promise
-				
-		private static method onPromiseResolve takes integer result, Any any returns integer
-			call any.Promise.Resolve(result)
-			
-			return 0
-		endmethod
-		private static method onPromiseProgress takes integer result, Any any returns integer
-			call any.Promise.Progress(result)
-			
-			return 0
-		endmethod
+	private function onPromiseResolve takes integer result, Deferred any returns integer
+		call any.Resolve(result)
 		
-		public static method create takes SimpleList_List allPromises returns thistype
-			local SimpleList_ListNode curPromiseNode = allPromises.first
-			local thistype new = Deferred.create()
-			set new.Promise = new
+		return 0
+	endfunction
+	private function onPromiseProgress takes integer result, Deferred any returns integer
+		call any.Progress(result)
+		
+		return 0
+	endfunction
+	
+	function Any takes SimpleList_List allPromises returns Deferred
+		local Deferred new = Deferred.create()
+		local SimpleList_ListNode curPromiseNode = allPromises.first
 			
-			loop
-			exitwhen curPromiseNode == 0
-				call Deferred(curPromiseNode.value).Then(thistype.onPromiseResolve, thistype.onPromiseProgress, new)
-			set curPromiseNode = curPromiseNode.next
-			endloop
-			
-			return new
-		endmethod
-		public method destroy takes nothing returns nothing
-			call this.Promise.destroy()
-		endmethod
-	endstruct
+		loop
+		exitwhen curPromiseNode == 0
+			call Deferred(curPromiseNode.value).Then(onPromiseResolve, onPromiseProgress, new)
+		set curPromiseNode = curPromiseNode.next
+		endloop
+		
+		return new
+	endfunction
 endlibrary

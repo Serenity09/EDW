@@ -54,6 +54,7 @@ public struct MazingTeam extends array
     readonly integer ContinueCount
     // public boolean RecentlyTransferred
     // public real LastTransferTime
+	public boolean IsRemainingTeamAFK
     public Levels_Level OnLevel
     public string TeamName
     public integer OnCheckpoint //Used purely in conjunction with levels struct. ==0 refers to the initial CP for a level
@@ -396,8 +397,8 @@ public struct MazingTeam extends array
         
         loop
         exitwhen curTeamNode == 0
-            call DisplayTextToForce(bj_FORCE_PLAYER[0], "Team " + I2S(MazingTeam(curTeamNode.value)) + " on level: " + I2S(MazingTeam(curTeamNode.value).OnLevel))
-            call DisplayTextToForce(bj_FORCE_PLAYER[0], "Checking " + I2S(levelID))
+            // call DisplayTextToForce(bj_FORCE_PLAYER[0], "Team " + I2S(MazingTeam(curTeamNode.value)) + " on level: " + I2S(MazingTeam(curTeamNode.value).OnLevel))
+            // call DisplayTextToForce(bj_FORCE_PLAYER[0], "Checking " + I2S(levelID))
             if MazingTeam(curTeamNode.value).OnLevel == levelID then
                 set count = count + MazingTeam(curTeamNode.value).Users.count
             endif
@@ -405,7 +406,7 @@ public struct MazingTeam extends array
 		set curTeamNode = curTeamNode.next
         endloop
         
-        call DisplayTextToForce(bj_FORCE_PLAYER[0], "Count on level " + I2S(count))
+        // call DisplayTextToForce(bj_FORCE_PLAYER[0], "Count on level " + I2S(count))
         
         return count
     endmethod
@@ -1136,9 +1137,6 @@ public struct MazingTeam extends array
             call thistype.AllTeams.addEnd(mt)
             //set .NumberTeams = .NumberTeams + 1
             set Teams_MazingTeam.NumberTeams = Teams_MazingTeam.NumberTeams + 1
-            
-			call DisplayTextToForce(bj_FORCE_PLAYER[0], "Created team " + I2S(mt))
-			call thistype.AllTeams.print(0)
         else
             call DisplayTextToForce(bj_FORCE_PLAYER[0], "Overlapping team ID: " + I2S(mt) + " -- invalid game state")
             return 0 //team already exists

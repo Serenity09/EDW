@@ -190,7 +190,7 @@ library InGameCommands initializer init requires MazerGlobals, Platformer, Relay
 		endloop	
 	endfunction
 	
-	function OnAllCameraSync takes integer result, All all returns integer
+	function OnAllCameraSync takes integer result, Deferred all returns integer
 		// call DisplayTextToForce(bj_FORCE_PLAYER[0], "On all camera sync")
 		
 		local SimpleList_ListNode curTeamNode = Teams_MazingTeam.AllTeams.first
@@ -247,7 +247,6 @@ library InGameCommands initializer init requires MazerGlobals, Platformer, Relay
 		local unit gunit
 		
 		local Deferred async
-		local All all
 		
 		//debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "msg: " + msg)
 		
@@ -268,10 +267,8 @@ library InGameCommands initializer init requires MazerGlobals, Platformer, Relay
 		endif
 		
 		if cmd == "afk" then
-			call DisplayTextToPlayer(Player(0), 0, 0, "AFK manual check")
-			set all = User.SyncLocalCameraIdleTime()
-			call DisplayTextToPlayer(Player(0), 0, 0, "all async: " + I2S(all))
-			call all.Promise.Then(OnAllCameraSync, 0, all)
+			set async = User.SyncLocalCameraIdleTime()
+			call async.Then(OnAllCameraSync, 0, async)
 		endif
 		
 		if CONFIGURATION_PROFILE == RELEASE then

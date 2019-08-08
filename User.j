@@ -842,10 +842,12 @@ struct User extends array
 				endif
 			endif
 						
-			if (this.IsAFK and thistype.LocalCameraIdleTime < AFK_CAMERA_MAX_TIMEOUT) or /*
-				*/(not this.IsAFK and /*
-				*/((thistype.LocalCameraIdleTime >= AFK_CAMERA_MAX_TIMEOUT) or /*
-				*/(thistype.LocalCameraIdleTime >= AFK_MANUAL_CHECK_FACTOR * AFK_CAMERA_MAX_TIMEOUT)) then
+			//if (this.IsAFK and thistype.LocalCameraIdleTime < AFK_CAMERA_MAX_TIMEOUT) or /*
+			//	*/(not this.IsAFK and /*
+			//	*/((thistype.LocalCameraIdleTime >= AFK_CAMERA_MAX_TIMEOUT) or /*
+			//	*/(thistype.LocalCameraIdleTime >= AFK_MANUAL_CHECK_FACTOR * AFK_CAMERA_MAX_TIMEOUT)) then
+			//
+			if (this.IsAFK and thistype.LocalCameraIdleTime < AFK_CAMERA_MAX_TIMEOUT) or (not this.IsAFK and thistype.LocalCameraIdleTime >= AFK_CAMERA_MAX_TIMEOUT) then
 				call BlzSendSyncData(AFK_SYNC_EVENT_PREFIX, I2S(this))
 			endif
 		endif
@@ -910,10 +912,10 @@ struct User extends array
 		
 		return .CameraIdleTime >=  AFK_MANUAL_CHECK_FACTOR * AFK_CAMERA_MAX_TIMEOUT
 	endmethod
-	public static method SyncLocalCameraIdleTime takes nothing returns All
+	public static method SyncLocalCameraIdleTime takes nothing returns Deferred
 		local SimpleList_ListNode curUserNode = PlayerUtils_FirstPlayer
 		local integer i = 0
-		local All allCameraTimeSynced
+		// local Deferred allCameraTimeSynced
 		
 		call ClearSyncLocalCameraPromises()
 		
@@ -929,13 +931,13 @@ struct User extends array
 		set i = i + 1
 		endloop
 		
-		set allCameraTimeSynced = All.create(AFKSyncLocalCameraTimePromises)
-		//TODO move this to the caller
-		// call allCameraTimeSynced.Then(thistype.OnSyncAll, 0, allCameraTimeSynced)
+		// set allCameraTimeSynced = All(AFKSyncLocalCameraTimePromises)
+		// //TODO move this to the caller
+		// // call allCameraTimeSynced.Then(thistype.OnSyncAll, 0, allCameraTimeSynced)
 		
-		return allCameraTimeSynced
+		// return allCameraTimeSynced
 		
-		// return All.create(AFKSyncLocalCameraTimePromises)
+		return All(AFKSyncLocalCameraTimePromises)
 	endmethod
 	        
     static method allocate takes nothing returns thistype

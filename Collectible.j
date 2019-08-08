@@ -47,7 +47,7 @@ library Collectible requires Alloc, PermanentAlloc, SimpleList, Teams, IStartabl
 		public Teams_MazingTeam Team
 		
 		public SimpleList_List CollectibleDeferreds
-		public All AllCollected
+		public Deferred AllCollected
 		
 		implement Alloc
 		
@@ -75,7 +75,7 @@ library Collectible requires Alloc, PermanentAlloc, SimpleList, Teams, IStartabl
 			set curCollectibleNode = curCollectibleNode.next
 			endloop
 			
-			set new.AllCollected = All.create(new.CollectibleDeferreds)
+			set new.AllCollected = All(new.CollectibleDeferreds)
 			//call new.AllCollected.Then(thistype.OnAllCollected, 0, new)
 			call new.AllCollected.Then(parent.OnAllCollected, 0, new)
 						

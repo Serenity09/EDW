@@ -10,12 +10,12 @@ library DeferredUnitTests initializer init requires Deferred, Any, All
 		Deferred Defer6
 		Deferred Defer7
 		Deferred Defer8
-		All All1
+		Deferred All1
 		
 		Deferred Defer9
 		Deferred Defer10
 		Deferred Defer11
-		Any Any1
+		Deferred Any1
 	endglobals
 	
 	private function deferNull takes integer result, integer callbackData returns integer		
@@ -137,8 +137,8 @@ library DeferredUnitTests initializer init requires Deferred, Any, All
 		call TimerStart(CreateTimer(), 4, false, function deferCB8Timer)
 		call promiseList.addEnd(Defer8)
 		
-		set All1 = All.create(promiseList)
-		call All1.Promise.Then(allCB1, 0, 0)
+		set All1 = All(promiseList)
+		call All1.Then(allCB1, 0, 0)
 		
 		call promiseList.destroy()
 	endfunction
@@ -158,7 +158,7 @@ library DeferredUnitTests initializer init requires Deferred, Any, All
 		call promiseList.addEnd(Defer11)
 		
 		set Any1 = Any.create(promiseList)
-		call Any1.Promise.Then(anyCB1, 0, 0)
+		call Any1.Then(anyCB1, 0, 0)
 		
 		call promiseList.destroy()
 	endfunction
