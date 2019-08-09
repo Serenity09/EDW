@@ -31,35 +31,38 @@ endglobals
 
 //===========================================================================
 //   Custom centered texttag on (x,y) position
-//   color is in default wc3 format, for example "|cFFFFCC00"
 //===========================================================================
-public function XY takes real x, real y, string text, string color returns nothing
-    local texttag tt = CreateTextTag()
+public function XY takes real x, real y, string text returns texttag
     local real shift = RMinBJ(StringLength(text)*MEAN_CHAR_WIDTH, MAX_TEXT_SHIFT)
-    call SetTextTagText(tt, color+text, FONT_SIZE)
-    call SetTextTagPos(tt, x-shift, y, DEFAULT_HEIGHT)
-    call SetTextTagVelocity(tt, 0.0, 0.04)
-    call SetTextTagVisibility(tt, true)
-    call SetTextTagFadepoint(tt, 2.5)
-    call SetTextTagLifespan(tt, 4.0)
-    call SetTextTagPermanent(tt, false)
-    set tt = null
+	set bj_lastCreatedTextTag = CreateTextTag()
+	
+    call SetTextTagText(bj_lastCreatedTextTag, text, FONT_SIZE)
+    call SetTextTagPos(bj_lastCreatedTextTag, x-shift, y, DEFAULT_HEIGHT)
+    call SetTextTagVelocity(bj_lastCreatedTextTag, 0.0, 0.04)
+    call SetTextTagVisibility(bj_lastCreatedTextTag, true)
+    call SetTextTagFadepoint(bj_lastCreatedTextTag, 2.5)
+    call SetTextTagLifespan(bj_lastCreatedTextTag, 4.0)
+    call SetTextTagPermanent(bj_lastCreatedTextTag, false)
+	
+    return bj_lastCreatedTextTag
 endfunction
 
 //===========================================================================
 //   Custom centered texttag above unit
 //===========================================================================
-public function Unit takes unit whichUnit, string text, string color returns nothing
-    local texttag tt = CreateTextTag()
+public function Unit takes unit whichUnit, string text returns texttag
     local real shift = RMinBJ(StringLength(text)*MEAN_CHAR_WIDTH, MAX_TEXT_SHIFT)
-    call SetTextTagText(tt, color+text, FONT_SIZE)
-    call SetTextTagPos(tt, GetUnitX(whichUnit)-shift, GetUnitY(whichUnit), DEFAULT_HEIGHT)
-    call SetTextTagVelocity(tt, 0.0, 0.04)
-    call SetTextTagVisibility(tt, true)
-    call SetTextTagFadepoint(tt, 2.5)
-    call SetTextTagLifespan(tt, 4.0)
-    call SetTextTagPermanent(tt, false)    
-    set tt = null
+	set bj_lastCreatedTextTag = CreateTextTag()
+	
+    call SetTextTagText(bj_lastCreatedTextTag, text, FONT_SIZE)
+    call SetTextTagPos(bj_lastCreatedTextTag, GetUnitX(whichUnit)-shift, GetUnitY(whichUnit), DEFAULT_HEIGHT)
+    call SetTextTagVelocity(bj_lastCreatedTextTag, 0.0, 0.04)
+    call SetTextTagVisibility(bj_lastCreatedTextTag, true)
+    call SetTextTagFadepoint(bj_lastCreatedTextTag, 2.5)
+    call SetTextTagLifespan(bj_lastCreatedTextTag, 4.0)
+    call SetTextTagPermanent(bj_lastCreatedTextTag, false)    
+	
+	return bj_lastCreatedTextTag
 endfunction
 
 //===========================================================================

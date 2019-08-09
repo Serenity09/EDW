@@ -266,10 +266,10 @@ library InGameCommands initializer init requires MazerGlobals, Platformer, Relay
 			set intVal = R2I(val)
 		endif
 		
-		if cmd == "afk" then
-			set async = User.SyncLocalCameraIdleTime()
-			call async.Then(OnAllCameraSync, 0, async)
-		endif
+		// if cmd == "afk" then
+			// set async = User.SyncLocalCameraIdleTime()
+			// call async.Then(OnAllCameraSync, 0, async)
+		// endif
 		
 		if CONFIGURATION_PROFILE == RELEASE then
 			//debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "msg: " + msg + " cmd: " + cmd + " val: " + R2S(val))
@@ -371,8 +371,10 @@ library InGameCommands initializer init requires MazerGlobals, Platformer, Relay
 				set gunit = null
 			elseif cmd == "share" then
 				call SetPlayerAllianceBJ(Player(intVal), ALLIANCE_SHARED_CONTROL, true, Player(pID))
-			elseif cmd == "sync" then
-				set async = User.SyncLocalCameraIdleTime()
+			// elseif cmd == "afk" then
+				// set async = User.SyncLocalCameraIdleTime()
+				// call async.Then(OnAllCameraSync, 0, async)
+			// endif
 			endif
 		endif		
 	endfunction

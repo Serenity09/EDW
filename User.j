@@ -5,9 +5,17 @@ globals
 	
 	private constant real AFK_CAMERA_CHECK_TIMEOUT = 1.
 	// private constant real AFK_CAMERA_MAX_TIMEOUT = 30.
+	// private constant real AFK_CAMERA_MAX_TIMEOUT = 2 * 60.
 	private constant real AFK_CAMERA_MAX_TIMEOUT = 10.
-	private constant real AFK_MANUAL_CHECK_FACTOR = .5
+	private constant real AFK_CAMERA_MIN_TIMEOUT = .5 * 60.
+	// private constant real AFK_CAMERA_DELTA_TIMEOUT = 15.
+	private constant real AFK_MANUAL_CHECK_FACTOR = .75
 	private constant string AFK_SYNC_EVENT_PREFIX = "AFK"
+	
+	private constant real AFK_PLATFORMER_CLOCK = .5
+	private constant real AFK_PLATFORMER_DEATH_CLOCK_START = 5.
+	
+	private constant real SMALL_FONT_SIZE = 0.024
 	
 	public constant string LOCAL_CAMERA_IDLE_TIME_EVENT_PREFIX = "CAM"
 	
@@ -31,8 +39,9 @@ struct User extends array
     public SimpleList_List CinematicQueue //FiFo
 	public effect ActiveEffect
 	private timer UnpauseTimer
-    
+	   
 	public real CameraIdleTime //only as accurate as the last sync
+	readonly real AFKPlatformerDeathClock
 	
     public static integer ActivePlayers
 	
@@ -42,7 +51,8 @@ struct User extends array
 	private static trigger AFKSyncEvent
 	readonly static vector2 LocalCameraTargetPosition
 	private static real LocalCameraIdleTime
-	private static boolean PlatformerStartStable
+	// private static real LocalCameraThreshold
+	private boolean PlatformerStartStable
 	// public static trigger AFKMouseEvent
 	// public static vector2 LocalUserMousePosition
 	
@@ -121,7 +131,7 @@ struct User extends array
 		if .CinematicPlaying != 0 then
 			call .CinematicPlaying.EndCallbackStack()
 		endif
-				
+		
 		//automatically happens as part of ending the previous cinematic
 		// call .CheckCinematicQueue()
 	endmethod
@@ -669,8 +679,13 @@ struct User extends array
             elseif newGameMode == Teams_GAMEMODE_PLATFORMING then
                 call .Platformer.StartPlatforming(x, y)
 				
-				if GetLocalPlayer() == Player(this) then
-					set .PlatformerStartStable = false
+				// if GetLocalPlayer() == Player(this) then
+					// set .PlatformerStartStable = false
+				// endif
+				set .PlatformerStartStable = false
+				
+				if .IsAFK then
+					call .ApplyAFKPlatformer()
 				endif
             elseif newGameMode == Teams_GAMEMODE_STANDARD_PAUSED then
                 call SetUnitPosition(MazersArray[this], x, y)
@@ -764,6 +779,70 @@ struct User extends array
         return GetUnitX(.ActiveUnit) >= topLeft.x and GetUnitX(.ActiveUnit) <= botRight.x and GetUnitY(.ActiveUnit) >= botRight.y and GetUnitY(.ActiveUnit) <= topLeft.y
     endmethod
 	
+	private static method ApplyAFKPlatformerCB takes nothing returns nothing
+		local timer t = GetExpiredTimer()
+		local User u = GetTimerData(t)
+		local texttag text
+		
+		if u.IsAFK then
+			if u.PlatformerStartStable then
+				if u.AFKPlatformerDeathClock == AFK_PLATFORMER_DEATH_CLOCK_START then
+					set text = CreateTextTag()
+					call SetTextTagText(text, ColorMessage("Dead", u.GetPlayerColorHex()) + " in ", SMALL_FONT_SIZE)
+					call SetTextTagPos(text, u.Platformer.XPosition - 8 * 5.5, u.Platformer.YPosition, 16.0)
+					call SetTextTagVisibility(text, true)
+					call SetTextTagFadepoint(text, AFK_PLATFORMER_DEATH_CLOCK_START)
+					call SetTextTagLifespan(text, AFK_PLATFORMER_DEATH_CLOCK_START + 1.)
+					call SetTextTagPermanent(text, false)
+					set text = null
+				endif
+				
+				if u.AFKPlatformerDeathClock > 0 then
+					if u.AFKPlatformerDeathClock - R2I(u.AFKPlatformerDeathClock) == 0. then
+						set text = CreateTextTag()
+						call SetTextTagText(text, I2S(R2I(u.AFKPlatformerDeathClock)), SMALL_FONT_SIZE)
+						
+						//more funk
+						call SetTextTagPos(text, u.Platformer.XPosition + 16 * 5.5 + 4 * 5.5, u.Platformer.YPosition - 16 * 2.5, 16.0)
+						call SetTextTagVelocity(text, 0.0, 0.04)
+						// //less funk
+						// call SetTextTagPos(text, u.Platformer.XPosition + 16 * 5.5 + 4 * 5.5, u.Platformer.YPosition, 16.0)
+						// call SetTextTagVelocity(text, 0.0, 0.02)
+						
+						call SetTextTagVisibility(text, true)
+						call SetTextTagFadepoint(text, .75)
+						call SetTextTagLifespan(text, 1.)
+						call SetTextTagPermanent(text, false)
+						
+						if u.AFKPlatformerDeathClock <= 3 then
+							call SetTextTagColor(text, 255, 0, 0, 255)
+						endif
+						
+						set text = null
+					endif
+					
+					set u.AFKPlatformerDeathClock = u.AFKPlatformerDeathClock - AFK_PLATFORMER_CLOCK
+				else
+					call u.SwitchGameModesDefaultLocation(Teams_GAMEMODE_DYING)
+					
+					call ReleaseTimer(t)
+				endif
+			endif
+		else
+			//no longer AFK, immediately desist
+			call ReleaseTimer(t)
+		endif
+		
+		set t = null
+	endmethod
+	public method ApplyAFKPlatformer takes nothing returns nothing	
+		//no way to support sharing control via keyboard actions
+		//show texttag countdown before killing
+		
+		set .AFKPlatformerDeathClock = AFK_PLATFORMER_DEATH_CLOCK_START
+		call TimerStart(NewTimerEx(this), AFK_PLATFORMER_CLOCK, true, function thistype.ApplyAFKPlatformerCB)
+	endmethod
+	
 	//User AFK synced event callback and async logic for checking/tracking idle state
 	public method ToggleAFK takes nothing returns nothing
 		set .IsAFK = not .IsAFK
@@ -776,9 +855,7 @@ struct User extends array
 					call .Team.SetSharedControlForTeam(this, true)
 				//TODO this won't fully work, because a user could start by getting control of a AFK standard player, then switch to Platforming via a terrain tile
 				elseif .GameMode == Teams_GAMEMODE_PLATFORMING or .GameMode == Teams_GAMEMODE_PLATFORMING_PAUSED then
-					//no way to support sharing control via keyboard actions
-					//TODO show 3.2.1 texttag countdown before killing
-					call .SwitchGameModesDefaultLocation(Teams_GAMEMODE_DYING)
+					call .ApplyAFKPlatformer()
 				endif
 				
 				//disable default camera tracking so as to not interact with shared control
@@ -810,20 +887,28 @@ struct User extends array
 		
 	private method CheckAFKPlayer takes real timeElapsed returns nothing
 		//call sync AFK checks, sync wrappers around async data
+		if this.GameMode == Teams_GAMEMODE_PLATFORMING and not this.PlatformerStartStable and (this.Platformer.PushedAgainstVector != 0 or this.Platformer.HorizontalAxisState != 0) then
+			set this.PlatformerStartStable = true
+			
+			if GetLocalPlayer() == Player(this) and this.Platformer.HorizontalAxisState == 0 then
+				set thistype.LocalCameraTargetPosition.x = GetCameraTargetPositionX()
+				set thistype.LocalCameraTargetPosition.y = GetCameraTargetPositionY()
+			endif
+		endif
 		
 		//call async AFK checks
 		if GetLocalPlayer() == Player(this) then
 			if this.GameMode == Teams_GAMEMODE_PLATFORMING then
-				if not thistype.PlatformerStartStable and (this.Platformer.YVelocity == 0 or this.Platformer.HorizontalAxisState != 0) then
-					set thistype.PlatformerStartStable = true
+				// if not thistype.PlatformerStartStable and (this.Platformer.PushedAgainstVector != 0 or this.Platformer.HorizontalAxisState != 0) then
+					// set thistype.PlatformerStartStable = true
 					
-					if this.Platformer.HorizontalAxisState == 0 then
-						set thistype.LocalCameraTargetPosition.x = GetCameraTargetPositionX()
-						set thistype.LocalCameraTargetPosition.y = GetCameraTargetPositionY()
-					endif
-				endif
+					// if this.Platformer.HorizontalAxisState == 0 then
+						// set thistype.LocalCameraTargetPosition.x = GetCameraTargetPositionX()
+						// set thistype.LocalCameraTargetPosition.y = GetCameraTargetPositionY()
+					// endif
+				// endif
 				
-				if this.Platformer.HorizontalAxisState != 0 or (thistype.PlatformerStartStable and (GetCameraTargetPositionX() != LocalCameraTargetPosition.x or GetCameraTargetPositionY() != LocalCameraTargetPosition.y)) then
+				if this.Platformer.HorizontalAxisState != 0 or (this.PlatformerStartStable and (GetCameraTargetPositionX() != LocalCameraTargetPosition.x or GetCameraTargetPositionY() != LocalCameraTargetPosition.y)) then
 					set thistype.LocalCameraIdleTime = 0
 					
 					set thistype.LocalCameraTargetPosition.x = GetCameraTargetPositionX()
