@@ -54,7 +54,7 @@ public struct MazingTeam extends array
     readonly integer ContinueCount
     // public boolean RecentlyTransferred
     // public real LastTransferTime
-	public boolean IsRemainingTeamAFK
+	// public boolean IsRemainingTeamAFK
     public Levels_Level OnLevel
     public string TeamName
     public integer OnCheckpoint //Used purely in conjunction with levels struct. ==0 refers to the initial CP for a level
@@ -639,7 +639,12 @@ public struct MazingTeam extends array
 	endmethod
     public method GetStylizedPlayerName takes integer pID returns string
         if GetPlayerSlotState(Player(pID)) == PLAYER_SLOT_STATE_PLAYING then
-			return ColorMessage(GetPlayerName(Player(pID)), .GetTeamColor())
+			if User(pID).IsAFK then
+				return ColorMessage("(AFK) ", DISABLED_COLOR) + ColorMessage(GetPlayerName(Player(pID)), .GetTeamColor())
+			else
+				return ColorMessage(GetPlayerName(Player(pID)), .GetTeamColor())
+			endif
+			
         else
 			return ColorMessage("Gone", .GetTeamColor())
         endif

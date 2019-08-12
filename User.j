@@ -3,12 +3,18 @@ library User requires UnitDefaultRadius, MazerGlobals, Platformer, TerrainHelper
 globals
 	User TriggerUser //used with events
 	
+	private constant boolean DEBUG_AFK = true
+	private constant real CAMERA_TARGET_POSITION_FLEX = 50.
+	
 	private constant real AFK_CAMERA_CHECK_TIMEOUT = 1.
-	// private constant real AFK_CAMERA_MAX_TIMEOUT = 30.
-	// private constant real AFK_CAMERA_MAX_TIMEOUT = 2 * 60.
-	private constant real AFK_CAMERA_MAX_TIMEOUT = 10.
-	private constant real AFK_CAMERA_MIN_TIMEOUT = .5 * 60.
-	// private constant real AFK_CAMERA_DELTA_TIMEOUT = 15.
+	// private constant real AFK_CAMERA_MAX_TIMEOUT = 15.
+	private constant real AFK_CAMERA_MAX_TIMEOUT = 120.
+	private constant real AFK_CAMERA_MIN_TIMEOUT = 15.
+	private constant real AFK_CAMERA_DELTA_TIMEOUT = .75
+	
+	private constant real AFK_PAN_CAMERA_DURATION = 2.
+	private constant real AFK_UNPAUSE_BUFFER = 3.
+	
 	private constant real AFK_MANUAL_CHECK_FACTOR = .75
 	private constant string AFK_SYNC_EVENT_PREFIX = "AFK"
 	
@@ -51,7 +57,7 @@ struct User extends array
 	private static trigger AFKSyncEvent
 	readonly static vector2 LocalCameraTargetPosition
 	private static real LocalCameraIdleTime
-	// private static real LocalCameraThreshold
+	private static real LocalAFKThreshold
 	private boolean PlatformerStartStable
 	// public static trigger AFKMouseEvent
 	// public static vector2 LocalUserMousePosition
@@ -130,10 +136,9 @@ struct User extends array
 		//remove currently playing cinematic
 		if .CinematicPlaying != 0 then
 			call .CinematicPlaying.EndCallbackStack()
+		else
+			call .CheckCinematicQueue()
 		endif
-		
-		//automatically happens as part of ending the previous cinematic
-		// call .CheckCinematicQueue()
 	endmethod
     public method AddCinematicToQueue takes Cinematic cine returns nothing
         local integer priorityIndex = 0
@@ -222,17 +227,19 @@ struct User extends array
 					//enable
 					call SetCameraTargetController(MazersArray[this], 0, 0, false)
 					
-					if .CinematicPlaying.Cinematic != thistype.ToggleCameraTrackingTutorial or thistype.ToggleCameraTrackingTutorial == 0 then
-						call .DisplayMessage("Camera tracking: " + ColorMessage("ON", TOGGLE_ON_COLOR), 1.)
-					endif
+					// if .CinematicPlaying.Cinematic != thistype.ToggleCameraTrackingTutorial or thistype.ToggleCameraTrackingTutorial == 0 then
+						// call .DisplayMessage("Camera tracking: " + ColorMessage("ON", TOGGLE_ON_COLOR), 1.)
+					// endif
+					call .DisplayMessage("Camera tracking: " + ColorMessage("ON", TOGGLE_ON_COLOR), 1.)
 				else
 					//disable
 					call ResetToGameCamera(0)
 					call CameraSetupApply(DefaultCamera[this], false, false)
 					
-					if .CinematicPlaying.Cinematic != thistype.ToggleCameraTrackingTutorial or thistype.ToggleCameraTrackingTutorial == 0 then
-						call .DisplayMessage("Camera tracking: " + ColorMessage("OFF", TOGGLE_OFF_COLOR), 1.)
-					endif
+					// if .CinematicPlaying.Cinematic != thistype.ToggleCameraTrackingTutorial or thistype.ToggleCameraTrackingTutorial == 0 then
+						// call .DisplayMessage("Camera tracking: " + ColorMessage("OFF", TOGGLE_OFF_COLOR), 1.)
+					// endif
+					call .DisplayMessage("Camera tracking: " + ColorMessage("OFF", TOGGLE_OFF_COLOR), 1.)
 				endif
 			endif
 			
@@ -468,7 +475,11 @@ struct User extends array
         local string hex = .GetPlayerColorHex()
         
         if GetPlayerSlotState(Player(this)) == PLAYER_SLOT_STATE_PLAYING then
-			return ColorMessage(GetPlayerName(Player(this)), hex)
+			if .IsAFK then
+				return ColorMessage("(AFK) ", DISABLED_COLOR) + ColorMessage(GetPlayerName(Player(this)), hex)
+			else
+				return ColorMessage(GetPlayerName(Player(this)), hex)
+			endif
         else
 			return ColorMessage("(Left) " + GetPlayerName(Player(this)), hex)
         endif
@@ -476,10 +487,12 @@ struct User extends array
     
     public method PartialUpdateMultiboard takes nothing returns nothing
         if GetPlayerSlotState(Player(this)) == PLAYER_SLOT_STATE_PLAYING then                
-            call MultiboardSetItemValue(MultiboardGetItem(.Team.PlayerStats, this + 1, 2), I2S(.Team.GetScore()))
+            call MultiboardSetItemValue(MultiboardGetItem(.Team.PlayerStats, this + 1, 0), .Team.GetStylizedPlayerName(this))
+			call MultiboardSetItemValue(MultiboardGetItem(.Team.PlayerStats, this + 1, 2), I2S(.Team.GetScore()))
             call MultiboardSetItemValue(MultiboardGetItem(.Team.PlayerStats, this + 1, 3), I2S(.Team.GetContinueCount()))
             
-            call MultiboardReleaseItem(MultiboardGetItem(.Team.PlayerStats, this + 1, 2))
+            call MultiboardReleaseItem(MultiboardGetItem(.Team.PlayerStats, this + 1, 0))
+			call MultiboardReleaseItem(MultiboardGetItem(.Team.PlayerStats, this + 1, 2))
             call MultiboardReleaseItem(MultiboardGetItem(.Team.PlayerStats, this + 1, 3))
             
 			if RewardMode == GameModesGlobals_HARD then
@@ -779,6 +792,59 @@ struct User extends array
         return GetUnitX(.ActiveUnit) >= topLeft.x and GetUnitX(.ActiveUnit) <= botRight.x and GetUnitY(.ActiveUnit) >= botRight.y and GetUnitY(.ActiveUnit) <= topLeft.y
     endmethod
 	
+	private static method UnpauseAFKCB takes nothing returns nothing
+		local timer t = GetExpiredTimer()
+		local User u = GetTimerData(t)
+		local texttag text
+		
+		if u.AFKPlatformerDeathClock == AFK_UNPAUSE_BUFFER then
+			set text = CreateTextTag()
+			call SetTextTagText(text, ColorMessage("Unpausing", u.GetPlayerColorHex()) + " in ", SMALL_FONT_SIZE)
+			call SetTextTagPos(text, GetUnitX(u.ActiveUnit) - 13 * 5.5, GetUnitY(u.ActiveUnit), 16.0)
+			call SetTextTagVisibility(text, true)
+			call SetTextTagFadepoint(text, AFK_UNPAUSE_BUFFER)
+			call SetTextTagLifespan(text, AFK_UNPAUSE_BUFFER + 1.)
+			call SetTextTagPermanent(text, false)
+			set text = null
+		endif
+		
+		if u.AFKPlatformerDeathClock > 0 then
+			if u.AFKPlatformerDeathClock - R2I(u.AFKPlatformerDeathClock) == 0. then
+				set text = CreateTextTag()
+				call SetTextTagText(text, I2S(R2I(u.AFKPlatformerDeathClock)), SMALL_FONT_SIZE)
+				
+				//more funk
+				call SetTextTagPos(text, GetUnitX(u.ActiveUnit) + 22 * 5.5 + 4 * 5.5, GetUnitY(u.ActiveUnit) - 16 * 2.5, 16.0)
+				call SetTextTagVelocity(text, 0.0, 0.04)
+				// //less funk
+				// call SetTextTagPos(text, u.Platformer.XPosition + 16 * 5.5 + 4 * 5.5, u.Platformer.YPosition, 16.0)
+				// call SetTextTagVelocity(text, 0.0, 0.02)
+				
+				call SetTextTagVisibility(text, true)
+				call SetTextTagFadepoint(text, .75)
+				call SetTextTagLifespan(text, 1.)
+				call SetTextTagPermanent(text, false)
+				
+				if u.AFKPlatformerDeathClock == 1. then
+					call SetTextTagColor(text, 255, 0, 0, 255)
+				endif
+				
+				set text = null
+			endif
+			
+			set u.AFKPlatformerDeathClock = u.AFKPlatformerDeathClock - 1.
+		else
+			call u.Pause(false)
+			
+			call ReleaseTimer(t)
+		endif
+		
+		set t = null
+	endmethod
+	private static method PanAFKCameraCB takes nothing returns nothing
+		call TimerStart(GetExpiredTimer(), 1., true, function thistype.UnpauseAFKCB)
+	endmethod
+	
 	private static method ApplyAFKPlatformerCB takes nothing returns nothing
 		local timer t = GetExpiredTimer()
 		local User u = GetTimerData(t)
@@ -838,22 +904,27 @@ struct User extends array
 	public method ApplyAFKPlatformer takes nothing returns nothing	
 		//no way to support sharing control via keyboard actions
 		//show texttag countdown before killing
-		
 		set .AFKPlatformerDeathClock = AFK_PLATFORMER_DEATH_CLOCK_START
 		call TimerStart(NewTimerEx(this), AFK_PLATFORMER_CLOCK, true, function thistype.ApplyAFKPlatformerCB)
 	endmethod
 	
 	//User AFK synced event callback and async logic for checking/tracking idle state
 	public method ToggleAFK takes nothing returns nothing
+		//this hurts, but its advantageous to have GetStylizedPlayerName include the AFK prefix in every other situation but this
+		if not .IsAFK then
+			if DEBUG_AFK or .Team.Users.count > 1 then
+				call .Team.PrintMessage(.GetStylizedPlayerName() + " is now AFK!")
+			endif
+		endif
+		
 		set .IsAFK = not .IsAFK
 		
 		if .IsAFK then
-			if .Team.Users.count > 0 then
-				call .Team.PrintMessage(.GetStylizedPlayerName() + " is now AFK!")
+			if DEBUG_AFK or .Team.Users.count > 1 then
+				// call .Team.PrintMessage(.GetStylizedPlayerName() + " is now AFK!")
 				
 				if .GameMode == Teams_GAMEMODE_STANDARD or .GameMode == Teams_GAMEMODE_STANDARD_PAUSED then
 					call .Team.SetSharedControlForTeam(this, true)
-				//TODO this won't fully work, because a user could start by getting control of a AFK standard player, then switch to Platforming via a terrain tile
 				elseif .GameMode == Teams_GAMEMODE_PLATFORMING or .GameMode == Teams_GAMEMODE_PLATFORMING_PAUSED then
 					call .ApplyAFKPlatformer()
 				endif
@@ -862,24 +933,39 @@ struct User extends array
 				if DefaultCameraTracking[this] then
 					call .ToggleDefaultTracking()
 				endif
-			endif
-			
-			//TODO append " (AFK)" in gray or non colored text at the end of the player's name in the multiboard
+				
+				if GetLocalPlayer() == Player(this) and AFK_CAMERA_DELTA_TIMEOUT * thistype.LocalAFKThreshold >= AFK_CAMERA_MIN_TIMEOUT then
+					set thistype.LocalAFKThreshold = AFK_CAMERA_DELTA_TIMEOUT * thistype.LocalAFKThreshold
+					
+					//TODO sync callback for user's threshold
+					//if first threshold then warn player about exiling
+					//if second threshold then inform team about exiling
+				endif
+			endif			
 		else
-			if .Team.Users.count > 0 then
+			if DEBUG_AFK or .Team.Users.count > 1 then
 				call .Team.PrintMessage(.GetStylizedPlayerName() + " is no longer AFK")
 				call .Team.SetSharedControlForTeam(this, false)
-				//TODO pause active gamemode, pan camera to active unit, show 3.2.1 countdown, then unpause
 				
-				//TODO cancel 3.2.1 kill textag countdown if it exists
-				
+				if .GameMode == Teams_GAMEMODE_STANDARD then
+					//TODO check that unit is not near owner's camera bounds as well
+					set .AFKPlatformerDeathClock = AFK_UNPAUSE_BUFFER
+					call .Pause(true)
+					call .ApplyDefaultCameras(AFK_PAN_CAMERA_DURATION)
+					call .ApplyDefaultSelections()
+					
+					call TimerStart(NewTimerEx(this), AFK_PAN_CAMERA_DURATION, false, function thistype.PanAFKCameraCB)
+				endif
 			endif
-			
-			//TODO reset player's name in multiboard
 		endif
+		
+		//either prepend or reset player's name in multiboard
+		call .PartialUpdateMultiboard()
 	endmethod
 	private static method ToggleAFKCallback takes nothing returns boolean
 		// local thistype u = S2I(BlzGetTriggerSyncData())
+		
+		// call DisplayTextToPlayer(Player(0), 0, 0, "On sync event, data: " + BlzGetTriggerSyncData())
 		call User(S2I(BlzGetTriggerSyncData())).ToggleAFK()
 		
 		return false
@@ -887,7 +973,7 @@ struct User extends array
 		
 	private method CheckAFKPlayer takes real timeElapsed returns nothing
 		//call sync AFK checks, sync wrappers around async data
-		if this.GameMode == Teams_GAMEMODE_PLATFORMING and not this.PlatformerStartStable and (this.Platformer.PushedAgainstVector != 0 or this.Platformer.HorizontalAxisState != 0) then
+		if this.GameMode == Teams_GAMEMODE_PLATFORMING and not this.PlatformerStartStable and ((this.Platformer.PushedAgainstVector != 0 and this.Platformer.YVelocity == 0.) or this.Platformer.HorizontalAxisState != 0) then
 			set this.PlatformerStartStable = true
 			
 			if GetLocalPlayer() == Player(this) and this.Platformer.HorizontalAxisState == 0 then
@@ -898,7 +984,7 @@ struct User extends array
 		
 		//call async AFK checks
 		if GetLocalPlayer() == Player(this) then
-			if this.GameMode == Teams_GAMEMODE_PLATFORMING then
+			if this.GameMode == Teams_GAMEMODE_PLATFORMING or this.GameMode == Teams_GAMEMODE_PLATFORMING_PAUSED then
 				// if not thistype.PlatformerStartStable and (this.Platformer.PushedAgainstVector != 0 or this.Platformer.HorizontalAxisState != 0) then
 					// set thistype.PlatformerStartStable = true
 					
@@ -917,12 +1003,20 @@ struct User extends array
 					set thistype.LocalCameraIdleTime = thistype.LocalCameraIdleTime + timeElapsed
 				endif
 			else
-				if GetCameraTargetPositionX() != LocalCameraTargetPosition.x or GetCameraTargetPositionY() != LocalCameraTargetPosition.y then
+				if RAbsBJ(GetCameraTargetPositionX() - LocalCameraTargetPosition.x) > CAMERA_TARGET_POSITION_FLEX or RAbsBJ(GetCameraTargetPositionY() - LocalCameraTargetPosition.y) > CAMERA_TARGET_POSITION_FLEX then
+				// if GetCameraTargetPositionX() != LocalCameraTargetPosition.x or GetCameraTargetPositionY() != LocalCameraTargetPosition.y then
+					// call DisplayTextToPlayer(GetLocalPlayer(), 0, 0, "Difference for camera destination x: " + R2S(RAbsBJ(GetCameraTargetPositionX() - LocalCameraTargetPosition.x)) + ", y: " + R2S(RAbsBJ(GetCameraTargetPositionY() - LocalCameraTargetPosition.y)))
+					
 					set thistype.LocalCameraIdleTime = 0
 					
 					set thistype.LocalCameraTargetPosition.x = GetCameraTargetPositionX()
 					set thistype.LocalCameraTargetPosition.y = GetCameraTargetPositionY()
 				else
+					// if .IsAFK then
+						// call DisplayTextToPlayer(GetLocalPlayer(), 0, 0, "(No) Difference for camera destination x: " + R2S(RAbsBJ(GetCameraTargetPositionX() - LocalCameraTargetPosition.x)) + ", y: " + R2S(RAbsBJ(GetCameraTargetPositionY() - LocalCameraTargetPosition.y)))
+						// call DisplayTextToPlayer(GetLocalPlayer(), 0, 0, "Full boolean: " + B2S(RAbsBJ(GetCameraTargetPositionX() - LocalCameraTargetPosition.x) > CAMERA_TARGET_POSITION_FLEX or RAbsBJ(GetCameraTargetPositionY() - LocalCameraTargetPosition.y) > CAMERA_TARGET_POSITION_FLEX) + ", pt 1: " + B2S(RAbsBJ(GetCameraTargetPositionX() - LocalCameraTargetPosition.x) > CAMERA_TARGET_POSITION_FLEX) + ", pt 2: " + B2S(RAbsBJ(GetCameraTargetPositionY() - LocalCameraTargetPosition.y) > CAMERA_TARGET_POSITION_FLEX))
+					// endif
+
 					set thistype.LocalCameraIdleTime = thistype.LocalCameraIdleTime + timeElapsed
 				endif
 			endif
@@ -932,7 +1026,8 @@ struct User extends array
 			//	*/((thistype.LocalCameraIdleTime >= AFK_CAMERA_MAX_TIMEOUT) or /*
 			//	*/(thistype.LocalCameraIdleTime >= AFK_MANUAL_CHECK_FACTOR * AFK_CAMERA_MAX_TIMEOUT)) then
 			//
-			if (this.IsAFK and thistype.LocalCameraIdleTime < AFK_CAMERA_MAX_TIMEOUT) or (not this.IsAFK and thistype.LocalCameraIdleTime >= AFK_CAMERA_MAX_TIMEOUT) then
+			if (this.IsAFK and thistype.LocalCameraIdleTime < thistype.LocalAFKThreshold) or (not this.IsAFK and thistype.LocalCameraIdleTime >= thistype.LocalAFKThreshold) then
+				// call DisplayTextToPlayer(GetLocalPlayer(), 0, 0, "On sync event, idle time: " + R2S(thistype.LocalCameraIdleTime))
 				call BlzSendSyncData(AFK_SYNC_EVENT_PREFIX, I2S(this))
 			endif
 		endif
@@ -1072,6 +1167,12 @@ struct User extends array
         local integer n = 0
         set User.ActivePlayers = 0
         
+		static if DEBUG_AFK then
+			set User.LocalAFKThreshold = 15.
+		else
+			set User.LocalAFKThreshold = AFK_CAMERA_MAX_TIMEOUT
+		endif
+		
 		set User.AFKLocalCameraTimeSyncEvent = CreateTrigger()
 		set User.AFKSyncLocalCameraTimePromises = SimpleList_List.create()
 		call TriggerAddCondition(User.AFKLocalCameraTimeSyncEvent, Condition(function thistype.OnSyncLocal))

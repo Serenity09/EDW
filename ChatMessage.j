@@ -17,6 +17,8 @@ library GameMessage
 		
 		constant string TOGGLE_ON_COLOR = "5cb85c"
 		constant string TOGGLE_OFF_COLOR = "d9534f"
+		
+		constant string DISABLED_COLOR = "bbbbbb"
         
         constant string PRIMARY_SPEAKER_NAME = "SARGE"
         constant string SECONDARY_SPEAKER_NAME = "Cupcake"
