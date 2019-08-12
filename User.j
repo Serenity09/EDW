@@ -3,7 +3,7 @@ library User requires UnitDefaultRadius, MazerGlobals, Platformer, TerrainHelper
 globals
 	User TriggerUser //used with events
 	
-	private constant boolean DEBUG_AFK = true
+	private constant boolean DEBUG_AFK = false
 	private constant real CAMERA_TARGET_POSITION_FLEX = 50.
 	
 	private constant real CAMERA_TARGET_POSITION_PAUSE_X_FLEX = 8.5 * TERRAIN_TILE_SIZE
@@ -51,13 +51,13 @@ struct User extends array
 	public effect ActiveEffect
 	private timer UnpauseTimer
 	   
-	public real CameraIdleTime //only as accurate as the last sync
+	// public real CameraIdleTime //only as accurate as the last sync
 	readonly real AFKPlatformerDeathClock
 	
     public static integer ActivePlayers
 	
-	private static trigger AFKLocalCameraTimeSyncEvent
-	private static SimpleList_List AFKSyncLocalCameraTimePromises
+	// private static trigger AFKLocalCameraTimeSyncEvent
+	// private static SimpleList_List AFKSyncLocalCameraTimePromises
 	
 	private static trigger AFKSyncEvent
 	readonly static vector2 LocalCameraTargetPosition
@@ -1059,17 +1059,17 @@ struct User extends array
 		endloop
 	endmethod
 	
-	private static method ClearSyncLocalCameraPromises takes nothing returns nothing
-		local SimpleList_ListNode curCameraPromiseNode
+	// private static method ClearSyncLocalCameraPromises takes nothing returns nothing
+		// local SimpleList_ListNode curCameraPromiseNode
 		
-		loop
-		set curCameraPromiseNode = AFKSyncLocalCameraTimePromises.pop()
-		exitwhen curCameraPromiseNode == 0
-			call Deferred(curCameraPromiseNode.value).destroy()
+		// loop
+		// set curCameraPromiseNode = AFKSyncLocalCameraTimePromises.pop()
+		// exitwhen curCameraPromiseNode == 0
+			// call Deferred(curCameraPromiseNode.value).destroy()
 			
-			call curCameraPromiseNode.deallocate()
-		endloop
-	endmethod
+			// call curCameraPromiseNode.deallocate()
+		// endloop
+	// endmethod
 	// private static method OnSyncAll takes integer result, All allCameraTimeSynced returns integer
 		// local SimpleList_ListNode curUserNode = PlayerUtils_FirstPlayer
 		
@@ -1085,56 +1085,56 @@ struct User extends array
 		
 		// return 0
 	// endmethod
-	private static method OnSyncLocal takes nothing returns boolean
-		local string data = BlzGetTriggerSyncData()
-		local integer uIndex = S2I(SubString(data, 0, 1))
-		local User u = PlayerUtils_PlayerList.get(uIndex).value
-		// local real time = S2R(SubString(data, 1, StringLength(data)))
+	// private static method OnSyncLocal takes nothing returns boolean
+		// local string data = BlzGetTriggerSyncData()
+		// local integer uIndex = S2I(SubString(data, 0, 1))
+		// local User u = PlayerUtils_PlayerList.get(uIndex).value
+		// // local real time = S2R(SubString(data, 1, StringLength(data)))
 		
-		// // call DisplayTextToPlayer(Player(0), 0, 0, "user index: " + I2S(uIndex) + ", user: " + I2S(u) + ", time: " + R2S(time))
+		// // // call DisplayTextToPlayer(Player(0), 0, 0, "user index: " + I2S(uIndex) + ", user: " + I2S(u) + ", time: " + R2S(time))
 		
-		// set u.CameraIdleTime = time
+		// // set u.CameraIdleTime = time
 		
-		// call DisplayTextToPlayer(Player(0), 0, 0, "user index: " + I2S(uIndex) + ", user: " + I2S(u) + ", time: " + R2S(S2R(SubString(data, 1, StringLength(data)))))
+		// // call DisplayTextToPlayer(Player(0), 0, 0, "user index: " + I2S(uIndex) + ", user: " + I2S(u) + ", time: " + R2S(S2R(SubString(data, 1, StringLength(data)))))
 		
-		set u.CameraIdleTime = S2R(SubString(data, 1, StringLength(data)))
-		call Deferred(thistype.AFKSyncLocalCameraTimePromises.get(uIndex).value).Resolve(u)
+		// set u.CameraIdleTime = S2R(SubString(data, 1, StringLength(data)))
+		// call Deferred(thistype.AFKSyncLocalCameraTimePromises.get(uIndex).value).Resolve(u)
 		
-		return false
-	endmethod
+		// return false
+	// endmethod
 	
-	public method IsAFKSync takes nothing returns boolean
-		// call DisplayTextToPlayer(Player(0), 0, 0, "User: " + I2S(this) + ", idle time: " + R2S(.CameraIdleTime) + ", threshold: " + R2S(AFK_MANUAL_CHECK_FACTOR * AFK_CAMERA_MAX_TIMEOUT))
+	// public method IsAFKSync takes nothing returns boolean
+		// // call DisplayTextToPlayer(Player(0), 0, 0, "User: " + I2S(this) + ", idle time: " + R2S(.CameraIdleTime) + ", threshold: " + R2S(AFK_MANUAL_CHECK_FACTOR * AFK_CAMERA_MAX_TIMEOUT))
 		
-		return .CameraIdleTime >=  AFK_MANUAL_CHECK_FACTOR * AFK_CAMERA_MAX_TIMEOUT
-	endmethod
-	public static method SyncLocalCameraIdleTime takes nothing returns Deferred
-		local SimpleList_ListNode curUserNode = PlayerUtils_FirstPlayer
-		local integer i = 0
-		// local Deferred allCameraTimeSynced
+		// return .CameraIdleTime >=  AFK_MANUAL_CHECK_FACTOR * AFK_CAMERA_MAX_TIMEOUT
+	// endmethod
+	// public static method SyncLocalCameraIdleTime takes nothing returns Deferred
+		// local SimpleList_ListNode curUserNode = PlayerUtils_FirstPlayer
+		// local integer i = 0
+		// // local Deferred allCameraTimeSynced
 		
-		call ClearSyncLocalCameraPromises()
+		// call ClearSyncLocalCameraPromises()
 		
-		loop
-		exitwhen curUserNode == 0
-			call AFKSyncLocalCameraTimePromises.addEnd(Deferred.create())
+		// loop
+		// exitwhen curUserNode == 0
+			// call AFKSyncLocalCameraTimePromises.addEnd(Deferred.create())
 			
-			if GetLocalPlayer() == Player(curUserNode.value) then
-				//TODO encode to base-whatever to support max possible players
-				call BlzSendSyncData(LOCAL_CAMERA_IDLE_TIME_EVENT_PREFIX, I2S(i) + R2S(thistype.LocalCameraIdleTime))
-			endif
-		set curUserNode = curUserNode.next
-		set i = i + 1
-		endloop
+			// if GetLocalPlayer() == Player(curUserNode.value) then
+				// //TODO encode to base-whatever to support max possible players
+				// call BlzSendSyncData(LOCAL_CAMERA_IDLE_TIME_EVENT_PREFIX, I2S(i) + R2S(thistype.LocalCameraIdleTime))
+			// endif
+		// set curUserNode = curUserNode.next
+		// set i = i + 1
+		// endloop
 		
-		// set allCameraTimeSynced = All(AFKSyncLocalCameraTimePromises)
-		// //TODO move this to the caller
-		// // call allCameraTimeSynced.Then(thistype.OnSyncAll, 0, allCameraTimeSynced)
+		// // set allCameraTimeSynced = All(AFKSyncLocalCameraTimePromises)
+		// // //TODO move this to the caller
+		// // // call allCameraTimeSynced.Then(thistype.OnSyncAll, 0, allCameraTimeSynced)
 		
-		// return allCameraTimeSynced
+		// // return allCameraTimeSynced
 		
-		return All(AFKSyncLocalCameraTimePromises)
-	endmethod
+		// return All(AFKSyncLocalCameraTimePromises)
+	// endmethod
 	        
     static method allocate takes nothing returns thistype
         set .count = .count + 1
@@ -1152,10 +1152,12 @@ struct User extends array
         set new.Team = 0
         set new.Deaths = 0
         set new.IsAlive = true
+		
 		set new.IsAFK = false
-		set new.CameraIdleTime = 0.
 		call BlzTriggerRegisterPlayerSyncEvent(thistype.AFKSyncEvent, Player(new), AFK_SYNC_EVENT_PREFIX, false)
-		call BlzTriggerRegisterPlayerSyncEvent(thistype.AFKLocalCameraTimeSyncEvent, Player(new), LOCAL_CAMERA_IDLE_TIME_EVENT_PREFIX, false)
+		
+		// set new.CameraIdleTime = 0.
+		// call BlzTriggerRegisterPlayerSyncEvent(thistype.AFKLocalCameraTimeSyncEvent, Player(new), LOCAL_CAMERA_IDLE_TIME_EVENT_PREFIX, false)
 		// call TriggerRegisterPlayerStateEvent(thistype.AFKMouseEvent, Player(new), PLAYER_STATE_OBSERVER_ON_DEATH, GREATER_THAN_OR_EQUAL, 0)
         
         set new.CinematicPlaying = 0
@@ -1189,9 +1191,9 @@ struct User extends array
 			set User.LocalAFKThreshold = AFK_CAMERA_MAX_TIMEOUT
 		endif
 		
-		set User.AFKLocalCameraTimeSyncEvent = CreateTrigger()
-		set User.AFKSyncLocalCameraTimePromises = SimpleList_List.create()
-		call TriggerAddCondition(User.AFKLocalCameraTimeSyncEvent, Condition(function thistype.OnSyncLocal))
+		// set User.AFKLocalCameraTimeSyncEvent = CreateTrigger()
+		// set User.AFKSyncLocalCameraTimePromises = SimpleList_List.create()
+		// call TriggerAddCondition(User.AFKLocalCameraTimeSyncEvent, Condition(function thistype.OnSyncLocal))
 		
 		set User.AFKSyncEvent = CreateTrigger()
 		call TriggerAddCondition(thistype.AFKSyncEvent, Condition(function thistype.ToggleAFKCallback))

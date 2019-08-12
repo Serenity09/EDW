@@ -190,47 +190,47 @@ library InGameCommands initializer init requires MazerGlobals, Platformer, Relay
 		endloop	
 	endfunction
 	
-	function OnAllCameraSync takes integer result, Deferred all returns integer
-		// call DisplayTextToForce(bj_FORCE_PLAYER[0], "On all camera sync")
+	// function OnAllCameraSync takes integer result, Deferred all returns integer
+		// // call DisplayTextToForce(bj_FORCE_PLAYER[0], "On all camera sync")
 		
-		local SimpleList_ListNode curTeamNode = Teams_MazingTeam.AllTeams.first
-		local SimpleList_ListNode curUserNode
+		// local SimpleList_ListNode curTeamNode = Teams_MazingTeam.AllTeams.first
+		// local SimpleList_ListNode curUserNode
 		
-		local boolean anyNonAFK
+		// local boolean anyNonAFK
 		
-		loop
-		exitwhen curTeamNode == 0
-			set curUserNode = Teams_MazingTeam(curTeamNode.value).Users.first
-			set anyNonAFK = false
+		// loop
+		// exitwhen curTeamNode == 0
+			// set curUserNode = Teams_MazingTeam(curTeamNode.value).Users.first
+			// set anyNonAFK = false
 			
-			loop
-			exitwhen curUserNode == 0 or anyNonAFK
-				// call DisplayTextToPlayer(Player(0), 0, 0, "User: " + I2S(curUserNode.value))
+			// loop
+			// exitwhen curUserNode == 0 or anyNonAFK
+				// // call DisplayTextToPlayer(Player(0), 0, 0, "User: " + I2S(curUserNode.value))
 				
-				if not User(curUserNode.value).IsAFK and not User(curUserNode.value).IsAFKSync() and User(curUserNode.value).IsAlive then
-					set anyNonAFK = true
-				endif
-			set curUserNode = curUserNode.next
-			endloop
+				// if not User(curUserNode.value).IsAFK and not User(curUserNode.value).IsAFKSync() and User(curUserNode.value).IsAlive then
+					// set anyNonAFK = true
+				// endif
+			// set curUserNode = curUserNode.next
+			// endloop
 			
-			if not anyNonAFK then
-				set curUserNode = Teams_MazingTeam(curTeamNode.value).Users.first
+			// if not anyNonAFK then
+				// set curUserNode = Teams_MazingTeam(curTeamNode.value).Users.first
 				
-				loop
-				exitwhen curUserNode == 0
-					if not User(curUserNode.value).IsAFK and User(curUserNode.value).IsAFKSync() then
-						call User(curUserNode.value).ToggleAFK()
-					endif
-				set curUserNode = curUserNode.next
-				endloop
-			endif
-		set curTeamNode = curTeamNode.next
-		endloop
+				// loop
+				// exitwhen curUserNode == 0
+					// if not User(curUserNode.value).IsAFK and User(curUserNode.value).IsAFKSync() then
+						// call User(curUserNode.value).ToggleAFK()
+					// endif
+				// set curUserNode = curUserNode.next
+				// endloop
+			// endif
+		// set curTeamNode = curTeamNode.next
+		// endloop
 		
-		call all.destroy()
+		// call all.destroy()
 		
-		return 0
-	endfunction
+		// return 0
+	// endfunction
 
 	function ParseCommand takes nothing returns nothing
 		local string msg = GetEventPlayerChatString()
