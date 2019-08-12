@@ -274,18 +274,7 @@ public struct MazingTeam extends array
             exitwhen fp == 0
                 set u = fp.value
                 if u.IsPlaying then
-                    set MazerColor[u] = keyID
-                    
-                    if keyID == 0 then
-                        //call DisplayTextToForce(bj_FORCE_PLAYER[0], "setting 0 for pID " + I2S(PlayerIDs[i]))
-                        call SetUnitVertexColor(MazersArray[u], 255, 255, 255, 255)
-                    elseif keyID == 1 then
-                        call SetUnitVertexColor(MazersArray[u], 255, 0, 0, 255)
-                    elseif keyID == 2 then
-                        call SetUnitVertexColor(MazersArray[u], 0, 0, 255, 255)
-                    elseif keyID == 3 then
-                        call SetUnitVertexColor(MazersArray[u], 0, 255, 0, 255)
-                    endif
+                    call u.SetKeyColor(keyID)
                 endif
                 
             set fp = fp.next

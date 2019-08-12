@@ -264,24 +264,27 @@ private function CollisionIteration takes nothing returns nothing
 									set LastCollidedUnit[curUserNode.value] = cu
 									
 									call RShieldEffect(User(curUserNode.value).ActiveUnit)
-									set MazerColor[curUserNode.value] = KEY_RED
-									call SetUnitVertexColor(MazersArray[curUserNode.value], 255, 0, 0, 255)
+									call User(curUserNode.value).SetKeyColor(KEY_RED)
+									// set MazerColor[curUserNode.value] = KEY_RED
+									// call SetUnitVertexColor(MazersArray[curUserNode.value], 255, 0, 0, 255)
 									
 									call TimerStart(NewTimerEx(curUserNode.value), COLLISION_TIME, false, function AfterCollisionCB)
 								elseif cuTypeID == BKEY then
 									set LastCollidedUnit[curUserNode.value] = cu
 									
 									call BShieldEffect(User(curUserNode.value).ActiveUnit)
-									set MazerColor[curUserNode.value] = KEY_BLUE
-									call SetUnitVertexColor(MazersArray[curUserNode.value], 0, 0, 255, 255)
+									call User(curUserNode.value).SetKeyColor(KEY_BLUE)
+									// set MazerColor[curUserNode.value] = KEY_BLUE
+									// call SetUnitVertexColor(MazersArray[curUserNode.value], 0, 0, 255, 255)
 									
 									call TimerStart(NewTimerEx(curUserNode.value), COLLISION_TIME, false, function AfterCollisionCB)
 								elseif cuTypeID == GKEY then
 									set LastCollidedUnit[curUserNode.value] = cu
 									
 									call GShieldEffect(User(curUserNode.value).ActiveUnit)
-									set MazerColor[curUserNode.value] = KEY_GREEN
-									call SetUnitVertexColor(MazersArray[curUserNode.value], 0, 255, 0, 255)
+									call User(curUserNode.value).SetKeyColor(KEY_GREEN)
+									// set MazerColor[curUserNode.value] = KEY_GREEN
+									// call SetUnitVertexColor(MazersArray[curUserNode.value], 0, 255, 0, 255)
 									
 									call TimerStart(NewTimerEx(curUserNode.value), COLLISION_TIME, false, function AfterCollisionCB)
 								elseif cuTypeID == TEAM_REVIVE_UNIT_ID then

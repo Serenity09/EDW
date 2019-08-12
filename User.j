@@ -451,6 +451,20 @@ struct User extends array
         //set .LastTransferTime = GameElapsedTime()
     endmethod
 	
+	public method SetKeyColor takes integer keyColor returns nothing
+		if MazerColor[this] != keyColor then
+			set MazerColor[this] = keyColor
+			
+			if keyColor == KEY_RED then
+				call SetUnitVertexColor(MazersArray[this], 255, 0, 0, 255)
+			elseif keyColor == KEY_BLUE then
+				call SetUnitVertexColor(MazersArray[this], 0, 0, 255, 255)
+			elseif keyColor == KEY_GREEN then
+				call SetUnitVertexColor(MazersArray[this], 0, 255, 0, 255)
+			endif
+		endif
+	endmethod
+	
 	public method GetPlayerColorHex takes nothing returns string
 		local string hex
         

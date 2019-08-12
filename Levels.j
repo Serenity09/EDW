@@ -103,7 +103,7 @@ library Levels requires SimpleList, Teams, GameModesGlobals, LevelIDGlobals, Cin
 		
 		//private static Event OnLevelChange
 		//private static Event OnCheckpointChange
-                        
+        
         public method Start takes nothing returns nothing
             local SimpleList_ListNode startableNode
 			
@@ -132,7 +132,6 @@ library Levels requires SimpleList, Teams, GameModesGlobals, LevelIDGlobals, Cin
                 //debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "Started level " + I2S(this))
             endif
         endmethod
-        
         //stops this level unless someone else is on it
         public method Stop takes nothing returns nothing
             local integer countprev = Teams_MazingTeam.GetCountOnLevel(this)
@@ -178,12 +177,15 @@ library Levels requires SimpleList, Teams, GameModesGlobals, LevelIDGlobals, Cin
         
         public method GetWorldID takes nothing returns integer
             //World levels follow this format
-			if this >= 3 /* and this <= 38 */ then //last level ID
+			if this >= 3 and this <= 37 then //last level ID
                 return ModuloInteger(this - 3, 7) + 1
 			else
 				return -this
             endif
         endmethod
+		public method IsWorldLevel takes nothing returns boolean
+			return this > 0 and .GetWorldID() > 0
+		endmethod
 		public method GetWorldColor takes nothing returns string
 			local integer onWorld = .GetWorldID()
             
@@ -203,7 +205,7 @@ library Levels requires SimpleList, Teams, GameModesGlobals, LevelIDGlobals, Cin
                 return ""
             elseif onWorld == 6 then
                 return FOUR_SEASONS_WORLD_COLOR
-            else//if onWorld == 7
+            elseif onWorld == 7
                 return PLATFORMING_WORLD_COLOR
             endif
 		endmethod
@@ -573,7 +575,7 @@ library Levels requires SimpleList, Teams, GameModesGlobals, LevelIDGlobals, Cin
 		private static method SwitchLevels_Message3 takes nothing returns nothing
 			local timer t = GetExpiredTimer()
 			local AnimatedLevelTransferData transferData = GetTimerData(t)
-						
+			
 			call transferData.Team.PrintMessage("Now starting: " + transferData.NextLevel.Name)
 			call transferData.Team.FadeInForTeam(LEVEL_TRANSFER_FADE_DURATION)
 			
@@ -612,7 +614,7 @@ library Levels requires SimpleList, Teams, GameModesGlobals, LevelIDGlobals, Cin
 			call transferData.Team.CancelAutoUnpauseForTeam()
 			call transferData.Team.PauseTeam(true)
 			
-			if ShouldShowSettingVoteMenu() and RewardMode != GameModesGlobals_CHEAT and transferData.Team.OnLevel != DOORS_LEVEL_ID then
+			if ShouldShowSettingVoteMenu() and RewardMode != GameModesGlobals_CHEAT and transferData.Team.OnLevel.IsWorldLevel() then
 				call TimerStart(t, LEVEL_TRANSFER_MESSAGE_DELAY, false, function thistype.SwitchLevels_Message2)
 			else
 				call TimerStart(t, LEVEL_TRANSFER_MESSAGE_DELAY, false, function thistype.SwitchLevels_Message3)
