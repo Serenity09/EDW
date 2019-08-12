@@ -271,7 +271,7 @@ library InGameCommands initializer init requires MazerGlobals, Platformer, Relay
 			// call async.Then(OnAllCameraSync, 0, async)
 		// endif
 		
-		if CONFIGURATION_PROFILE == RELEASE then
+		if CONFIGURATION_PROFILE != RELEASE then
 			//debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "msg: " + msg + " cmd: " + cmd + " val: " + R2S(val))
 			if cmd == "tvy" then
 				set p.TerminalVelocityY = val
