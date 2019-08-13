@@ -143,7 +143,7 @@ library EDWLevelContent requires LevelIDGlobals, EDWLevels, SimpleList, Teams, L
         call l.AddStartable(MortarNTarget.create(SMLMORT, SMLTARG, Player(8), gg_rct_Rect_340 , gg_rct_Rect_339))
         
         call l.AddStartable(MortarNTarget.create(SMLMORT, SMLTARG, Player(8), gg_rct_Rect_352 , gg_rct_Rect_351))
-        
+		
         //LEVEL 2
         set l = Levels_Level(PW2_LEVEL_ID)
                         
@@ -189,6 +189,11 @@ library EDWLevelContent requires LevelIDGlobals, EDWLevels, SimpleList, Teams, L
         //LEVEL 3
         set l = Levels_Level(PW3_LEVEL_ID)
         
+		call l.AddStartable(SimplePatrol.create(BOUNCER, 1472, -7168, 1792, -7168))
+		call l.AddStartable(SimplePatrol.create(BOUNCER, 1536, -6912, 2048, -6912))
+		call l.AddStartable(SimplePatrol.create(GRAVITY, 2304, -9592, 2564, -9592))
+		call l.AddStartable(SimplePatrol.create(BOUNCER, 2654, -4864, 2816, -4728))
+		
 		set pattern = LinePatternSpawn.createFromRect(RandomLineSlotSpawn, 1, gg_rct_PW3_MassCreate, TERRAIN_TILE_SIZE)
 		set pattern.Data = BOUNCER
 		set sg = SimpleGenerator.create(pattern, 1.5, 180, 19)

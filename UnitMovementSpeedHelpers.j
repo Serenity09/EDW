@@ -48,6 +48,14 @@ library MovementSpeedHelpers requires UnitGlobals, IndexedUnit, Alloc
 			return 270.
 		elseif unitID == MAZER then
 			return 320.
+		elseif unitID == BOUNCER then
+			return 200.
+		elseif unitID == GRAVITY then
+			return 100.
+		elseif unitID == LBOUNCE or unitID == RBOUNCE or unitID == UBOUNCE or unitID == DBOUNCE then
+			return 160.
+		elseif unitID == SUPERSPEED then
+			return 200.
 		else
 			static if DEBUG_MODE then
 				call DisplayTextToForce(bj_FORCE_PLAYER[0], "GetDefaultMoveSpeed with unrecognized unitID: " + I2S(unitID))

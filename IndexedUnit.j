@@ -16,6 +16,9 @@ library IndexedUnit requires UnitDefaultRadius
 						
 		implement Alloc
 		
+		public static method operator [] takes unit u returns thistype
+			return GetUnitUserData(u)
+		endmethod
 		public static method create takes unit u returns thistype
 			local integer unitTypeID = GetUnitTypeId(u)
 			local integer rand
