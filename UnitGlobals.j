@@ -69,6 +69,10 @@ library UnitGlobals
         constant real BLACKHOLE_TIMESTEP = 1.5
         constant real BLACKHOLE_MAXRADIUS = 5 * 128 //this might make lag with multiple players
 		
+		constant integer BRICK = 'h009'
+		constant integer GOLD_BRICK = 'h00A'
+		constant integer PADDLE = 'h00B'
+		
 		constant integer TELEPORT = 'eTEL'
         
         debug constant integer DEBUG_UNIT = 'eTST' //NOT USED FOR ANYTHING IN RELEASE MODE

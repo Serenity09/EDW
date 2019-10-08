@@ -4,7 +4,7 @@ library Minigame requires SimpleList, Levels, TeamSaveLocation
 	endglobals
 	
 	struct Minigame extends array
-		private static leaderboard Scores
+		readonly static leaderboard Scores
 		
 		public method TransferAllTeams takes nothing returns nothing
 			local SimpleList_ListNode curTeamNode = Teams_MazingTeam.AllTeams.first

@@ -251,6 +251,10 @@ library Recycle requires UnitGlobals, DisposableUnit
 			call thistype.create(RFIRE, 0, Player(11)).Preload(3)
 			call thistype.create(BFIRE, 0, Player(11)).Preload(3)
             
+			call thistype.create(BRICK, 0, Player(10))
+			call thistype.create(GOLD_BRICK, 0, Player(10))
+			call thistype.create(PADDLE, 0, Player(10))
+			
             call thistype.create(WWWISP, 0, Player(11))//.Preload(10)
             
             debug call thistype.create(DEBUG_UNIT, 0, Player(11)).Preload(25)

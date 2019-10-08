@@ -108,7 +108,12 @@ library EDWLevels requires LevelIDGlobals, Levels, PW4
         //Justine's Four Seasons
 		set l = Levels_Level.create(FS1_LEVEL_ID, "Spring", 3, 2, "FourSeason1Start", "FourSeason1Stop", gg_rct_FSR_1_1, gg_rct_FS1_Vision, gg_rct_FS1_End, 0)
 		call l.AddCheckpoint(gg_rct_FSCP_1_1, gg_rct_FSR_1_2)
-			        
+		
+		//Minigames
+		set l = Minigame.create(BRICK_BREAK_LEVEL_ID, "Brick Break", "BrickBreakStart", "BrickBreakStop", gg_rct_BB_Revive, gg_rct_BB_Vision)
+		// call l.Boundaries.addEnd(gg_rct_PW3_Vision2)
+		set Checkpoint(l.Checkpoints.first.value).DefaultGameMode = Teams_GAMEMODE_PLATFORMING
+		
 		
         //Testing worlds
         set l = Levels_Level.create(TESTDH_LEVEL_ID, "Test Standard", 0, 0, null, null, gg_rct_SWR_2_1, null, null, 0)
