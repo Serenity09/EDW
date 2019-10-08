@@ -461,6 +461,8 @@ struct User extends array
 				call SetUnitVertexColor(MazersArray[this], 0, 0, 255, 255)
 			elseif keyColor == KEY_GREEN then
 				call SetUnitVertexColor(MazersArray[this], 0, 255, 0, 255)
+			elseif keyColor == KEY_NONE then
+				call SetUnitVertexColor(MazersArray[this], 255, 255, 255, 255)
 			endif
 		endif
 	endmethod

@@ -306,8 +306,7 @@ private function CollisionIteration takes nothing returns nothing
 									set LastCollidedUnit[curUserNode.value] = cu
 									
 									call ShieldRemoveEffect(User(curUserNode.value).ActiveUnit)
-									set MazerColor[curUserNode.value] = KEY_NONE
-									call SetUnitVertexColor(MazersArray[curUserNode.value], 255, 255, 255, 255)
+									call User(curUserNode.value).SetKeyColor(KEY_NONE)
 									
 									call TimerStart(NewTimerEx(curUserNode.value), COLLISION_TIME, false, function AfterCollisionCB)
 								elseif cuTypeID == TELEPORT then
