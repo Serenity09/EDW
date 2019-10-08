@@ -171,6 +171,9 @@ struct TeamSaveLocation extends array
     public method destroy takes nothing returns nothing
         local SimpleList_ListNode curPlayerNode
         
+		set this.SaveName = null
+		
+		//clean up player saves / list
         loop
 		set curPlayerNode = this.PlayerSaves.pop()
         exitwhen curPlayerNode == null
@@ -178,10 +181,11 @@ struct TeamSaveLocation extends array
         call curPlayerNode.deallocate()
         endloop
 		
-		set this.SaveName = null
 		call this.PlayerSaves.destroy()
-        
+		
+        //deallocate self
         call ActiveSaves.remove(this)
+		call this.deallocate()
     endmethod
     
     public static method create takes string saveName, Teams_MazingTeam team returns thistype

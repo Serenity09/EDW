@@ -72,19 +72,12 @@ library EDWVisualVote requires VisualVote, ContinueGlobals, Teams, PlayerUtils, 
     endfunction
 	
 	private function FadeCBTwo takes nothing returns nothing
-		local timer t = GetExpiredTimer()
-		
 		call DisplayCineFilter(false)
 		call EnableUserUI(true)
 						
-		call DestroyTimer(t)
-		set t = null
+		call ReleaseTimer(GetExpiredTimer())
 	endfunction
 	private function FadeCBOne takes nothing returns nothing
-		local timer t = GetExpiredTimer()
-		
-		call MultiboardMinimize(Teams_MazingTeam.PlayerStats, true)
-		
 		call DisplayCineFilter(false)
 		
 		call SetCineFilterTexture("ReplaceableTextures\\CameraMasks\\Black_mask.blp")
@@ -99,8 +92,12 @@ library EDWVisualVote requires VisualVote, ContinueGlobals, Teams, PlayerUtils, 
 		
 		//call EnableUserUI(true)
 		
-		call TimerStart(t, 3, false, function FadeCBTwo)
-		set t = null
+		call TimerStart(GetExpiredTimer(), 3, false, function FadeCBTwo)
+	endfunction
+	private function MultiboardMinimizeCB takes nothing returns nothing
+		call MultiboardMinimize(Teams_MazingTeam.PlayerStats, true)
+		
+		call ReleaseTimer(GetExpiredTimer())
 	endfunction
     
 	public function InitializeGameForGlobals takes nothing returns nothing
@@ -298,6 +295,8 @@ library EDWVisualVote requires VisualVote, ContinueGlobals, Teams, PlayerUtils, 
 			set welcomeCineTime = welcomeCineTime + DEFAULT_LONG_TEXT_SPEED
 		endif
 		
+		call TimerStart(NewTimer(), welcomeCineTime + .5, false, function MultiboardMinimizeCB)
+		
 		call welcomeCine.SetLastMessageBuffer(1)
 		set welcomeCineTime = welcomeCineTime + 1
 
@@ -338,7 +337,7 @@ library EDWVisualVote requires VisualVote, ContinueGlobals, Teams, PlayerUtils, 
 			call SetCineFilterDuration(0)
 			call DisplayCineFilter(true)
 			
-			call TimerStart(CreateTimer(), welcomeCineTime, false, function FadeCBOne)
+			call TimerStart(NewTimer(), welcomeCineTime, false, function FadeCBOne)
 		else
 			set fp = PlayerUtils_FirstPlayer
 			loop

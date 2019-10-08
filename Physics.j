@@ -3430,21 +3430,7 @@ endglobals
                         set p.HorizontalAxisState = 1
                         set p.LastHorizontalKey = 1
                         
-						call p.ApplyPhysics()
-						
-						/*                        
-                        //do right down actions -- move unit a bit
-                        if p.OnDiagonal then
-                        
-                        else
-                            set newX = p.XPosition + p.MoveSpeed * INSTANT_MS
-                            set ttype = GetTerrainType(newX + wOFFSET, p.YPosition)
-                            if TerrainGlobals_IsTerrainPathable(ttype) then
-                                call SetUnitX(p.Unit, newX)
-                                set p.XPosition = newX
-                            endif
-                        endif
-						*/
+						call p.ApplyPhysics()						
                     endif
                 else //right was released
                     //debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "Right key released")
@@ -3455,20 +3441,6 @@ endglobals
                         set p.LastHorizontalKey = -1
 						
 						call p.ApplyPhysics()
-						
-						/*                        
-                        //do left down actions -- move unit a bit
-                        if p.OnDiagonal then
-                        
-                        else
-                            set newX = p.XPosition + p.MoveSpeed * INSTANT_MS
-                            set ttype = GetTerrainType(newX + wOFFSET, p.YPosition)
-                            if TerrainGlobals_IsTerrainPathable(ttype) then
-                                call SetUnitX(p.Unit, newX)
-                                set p.XPosition = newX
-                            endif
-                        endif
-						*/
                     else
                         //debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "And left not down")
                         //set axis state to neutral
