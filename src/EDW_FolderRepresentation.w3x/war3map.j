@@ -46,9 +46,6 @@ filterfunc Green
 filterfunc Brown
 filterfunc NotMazer
 //endglobals from FilterFuncs
-//globals from FooBar:
-constant boolean LIBRARY_FooBar=true
-//endglobals from FooBar
 //globals from FourSeasons1:
 constant boolean LIBRARY_FourSeasons1=true
 //endglobals from FourSeasons1
@@ -558,8 +555,8 @@ integer Table___more= 8190
     //Configure it if you use more than 8190 "key" variables in your map (this will never happen though).
     
 hashtable Table___ht= InitHashtable()
-constant integer Table___sizeK=6
-constant integer Table___listK=7
+constant integer Table___sizeK=8
+constant integer Table___listK=9
 //endglobals from Table
 //globals from TimerUtils:
 constant boolean LIBRARY_TimerUtils=true
@@ -747,7 +744,7 @@ constant boolean LIBRARY_IndexedUnit=true
 //endglobals from IndexedUnit
 //globals from MemoryAnalysis:
 constant boolean LIBRARY_MemoryAnalysis=true
-constant boolean MemoryAnalysis__TRACE= false
+constant boolean MemoryAnalysis___TRACE= false
 //endglobals from MemoryAnalysis
 //globals from PatternSpawn:
 constant boolean LIBRARY_PatternSpawn=true
@@ -795,8 +792,8 @@ constant boolean LIBRARY_RSnowMovement=true
 // processed: 	real array RSFacing[NumberPlayers]
 	//constant real MAXRSVELOCITY = 10
 	
-real RSnowMovement___TIMESTEP= .035
-real RSnowMovement___ACCELERATION= 8.5 * RSnowMovement___TIMESTEP
+real RSnowMovement__TIMESTEP= .035
+real RSnowMovement__ACCELERATION= 8.5 * RSnowMovement__TIMESTEP
 //endglobals from RSnowMovement
 //globals from RelativeVector2:
 constant boolean LIBRARY_RelativeVector2=true
@@ -1108,12 +1105,12 @@ constant real EDWRelayPatternSpawnDefinitions___LW2_RG4_BASEMS= 1.5 * TERRAIN_TI
 //endglobals from EDWRelayPatternSpawnDefinitions
 //globals from LavaDamage:
 constant boolean LIBRARY_LavaDamage=true
-real LavaDamage___TIMESTEP= .5
-constant real LavaDamage___LAVARATE= 350 * LavaDamage___TIMESTEP
+real LavaDamage__TIMESTEP= .5
+constant real LavaDamage__LAVARATE= 350 * LavaDamage__TIMESTEP
 		
-constant string LavaDamage___DEATH_FX= "Abilities\\Spells\\Human\\MarkOfChaos\\MarkOfChaosTarget.mdl"
+constant string LavaDamage__DEATH_FX= "Abilities\\Spells\\Human\\MarkOfChaos\\MarkOfChaosTarget.mdl"
 		
-constant boolean LavaDamage___DEBUG_DELTA= false
+constant boolean LavaDamage__DEBUG_DELTA= false
 //endglobals from LavaDamage
 //globals from PlatformerBounce:
 constant boolean LIBRARY_PlatformerBounce=true
@@ -1249,15 +1246,15 @@ constant real TOLERANCE= 25
 constant real TELEPORT_MAXDISTANCE= 20
 constant real TELEPORT_EXACTDISTANCE= TERRAIN_TILE_SIZE * 3
 		
-constant string isMoving___TELEPORT_MOVEMENT_FROM_FX= "Abilities\\Spells\\NightElf\\Blink\\BlinkCaster.mdl"
-constant string isMoving___TELEPORT_MOVEMENT_TO_FX= "Abilities\\Spells\\NightElf\\Blink\\BlinkTarget.mdl"
+constant string isMoving__TELEPORT_MOVEMENT_FROM_FX= "Abilities\\Spells\\NightElf\\Blink\\BlinkCaster.mdl"
+constant string isMoving__TELEPORT_MOVEMENT_TO_FX= "Abilities\\Spells\\NightElf\\Blink\\BlinkTarget.mdl"
 		// private constant string TELEPORT_MOVEMENT_FX = "Abilities\\Spells\\NightElf\\Blink\\BlinkTarget.mdl"
 		// private constant string TELEPORT_MOVEMENT_FX = "Abilities\\Spells\\NightElf\\Blink\\BlinkCaster.mdl"
 		// private constant string TELEPORT_MOVEMENT_FROM_FX = "Abilities\\Spells\\Undead\\VampiricAura\\VampiricAuraTarget.mdl"
 		// private constant string TELEPORT_MOVEMENT_TO_FX = "Abilities\\Spells\\NightElf\\Starfall\\StarfallTarget.mdl"
 		// private constant string TELEPORT_MOVEMENT_TO_FX = "Abilities\\Spells\\Undead\\VampiricAura\\VampiricAuraTarget.mdl"
 		
-constant boolean isMoving___DEBUG_STOP_MOVEMENT= false
+constant boolean isMoving__DEBUG_STOP_MOVEMENT= false
 //endglobals from isMoving
 //globals from All:
 constant boolean LIBRARY_All=true
@@ -1384,15 +1381,15 @@ constant integer EDWPowerup___TEAM_STEALSCORE_COUNT= 1
 constant boolean LIBRARY_IceMovement=true
 constant real DEGREE_TO_RADIANS= 0.01745
     
-constant real IceMovement___TIMEOUT= .035
+constant real IceMovement__TIMEOUT= .035
     
-constant real IceMovement___VELOCITY_FALLOFF= 1
-constant real IceMovement___VELOCITY_CUTOFF= IceMovement___VELOCITY_FALLOFF + .5
+constant real IceMovement__VELOCITY_FALLOFF= 1
+constant real IceMovement__VELOCITY_CUTOFF= IceMovement__VELOCITY_FALLOFF + .5
 	
-constant real IceMovement___NPC_SKATE_SPEED= 9
+constant real IceMovement__NPC_SKATE_SPEED= 9
 	
-timer IceMovement___t
-group IceMovement___g
+timer IceMovement__t
+group IceMovement__g
 //endglobals from IceMovement
 //globals from MazingCollision:
 constant boolean LIBRARY_MazingCollision=true
@@ -1428,11 +1425,11 @@ constant boolean MazingCollision___APPLY_RECTANGLE_COLLISION= true
 //endglobals from MazingCollision
 //globals from SandMovement:
 constant boolean LIBRARY_SandMovement=true
-constant real SandMovement___TIMESTEP= .035
-constant real SandMovement___ACCELERATION= 5.75 * SandMovement___TIMESTEP
-constant real SandMovement___FALLOFF= 1.05
+constant real SandMovement__TIMESTEP= .035
+constant real SandMovement__ACCELERATION= 5.75 * SandMovement__TIMESTEP
+constant real SandMovement__FALLOFF= 1.05
 	
-constant real SandMovement___FX_TIMESTEP= .75
+constant real SandMovement__FX_TIMESTEP= .75
 	
 constant real SandMovement_MOVESPEED= 200
 	
@@ -1442,10 +1439,10 @@ constant real SAND_FX_THRESHOLD_STOP= 1.5
 //endglobals from SandMovement
 //globals from SnowMovement:
 constant boolean LIBRARY_SnowMovement=true
-constant real SnowMovement___TIMESTEP= 0.035
+constant real SnowMovement__TIMESTEP= 0.035
     
-constant real SnowMovement___OPPOSITION_BONUS= 1.5
-constant real SnowMovement___ACCELERATION= 5.0000 * SnowMovement___TIMESTEP
+constant real SnowMovement__OPPOSITION_BONUS= 1.5
+constant real SnowMovement__ACCELERATION= 5.0000 * SnowMovement__TIMESTEP
 //endglobals from SnowMovement
 //globals from IceSkater:
 constant boolean LIBRARY_IceSkater=true
@@ -1459,7 +1456,7 @@ timer IceSkater___t= CreateTimer()
 //globals from SuperFastMovement:
 constant boolean LIBRARY_SuperFastMovement=true
 constant real SuperFastSpeed= 10
-real SuperFastMovement___TIMESTEP= .035
+real SuperFastMovement__TIMESTEP= .035
 //endglobals from SuperFastMovement
 //globals from StandardGameLoop:
 constant boolean LIBRARY_StandardGameLoop=true
@@ -1480,60 +1477,60 @@ constant string StandardGameLoop_PLATFORMING_FX= "Abilities\\Spells\\Human\\Poly
 //endglobals from StandardGameLoop
 //globals from Platformer:
 constant boolean LIBRARY_Platformer=true
-constant integer Platformer___KEY_UP= 2
-constant integer Platformer___KEY_RIGHT= 1
-constant integer Platformer___KEY_LEFT= - 1
-constant integer Platformer___KEY_DOWN= - 2
+constant integer Platformer__KEY_UP= 2
+constant integer Platformer__KEY_RIGHT= 1
+constant integer Platformer__KEY_LEFT= - 1
+constant integer Platformer__KEY_DOWN= - 2
     
-constant real Platformer___CAMERA_APPLY_TIMESTEP= 1.
+constant real Platformer__CAMERA_APPLY_TIMESTEP= 1.
     
-constant boolean Platformer___PRESSED= true
-constant boolean Platformer___RELEASED= false
+constant boolean Platformer__PRESSED= true
+constant boolean Platformer__RELEASED= false
     
-constant integer Platformer___vjBUFFER= 40
-constant integer Platformer___hjBUFFER= 40
+constant integer Platformer__vjBUFFER= 40
+constant integer Platformer__hjBUFFER= 40
     
-constant real Platformer___tOFFSET= 30.0
-constant real Platformer___wOFFSET= 1.5
+constant real Platformer__tOFFSET= 30.0
+constant real Platformer__wOFFSET= 1.5
     
-constant integer Platformer___xMINVELOCITY= 1
-constant real Platformer___hJUMPCUTOFF= 1.0
-constant real Platformer___INSTANT_MS= 1.25
+constant integer Platformer__xMINVELOCITY= 1
+constant real Platformer__hJUMPCUTOFF= 1.0
+constant real Platformer__INSTANT_MS= 1.25
     
-constant boolean Platformer___APPLY_TERRAIN_KILL= true
+constant boolean Platformer__APPLY_TERRAIN_KILL= true
 	
-constant boolean Platformer___DEBUG_CREATE= false
-constant boolean Platformer___DEBUG_GAMEMODE= false
+constant boolean Platformer__DEBUG_CREATE= false
+constant boolean Platformer__DEBUG_GAMEMODE= false
 	
-constant boolean Platformer___DEBUG_PHYSICS_LOOP= false
-constant boolean Platformer___DEBUG_PHYSICS_LOOP_DELTA= false
+constant boolean Platformer__DEBUG_PHYSICS_LOOP= false
+constant boolean Platformer__DEBUG_PHYSICS_LOOP_DELTA= false
 	
-constant boolean Platformer___DEBUG_POSITION= false
+constant boolean Platformer__DEBUG_POSITION= false
     
-constant boolean Platformer___DEBUG_VELOCITY= false
-constant boolean Platformer___DEBUG_VELOCITY_TERRAIN= false
-constant boolean Platformer___DEBUG_VELOCITY_FALLOFF= false
-constant boolean Platformer___DEBUG_VELOCITY_DIAGONAL= false
+constant boolean Platformer__DEBUG_VELOCITY= false
+constant boolean Platformer__DEBUG_VELOCITY_TERRAIN= false
+constant boolean Platformer__DEBUG_VELOCITY_FALLOFF= false
+constant boolean Platformer__DEBUG_VELOCITY_DIAGONAL= false
     
-constant boolean Platformer___DEBUG_SQUARE= false
+constant boolean Platformer__DEBUG_SQUARE= false
 	
-constant boolean Platformer___DEBUG_DIAGONAL= false
+constant boolean Platformer__DEBUG_DIAGONAL= false
     
-constant boolean Platformer___DEBUG_DIAGONAL_TRANSITION= false
-constant boolean Platformer___DEBUG_DIAGONAL_TRANSITION_TERRAIN_METADATA= false
-constant boolean Platformer___DEBUG_DIAGONAL_ESCAPE_CHECK= false
-constant boolean Platformer___DEBUG_DIAGONAL_ESCAPE= false
-constant boolean Platformer___DEBUG_DIAGONAL_START= false
-constant boolean Platformer___DEBUG_DIAGONAL_START_CHECK= false
+constant boolean Platformer__DEBUG_DIAGONAL_TRANSITION= false
+constant boolean Platformer__DEBUG_DIAGONAL_TRANSITION_TERRAIN_METADATA= false
+constant boolean Platformer__DEBUG_DIAGONAL_ESCAPE_CHECK= false
+constant boolean Platformer__DEBUG_DIAGONAL_ESCAPE= false
+constant boolean Platformer__DEBUG_DIAGONAL_START= false
+constant boolean Platformer__DEBUG_DIAGONAL_START_CHECK= false
 	
-constant boolean Platformer___BUFFER_STICKY_TRANSITION_ESCAPE= LEAVE_DIAGONAL_OFFSET > 0
+constant boolean Platformer__BUFFER_STICKY_TRANSITION_ESCAPE= LEAVE_DIAGONAL_OFFSET > 0
 	
-constant boolean Platformer___DEBUG_TERRAIN_KILL= false
-constant boolean Platformer___DEBUG_TERRAIN_CHANGE= false
-constant boolean Platformer___DEBUG_GRASS_GRAVITY= false
-constant boolean Platformer___DEBUG_JUMPING= false
+constant boolean Platformer__DEBUG_TERRAIN_KILL= false
+constant boolean Platformer__DEBUG_TERRAIN_CHANGE= false
+constant boolean Platformer__DEBUG_GRASS_GRAVITY= false
+constant boolean Platformer__DEBUG_JUMPING= false
 	
-constant boolean Platformer___DEBUG_CAMERA= false
+constant boolean Platformer__DEBUG_CAMERA= false
 	
 	//public constant string STANDARD_FX = "Abilities\\Spells\\Human\\Polymorph\\PolyMorphTarget.mdl"
 constant string Platformer_TERRAIN_STANDARD_FX= "Abilities\\Spells\\Human\\Polymorph\\PolyMorphDoneGround.mdl"
@@ -2446,16 +2443,15 @@ unit gg_unit_Edem_0016= null
 unit gg_unit_Edem_0017= null
 unit gg_unit_Edem_0018= null
 unit gg_unit_Edem_0019= null
-trigger gg_trg_FooBar= null
 
 trigger l__library_init
 
 //JASSHelper struct globals:
 constant integer si__DummyCaster=1
-constant integer si__ErrorMessage__Fields=2
-constant string s__ErrorMessage__Fields_COLOR_RED= "|cffff0000"
-constant string s__ErrorMessage__Fields_COLOR_YELLOW= "|cffffff00"
-string s__ErrorMessage__Fields_lastError= null
+constant integer si__ErrorMessage___Fields=2
+constant string s__ErrorMessage___Fields_COLOR_RED= "|cffff0000"
+constant string s__ErrorMessage___Fields_COLOR_YELLOW= "|cffffff00"
+string s__ErrorMessage___Fields_lastError= null
 constant integer si__Event=3
 integer s__Event_w=0
 trigger array s__Event_e
@@ -2602,8 +2598,8 @@ real array s__MortarNTarget_minX
 real array s__MortarNTarget_maxX
 real array s__MortarNTarget_minY
 real array s__MortarNTarget_maxY
-boolean s__MortarNTarget_List__destroying= false
-boolean array s__MortarNTarget_List__inlist
+boolean s__MortarNTarget_List___destroying= false
+boolean array s__MortarNTarget_List___inlist
 integer s__MortarNTarget_count= 0
 integer array s__MortarNTarget_next
 integer array s__MortarNTarget_prev
@@ -2900,8 +2896,8 @@ boolean array s__VisualVote_voteMenu_rendered
 boolean array s__VisualVote_voteMenu_enabled
 real array s__VisualVote_voteMenu_initialTime
 timerdialog array s__VisualVote_voteMenu_td
-boolean s__VisualVote_voteMenu_List__destroying= false
-boolean array s__VisualVote_voteMenu_List__inlist
+boolean s__VisualVote_voteMenu_List___destroying= false
+boolean array s__VisualVote_voteMenu_List___inlist
 integer s__VisualVote_voteMenu_count= 0
 integer array s__VisualVote_voteMenu_next
 integer array s__VisualVote_voteMenu_prev
@@ -3659,7 +3655,7 @@ function s__VisualVote_voteMenu__allocate takes nothing returns integer
         return 0
     endif
 
-   set s__VisualVote_voteMenu_List__inlist[this]= false
+   set s__VisualVote_voteMenu_List___inlist[this]= false
    set s__VisualVote_voteMenu_next[this]= 0
    set s__VisualVote_voteMenu_prev[this]= 0
     set si__VisualVote_voteMenu_V[this]=-1
@@ -4135,7 +4131,7 @@ function s__MortarNTarget__allocate takes nothing returns integer
     set si__IStartable_type[this]=65
     set kthis=this
 
-   set s__MortarNTarget_List__inlist[this]= false
+   set s__MortarNTarget_List___inlist[this]= false
    set s__MortarNTarget_next[this]= 0
    set s__MortarNTarget_prev[this]= 0
     set si__IStartable_V[this]=-1
@@ -4466,7 +4462,7 @@ endfunction
 
     
 //Implemented from module DummyCaster___N:
-        function s__DummyCaster_DummyCaster___N__onInit takes nothing returns nothing
+        function s__DummyCaster_DummyCaster___N___onInit takes nothing returns nothing
 
 
 
@@ -4533,11 +4529,11 @@ endfunction
 //library EDWQuests ends
 //library ErrorMessage:
 	
- function ErrorMessage__Pause takes nothing returns nothing
+ function ErrorMessage___Pause takes nothing returns nothing
 		call PauseGame(true)
 	endfunction
 	
- function ErrorMessage__ThrowMessage takes string libraryName,string functionName,string objectName,integer objectInstance,string description,string errorType,string color returns nothing
+ function ErrorMessage___ThrowMessage takes string libraryName,string functionName,string objectName,integer objectInstance,string description,string errorType,string color returns nothing
   local string str
 		
   local string color_braces= "|cff66FF99"
@@ -4556,30 +4552,30 @@ endfunction
 		
 		set str=str + color_braces + " }|r has thrown an exception of type " + color_braces + "(" + color + errorType + color_braces + ")|r."
 		
-		set s__ErrorMessage__Fields_lastError=str + "\n->\n->	" + color + description + "|r\n->"
+		set s__ErrorMessage___Fields_lastError=str + "\n->\n->	" + color + description + "|r\n->"
 	endfunction
 	
  function ThrowError takes boolean expression,string libraryName,string functionName,string objectName,integer objectInstance,string description returns nothing
-		if ( s__ErrorMessage__Fields_lastError != null ) then
+		if ( s__ErrorMessage___Fields_lastError != null ) then
 			set objectInstance=1 / 0
 		endif
 	
 		if ( expression ) then
-			call ErrorMessage__ThrowMessage(libraryName , functionName , objectName , objectInstance , description , "Error" , s__ErrorMessage__Fields_COLOR_RED)
-			call DisplayTimedTextToPlayer(GetLocalPlayer(), 0, 0, 60000, s__ErrorMessage__Fields_lastError)
-			call TimerStart(CreateTimer(), 0, true, function ErrorMessage__Pause)
+			call ErrorMessage___ThrowMessage(libraryName , functionName , objectName , objectInstance , description , "Error" , s__ErrorMessage___Fields_COLOR_RED)
+			call DisplayTimedTextToPlayer(GetLocalPlayer(), 0, 0, 60000, s__ErrorMessage___Fields_lastError)
+			call TimerStart(CreateTimer(), 0, true, function ErrorMessage___Pause)
 			set objectInstance=1 / 0
 		endif
 	endfunction
  function ThrowWarning takes boolean expression,string libraryName,string functionName,string objectName,integer objectInstance,string description returns nothing
-		if ( s__ErrorMessage__Fields_lastError != null ) then
+		if ( s__ErrorMessage___Fields_lastError != null ) then
 			set objectInstance=1 / 0
 		endif
 	
 		if ( expression ) then
-			call ErrorMessage__ThrowMessage(libraryName , functionName , objectName , objectInstance , description , "Warning" , s__ErrorMessage__Fields_COLOR_YELLOW)
-			call DisplayTimedTextToPlayer(GetLocalPlayer(), 0, 0, 60000, s__ErrorMessage__Fields_lastError)
-			set s__ErrorMessage__Fields_lastError=null
+			call ErrorMessage___ThrowMessage(libraryName , functionName , objectName , objectInstance , description , "Warning" , s__ErrorMessage___Fields_COLOR_YELLOW)
+			call DisplayTimedTextToPlayer(GetLocalPlayer(), 0, 0, 60000, s__ErrorMessage___Fields_lastError)
+			set s__ErrorMessage___Fields_lastError=null
 		endif
 	endfunction
 
@@ -4636,14 +4632,6 @@ endfunction
 
 
 //library FilterFuncs ends
-//library FooBar:
-
-function FooBar__Init takes nothing returns nothing
-
-endfunction
-
-
-//library FooBar ends
 //library FourSeasons1:
  function FourSeason1Start takes nothing returns nothing
 	
@@ -9306,8 +9294,8 @@ endfunction
 		exitwhen u == null
 			set i=GetPlayerId(GetOwningPlayer(u))
 						
-			set s__VelocityX[i]= s__VelocityX[i] + Cos(s__RSFacing[i]) * RSnowMovement___ACCELERATION
-			set s__VelocityY[i]= s__VelocityY[i] + Sin(s__RSFacing[i]) * RSnowMovement___ACCELERATION
+			set s__VelocityX[i]= s__VelocityX[i] + Cos(s__RSFacing[i]) * RSnowMovement__ACCELERATION
+			set s__VelocityY[i]= s__VelocityY[i] + Sin(s__RSFacing[i]) * RSnowMovement__ACCELERATION
 			
 			//set dist = SquareRoot(VelocityX[i]*VelocityX[i] + VelocityY[i]*VelocityY[i])
 			
@@ -9331,7 +9319,7 @@ endfunction
 			set s__RSnowMovement_g=NewGroup()
 			set s__RSnowMovement_t=(NewTimerEx(0)) // INLINED!!
 			
-			call TimerStart(s__RSnowMovement_t, RSnowMovement___TIMESTEP, true, function s__RSnowMovement_RSnowMove)
+			call TimerStart(s__RSnowMovement_t, RSnowMovement__TIMESTEP, true, function s__RSnowMovement_RSnowMove)
 		endif
 		
 		set s__RSFacing[GetPlayerId(GetOwningPlayer(u))]= GetUnitFacing(u) * bj_DEGTORAD
@@ -10038,7 +10026,7 @@ endfunction
 //library DisposableUnit ends
 //library IceSteering:
 
-function IceSteering___ControlledSteering takes nothing returns boolean
+function IceSteering__ControlledSteering takes nothing returns boolean
     local integer i= GetPlayerId(GetTriggerPlayer())
     	
     if s__CanSteer[i] then
@@ -10049,7 +10037,7 @@ function IceSteering___ControlledSteering takes nothing returns boolean
 endfunction
 
 //===========================================================================
-function IceSteering___Init takes nothing returns nothing
+function IceSteering__Init takes nothing returns nothing
     local trigger t= CreateTrigger()
  local integer i= 0
 	
@@ -10058,7 +10046,7 @@ function IceSteering___Init takes nothing returns nothing
         call TriggerRegisterPlayerUnitEvent(t, Player(i), EVENT_PLAYER_UNIT_ISSUED_POINT_ORDER, null)
         set i=i + 1
     endloop
-    call TriggerAddCondition(t, Condition(function IceSteering___ControlledSteering))
+    call TriggerAddCondition(t, Condition(function IceSteering__ControlledSteering))
 	
 	set t=null
 endfunction
@@ -10112,20 +10100,20 @@ endfunction
     endfunction
         
     function s__MortarNTarget_listRemove takes integer this returns nothing
-        if not s__MortarNTarget_List__inlist[this] then
+        if not s__MortarNTarget_List___inlist[this] then
             return
         endif
-        set s__MortarNTarget_List__inlist[this]=false
+        set s__MortarNTarget_List___inlist[this]=false
         set s__MortarNTarget_next[s__MortarNTarget_prev[this]]=s__MortarNTarget_next[this]
         set s__MortarNTarget_prev[s__MortarNTarget_next[this]]=s__MortarNTarget_prev[this]
         set s__MortarNTarget_count=s__MortarNTarget_count - 1
     endfunction
 
     function s__MortarNTarget_listAdd takes integer this returns nothing
-        if s__MortarNTarget_List__inlist[this] or s__MortarNTarget_List__destroying or this == 0 then
+        if s__MortarNTarget_List___inlist[this] or s__MortarNTarget_List___destroying or this == 0 then
             return
         endif
-        set s__MortarNTarget_List__inlist[this]=true
+        set s__MortarNTarget_List___inlist[this]=true
         set s__MortarNTarget_next[(s__MortarNTarget_prev[(0)])]=this // INLINED!!
         set s__MortarNTarget_prev[this]=(s__MortarNTarget_prev[(0)]) // INLINED!!
         set s__MortarNTarget_prev[(0)]=this
@@ -10135,13 +10123,13 @@ endfunction
     
     function s__MortarNTarget_listDestroy takes nothing returns nothing
         local integer this= (s__MortarNTarget_prev[(0)]) // INLINED!!
-            set s__MortarNTarget_List__destroying=true
+            set s__MortarNTarget_List___destroying=true
             loop
                 exitwhen this == 0
                 call sc__IStartable_deallocate(this)
                 set this=s__MortarNTarget_prev[this]
             endloop
-            set s__MortarNTarget_List__destroying=false
+            set s__MortarNTarget_List___destroying=false
     endfunction
     
         
@@ -14592,7 +14580,7 @@ call sc__Recycle_UnitRecycler_Make((LoadInteger(s__Recycle_UnitRecycler_Recycler
   function s__LavaDamage_ApplyDamage takes integer pID,real pctTimeElapsed returns nothing
 			//delta remaining from previous call * % of timestep represented during call
    local real pctTimeDamaged= pctTimeElapsed - s__LavaDamage_pctTimeApplied[pID]
-   local real damagedHP= RMaxBJ(0., ( GetUnitState(s__MazersArray[pID], UNIT_STATE_LIFE) - LavaDamage___LAVARATE * pctTimeDamaged ))
+   local real damagedHP= RMaxBJ(0., ( GetUnitState(s__MazersArray[pID], UNIT_STATE_LIFE) - LavaDamage__LAVARATE * pctTimeDamaged ))
 			
 
 
@@ -14615,12 +14603,12 @@ call sc__Recycle_UnitRecycler_Make((LoadInteger(s__Recycle_UnitRecycler_Recycler
 			call SetUnitState(s__MazersArray[pID], UNIT_STATE_LIFE, damagedHP)
 			
 			if damagedHP == 0 then
-				call CreateInstantSpecialEffect(LavaDamage___DEATH_FX , GetUnitX(s__MazersArray[pID]) , GetUnitY(s__MazersArray[pID]) , Player(pID))
+				call CreateInstantSpecialEffect(LavaDamage__DEATH_FX , GetUnitX(s__MazersArray[pID]) , GetUnitY(s__MazersArray[pID]) , Player(pID))
 			endif
   endfunction		
   function s__LavaDamage_ApplyDamageLoop takes nothing returns nothing
    local integer curPlayerNode= s__SimpleList_List_first[s__LavaDamage_players]
-   local real pctTimeElapsed= TimerGetElapsed(s__LavaDamage_t) / LavaDamage___TIMESTEP
+   local real pctTimeElapsed= TimerGetElapsed(s__LavaDamage_t) / LavaDamage__TIMESTEP
 			
 			loop
 			exitwhen curPlayerNode == 0
@@ -14634,13 +14622,13 @@ call sc__Recycle_UnitRecycler_Make((LoadInteger(s__Recycle_UnitRecycler_Recycler
 			
 			if s__SimpleList_List_count[s__LavaDamage_players] == 0 then
 				set s__LavaDamage_t=(NewTimerEx(0)) // INLINED!!
-				call TimerStart(s__LavaDamage_t, LavaDamage___TIMESTEP, true, function s__LavaDamage_ApplyDamageLoop)
+				call TimerStart(s__LavaDamage_t, LavaDamage__TIMESTEP, true, function s__LavaDamage_ApplyDamageLoop)
 				
 				//immediately apply full portion of damage
 				call s__LavaDamage_ApplyDamage(pID , 1.)
 			else
 				//immediately apply the portion of damage that the timer has currently elapsed for, it will then apply the remaining damage at the next natural tick
-				call s__LavaDamage_ApplyDamage(pID , TimerGetElapsed(s__LavaDamage_t) / LavaDamage___TIMESTEP)
+				call s__LavaDamage_ApplyDamage(pID , TimerGetElapsed(s__LavaDamage_t) / LavaDamage__TIMESTEP)
 			endif
 			
 			call s__SimpleList_List_add(s__LavaDamage_players,pID)
@@ -19207,10 +19195,10 @@ endfunction
 				set deltaX=0
 			endif
 			
-			call DestroyEffect(AddSpecialEffect(isMoving___TELEPORT_MOVEMENT_FROM_FX, GetUnitX(s__User_ActiveUnit[pID]), GetUnitY(s__User_ActiveUnit[pID])))
+			call DestroyEffect(AddSpecialEffect(isMoving__TELEPORT_MOVEMENT_FROM_FX, GetUnitX(s__User_ActiveUnit[pID]), GetUnitY(s__User_ActiveUnit[pID])))
 			// call CreateInstantSpecialEffect(TELEPORT_MOVEMENT_FX, GetUnitX(pID.ActiveUnit), GetUnitY(pID.ActiveUnit), Player(pID))
 			call SetUnitPosition(s__User_ActiveUnit[pID], curX + deltaX, curY + deltaY)
-			call DestroyEffect(AddSpecialEffect(isMoving___TELEPORT_MOVEMENT_TO_FX, GetUnitX(s__User_ActiveUnit[pID]), GetUnitY(s__User_ActiveUnit[pID])))
+			call DestroyEffect(AddSpecialEffect(isMoving__TELEPORT_MOVEMENT_TO_FX, GetUnitX(s__User_ActiveUnit[pID]), GetUnitY(s__User_ActiveUnit[pID])))
 			//call SetUnitX(u, OrderDestinationX[i] - x)
 			//call SetUnitY(u, OrderDestinationY[i] - y)
 			
@@ -20952,20 +20940,20 @@ endfunction
     endfunction
         
     function s__VisualVote_voteMenu_listRemove takes integer this returns nothing
-        if not s__VisualVote_voteMenu_List__inlist[this] then
+        if not s__VisualVote_voteMenu_List___inlist[this] then
             return
         endif
-        set s__VisualVote_voteMenu_List__inlist[this]=false
+        set s__VisualVote_voteMenu_List___inlist[this]=false
         set s__VisualVote_voteMenu_next[s__VisualVote_voteMenu_prev[this]]=s__VisualVote_voteMenu_next[this]
         set s__VisualVote_voteMenu_prev[s__VisualVote_voteMenu_next[this]]=s__VisualVote_voteMenu_prev[this]
         set s__VisualVote_voteMenu_count=s__VisualVote_voteMenu_count - 1
     endfunction
 
     function s__VisualVote_voteMenu_listAdd takes integer this returns nothing
-        if s__VisualVote_voteMenu_List__inlist[this] or s__VisualVote_voteMenu_List__destroying or this == 0 then
+        if s__VisualVote_voteMenu_List___inlist[this] or s__VisualVote_voteMenu_List___destroying or this == 0 then
             return
         endif
-        set s__VisualVote_voteMenu_List__inlist[this]=true
+        set s__VisualVote_voteMenu_List___inlist[this]=true
         set s__VisualVote_voteMenu_next[(s__VisualVote_voteMenu_prev[(0)])]=this // INLINED!!
         set s__VisualVote_voteMenu_prev[this]=(s__VisualVote_voteMenu_prev[(0)]) // INLINED!!
         set s__VisualVote_voteMenu_prev[(0)]=this
@@ -20975,13 +20963,13 @@ endfunction
     
     function s__VisualVote_voteMenu_listDestroy takes nothing returns nothing
         local integer this= (s__VisualVote_voteMenu_prev[(0)]) // INLINED!!
-            set s__VisualVote_voteMenu_List__destroying=true
+            set s__VisualVote_voteMenu_List___destroying=true
             loop
                 exitwhen this == 0
                 call sc__VisualVote_voteMenu_destroy(this)
                 set this=s__VisualVote_voteMenu_prev[this]
             endloop
-            set s__VisualVote_voteMenu_List__destroying=false
+            set s__VisualVote_voteMenu_List___destroying=false
     endfunction
     
         
@@ -21708,7 +21696,7 @@ function AdvancedIceMovement takes nothing returns nothing
     local integer i
 	
 	loop
-	set u=FirstOfGroup(IceMovement___g)
+	set u=FirstOfGroup(IceMovement__g)
 	exitwhen u == null
 		set i=GetPlayerId(GetOwningPlayer(u))
 		
@@ -21717,31 +21705,31 @@ function AdvancedIceMovement takes nothing returns nothing
 			//decrement remaining velocity, if any
 			if s__VelocityX[i] != 0 then
 				if s__VelocityX[i] > 0 then
-					if s__VelocityX[i] < IceMovement___VELOCITY_CUTOFF then
+					if s__VelocityX[i] < IceMovement__VELOCITY_CUTOFF then
 						set s__VelocityX[i]= 0
 					else
-						set s__VelocityX[i]= s__VelocityX[i] - IceMovement___VELOCITY_FALLOFF
+						set s__VelocityX[i]= s__VelocityX[i] - IceMovement__VELOCITY_FALLOFF
 					endif
 				else
-					if s__VelocityX[i] > - IceMovement___VELOCITY_CUTOFF then
+					if s__VelocityX[i] > - IceMovement__VELOCITY_CUTOFF then
 						set s__VelocityX[i]= 0
 					else
-						set s__VelocityX[i]= s__VelocityX[i] + IceMovement___VELOCITY_FALLOFF
+						set s__VelocityX[i]= s__VelocityX[i] + IceMovement__VELOCITY_FALLOFF
 					endif
 				endif
 			endif
 			if s__VelocityY[i] != 0 then
 				if s__VelocityY[i] > 0 then
-					if s__VelocityY[i] < IceMovement___VELOCITY_CUTOFF then
+					if s__VelocityY[i] < IceMovement__VELOCITY_CUTOFF then
 						set s__VelocityY[i]= 0
 					else
-						set s__VelocityY[i]= s__VelocityY[i] - IceMovement___VELOCITY_FALLOFF
+						set s__VelocityY[i]= s__VelocityY[i] - IceMovement__VELOCITY_FALLOFF
 					endif
 				else
-					if s__VelocityY[i] > - IceMovement___VELOCITY_CUTOFF then
+					if s__VelocityY[i] > - IceMovement__VELOCITY_CUTOFF then
 						set s__VelocityY[i]= 0
 					else
-						set s__VelocityY[i]= s__VelocityY[i] + IceMovement___VELOCITY_FALLOFF
+						set s__VelocityY[i]= s__VelocityY[i] + IceMovement__VELOCITY_FALLOFF
 					endif
 				endif
 			endif
@@ -21753,8 +21741,8 @@ function AdvancedIceMovement takes nothing returns nothing
 		else
 			//handle non-player units
 			//call DisplayTextToForce(bj_FORCE_PLAYER[0], "Skating NPC in direction: " + R2S(GetUnitFacing(u)))
-			call SetUnitX(u, GetUnitX(u) + IceMovement___NPC_SKATE_SPEED * Cos(GetUnitFacing(u) * DEGREE_TO_RADIANS))
-			call SetUnitY(u, GetUnitY(u) + IceMovement___NPC_SKATE_SPEED * Sin(GetUnitFacing(u) * DEGREE_TO_RADIANS))
+			call SetUnitX(u, GetUnitX(u) + IceMovement__NPC_SKATE_SPEED * Cos(GetUnitFacing(u) * DEGREE_TO_RADIANS))
+			call SetUnitY(u, GetUnitY(u) + IceMovement__NPC_SKATE_SPEED * Sin(GetUnitFacing(u) * DEGREE_TO_RADIANS))
 			call IssueImmediateOrder(u, "stop")
 		endif
 		
@@ -21763,35 +21751,35 @@ function AdvancedIceMovement takes nothing returns nothing
 		//TODO move above action code to be generalized to include non-player units as well
 		
 	call GroupAddUnit(swap, u)
-	call GroupRemoveUnit(IceMovement___g, u)
+	call GroupRemoveUnit(IceMovement__g, u)
 	endloop
 	
-	call ReleaseGroup(IceMovement___g)
-	set IceMovement___g=swap
+	call ReleaseGroup(IceMovement__g)
+	set IceMovement__g=swap
 	
 	set u=null
 	set swap=null
 endfunction
 
 function IceMovement_Add takes unit u returns nothing
-	if (FirstOfGroup((IceMovement___g)) == null) then // INLINED!!
-		call TimerStart(IceMovement___t, IceMovement___TIMEOUT, true, function AdvancedIceMovement)
+	if (FirstOfGroup((IceMovement__g)) == null) then // INLINED!!
+		call TimerStart(IceMovement__t, IceMovement__TIMEOUT, true, function AdvancedIceMovement)
 	endif
 	
-	call GroupAddUnit(IceMovement___g, u)
+	call GroupAddUnit(IceMovement__g, u)
 endfunction
 
 function IceMovement_Remove takes unit u returns nothing
-	call GroupRemoveUnit(IceMovement___g, u)
+	call GroupRemoveUnit(IceMovement__g, u)
 	
-	if (FirstOfGroup((IceMovement___g)) == null) then // INLINED!!
-        call PauseTimer(IceMovement___t)
+	if (FirstOfGroup((IceMovement__g)) == null) then // INLINED!!
+        call PauseTimer(IceMovement__t)
     endif
 endfunction
 
 function IceMovement_Init takes nothing returns nothing
-    set IceMovement___g=NewGroup()
-	set IceMovement___t=CreateTimer()
+    set IceMovement__g=NewGroup()
+	set IceMovement__t=CreateTimer()
 endfunction
 
 
@@ -22255,11 +22243,11 @@ endfunction
 			if s__isMoving[user] then
 				set facingRad=GetUnitFacing(s__User_ActiveUnit[user]) * bj_DEGTORAD
 				
-				set s__VelocityX[user]= s__VelocityX[user] + Cos(facingRad) * SandMovement___ACCELERATION
-				set s__VelocityY[user]= s__VelocityY[user] + Sin(facingRad) * SandMovement___ACCELERATION
+				set s__VelocityX[user]= s__VelocityX[user] + Cos(facingRad) * SandMovement__ACCELERATION
+				set s__VelocityY[user]= s__VelocityY[user] + Sin(facingRad) * SandMovement__ACCELERATION
 			else
-				set s__VelocityX[user]= s__VelocityX[user] / SandMovement___FALLOFF
-				set s__VelocityY[user]= s__VelocityY[user] / SandMovement___FALLOFF
+				set s__VelocityX[user]= s__VelocityX[user] / SandMovement__FALLOFF
+				set s__VelocityY[user]= s__VelocityY[user] / SandMovement__FALLOFF
 			endif
 			
 			call SetUnitX(s__User_ActiveUnit[user], GetUnitX(s__User_ActiveUnit[user]) + s__VelocityX[user])
@@ -22282,8 +22270,8 @@ endfunction
 		
 		//register self
 		if s__SimpleList_List_count[s__SandMovement_SandUsers] == 0 then
-			call TimerStart(s__SandMovement_MovementTimer, SandMovement___TIMESTEP, true, function s__SandMovement_SandMove)
-			call TimerStart(s__SandMovement_FXTimer, SandMovement___FX_TIMESTEP, true, function s__SandMovement_SandFX)
+			call TimerStart(s__SandMovement_MovementTimer, SandMovement__TIMESTEP, true, function s__SandMovement_SandMove)
+			call TimerStart(s__SandMovement_FXTimer, SandMovement__FX_TIMESTEP, true, function s__SandMovement_SandFX)
 		endif
 		
 		call s__SimpleList_List_addEnd(s__SandMovement_SandUsers,user)
@@ -22328,15 +22316,15 @@ endfunction
 			set y=Sin(GetUnitFacing(u) * bj_DEGTORAD)
 			
 			if ( x > 0 and s__VelocityX[i] < 0 ) or ( x < 0 and s__VelocityX[i] > 0 ) then
-				set x=x * SnowMovement___OPPOSITION_BONUS * SnowMovement___ACCELERATION
+				set x=x * SnowMovement__OPPOSITION_BONUS * SnowMovement__ACCELERATION
 			else
-				set x=x * SnowMovement___ACCELERATION
+				set x=x * SnowMovement__ACCELERATION
 			endif
 			
 			if ( y > 0 and s__VelocityY[i] < 0 ) or ( y < 0 and s__VelocityY[i] > 0 ) then
-				set y=y * SnowMovement___OPPOSITION_BONUS * SnowMovement___ACCELERATION
+				set y=y * SnowMovement__OPPOSITION_BONUS * SnowMovement__ACCELERATION
 			else
-				set y=y * SnowMovement___ACCELERATION
+				set y=y * SnowMovement__ACCELERATION
 			endif
 			
 			set s__VelocityX[i]= s__VelocityX[i] + x
@@ -22362,7 +22350,7 @@ endfunction
 			set s__SnowMovement_g=NewGroup()
 			set s__SnowMovement_t=(NewTimerEx(0)) // INLINED!!
 			
-			call TimerStart(s__SnowMovement_t, SnowMovement___TIMESTEP, true, function s__SnowMovement_SnowMove)
+			call TimerStart(s__SnowMovement_t, SnowMovement__TIMESTEP, true, function s__SnowMovement_SnowMove)
 		endif
 		
 		call GroupAddUnit(s__SnowMovement_g, u)
@@ -22905,7 +22893,7 @@ endfunction
 
  function s__SuperFastMovement_Add takes integer user returns nothing
 		if s__SimpleList_List_count[s__SuperFastMovement_SuperFastUsers] == 0 then
-			call TimerStart(s__SuperFastMovement_t, SuperFastMovement___TIMESTEP, true, function s__SuperFastMovement_FastMove)
+			call TimerStart(s__SuperFastMovement_t, SuperFastMovement__TIMESTEP, true, function s__SuperFastMovement_FastMove)
 		endif
 		
 		call s__SimpleList_List_addEnd(s__SuperFastMovement_SuperFastUsers,user)
@@ -24978,26 +24966,26 @@ endfunction
 
 
 
-                                            set newX=s__ComplexTerrainPathingResult_TerrainMidpointX[pathingResult] - TERRAIN_QUADRANT_SIZE - Platformer___wOFFSET
+                                            set newX=s__ComplexTerrainPathingResult_TerrainMidpointX[pathingResult] - TERRAIN_QUADRANT_SIZE - Platformer__wOFFSET
                                             set newY=s__Platformer_YPosition[this] + s__vector2_y[newPosition]
                                         elseif s__ComplexTerrainPathingResult_TerrainPathingForPoint[s__Platformer_DiagonalPathing[this]] == ComplexTerrainPathing_Right then
 
 
 
-                                            set newX=s__ComplexTerrainPathingResult_TerrainMidpointX[pathingResult] + TERRAIN_QUADRANT_SIZE + Platformer___wOFFSET
+                                            set newX=s__ComplexTerrainPathingResult_TerrainMidpointX[pathingResult] + TERRAIN_QUADRANT_SIZE + Platformer__wOFFSET
                                             set newY=s__Platformer_YPosition[this] + s__vector2_y[newPosition]
                                         elseif s__ComplexTerrainPathingResult_TerrainPathingForPoint[s__Platformer_DiagonalPathing[this]] == ComplexTerrainPathing_Top then
 
 
 
                                             set newX=s__Platformer_XPosition[this] + s__vector2_x[newPosition]
-                                            set newY=s__ComplexTerrainPathingResult_TerrainMidpointY[pathingResult] + TERRAIN_QUADRANT_SIZE + Platformer___wOFFSET
+                                            set newY=s__ComplexTerrainPathingResult_TerrainMidpointY[pathingResult] + TERRAIN_QUADRANT_SIZE + Platformer__wOFFSET
                                         elseif s__ComplexTerrainPathingResult_TerrainPathingForPoint[s__Platformer_DiagonalPathing[this]] == ComplexTerrainPathing_Bottom then
 
 
 
                                             set newX=s__Platformer_XPosition[this] + s__vector2_x[newPosition]
-                                            set newY=s__ComplexTerrainPathingResult_TerrainMidpointY[pathingResult] - TERRAIN_QUADRANT_SIZE - Platformer___wOFFSET
+                                            set newY=s__ComplexTerrainPathingResult_TerrainMidpointY[pathingResult] - TERRAIN_QUADRANT_SIZE - Platformer__wOFFSET
                                         endif
                                         
                                         //debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "Prev x: " + R2S(.XPosition) + ", " + R2S(newX))
@@ -25525,7 +25513,7 @@ endfunction
 
 
 
-                        set pathingResult=ComplexTerrainPathing_GetPathingForPoint(s__Platformer_XPosition[this] + s__vector2_x[newPosition] + directionX * Platformer___wOFFSET , s__Platformer_YPosition[this] + s__vector2_y[newPosition] + directionY * Platformer___wOFFSET)
+                        set pathingResult=ComplexTerrainPathing_GetPathingForPoint(s__Platformer_XPosition[this] + s__vector2_x[newPosition] + directionX * Platformer__wOFFSET , s__Platformer_YPosition[this] + s__vector2_y[newPosition] + directionY * Platformer__wOFFSET)
 						
 
 
@@ -25637,7 +25625,7 @@ endfunction
                         if s__vector2_x[newPosition] != 0 then
 							//TODO does this all really need to happen or can i just check TerrainGlobals_IsTerrainPathable(GetTerrainType(.XPosition + newPosition.x + directionX*wOFFSET, .YPosition))
                             call s__ComplexTerrainPathingResult_destroy(pathingResult)
-                            set pathingResult=ComplexTerrainPathing_GetPathingForPoint(s__Platformer_XPosition[this] + s__vector2_x[newPosition] + directionX * Platformer___wOFFSET , s__Platformer_YPosition[this])
+                            set pathingResult=ComplexTerrainPathing_GetPathingForPoint(s__Platformer_XPosition[this] + s__vector2_x[newPosition] + directionX * Platformer__wOFFSET , s__Platformer_YPosition[this])
                             
                             //debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "New x: " + R2S(newPosition.x) + ", velocity x: " + R2S(.XVelocity))
                             
@@ -25651,9 +25639,9 @@ endfunction
                                 //needs a more accurate GetTerrainCenter
                                 if s__ComplexTerrainPathingResult_TerrainPathingForPoint[pathingResult] == ComplexTerrainPathing_Square or s__ComplexTerrainPathingResult_TerrainPathingForPoint[pathingResult] == ComplexTerrainPathing_Left or s__ComplexTerrainPathingResult_TerrainPathingForPoint[pathingResult] == ComplexTerrainPathing_Right then
                                     if s__vector2_x[newPosition] >= 0 then
-                                        set s__Platformer_XPosition[this]=(((s__ComplexTerrainPathingResult_TerrainMidpointX[pathingResult])*1.0) - TERRAIN_QUADRANT_SIZE - TERRAIN_QUADRANT_ROUND) - Platformer___wOFFSET // INLINED!!
+                                        set s__Platformer_XPosition[this]=(((s__ComplexTerrainPathingResult_TerrainMidpointX[pathingResult])*1.0) - TERRAIN_QUADRANT_SIZE - TERRAIN_QUADRANT_ROUND) - Platformer__wOFFSET // INLINED!!
                                     else
-                                        set s__Platformer_XPosition[this]=(((s__ComplexTerrainPathingResult_TerrainMidpointX[pathingResult])*1.0) + TERRAIN_QUADRANT_SIZE - TERRAIN_QUADRANT_ROUND) + Platformer___wOFFSET // INLINED!!
+                                        set s__Platformer_XPosition[this]=(((s__ComplexTerrainPathingResult_TerrainMidpointX[pathingResult])*1.0) + TERRAIN_QUADRANT_SIZE - TERRAIN_QUADRANT_ROUND) + Platformer__wOFFSET // INLINED!!
                                     endif
                                     
 
@@ -25683,7 +25671,7 @@ endfunction
                         
                         if s__vector2_y[newPosition] != 0 then
                             call s__ComplexTerrainPathingResult_destroy(pathingResult)
-                            set pathingResult=ComplexTerrainPathing_GetPathingForPoint(s__Platformer_XPosition[this] , s__Platformer_YPosition[this] + s__vector2_y[newPosition] + directionY * Platformer___wOFFSET)
+                            set pathingResult=ComplexTerrainPathing_GetPathingForPoint(s__Platformer_XPosition[this] , s__Platformer_YPosition[this] + s__vector2_y[newPosition] + directionY * Platformer__wOFFSET)
                             
 
 
@@ -25699,9 +25687,9 @@ endfunction
                                 //needs a more accurate GetTerrainCenter
 								if s__ComplexTerrainPathingResult_TerrainPathingForPoint[pathingResult] == ComplexTerrainPathing_Square or s__ComplexTerrainPathingResult_TerrainPathingForPoint[pathingResult] == ComplexTerrainPathing_Bottom or s__ComplexTerrainPathingResult_TerrainPathingForPoint[pathingResult] == ComplexTerrainPathing_Top then
 									if s__vector2_y[newPosition] >= 0 then
-										set s__Platformer_YPosition[this]=(((s__ComplexTerrainPathingResult_TerrainMidpointY[pathingResult])*1.0) - TERRAIN_QUADRANT_SIZE - TERRAIN_QUADRANT_ROUND) - Platformer___wOFFSET // INLINED!!
+										set s__Platformer_YPosition[this]=(((s__ComplexTerrainPathingResult_TerrainMidpointY[pathingResult])*1.0) - TERRAIN_QUADRANT_SIZE - TERRAIN_QUADRANT_ROUND) - Platformer__wOFFSET // INLINED!!
 									else
-										set s__Platformer_YPosition[this]=(((s__ComplexTerrainPathingResult_TerrainMidpointY[pathingResult])*1.0) + TERRAIN_QUADRANT_SIZE - TERRAIN_QUADRANT_ROUND) + Platformer___wOFFSET // INLINED!!
+										set s__Platformer_YPosition[this]=(((s__ComplexTerrainPathingResult_TerrainMidpointY[pathingResult])*1.0) + TERRAIN_QUADRANT_SIZE - TERRAIN_QUADRANT_ROUND) + Platformer__wOFFSET // INLINED!!
 									endif
 									
 
@@ -25987,7 +25975,7 @@ endfunction
                 //set 0 if approx 0
                 
                 if s__Platformer_XVelocity[this] > 0 then //velocity going right
-                    if s__Platformer_XVelocity[this] < Platformer___xMINVELOCITY then //going super slow
+                    if s__Platformer_XVelocity[this] < Platformer__xMINVELOCITY then //going super slow
                         set s__Platformer_XVelocity[this]=0
                     //TODO replace with 2nd power easing
                     else //anywhere inbetween
@@ -25999,7 +25987,7 @@ endfunction
                         set s__Platformer_XVelocity[this]=s__Platformer_XVelocity[this] - s__Platformer_MoveSpeed[this] * s__Platformer_MoveSpeedVelOffset[this] * applyTimeDelta
                     endif
                 else //velocity going left
-                    if s__Platformer_XVelocity[this] > - Platformer___xMINVELOCITY then
+                    if s__Platformer_XVelocity[this] > - Platformer__xMINVELOCITY then
                         set s__Platformer_XVelocity[this]=0
                     else
                         set s__Platformer_XVelocity[this]=s__Platformer_XVelocity[this] + s__Platformer_XFalloff[this] * applyTimeDelta
@@ -26183,7 +26171,7 @@ endfunction
             //update terrain at unit's x, y
             local integer ttype
             local integer terrainCenter
-            local real offsetZone= TERRAIN_QUADRANT_SIZE - Platformer___tOFFSET
+            local real offsetZone= TERRAIN_QUADRANT_SIZE - Platformer__tOFFSET
             
             if s__Platformer_OnDiagonal[this] then
                 //reuse terrain center. DONT DEALLOCATE UNIT VECTORS
@@ -26227,13 +26215,13 @@ endfunction
 					//check if unit is within a larger rectangle, formed by multiple squares of adjoining lava or non pathable tiles
                     if s__vector2_x[terrainCenter] <= - offsetZone then
                         //on right side -- either of two corners or the middle
-                        set ttype=GetTerrainType(x + Platformer___tOFFSET, y)
+                        set ttype=GetTerrainType(x + Platformer__tOFFSET, y)
                         if ttype == DEATH or not TerrainGlobals_IsTerrainPathable(ttype) then
                             if s__vector2_y[terrainCenter] <= - offsetZone then
                                 //top right
-                                set ttype=GetTerrainType(x + Platformer___tOFFSET, y + Platformer___tOFFSET)
+                                set ttype=GetTerrainType(x + Platformer__tOFFSET, y + Platformer__tOFFSET)
                                 if ttype == DEATH or not TerrainGlobals_IsTerrainPathable(ttype) then
-                                    set ttype=GetTerrainType(x, y + Platformer___tOFFSET)
+                                    set ttype=GetTerrainType(x, y + Platformer__tOFFSET)
                                     if ttype == DEATH or not TerrainGlobals_IsTerrainPathable(ttype) then
 
 
@@ -26253,9 +26241,9 @@ endfunction
                                 endif
                             elseif s__vector2_y[terrainCenter] >= offsetZone then
                                 //bot right
-                                set ttype=GetTerrainType(x + Platformer___tOFFSET, y - Platformer___tOFFSET)
+                                set ttype=GetTerrainType(x + Platformer__tOFFSET, y - Platformer__tOFFSET)
                                 if ttype == DEATH or not TerrainGlobals_IsTerrainPathable(ttype) then
-                                    set ttype=GetTerrainType(x, y - Platformer___tOFFSET)
+                                    set ttype=GetTerrainType(x, y - Platformer__tOFFSET)
                                     if ttype == DEATH or not TerrainGlobals_IsTerrainPathable(ttype) then
 
 
@@ -26275,9 +26263,9 @@ endfunction
                                 endif
                             else
                                 //right
-                                set ttype=GetTerrainType(x + Platformer___tOFFSET, y - Platformer___tOFFSET)
+                                set ttype=GetTerrainType(x + Platformer__tOFFSET, y - Platformer__tOFFSET)
                                 if ttype == DEATH or not TerrainGlobals_IsTerrainPathable(ttype) then
-                                    set ttype=GetTerrainType(x + Platformer___tOFFSET, y + Platformer___tOFFSET)
+                                    set ttype=GetTerrainType(x + Platformer__tOFFSET, y + Platformer__tOFFSET)
                                     if ttype == DEATH or not TerrainGlobals_IsTerrainPathable(ttype) then
 
 
@@ -26299,13 +26287,13 @@ endfunction
                         endif
                     elseif s__vector2_x[terrainCenter] > offsetZone then
                         //on left side
-                        set ttype=GetTerrainType(x - Platformer___tOFFSET, y)
+                        set ttype=GetTerrainType(x - Platformer__tOFFSET, y)
                         if ttype == DEATH or not TerrainGlobals_IsTerrainPathable(ttype) then
                             if s__vector2_y[terrainCenter] <= - offsetZone then
                                 //top left
-                                set ttype=GetTerrainType(x - Platformer___tOFFSET, y + Platformer___tOFFSET)
+                                set ttype=GetTerrainType(x - Platformer__tOFFSET, y + Platformer__tOFFSET)
                                 if ttype == DEATH or not TerrainGlobals_IsTerrainPathable(ttype) then
-                                    set ttype=GetTerrainType(x, y + Platformer___tOFFSET)
+                                    set ttype=GetTerrainType(x, y + Platformer__tOFFSET)
                                     if ttype == DEATH or not TerrainGlobals_IsTerrainPathable(ttype) then
 
 
@@ -26325,9 +26313,9 @@ endfunction
                                 endif
                             elseif s__vector2_y[terrainCenter] >= offsetZone then
                                 //bot left
-                                set ttype=GetTerrainType(x - Platformer___tOFFSET, y - Platformer___tOFFSET)
+                                set ttype=GetTerrainType(x - Platformer__tOFFSET, y - Platformer__tOFFSET)
                                 if ttype == DEATH or not TerrainGlobals_IsTerrainPathable(ttype) then
-                                    set ttype=GetTerrainType(x, y - Platformer___tOFFSET)
+                                    set ttype=GetTerrainType(x, y - Platformer__tOFFSET)
                                     if ttype == DEATH or not TerrainGlobals_IsTerrainPathable(ttype) then
 
 
@@ -26347,9 +26335,9 @@ endfunction
                                 endif
                             else
                                 //left
-                                set ttype=GetTerrainType(x - Platformer___tOFFSET, y - Platformer___tOFFSET)
+                                set ttype=GetTerrainType(x - Platformer__tOFFSET, y - Platformer__tOFFSET)
                                 if ttype == DEATH or not TerrainGlobals_IsTerrainPathable(ttype) then
-                                    set ttype=GetTerrainType(x - Platformer___tOFFSET, y + Platformer___tOFFSET)
+                                    set ttype=GetTerrainType(x - Platformer__tOFFSET, y + Platformer__tOFFSET)
                                     if ttype == DEATH or not TerrainGlobals_IsTerrainPathable(ttype) then
 
 
@@ -26371,11 +26359,11 @@ endfunction
                         endif
                     elseif s__vector2_y[terrainCenter] <= - offsetZone then
                         //top middle side
-                        set ttype=GetTerrainType(x, y + Platformer___tOFFSET)
+                        set ttype=GetTerrainType(x, y + Platformer__tOFFSET)
                         if ttype == DEATH or not TerrainGlobals_IsTerrainPathable(ttype) then
-                            set ttype=GetTerrainType(x - Platformer___tOFFSET, y + Platformer___tOFFSET)
+                            set ttype=GetTerrainType(x - Platformer__tOFFSET, y + Platformer__tOFFSET)
                             if ttype == DEATH or not TerrainGlobals_IsTerrainPathable(ttype) then
-                                set ttype=GetTerrainType(x + Platformer___tOFFSET, y + Platformer___tOFFSET)
+                                set ttype=GetTerrainType(x + Platformer__tOFFSET, y + Platformer__tOFFSET)
                                 if ttype == DEATH or not TerrainGlobals_IsTerrainPathable(ttype) then
 
 
@@ -26396,11 +26384,11 @@ endfunction
                         endif
                     elseif s__vector2_y[terrainCenter] >= offsetZone then
                         //bottom middle side
-                        set ttype=GetTerrainType(x, y - Platformer___tOFFSET)
+                        set ttype=GetTerrainType(x, y - Platformer__tOFFSET)
                         if ttype == DEATH or not TerrainGlobals_IsTerrainPathable(ttype) then
-                            set ttype=GetTerrainType(x - Platformer___tOFFSET, y - Platformer___tOFFSET)
+                            set ttype=GetTerrainType(x - Platformer__tOFFSET, y - Platformer__tOFFSET)
                             if ttype == DEATH or not TerrainGlobals_IsTerrainPathable(ttype) then
-                                set ttype=GetTerrainType(x + Platformer___tOFFSET, y - Platformer___tOFFSET)
+                                set ttype=GetTerrainType(x + Platformer__tOFFSET, y - Platformer__tOFFSET)
                                 if ttype == DEATH or not TerrainGlobals_IsTerrainPathable(ttype) then
 
 
@@ -26656,14 +26644,14 @@ endfunction
 					set terrainCenter=GetTerrainCenterpoint(x , y)
 					
 					if s__vector2_x[terrainCenter] > x then
-						set x=x + Platformer___wOFFSET
+						set x=x + Platformer__wOFFSET
 					else
-						set x=x - Platformer___wOFFSET
+						set x=x - Platformer__wOFFSET
 					endif
 					if s__vector2_y[terrainCenter] > y then
-						set y=y + Platformer___wOFFSET
+						set y=y + Platformer__wOFFSET
 					else
-						set y=y - Platformer___wOFFSET
+						set y=y - Platformer__wOFFSET
 					endif
 					
 					call s__vector2_deallocate((terrainCenter)) // INLINED!!
@@ -26773,7 +26761,7 @@ endfunction
                 if s__SimpleList_List_count[s__Platformer_ActivePlatformers] == 0 then
                     call TimerStart(s__Platformer_GameloopTimer, PlatformerGlobals_GAMELOOP_TIMESTEP, true, function s__Platformer_GameloopListIteration)
                     call TimerStart(s__Platformer_TerrainloopTimer, PlatformerGlobals_TERRAINLOOP_TIMESTEP, true, function s__Platformer_TerrainloopListIteration)
-                    call TimerStart(s__Platformer_CameraTimer, Platformer___CAMERA_APPLY_TIMESTEP, true, function s__Platformer_ApplyAllCameras)
+                    call TimerStart(s__Platformer_CameraTimer, Platformer__CAMERA_APPLY_TIMESTEP, true, function s__Platformer_ApplyAllCameras)
                 endif
                 
                 call SetUnitPosition(s__Platformer_Unit[this], x, y)
@@ -26858,7 +26846,7 @@ endfunction
             local integer ttype
             local real newX
             
-            set s__Platformer_LeftKey[p]=Platformer___PRESSED
+            set s__Platformer_LeftKey[p]=Platformer__PRESSED
             
             if s__Platformer_IsPlatforming[p] then
 
@@ -26900,7 +26888,7 @@ endfunction
             local integer ttype
             local real newX
             
-            set s__Platformer_RightKey[p]=Platformer___PRESSED
+            set s__Platformer_RightKey[p]=Platformer__PRESSED
             
             if s__Platformer_IsPlatforming[p] then
 
@@ -26943,7 +26931,7 @@ endfunction
             local integer ttype
             local real newX
             
-            set s__Platformer_LeftKey[p]=Platformer___RELEASED
+            set s__Platformer_LeftKey[p]=Platformer__RELEASED
             
             if s__Platformer_IsPlatforming[p] then
 
@@ -26985,7 +26973,7 @@ endfunction
             local integer ttype
             local real newX
             
-            set s__Platformer_RightKey[p]=Platformer___RELEASED
+            set s__Platformer_RightKey[p]=Platformer__RELEASED
             
             if s__Platformer_IsPlatforming[p] then
 
@@ -27156,7 +27144,7 @@ endfunction
 
 					
                     if ( s__Platformer_YVelocity[p] == 0 and s__Platformer_GravitationalAccel[p] > 0 ) or s__Platformer_YVelocity[p] > 0 then
-                        set pathingResult=ComplexTerrainPathing_GetPathingForPoint(s__Platformer_XPosition[p] , s__Platformer_YPosition[p] + Platformer___vjBUFFER)
+                        set pathingResult=ComplexTerrainPathing_GetPathingForPoint(s__Platformer_XPosition[p] , s__Platformer_YPosition[p] + Platformer__vjBUFFER)
 						
 						if ( s__ComplexTerrainPathingResult_TerrainPathingForPoint[pathingResult] == ComplexTerrainPathing_Square or s__ComplexTerrainPathingResult_TerrainPathingForPoint[pathingResult] == ComplexTerrainPathing_Bottom ) and (TerrainGlobals_IsTerrainUnpathable((s__ComplexTerrainPathingResult_GetYTerrainType(pathingResult)))) then // INLINED!!
 							set s__Platformer_YVelocity[p]=- s__Platformer_vJumpSpeed[p]
@@ -27189,7 +27177,7 @@ endfunction
                             // return false
                         // endif
                     elseif ( s__Platformer_YVelocity[p] == 0 and s__Platformer_GravitationalAccel[p] < 0 ) or s__Platformer_YVelocity[p] < 0 then
-                        set pathingResult=ComplexTerrainPathing_GetPathingForPoint(s__Platformer_XPosition[p] , s__Platformer_YPosition[p] - Platformer___vjBUFFER)
+                        set pathingResult=ComplexTerrainPathing_GetPathingForPoint(s__Platformer_XPosition[p] , s__Platformer_YPosition[p] - Platformer__vjBUFFER)
 						// call DisplayTextToForce(bj_FORCE_PLAYER[0], "Pathing below: " + I2S(pathingResult.TerrainPathingForPoint))
 						
 						if ( s__ComplexTerrainPathingResult_TerrainPathingForPoint[pathingResult] == ComplexTerrainPathing_Square or s__ComplexTerrainPathingResult_TerrainPathingForPoint[pathingResult] == ComplexTerrainPathing_Top ) and (TerrainGlobals_IsTerrainUnpathable((s__ComplexTerrainPathingResult_GetYTerrainType(pathingResult)))) then // INLINED!!
@@ -27224,7 +27212,7 @@ endfunction
                     endif
                     
                     //check left of x
-					set pathingResult=ComplexTerrainPathing_GetPathingForPoint(s__Platformer_XPosition[p] - Platformer___hjBUFFER , s__Platformer_YPosition[p])
+					set pathingResult=ComplexTerrainPathing_GetPathingForPoint(s__Platformer_XPosition[p] - Platformer__hjBUFFER , s__Platformer_YPosition[p])
 						
 					if ( s__ComplexTerrainPathingResult_TerrainPathingForPoint[pathingResult] == ComplexTerrainPathing_Square or s__ComplexTerrainPathingResult_TerrainPathingForPoint[pathingResult] == ComplexTerrainPathing_Right ) and TerrainGlobals_IsTerrainWallJumpable(s__ComplexTerrainPathingResult_GetXTerrainType(pathingResult)) then
 						//apply a percentage, given by v2hJumpRatio, of vJumpSpeed as immediate YVelocity
@@ -27258,7 +27246,7 @@ endfunction
 					call s__ComplexTerrainPathingResult_destroy(pathingResult)
 					
 					//check right of x
-					set pathingResult=ComplexTerrainPathing_GetPathingForPoint(s__Platformer_XPosition[p] + Platformer___hjBUFFER , s__Platformer_YPosition[p])
+					set pathingResult=ComplexTerrainPathing_GetPathingForPoint(s__Platformer_XPosition[p] + Platformer__hjBUFFER , s__Platformer_YPosition[p])
 						
 					if ( s__ComplexTerrainPathingResult_TerrainPathingForPoint[pathingResult] == ComplexTerrainPathing_Square or s__ComplexTerrainPathingResult_TerrainPathingForPoint[pathingResult] == ComplexTerrainPathing_Left ) and TerrainGlobals_IsTerrainWallJumpable(s__ComplexTerrainPathingResult_GetXTerrainType(pathingResult)) then
 						//apply a percentage, given by v2hJumpRatio, of vJumpSpeed as immediate YVelocity
@@ -35668,7 +35656,7 @@ call sc__Recycle_UnitRecycler_Make((LoadInteger(s__Recycle_UnitRecycler_Recycler
 // 
 //   Warcraft III map script
 //   Generated by the Warcraft III World Editor
-//   Date: Wed Oct 16 08:28:11 2019
+//   Date: Wed Oct 16 08:34:12 2019
 //   Map Author: Serenity09
 // 
 //===========================================================================
@@ -37140,9 +37128,6 @@ endfunction
 // Trigger: BrickBreaker
 //===========================================================================
 //===========================================================================
-// Trigger: FooBar
-//===========================================================================
-//===========================================================================
 // Trigger: In Game Commands
 //===========================================================================
 //===========================================================================
@@ -37279,7 +37264,6 @@ function InitCustomTriggers takes nothing returns nothing
     //Function not found: call InitTrig_PW4()
     //Function not found: call InitTrig_FS1()
     //Function not found: call InitTrig_BrickBreaker()
-    //Function not found: call InitTrig_FooBar()
     //Function not found: call InitTrig_In_Game_Commands()
     //Function not found: call InitTrig_Drawing()
     //Function not found: call InitTrig_GetUnitCollision()
@@ -37554,17 +37538,16 @@ function main takes nothing returns nothing
     call CreateAllUnits()
     call InitBlizzard()
 
-call ExecuteFunc("jasshelper__initstructs74146625")
+call ExecuteFunc("jasshelper__initstructs74507546")
 call ExecuteFunc("EDWQuests__init")
 call ExecuteFunc("FilterFuncInit")
-call ExecuteFunc("FooBar__Init")
 call ExecuteFunc("GroupUtils___init")
 call ExecuteFunc("PreventSave___onInit")
 call ExecuteFunc("TimerUtils___init")
 call ExecuteFunc("PlatformerProfile__Init")
 call ExecuteFunc("TerrainGlobals___initTerrainGlobals")
 call ExecuteFunc("ComplexTerrainPathing__init")
-call ExecuteFunc("IceSteering___Init")
+call ExecuteFunc("IceSteering__Init")
 call ExecuteFunc("PlatformerOcean__Init")
 call ExecuteFunc("PlatformerIce__Init")
 call ExecuteFunc("PlatformerSlipStream__Init")
@@ -39637,7 +39620,7 @@ function sa___prototype54_s__User_OnUnapplyAFKStandard takes nothing returns boo
     return true
 endfunction
 
-function jasshelper__initstructs74146625 takes nothing returns nothing
+function jasshelper__initstructs74507546 takes nothing returns nothing
     set st__Levels_Level_GetWeightedRandomInt=CreateTrigger()
     call TriggerAddCondition(st__Levels_Level_GetWeightedRandomInt,Condition( function sa__Levels_Level_GetWeightedRandomInt))
     set st__Levels_Level_GetWorldID=CreateTrigger()
@@ -39968,7 +39951,7 @@ function jasshelper__initstructs74146625 takes nothing returns nothing
     call TriggerAddAction(st___prototype54[5],function sa___prototype54_s__User_OnUnapplyAFKStandard)
     call TriggerAddCondition(st___prototype54[5],Condition(function sa___prototype54_s__User_OnUnapplyAFKStandard))
 
-call ExecuteFunc("s__DummyCaster_DummyCaster___N__onInit")
+call ExecuteFunc("s__DummyCaster_DummyCaster___N___onInit")
 
 
 
