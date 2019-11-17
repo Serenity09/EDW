@@ -1,4 +1,17 @@
 library EDWCinematicContent requires EDWLevelContent, Cinema, EDWGameTime
+	globals
+		public Cinematic OBSTACLE
+		
+		public Cinematic FIRE
+		
+		public Cinematic SKATING
+		
+		public Cinematic PLATFORMING
+		public Cinematic PLATFORMING_DEATH
+		
+		private constant string NEW_TUTORIAL_QUEST_ALERT = "A new tutorial has been added to your quest log!"
+	endglobals
+	
 	private function IsUserRed takes User user returns boolean
         return MazerColor[user] == KEY_RED
     endfunction
@@ -70,16 +83,21 @@ library EDWCinematicContent requires EDWLevelContent, Cinema, EDWGameTime
         //call cine.AddMessage(null, GetEDWSpeakerMessage(PRIMARY_SPEAKER_NAME, "...I don't want to talk about it", SAD_TEXT_COLOR), DEFAULT_TINY_TEXT_SPEED)
         call cine.SetLastMessageBuffer(-1)
 		call Levels_Level(1).AddCinematic(cine)
+		
+		set OBSTACLE = cine
         
         set cineMsg = CinemaMessage.create(null, GetEDWSpeakerMessage(PRIMARY_SPEAKER_NAME, "Whoa!", ANGRY_TEXT_COLOR), DEFAULT_TINY_TEXT_SPEED)
         set cine = Cinematic.create(gg_rct_SargeFireWarning, true, false, cineMsg)
         set cine.ActivationCondition = IsUserNotRed
-		set cine.Priority = 3
+		set cine.Priority = 5
         call cine.AddMessage(null, GetEDWSpeakerMessage(PRIMARY_SPEAKER_NAME, "Better stay clear of that fire", DEFAULT_TEXT_COLOR), DEFAULT_SHORT_TEXT_SPEED)
 		call cine.AddMessage(null, GetEDWSpeakerMessage(PRIMARY_SPEAKER_NAME, "I don't think it likes how you look", DEFAULT_TEXT_COLOR), DEFAULT_SHORT_TEXT_SPEED)
+		call cine.AddMessage(null, NEW_TUTORIAL_QUEST_ALERT, DEFAULT_MEDIUM_TEXT_SPEED)
         call cine.SetLastMessageBuffer(-1)
 		call Levels_Level(1).AddCinematic(cine)
-                
+		
+		set FIRE = cine
+        
         set cineMsg = CinemaMessage.create(null, GetEDWSpeakerMessage(PRIMARY_SPEAKER_NAME, "Nice!", HAPPY_TEXT_COLOR), DEFAULT_TINY_TEXT_SPEED)
         set cine = Cinematic.create(gg_rct_SargeFoundRed, true, false, cineMsg)
         set cine.ActivationCondition = IsUserRed
@@ -89,7 +107,7 @@ library EDWCinematicContent requires EDWLevelContent, Cinema, EDWGameTime
         call cine.AddMessage(null, GetEDWSpeakerMessage(PRIMARY_SPEAKER_NAME, "Everyone knows that the best color is the same color!", DEFAULT_TEXT_COLOR), DEFAULT_MEDIUM_TEXT_SPEED)
         call cine.SetLastMessageDefaults()
 		call Levels_Level(1).AddCinematic(cine)
-        
+		
         set cineMsg = CinemaMessage.create(null, GetEDWSpeakerMessage(PRIMARY_SPEAKER_NAME, "Hah, classic Red", HAPPY_TEXT_COLOR), DEFAULT_SHORT_TEXT_SPEED)
         set cine = Cinematic.create(gg_rct_SargeBeatRed, true, false, cineMsg)
         set cine.ActivationCondition = IsUserRed
@@ -111,6 +129,8 @@ library EDWCinematicContent requires EDWLevelContent, Cinema, EDWGameTime
         call cine.AddMessage(null, GetEDWSpeakerMessage(PRIMARY_SPEAKER_NAME, "Keep track of yourself using the arrow keys or mouse, or press the 'escape' key", DEFAULT_TEXT_COLOR), DEFAULT_MEDIUM_TEXT_SPEED)
         call cine.SetLastMessageDefaults()
 		call Levels_Level(1).AddCinematic(cine)
+		
+		set SKATING = cine
         
         set cineMsg = CinemaMessage.create(null, GetEDWSpeakerMessage(PRIMARY_SPEAKER_NAME, "Another one of these shimmering portals...", DEFAULT_TEXT_COLOR), DEFAULT_SHORT_TEXT_SPEED)
         set cine = Cinematic.create(gg_rct_SargeCheckpoint, true, false, cineMsg)
@@ -126,6 +146,8 @@ library EDWCinematicContent requires EDWLevelContent, Cinema, EDWGameTime
         call cine.AddMessage(null, GetEDWSpeakerMessage(PRIMARY_SPEAKER_NAME, "Touch it and your world will change", DEFAULT_TEXT_COLOR), DEFAULT_SHORT_TEXT_SPEED)
         call cine.SetLastMessageBuffer(-1)
 		call Levels_Level(1).AddCinematic(cine)
+		
+		set PLATFORMING = cine
         
         set cineMsg = CinemaMessage.create(null, GetEDWSpeakerMessage(PRIMARY_SPEAKER_NAME, "Pull yourself together soldier!", DEFAULT_TEXT_COLOR), DEFAULT_SHORT_TEXT_SPEED)
         set cine = Cinematic.create(gg_rct_SargePlatformingMovement, true, false, cineMsg)
@@ -141,8 +163,11 @@ library EDWCinematicContent requires EDWLevelContent, Cinema, EDWGameTime
         set cine.Priority = 100
 		call cine.AddMessage(null, GetEDWSpeakerMessage(PRIMARY_SPEAKER_NAME, "Press up to jump UP!", DEFAULT_TEXT_COLOR), DEFAULT_MEDIUM_TEXT_SPEED)
         call cine.AddMessage(null, GetEDWSpeakerMessage(PRIMARY_SPEAKER_NAME, "I swear, you're the reason I needed to add these tutorials", DEFAULT_TEXT_COLOR), DEFAULT_SHORT_TEXT_SPEED)
-        call cine.SetLastMessageBuffer(-1)
+        call cine.AddMessage(null, NEW_TUTORIAL_QUEST_ALERT, DEFAULT_MEDIUM_TEXT_SPEED)
+		call cine.SetLastMessageBuffer(-1)
 		call Levels_Level(1).AddCinematic(cine)
+		
+		set PLATFORMING_DEATH = cine
         
         set cineMsg = CinemaMessage.create(null, GetEDWSpeakerMessage(PRIMARY_SPEAKER_NAME, "Now, hold that wall close,", DEFAULT_TEXT_COLOR), DEFAULT_SHORT_TEXT_SPEED)
         set cine = Cinematic.create(gg_rct_SargeWallJump, true, false, cineMsg)
@@ -178,27 +203,29 @@ library EDWCinematicContent requires EDWLevelContent, Cinema, EDWGameTime
 		//ICE WORLD TECH / ENVY WORLD
         //LEVEL 1
         //set l = Levels_Level.create(3, "Cruise Control", 3, 2, "IW1Start", "IW1Stop", gg_rct_IWR_1_1, gg_rct_IW1_Vision, gg_rct_IW1_End, 0)
-        set cineMsg = CinemaMessage.create(null, GetEDWSpeakerMessage("Phil", "I ain't never seen nothin like it, Marge", DEFAULT_TEXT_COLOR), DEFAULT_MEDIUM_TEXT_SPEED)
+        set cineMsg = CinemaMessage.create(null, GetEDWSpeakerMessage("Phil", "I ain't ever seen nothin like it, Marge", DEFAULT_TEXT_COLOR), DEFAULT_MEDIUM_TEXT_SPEED)
         set cine = Cinematic.create(gg_rct_IW1Runes, true, true, cineMsg)
         call cine.AddMessage(null, GetEDWSpeakerMessage("Marge (lost forever to the Oblivion)", "The runes... so pretty...", DEFAULT_TEXT_COLOR), DEFAULT_MEDIUM_TEXT_SPEED)
         call cine.AddMessage(null, GetEDWSpeakerMessage("Phil", "I'll tell you what though,", DEFAULT_TEXT_COLOR), DEFAULT_SHORT_TEXT_SPEED)
-		call cine.AddMessage(null, GetEDWSpeakerMessage("Phil", "Ain't never using no organic pesticides again", DEFAULT_TEXT_COLOR), DEFAULT_SHORT_TEXT_SPEED)
+		call cine.AddMessage(null, GetEDWSpeakerMessage("Phil", "Ain't ever using an organic pesticide again", DEFAULT_TEXT_COLOR), DEFAULT_SHORT_TEXT_SPEED)
         call cine.SetLastMessageBuffer(-1)
 		call Levels_Level(3).AddCinematic(cine)
 		
-		set cineMsg = CinemaMessage.create(null, GetEDWSpeakerMessage("Bobby", "Hey Little Timmy, I really appreciate you talking to me", DEFAULT_TEXT_COLOR), DEFAULT_LONG_TEXT_SPEED)
+		set cineMsg = CinemaMessage.create(null, GetEDWSpeakerMessage("Bobby", "Hey Timmy, so I was over eatin' sunshine with Becky the other day, and, well,", DEFAULT_TEXT_COLOR), DEFAULT_LONG_TEXT_SPEED)
         set cine = Cinematic.create(gg_rct_IW1Listen, true, true, cineMsg)
-        call cine.AddMessage(null, GetEDWSpeakerMessage("Bobby", "Look, I know we both like Becky, let's face it who wouldn't", DEFAULT_TEXT_COLOR), DEFAULT_MEDIUM_TEXT_SPEED)
-        call cine.AddMessage(null, GetEDWSpeakerMessage("Little Timmy", "Bobby, pal, I'm going to have to cut you off right here,", DEFAULT_TEXT_COLOR), DEFAULT_LONG_TEXT_SPEED)
-		call cine.AddMessage(null, GetEDWSpeakerMessage("Little Timmy", "Becky isn't even on my radar.", DEFAULT_TEXT_COLOR), DEFAULT_MEDIUM_TEXT_SPEED)
-		call cine.AddMessage(null, GetEDWSpeakerMessage("Little Timmy", "But, if you wanted to impress her,", DEFAULT_TEXT_COLOR), DEFAULT_SHORT_TEXT_SPEED)
-		call cine.AddMessage(null, GetEDWSpeakerMessage("Little Timmy", "You'd grab her some of the flowers from inside the fake cage up on Hagatha Hill", DEFAULT_TEXT_COLOR), DEFAULT_LONG_TEXT_SPEED)
+		call cine.AddMessage(null, GetEDWSpeakerMessage("Bobby", "Look...", DEFAULT_TEXT_COLOR), DEFAULT_MEDIUM_TEXT_SPEED)
+        call cine.AddMessage(null, GetEDWSpeakerMessage("Bobby", "I know we both like Becky, let's face it who w...", DEFAULT_TEXT_COLOR), DEFAULT_SHORT_TEXT_SPEED + .5)
+		call cine.AddMessage(null, GetEDWSpeakerMessage("Little Timmy", "Bobby, pal", DEFAULT_TEXT_COLOR), DEFAULT_TINY_TEXT_SPEED)
+        call cine.AddMessage(null, GetEDWSpeakerMessage("Little Timmy", "I'm going to have to cut you off right there,", DEFAULT_TEXT_COLOR), DEFAULT_MEDIUM_TEXT_SPEED)
+		call cine.AddMessage(null, GetEDWSpeakerMessage("Little Timmy", "Becky isn't *even* on my radar.", DEFAULT_TEXT_COLOR), DEFAULT_MEDIUM_TEXT_SPEED)
+		call cine.AddMessage(null, GetEDWSpeakerMessage("Little Timmy", "But, if you really wanted to impress her?", DEFAULT_TEXT_COLOR), DEFAULT_MEDIUM_TEXT_SPEED)
+		call cine.AddMessage(null, GetEDWSpeakerMessage("Little Timmy", "You'd grab some of those flowers from up on Hagatha Hill", DEFAULT_TEXT_COLOR), DEFAULT_LONG_TEXT_SPEED)
         call cine.SetLastMessageBuffer(-1)
 		call Levels_Level(3).AddCinematic(cine)
 		
 		set cineMsg = CinemaMessage.create(null, GetEDWSpeakerMessage("Becky", "...", DEFAULT_TEXT_COLOR), DEFAULT_SHORT_TEXT_SPEED)
         set cine = Cinematic.create(gg_rct_IW1Becky, true, true, cineMsg)
-        call cine.AddMessage(null, GetEDWSpeakerMessage("Becky", "*Eats 3 flowers at once*", DEFAULT_TEXT_COLOR), DEFAULT_SHORT_TEXT_SPEED)
+        call cine.AddMessage(null, GetEDWSpeakerMessage("Becky", "*Eats 3 dandelions at once, maintaining eye contact*", DEFAULT_TEXT_COLOR), DEFAULT_MEDIUM_TEXT_SPEED)
         call cine.AddMessage(null, GetEDWSpeakerMessage("Becky", "...", DEFAULT_TEXT_COLOR), DEFAULT_MEDIUM_TEXT_SPEED)
         call cine.SetLastMessageBuffer(-1)
 		call Levels_Level(3).AddCinematic(cine)
@@ -207,7 +234,7 @@ library EDWCinematicContent requires EDWLevelContent, Cinema, EDWGameTime
         set cine = Cinematic.create(gg_rct_IW1Cage, true, true, cineMsg)
 		call cine.AddMessage(null, GetEDWSpeakerMessage("Bobby", "this", DEFAULT_TEXT_COLOR), DEFAULT_TINY_TEXT_SPEED)
 		call cine.AddMessage(null, GetEDWSpeakerMessage("Bobby", "THIS", DEFAULT_TEXT_COLOR), DEFAULT_SHORT_TEXT_SPEED)
-		call cine.AddMessage(null, GetEDWSpeakerMessage("Bobby", "IS THE BEST FAKE CAGE EVERR!@!", DEFAULT_TEXT_COLOR), DEFAULT_MEDIUM_TEXT_SPEED)
+		call cine.AddMessage(null, GetEDWSpeakerMessage("Bobby", "is a REALLY great cage!", DEFAULT_TEXT_COLOR), DEFAULT_MEDIUM_TEXT_SPEED)
         call cine.SetLastMessageBuffer(-1)
 		call Levels_Level(3).AddCinematic(cine)
 		
@@ -227,9 +254,10 @@ library EDWCinematicContent requires EDWLevelContent, Cinema, EDWGameTime
         set cine = Cinematic.create(gg_rct_IW3Deal, true, true, cineMsg)
         call cine.AddMessage(null, GetEDWSpeakerMessage("???", "Now what seems to be the problem, my dear 'Little Timmy'?", DEFAULT_TEXT_COLOR), DEFAULT_MEDIUM_TEXT_SPEED)
 		call cine.AddMessage(null, GetEDWSpeakerMessage("Little Timmy", "Problem??", DEFAULT_TEXT_COLOR), DEFAULT_TINY_TEXT_SPEED)
+		call cine.AddMessage(null, GetEDWSpeakerMessage("Little Timmy", "PROBLEM?", DEFAULT_TEXT_COLOR), DEFAULT_SHORT_TEXT_SPEED)
 		call cine.AddMessage(null, GetEDWSpeakerMessage("Little Timmy", "We had a deal you jive ass snowball", DEFAULT_TEXT_COLOR), DEFAULT_SHORT_TEXT_SPEED)
 		call cine.AddMessage(null, GetEDWSpeakerMessage("Little Timmy", "I get you out of the cage, you take care of my Bobby problem", DEFAULT_TEXT_COLOR), DEFAULT_LONG_TEXT_SPEED)
-		call cine.AddMessage(null, GetEDWSpeakerMessage("Little Timmy", "Now Sally is fucking dead, and it's all cuz of you", DEFAULT_TEXT_COLOR), DEFAULT_MEDIUM_TEXT_SPEED)
+		call cine.AddMessage(null, GetEDWSpeakerMessage("Little Timmy", "Now Sally is fucking dead, and it's cuz of you", DEFAULT_TEXT_COLOR), DEFAULT_MEDIUM_TEXT_SPEED)
 		call cine.SetLastMessageBuffer(-1)
 		call Levels_Level(17).AddCinematic(cine)
 		

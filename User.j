@@ -117,7 +117,18 @@ struct User extends array
 	public method CreateUserTimedEffect takes string fxFileLocation, string attachPointName, real duration returns nothing
 		call UserActiveTimedEffect.create(fxFileLocation, attachPointName, this, duration)
 	endmethod
-
+	
+	
+	public method FlashQuestButton takes nothing returns nothing
+		if GetLocalPlayer() == Player(this) then
+			call FlashQuestDialogButton()
+		endif
+	endmethod
+	public method DiscoverQuest takes quest q returns nothing
+		if GetLocalPlayer() == Player(this) then
+			call QuestSetDiscovered(q, true)
+		endif
+	endmethod
 	
     public static method DisplayMessageAll takes string message returns nothing
         local integer i = 0
@@ -136,6 +147,7 @@ struct User extends array
         return false
     endmethod
 	public method ShortcutCinematicQueue takes Cinematic cine returns nothing
+		call .CinematicQueue.clear()
 		call .CinematicQueue.add(cine)
 		
 		//remove currently playing cinematic
@@ -148,6 +160,20 @@ struct User extends array
     public method AddCinematicToQueue takes Cinematic cine returns nothing
         local integer priorityIndex = 0
 		local SimpleList_ListNode curCinematicNode = .CinematicQueue.first
+		
+		if cine == EDWCinematicContent_OBSTACLE then
+			call this.DiscoverQuest(EDWQuests_OBSTACLE)
+		elseif cine == EDWCinematicContent_FIRE then
+			call this.DiscoverQuest(EDWQuests_FIRE)
+		elseif cine == EDWCinematicContent_SKATING then
+			call this.DiscoverQuest(EDWQuests_SKATING)
+		elseif cine == EDWCinematicContent_PLATFORMING or cine == EDWCinematicContent_PLATFORMING_DEATH then
+			call this.DiscoverQuest(EDWQuests_PLATFORMING)
+			
+			if cine == EDWCinematicContent_PLATFORMING_DEATH then
+				call this.FlashQuestButton()
+			endif
+		endif
 		
 		if .CinematicPlaying == 0 then
 			call .CinematicQueue.add(cine)

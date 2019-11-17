@@ -955,6 +955,16 @@ public struct MazingTeam extends array
 		return leastTime
 	endmethod
 	
+	public method DiscoverQuestForTeam takes quest q returns nothing
+		local SimpleList_ListNode curPlayerNode = .FirstUser
+		
+		loop
+		exitwhen curPlayerNode == 0
+			call User(curPlayerNode.value).DiscoverQuest(q)
+		set curPlayerNode = curPlayerNode.next
+		endloop
+	endmethod
+	
 	public method SetUnitLocalVisibilityForTeam takes unit u, boolean visible returns nothing
 		local SimpleList_ListNode curPlayerNode = .FirstUser
 		
