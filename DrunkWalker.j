@@ -149,7 +149,7 @@ library DrunkWalker requires Recycle, TimerUtils, IStartable
             endloop
             
             set new.Walker = Recycle_MakeUnit(parent.uID, tempX, tempY)
-            set new.TimeAlive = GetRandomReal(.75, 2.25)
+            set new.TimeAlive = GetRandomReal(1, 3)
             
             set new.t = NewTimerEx(new)
             call TimerStart(new.t, new.TimeAlive, false, function DrunkWalker.drinkEffect)
@@ -190,6 +190,9 @@ library DrunkWalker requires Recycle, TimerUtils, IStartable
         public method Start takes nothing returns nothing
 			set .t = NewTimerEx(this)
 			call TimerStart(t, .SpawnTimeout, true, function DrunkWalkerSpawn.periodic)
+			
+			//immediately spawn first drunk. laziness is one thing, but its time to drink
+			call DrunkWalker.create(this)
         endmethod
         
         public static method create takes rect spawn, real spawntimeout, integer uid, real lifespan returns thistype
