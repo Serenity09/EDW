@@ -62,18 +62,21 @@ library IntroWorld requires Recycle, Levels
 			call SetTerrainType(GetRectCenterX(gg_rct_IntroWorld_TC1), GetRectCenterY(gg_rct_IntroWorld_TC1), ABYSS, 0, 1, 0)
 		endif
 		
-		set nsync = SynchronizedGroup.create()
-		call l.AddStartable(nsync)
 		
-		set jtimber = nsync.AddUnit(GUARD)
-		call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_Rect_271))
-		call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_Rect_272))
-		set jtimber.AllOrders.last.next = jtimber.AllOrders.first
+		// set nsync = SynchronizedGroup.create()
+		// call l.AddStartable(nsync)
 		
-		set jtimber = nsync.AddUnit(GUARD)
-		call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_Rect_273))
-		call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_Rect_274))
-		set jtimber.AllOrders.last.next = jtimber.AllOrders.first
+		// set jtimber = nsync.AddUnit(GUARD)
+		// call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_Rect_271))
+		// call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_Rect_272))
+		// set jtimber.AllOrders.last.next = jtimber.AllOrders.first
+		
+		// set jtimber = nsync.AddUnit(GUARD)
+		// call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_Rect_273))
+		// call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_Rect_274))
+		// set jtimber.AllOrders.last.next = jtimber.AllOrders.first
+		
+		call l.AddStartable(DrunkWalker_DrunkWalkerSpawn.create(gg_rct_IntroWorld_Drunks, 10, ICETROLL, 30))
 	endfunction
 	
 	function IntroWorldLevelStart takes nothing returns nothing
@@ -84,6 +87,7 @@ library IntroWorld requires Recycle, Levels
 		call Recycle_MakeUnitAndPatrolRect(GUARD, gg_rct_Rect_016, gg_rct_Rect_017)
 		call Recycle_MakeUnitAndPatrolRect(LGUARD, gg_rct_Rect_049, gg_rct_Rect_050)
 		
+		//ice patrol
 		if RewardMode != GameModesGlobals_HARD then
 			call Recycle_MakeUnitAndPatrolRect(LGUARD, gg_rct_Rect_031, gg_rct_Rect_032)
 		endif
@@ -94,16 +98,20 @@ library IntroWorld requires Recycle, Levels
 		call Recycle_MakeUnitAndPatrolRect(GUARD, gg_rct_Rect_038, gg_rct_Rect_045)
 		call Recycle_MakeUnitAndPatrolRect(GUARD, gg_rct_Rect_037, gg_rct_Rect_046)
 		
-		call Recycle_MakeUnitAndPatrolRect(GUARD, gg_rct_Rect_275, gg_rct_Rect_276)
-		call Recycle_MakeUnitAndPatrolRect(ICETROLL, gg_rct_Rect_277, gg_rct_Rect_278)
-		// call Recycle_MakeUnitAndPatrolRect(LGUARD, gg_rct_Rect_271, gg_rct_Rect_272)
-		// call Recycle_MakeUnitAndPatrolRect(LGUARD, gg_rct_Rect_273, gg_rct_Rect_274)
-		
+		//leaf patrol
 		if RewardMode == GameModesGlobals_HARD then
 			call Recycle_MakeUnitAndPatrolRect(LGUARD, gg_rct_Rect_047, gg_rct_Rect_048)
 		endif
 		
-		call Recycle_MakeUnitAndPatrolRect(LGUARD, gg_rct_Rect_029, gg_rct_Rect_030)
+		// call Recycle_MakeUnitAndPatrolRect(GUARD, gg_rct_Rect_275, gg_rct_Rect_276)
+		
+		// call Recycle_MakeUnitAndPatrolRect(LGUARD, gg_rct_Rect_271, gg_rct_Rect_272)
+		// call Recycle_MakeUnitAndPatrolRect(LGUARD, gg_rct_Rect_273, gg_rct_Rect_274)
+		// call Recycle_MakeUnitAndPatrolRect(ICETROLL, gg_rct_Rect_277, gg_rct_Rect_278)
+		
+		// call Recycle_MakeUnitAndPatrolRect(LGUARD, gg_rct_Rect_029, gg_rct_Rect_030)
+		
+		
 	endfunction
 
 	function IntroWorldLevelStop takes nothing returns nothing
