@@ -1,6 +1,11 @@
 library EDWLevelContent requires LevelIDGlobals, EDWLevels, SimpleList, Teams, Levels, EDWPatternSpawnDefinitions, Collectible, FastLoad
 	private function FinishedIntro takes nothing returns nothing
 		call TrackGameTime()
+		
+		call Levels_Level.CBTeam.DiscoverQuestForTeam(EDWQuests_OBSTACLE)
+		call Levels_Level.CBTeam.DiscoverQuestForTeam(EDWQuests_FIRE)
+		call Levels_Level.CBTeam.DiscoverQuestForTeam(EDWQuests_SKATING)
+		call Levels_Level.CBTeam.DiscoverQuestForTeam(EDWQuests_PLATFORMING)
 	endfunction
 		
 	public function Initialize takes nothing returns nothing
@@ -68,6 +73,21 @@ library EDWLevelContent requires LevelIDGlobals, EDWLevels, SimpleList, Teams, L
         call l.AddStartable(rg)
 		
         //
+		if RewardMode != GameModesGlobals_HARD then
+			set nsync = SynchronizedGroup.create()
+			call l.AddStartable(nsync)
+			
+			set jtimber = nsync.AddUnit(LGUARD)
+			call jtimber.AllOrders.addEnd(vector2.create(6912, 9600))
+			call jtimber.AllOrders.addEnd(vector2.create(7552, 9600))
+			set jtimber.AllOrders.last.next = jtimber.AllOrders.first
+			
+			set jtimber = nsync.AddUnit(LGUARD)
+			call jtimber.AllOrders.addEnd(vector2.create(7552, 9472))
+			call jtimber.AllOrders.addEnd(vector2.create(6912, 9472))
+			set jtimber.AllOrders.last.next = jtimber.AllOrders.first
+		endif
+		
 		if RewardMode == GameModesGlobals_HARD then
 			set rg = RelayGenerator.create(6654, 6528, 3, 6, 90, 7, 1.5, RelayGeneratorRandomSpawn, 1)
 		else
@@ -126,7 +146,7 @@ library EDWLevelContent requires LevelIDGlobals, EDWLevels, SimpleList, Teams, L
 				
 		//LAND WORLD A
 		//LEVEL 1
-		if RewardMode == GameModesGlobals_EASY then
+		if RewardMode == GameModesGlobals_EASY or RewardMode == GameModesGlobals_CHEAT then
 			set cp = Levels_Level(LW1_LEVEL_ID).InsertCheckpoint(gg_rct_LWCP_1_1a, gg_rct_LWR_1_2a, 1)
 			call cp.InitGate(bj_PI, 1.25)
 		endif
@@ -161,7 +181,33 @@ library EDWLevelContent requires LevelIDGlobals, EDWLevels, SimpleList, Teams, L
         call l.AddStartable(DrunkWalker_DrunkWalkerSpawn.create(gg_rct_PW2_Drunks_3, 5, LGUARD, 14))
         call l.AddStartable(DrunkWalker_DrunkWalkerSpawn.create(gg_rct_PW2_Drunks_4, 4, LGUARD, 10))
         
-        set rg = RelayGenerator.create(8186, -3191, 3, 3, 0, 0, 2.5, PW2PatternSpawn, 4)
+		// call FastLoad.create(l, l.Checkpoints.first.value, 10., 2.)
+		
+		
+		//randomly pick a spawn pattern
+		set i = l.GetWeightedRandomInt(0, 10)
+		if RewardMode == GameModesGlobals_HARD then
+			if i <= 5 then
+				set rg = RelayGenerator.create(8186, -3191, 3, 3, 0, 0, 2.5, PW2PatternSpawnV2, 5) //2.5
+			elseif i <= 9 then
+				set rg = RelayGenerator.create(8186, -3191, 3, 3, 0, 0, 5., PW2PatternSpawnV3, 5) //5.
+			else
+				//uber variant
+				set rg = RelayGenerator.create(8186, -3191, 3, 3, 0, 0, 2.5, PW2PatternSpawnV5, 1) //2.5, 3.5
+				set l.RawScore = l.RawScore + 1
+				set l.RawContinues = l.RawContinues + 1
+			endif
+		else
+			if i <= 6 then
+				set rg = RelayGenerator.create(8186, -3191, 3, 3, 0, 0, 4., PW2PatternSpawnV1, 5) //5.
+				set rg.SpawnPattern.CycleVariations = 2
+			elseif i <= 9 then
+				set rg = RelayGenerator.create(8186, -3191, 3, 3, 0, 0, 2.5, PW2PatternSpawnV2, 5) //2.5
+			else
+				set rg = RelayGenerator.create(8186, -3191, 3, 3, 0, 0, 5., PW2PatternSpawnV3, 5) //5.
+			endif
+		endif
+		
 		set rg.SpawnPattern.Data = ICETROLL
         call rg.AddTurnSimple(90, 4)
         call rg.AddTurnSimple(180, 1)

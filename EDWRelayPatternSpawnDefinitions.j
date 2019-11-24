@@ -182,31 +182,315 @@ library EDWRelayPatternSpawnDefinitions requires RelayPatternSpawn, GroupUtils, 
 		return g
 	endfunction
 	
-	function PW2PatternSpawn takes RelayPatternSpawn spawn, Levels_Level parentLevel returns group
+	function PW2PatternSpawnV1 takes RelayPatternSpawn spawn, Levels_Level parentLevel returns group
 		local group g = NewGroup()
 		local unit u
-		//local integer lane = GetRandomInt(0, spawn.Parent.GetNumberLanes() - 1)
 		local RelayTurn spawnTurn = spawn.Parent.Turns.first.value
+		
+		local real speed = 1024.
+		local integer variation = spawn.GetVariation()
+		local integer cycle = spawn.GetCycle(variation)
+		
+		if variation == 0 then
+			if cycle == 0 then
+				//lane 1
+				set u = Recycle_MakeUnit(ICETROLL, spawnTurn.FirstLane.x, spawnTurn.FirstLane.y + spawnTurn.FirstLaneY*spawn.Parent.UnitLaneSize)
+				call IndexedUnit(GetUnitUserData(u)).SetMoveSpeed(speed/spawn.Parent.UnitTimeout*spawn.Parent.OverclockFactor)
+				//call SetUnitMoveSpeed(u, 400)
+				call GroupAddUnit(g, u)
+			elseif cycle == 1 then
+				//lane 0
+				set u = Recycle_MakeUnit(ICETROLL, spawnTurn.FirstLane.x, spawnTurn.FirstLane.y)
+				call IndexedUnit(GetUnitUserData(u)).SetMoveSpeed(speed/spawn.Parent.UnitTimeout*spawn.Parent.OverclockFactor)
+				//call SetUnitMoveSpeed(u, 200)
+				call GroupAddUnit(g, u)
 				
-		if spawn.CurrentCycle == 1 or spawn.CurrentCycle == 3 then
+				//lane 2
+				set u = Recycle_MakeUnit(ICETROLL, spawnTurn.FirstLane.x, spawnTurn.FirstLane.y + 2*spawnTurn.FirstLaneY*spawn.Parent.UnitLaneSize)
+				call IndexedUnit(GetUnitUserData(u)).SetMoveSpeed(speed/spawn.Parent.UnitTimeout*spawn.Parent.OverclockFactor)
+				//call SetUnitMoveSpeed(u, 200)
+				call GroupAddUnit(g, u)
+			elseif cycle == 2 then
+				//lane 1
+				set u = Recycle_MakeUnit(ICETROLL, spawnTurn.FirstLane.x, spawnTurn.FirstLane.y + spawnTurn.FirstLaneY*spawn.Parent.UnitLaneSize)
+				call IndexedUnit(GetUnitUserData(u)).SetMoveSpeed(speed/spawn.Parent.UnitTimeout*spawn.Parent.OverclockFactor)
+				//call SetUnitMoveSpeed(u, 400)
+				call GroupAddUnit(g, u)
+				
+				//lane 2
+				set u = Recycle_MakeUnit(ICETROLL, spawnTurn.FirstLane.x, spawnTurn.FirstLane.y + 2*spawnTurn.FirstLaneY*spawn.Parent.UnitLaneSize)
+				call IndexedUnit(GetUnitUserData(u)).SetMoveSpeed(speed/spawn.Parent.UnitTimeout*spawn.Parent.OverclockFactor)
+				//call SetUnitMoveSpeed(u, 200)
+				call GroupAddUnit(g, u)
+			elseif cycle == 3 then
+				//lane 0
+				set u = Recycle_MakeUnit(ICETROLL, spawnTurn.FirstLane.x, spawnTurn.FirstLane.y)
+				call IndexedUnit(GetUnitUserData(u)).SetMoveSpeed(speed/spawn.Parent.UnitTimeout*spawn.Parent.OverclockFactor)
+				//call SetUnitMoveSpeed(u, 200)
+				call GroupAddUnit(g, u)
+				
+				//lane 1
+				set u = Recycle_MakeUnit(ICETROLL, spawnTurn.FirstLane.x, spawnTurn.FirstLane.y + spawnTurn.FirstLaneY*spawn.Parent.UnitLaneSize)
+				call IndexedUnit(GetUnitUserData(u)).SetMoveSpeed(speed/spawn.Parent.UnitTimeout*spawn.Parent.OverclockFactor)
+				//call SetUnitMoveSpeed(u, 400)
+				call GroupAddUnit(g, u)
+			else
+				//lane 0
+				set u = Recycle_MakeUnit(ICETROLL, spawnTurn.FirstLane.x, spawnTurn.FirstLane.y)
+				call IndexedUnit(GetUnitUserData(u)).SetMoveSpeed(speed/spawn.Parent.UnitTimeout*spawn.Parent.OverclockFactor)
+				//call SetUnitMoveSpeed(u, 200)
+				call GroupAddUnit(g, u)
+				
+				//lane 2
+				set u = Recycle_MakeUnit(ICETROLL, spawnTurn.FirstLane.x, spawnTurn.FirstLane.y + 2*spawnTurn.FirstLaneY*spawn.Parent.UnitLaneSize)
+				call IndexedUnit(GetUnitUserData(u)).SetMoveSpeed(speed/spawn.Parent.UnitTimeout*spawn.Parent.OverclockFactor)
+				//call SetUnitMoveSpeed(u, 200)
+				call GroupAddUnit(g, u)
+			endif
+		else
+			if cycle == 0 then
+				//lane 1
+				set u = Recycle_MakeUnit(ICETROLL, spawnTurn.FirstLane.x, spawnTurn.FirstLane.y + spawnTurn.FirstLaneY*spawn.Parent.UnitLaneSize)
+				call IndexedUnit(GetUnitUserData(u)).SetMoveSpeed(speed/spawn.Parent.UnitTimeout*spawn.Parent.OverclockFactor)
+				//call SetUnitMoveSpeed(u, 400)
+				call GroupAddUnit(g, u)
+			elseif cycle == 1 then
+				//lane 0
+				set u = Recycle_MakeUnit(ICETROLL, spawnTurn.FirstLane.x, spawnTurn.FirstLane.y)
+				call IndexedUnit(GetUnitUserData(u)).SetMoveSpeed(speed/spawn.Parent.UnitTimeout*spawn.Parent.OverclockFactor)
+				//call SetUnitMoveSpeed(u, 200)
+				call GroupAddUnit(g, u)
+				
+				//lane 2
+				set u = Recycle_MakeUnit(ICETROLL, spawnTurn.FirstLane.x, spawnTurn.FirstLane.y + 2*spawnTurn.FirstLaneY*spawn.Parent.UnitLaneSize)
+				call IndexedUnit(GetUnitUserData(u)).SetMoveSpeed(speed/spawn.Parent.UnitTimeout*spawn.Parent.OverclockFactor)
+				//call SetUnitMoveSpeed(u, 200)
+				call GroupAddUnit(g, u)
+			elseif cycle == 2 then
+				//lane 0
+				set u = Recycle_MakeUnit(ICETROLL, spawnTurn.FirstLane.x, spawnTurn.FirstLane.y)
+				call IndexedUnit(GetUnitUserData(u)).SetMoveSpeed(speed/spawn.Parent.UnitTimeout*spawn.Parent.OverclockFactor)
+				//call SetUnitMoveSpeed(u, 200)
+				call GroupAddUnit(g, u)
+				
+				//lane 1
+				set u = Recycle_MakeUnit(ICETROLL, spawnTurn.FirstLane.x, spawnTurn.FirstLane.y + spawnTurn.FirstLaneY*spawn.Parent.UnitLaneSize)
+				call IndexedUnit(GetUnitUserData(u)).SetMoveSpeed(speed/spawn.Parent.UnitTimeout*spawn.Parent.OverclockFactor)
+				//call SetUnitMoveSpeed(u, 400)
+				call GroupAddUnit(g, u)
+			elseif cycle == 3 then
+				//lane 1
+				set u = Recycle_MakeUnit(ICETROLL, spawnTurn.FirstLane.x, spawnTurn.FirstLane.y + spawnTurn.FirstLaneY*spawn.Parent.UnitLaneSize)
+				call IndexedUnit(GetUnitUserData(u)).SetMoveSpeed(speed/spawn.Parent.UnitTimeout*spawn.Parent.OverclockFactor)
+				//call SetUnitMoveSpeed(u, 400)
+				call GroupAddUnit(g, u)
+				
+				//lane 2
+				set u = Recycle_MakeUnit(ICETROLL, spawnTurn.FirstLane.x, spawnTurn.FirstLane.y + 2*spawnTurn.FirstLaneY*spawn.Parent.UnitLaneSize)
+				call IndexedUnit(GetUnitUserData(u)).SetMoveSpeed(speed/spawn.Parent.UnitTimeout*spawn.Parent.OverclockFactor)
+				//call SetUnitMoveSpeed(u, 200)
+				call GroupAddUnit(g, u)
+			else
+				//lane 0
+				set u = Recycle_MakeUnit(ICETROLL, spawnTurn.FirstLane.x, spawnTurn.FirstLane.y)
+				call IndexedUnit(GetUnitUserData(u)).SetMoveSpeed(speed/spawn.Parent.UnitTimeout*spawn.Parent.OverclockFactor)
+				//call SetUnitMoveSpeed(u, 200)
+				call GroupAddUnit(g, u)
+				
+				//lane 2
+				set u = Recycle_MakeUnit(ICETROLL, spawnTurn.FirstLane.x, spawnTurn.FirstLane.y + 2*spawnTurn.FirstLaneY*spawn.Parent.UnitLaneSize)
+				call IndexedUnit(GetUnitUserData(u)).SetMoveSpeed(speed/spawn.Parent.UnitTimeout*spawn.Parent.OverclockFactor)
+				//call SetUnitMoveSpeed(u, 200)
+				call GroupAddUnit(g, u)
+			endif
+		endif
+		
+		return g
+	endfunction
+	
+	function PW2PatternSpawnV2 takes RelayPatternSpawn spawn, Levels_Level parentLevel returns group
+		local group g = NewGroup()
+		local unit u
+		local RelayTurn spawnTurn = spawn.Parent.Turns.first.value
+		
+		local real speed = 512.
+		
+		if spawn.CurrentCycle == 0 then
+			//lane 1
+			set u = Recycle_MakeUnit(ICETROLL, spawnTurn.FirstLane.x, spawnTurn.FirstLane.y + spawnTurn.FirstLaneY*spawn.Parent.UnitLaneSize)
+			call IndexedUnit(GetUnitUserData(u)).SetMoveSpeed(speed/spawn.Parent.UnitTimeout*spawn.Parent.OverclockFactor)
+			//call SetUnitMoveSpeed(u, 400)
+			call GroupAddUnit(g, u)
+		elseif spawn.CurrentCycle == 1 then
 			//lane 0
 			set u = Recycle_MakeUnit(ICETROLL, spawnTurn.FirstLane.x, spawnTurn.FirstLane.y)
-			call IndexedUnit(GetUnitUserData(u)).SetMoveSpeed(200.*spawn.Parent.OverclockFactor)
+			call IndexedUnit(GetUnitUserData(u)).SetMoveSpeed(speed/spawn.Parent.UnitTimeout*spawn.Parent.OverclockFactor)
 			//call SetUnitMoveSpeed(u, 200)
 			call GroupAddUnit(g, u)
 			
 			//lane 2
 			set u = Recycle_MakeUnit(ICETROLL, spawnTurn.FirstLane.x, spawnTurn.FirstLane.y + 2*spawnTurn.FirstLaneY*spawn.Parent.UnitLaneSize)
-			call IndexedUnit(GetUnitUserData(u)).SetMoveSpeed(200.*spawn.Parent.OverclockFactor)
+			call IndexedUnit(GetUnitUserData(u)).SetMoveSpeed(speed/spawn.Parent.UnitTimeout*spawn.Parent.OverclockFactor)
 			//call SetUnitMoveSpeed(u, 200)
 			call GroupAddUnit(g, u)
 		elseif spawn.CurrentCycle == 2 then
 			//lane 1
 			set u = Recycle_MakeUnit(ICETROLL, spawnTurn.FirstLane.x, spawnTurn.FirstLane.y + spawnTurn.FirstLaneY*spawn.Parent.UnitLaneSize)
-			call IndexedUnit(GetUnitUserData(u)).SetMoveSpeed(400.*spawn.Parent.OverclockFactor)
+			call IndexedUnit(GetUnitUserData(u)).SetMoveSpeed(speed/spawn.Parent.UnitTimeout*spawn.Parent.OverclockFactor)
+			//call SetUnitMoveSpeed(u, 400)
+			call GroupAddUnit(g, u)
+			
+			//lane 2
+			set u = Recycle_MakeUnit(ICETROLL, spawnTurn.FirstLane.x, spawnTurn.FirstLane.y + 2*spawnTurn.FirstLaneY*spawn.Parent.UnitLaneSize)
+			call IndexedUnit(GetUnitUserData(u)).SetMoveSpeed(speed/spawn.Parent.UnitTimeout*spawn.Parent.OverclockFactor)
+			//call SetUnitMoveSpeed(u, 200)
+			call GroupAddUnit(g, u)
+		elseif spawn.CurrentCycle == 3 then
+			//lane 0
+			set u = Recycle_MakeUnit(ICETROLL, spawnTurn.FirstLane.x, spawnTurn.FirstLane.y)
+			call IndexedUnit(GetUnitUserData(u)).SetMoveSpeed(speed/spawn.Parent.UnitTimeout*spawn.Parent.OverclockFactor)
+			//call SetUnitMoveSpeed(u, 200)
+			call GroupAddUnit(g, u)
+			
+			//lane 1
+			set u = Recycle_MakeUnit(ICETROLL, spawnTurn.FirstLane.x, spawnTurn.FirstLane.y + spawnTurn.FirstLaneY*spawn.Parent.UnitLaneSize)
+			call IndexedUnit(GetUnitUserData(u)).SetMoveSpeed(speed/spawn.Parent.UnitTimeout*spawn.Parent.OverclockFactor)
+			//call SetUnitMoveSpeed(u, 400)
+			call GroupAddUnit(g, u)
+		else
+			//lane 0
+			set u = Recycle_MakeUnit(ICETROLL, spawnTurn.FirstLane.x, spawnTurn.FirstLane.y)
+			call IndexedUnit(GetUnitUserData(u)).SetMoveSpeed(speed/spawn.Parent.UnitTimeout*spawn.Parent.OverclockFactor)
+			//call SetUnitMoveSpeed(u, 200)
+			call GroupAddUnit(g, u)
+			
+			//lane 2
+			set u = Recycle_MakeUnit(ICETROLL, spawnTurn.FirstLane.x, spawnTurn.FirstLane.y + 2*spawnTurn.FirstLaneY*spawn.Parent.UnitLaneSize)
+			call IndexedUnit(GetUnitUserData(u)).SetMoveSpeed(speed/spawn.Parent.UnitTimeout*spawn.Parent.OverclockFactor)
+			//call SetUnitMoveSpeed(u, 200)
+			call GroupAddUnit(g, u)
+		endif
+		
+		return g
+	endfunction
+	
+	function PW2PatternSpawnV3 takes RelayPatternSpawn spawn, Levels_Level parentLevel returns group
+		local group g = NewGroup()
+		local unit u
+		local RelayTurn spawnTurn = spawn.Parent.Turns.first.value
+		
+		local real speed = 768.
+		
+		if spawn.CurrentCycle == 0 then
+			//lane 1
+			set u = Recycle_MakeUnit(ICETROLL, spawnTurn.FirstLane.x, spawnTurn.FirstLane.y + spawnTurn.FirstLaneY*spawn.Parent.UnitLaneSize)
+			call IndexedUnit(GetUnitUserData(u)).SetMoveSpeed(speed/spawn.Parent.UnitTimeout*spawn.Parent.OverclockFactor)
+			//call SetUnitMoveSpeed(u, 400)
+			call GroupAddUnit(g, u)
+		elseif spawn.CurrentCycle == 1 then
+			//lane 0
+			set u = Recycle_MakeUnit(ICETROLL, spawnTurn.FirstLane.x, spawnTurn.FirstLane.y)
+			call IndexedUnit(GetUnitUserData(u)).SetMoveSpeed(speed/spawn.Parent.UnitTimeout*spawn.Parent.OverclockFactor)
+			//call SetUnitMoveSpeed(u, 200)
+			call GroupAddUnit(g, u)
+			
+			//lane 2
+			set u = Recycle_MakeUnit(ICETROLL, spawnTurn.FirstLane.x, spawnTurn.FirstLane.y + 2*spawnTurn.FirstLaneY*spawn.Parent.UnitLaneSize)
+			call IndexedUnit(GetUnitUserData(u)).SetMoveSpeed(speed/spawn.Parent.UnitTimeout*spawn.Parent.OverclockFactor)
+			//call SetUnitMoveSpeed(u, 200)
+			call GroupAddUnit(g, u)
+		elseif spawn.CurrentCycle == 2 then
+			//lane 0
+			set u = Recycle_MakeUnit(ICETROLL, spawnTurn.FirstLane.x, spawnTurn.FirstLane.y)
+			call IndexedUnit(GetUnitUserData(u)).SetMoveSpeed(speed/spawn.Parent.UnitTimeout*spawn.Parent.OverclockFactor)
+			//call SetUnitMoveSpeed(u, 200)
+			call GroupAddUnit(g, u)
+			
+			//lane 1
+			set u = Recycle_MakeUnit(ICETROLL, spawnTurn.FirstLane.x, spawnTurn.FirstLane.y + spawnTurn.FirstLaneY*spawn.Parent.UnitLaneSize)
+			call IndexedUnit(GetUnitUserData(u)).SetMoveSpeed(speed/spawn.Parent.UnitTimeout*spawn.Parent.OverclockFactor)
+			//call SetUnitMoveSpeed(u, 400)
+			call GroupAddUnit(g, u)
+		elseif spawn.CurrentCycle == 3 then
+			//lane 1
+			set u = Recycle_MakeUnit(ICETROLL, spawnTurn.FirstLane.x, spawnTurn.FirstLane.y + spawnTurn.FirstLaneY*spawn.Parent.UnitLaneSize)
+			call IndexedUnit(GetUnitUserData(u)).SetMoveSpeed(speed/spawn.Parent.UnitTimeout*spawn.Parent.OverclockFactor)
+			//call SetUnitMoveSpeed(u, 400)
+			call GroupAddUnit(g, u)
+			
+			//lane 2
+			set u = Recycle_MakeUnit(ICETROLL, spawnTurn.FirstLane.x, spawnTurn.FirstLane.y + 2*spawnTurn.FirstLaneY*spawn.Parent.UnitLaneSize)
+			call IndexedUnit(GetUnitUserData(u)).SetMoveSpeed(speed/spawn.Parent.UnitTimeout*spawn.Parent.OverclockFactor)
+			//call SetUnitMoveSpeed(u, 200)
+			call GroupAddUnit(g, u)
+		else
+			//lane 0
+			set u = Recycle_MakeUnit(ICETROLL, spawnTurn.FirstLane.x, spawnTurn.FirstLane.y)
+			call IndexedUnit(GetUnitUserData(u)).SetMoveSpeed(speed/spawn.Parent.UnitTimeout*spawn.Parent.OverclockFactor)
+			//call SetUnitMoveSpeed(u, 200)
+			call GroupAddUnit(g, u)
+			
+			//lane 2
+			set u = Recycle_MakeUnit(ICETROLL, spawnTurn.FirstLane.x, spawnTurn.FirstLane.y + 2*spawnTurn.FirstLaneY*spawn.Parent.UnitLaneSize)
+			call IndexedUnit(GetUnitUserData(u)).SetMoveSpeed(speed/spawn.Parent.UnitTimeout*spawn.Parent.OverclockFactor)
+			//call SetUnitMoveSpeed(u, 200)
+			call GroupAddUnit(g, u)
+		endif
+		
+		return g
+	endfunction
+	
+	function PW2PatternSpawnV4 takes RelayPatternSpawn spawn, Levels_Level parentLevel returns group
+		local group g = NewGroup()
+		local unit u
+		local RelayTurn spawnTurn = spawn.Parent.Turns.first.value
+		
+		local real speed = 512.
+		
+		if spawn.CurrentCycle == 0 or spawn.CurrentCycle == 2 then
+			//lane 0
+			set u = Recycle_MakeUnit(ICETROLL, spawnTurn.FirstLane.x, spawnTurn.FirstLane.y)
+			call IndexedUnit(GetUnitUserData(u)).SetMoveSpeed(speed/spawn.Parent.UnitTimeout*spawn.Parent.OverclockFactor)
+			//call SetUnitMoveSpeed(u, 200)
+			call GroupAddUnit(g, u)
+			
+			//lane 2
+			set u = Recycle_MakeUnit(ICETROLL, spawnTurn.FirstLane.x, spawnTurn.FirstLane.y + 2*spawnTurn.FirstLaneY*spawn.Parent.UnitLaneSize)
+			call IndexedUnit(GetUnitUserData(u)).SetMoveSpeed(speed/spawn.Parent.UnitTimeout*spawn.Parent.OverclockFactor)
+			//call SetUnitMoveSpeed(u, 200)
+			call GroupAddUnit(g, u)
+		elseif spawn.CurrentCycle == 1 then
+			//lane 1
+			set u = Recycle_MakeUnit(ICETROLL, spawnTurn.FirstLane.x, spawnTurn.FirstLane.y + spawnTurn.FirstLaneY*spawn.Parent.UnitLaneSize)
+			call IndexedUnit(GetUnitUserData(u)).SetMoveSpeed(speed/spawn.Parent.UnitTimeout*spawn.Parent.OverclockFactor)
 			//call SetUnitMoveSpeed(u, 400)
 			call GroupAddUnit(g, u)
 		endif
+				
+		return g
+	endfunction
+	
+	function PW2PatternSpawnV5 takes RelayPatternSpawn spawn, Levels_Level parentLevel returns group
+		local group g = NewGroup()
+		local unit u
+		local RelayTurn spawnTurn = spawn.Parent.Turns.first.value
+		
+		local real speed = 512.
+						
+		set u = Recycle_MakeUnit(ICETROLL, spawnTurn.FirstLane.x, spawnTurn.FirstLane.y)
+		call IndexedUnit(GetUnitUserData(u)).SetMoveSpeed(speed/spawn.Parent.UnitTimeout*spawn.Parent.OverclockFactor)
+		//call SetUnitMoveSpeed(u, 200)
+		call GroupAddUnit(g, u)
+		
+		set u = Recycle_MakeUnit(ICETROLL, spawnTurn.FirstLane.x, spawnTurn.FirstLane.y + spawnTurn.FirstLaneY*spawn.Parent.UnitLaneSize)
+		call IndexedUnit(GetUnitUserData(u)).SetMoveSpeed(speed/spawn.Parent.UnitTimeout*spawn.Parent.OverclockFactor)
+		//call SetUnitMoveSpeed(u, 400)
+		call GroupAddUnit(g, u)
+		
+		set u = Recycle_MakeUnit(ICETROLL, spawnTurn.FirstLane.x, spawnTurn.FirstLane.y + 2*spawnTurn.FirstLaneY*spawn.Parent.UnitLaneSize)
+		call IndexedUnit(GetUnitUserData(u)).SetMoveSpeed(speed/spawn.Parent.UnitTimeout*spawn.Parent.OverclockFactor)
+		//call SetUnitMoveSpeed(u, 200)
+		call GroupAddUnit(g, u)
 		
 		return g
 	endfunction
