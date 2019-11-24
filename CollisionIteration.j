@@ -4,8 +4,7 @@ globals
     //private timer tc
     private unit CollidingMazer
     private group NearbyUnits = CreateGroup()
-    private unit array LastCollidedUnit[NumberPlayers]
-    
+	    
     private constant real COLLISION_TIME = 1.0000
     private constant real REVIVE_PAUSE_TIME = 1.0000
     
@@ -32,15 +31,6 @@ globals
 	private constant boolean APPLY_RECTANGLE_COLLISION = true
 endglobals
 
-private function AfterCollisionCB takes nothing returns nothing
-    local timer t = GetExpiredTimer()
-    local integer pID = GetTimerData(t)
-    
-    set LastCollidedUnit[pID] = null
-    
-    call ReleaseTimer(t)
-    set t = null
-endfunction
 private function AfterMazerInvulnCB takes nothing returns nothing
     local timer t = GetExpiredTimer()
     local integer pID = GetTimerData(t)
@@ -115,7 +105,7 @@ private function CollisionIteration takes nothing returns nothing
 			loop
 			set cu = FirstOfGroup(NearbyUnits)
 			exitwhen cu == null
-				if LastCollidedUnit[curUserNode.value] != cu then
+				if User(curUserNode.value).LastCollidedUnit != cu then
 					set cuInfo = IndexedUnit(GetUnitUserData(cu))
 					set cuTypeID = GetUnitTypeId(cu)
 					set cuX = GetUnitX(cu)
@@ -189,7 +179,7 @@ private function CollisionIteration takes nothing returns nothing
 									endif
 								endif
 							elseif cuTypeID == JEEP then
-								//! runtextmacro IfInAxisRectEx("145.", "135.", "64.", "64.")
+								//! runtextmacro IfInAxisRectEx("145.", "130.", "64.", "64.")
 									static if APPLY_RECTANGLE_COLLISION then
 										//TODO special splat if in front
 										call CollisionDeathEffect(User(curUserNode.value).ActiveUnit, cu)
@@ -211,7 +201,7 @@ private function CollisionIteration takes nothing returns nothing
 									endif
 								endif
 							elseif cuTypeID == PASSENGERCAR then
-								//! runtextmacro IfInAxisRectEx("125.", "115.", "62.", "62.")
+								//! runtextmacro IfInAxisRectEx("120.", "115.", "62.", "62.")
 									static if APPLY_RECTANGLE_COLLISION then
 										//TODO special splat if in front
 										call CollisionDeathEffect(User(curUserNode.value).ActiveUnit, cu)
@@ -253,40 +243,33 @@ private function CollisionIteration takes nothing returns nothing
 									
 									call User(curUserNode.value).SwitchGameModesDefaultLocation(Teams_GAMEMODE_DYING)
 								elseif InWorldPowerup.IsPowerupUnit(cuTypeID) then
-									set LastCollidedUnit[curUserNode.value] = cu
 									//debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "Colliding with powerup")
 									call InWorldPowerup.GetFromUnit(cu).OnUserAcquire(curUserNode.value)
 									
-									call TimerStart(NewTimerEx(curUserNode.value), COLLISION_TIME, false, function AfterCollisionCB)
+									call User(curUserNode.value).InitializeAfterCollisionCB(cu, COLLISION_TIME)
 									//debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "Finished colliding")
 									//keys
 								elseif cuTypeID == RKEY then
-									set LastCollidedUnit[curUserNode.value] = cu
-									
 									call RShieldEffect(User(curUserNode.value).ActiveUnit)
 									call User(curUserNode.value).SetKeyColor(KEY_RED)
 									// set MazerColor[curUserNode.value] = KEY_RED
 									// call SetUnitVertexColor(MazersArray[curUserNode.value], 255, 0, 0, 255)
 									
-									call TimerStart(NewTimerEx(curUserNode.value), COLLISION_TIME, false, function AfterCollisionCB)
+									call User(curUserNode.value).InitializeAfterCollisionCB(cu, COLLISION_TIME)
 								elseif cuTypeID == BKEY then
-									set LastCollidedUnit[curUserNode.value] = cu
-									
 									call BShieldEffect(User(curUserNode.value).ActiveUnit)
 									call User(curUserNode.value).SetKeyColor(KEY_BLUE)
 									// set MazerColor[curUserNode.value] = KEY_BLUE
 									// call SetUnitVertexColor(MazersArray[curUserNode.value], 0, 0, 255, 255)
 									
-									call TimerStart(NewTimerEx(curUserNode.value), COLLISION_TIME, false, function AfterCollisionCB)
+									call User(curUserNode.value).InitializeAfterCollisionCB(cu, COLLISION_TIME)
 								elseif cuTypeID == GKEY then
-									set LastCollidedUnit[curUserNode.value] = cu
-									
 									call GShieldEffect(User(curUserNode.value).ActiveUnit)
 									call User(curUserNode.value).SetKeyColor(KEY_GREEN)
 									// set MazerColor[curUserNode.value] = KEY_GREEN
 									// call SetUnitVertexColor(MazersArray[curUserNode.value], 0, 255, 0, 255)
 									
-									call TimerStart(NewTimerEx(curUserNode.value), COLLISION_TIME, false, function AfterCollisionCB)
+									call User(curUserNode.value).InitializeAfterCollisionCB(cu, COLLISION_TIME)
 								elseif cuTypeID == TEAM_REVIVE_UNIT_ID then
 									//currently you will revive anyone whose circle you hit, this may change how you play
 									if CanReviveOthers[curUserNode.value] then
@@ -302,13 +285,11 @@ private function CollisionIteration takes nothing returns nothing
 										
 										call TimerStart(NewTimerEx(GetPlayerId(GetOwningPlayer(cu))), P2P_REVIVE_PAUSE_TIME, false, function AfterMazerReviveCB)
 									endif
-								elseif cuTypeID == KEYR then
-									set LastCollidedUnit[curUserNode.value] = cu
-									
+								elseif cuTypeID == KEYR then									
 									call ShieldRemoveEffect(User(curUserNode.value).ActiveUnit)
 									call User(curUserNode.value).SetKeyColor(KEY_NONE)
 									
-									call TimerStart(NewTimerEx(curUserNode.value), COLLISION_TIME, false, function AfterCollisionCB)
+									call User(curUserNode.value).InitializeAfterCollisionCB(cu, COLLISION_TIME)
 								elseif cuTypeID == TELEPORT then
 									call TeleportEffect(cu, curUserNode.value)
 									
@@ -324,9 +305,7 @@ private function CollisionIteration takes nothing returns nothing
 											
 											call User(curUserNode.value).SwitchGameModesDefaultLocation(Teams_GAMEMODE_DYING)
 										else
-											set LastCollidedUnit[curUserNode.value] = cu
-											
-											call TimerStart(NewTimerEx(curUserNode.value), COLLISION_TIME, false, function AfterCollisionCB)
+											call User(curUserNode.value).InitializeAfterCollisionCB(cu, COLLISION_TIME)
 										endif
 									elseif cuTypeID == BFIRE then
 										if (MazerColor[curUserNode.value] != KEY_BLUE) then
@@ -334,9 +313,7 @@ private function CollisionIteration takes nothing returns nothing
 											
 											call User(curUserNode.value).SwitchGameModesDefaultLocation(Teams_GAMEMODE_DYING)
 										else
-											set LastCollidedUnit[curUserNode.value] = cu
-											
-											call TimerStart(NewTimerEx(curUserNode.value), COLLISION_TIME, false, function AfterCollisionCB)
+											call User(curUserNode.value).InitializeAfterCollisionCB(cu, COLLISION_TIME)
 										endif
 									elseif cuTypeID == GFIRE then
 										if (MazerColor[curUserNode.value] != KEY_GREEN) then
@@ -344,9 +321,7 @@ private function CollisionIteration takes nothing returns nothing
 											
 											call User(curUserNode.value).SwitchGameModesDefaultLocation(Teams_GAMEMODE_DYING)
 										else
-											set LastCollidedUnit[curUserNode.value] = cu
-											
-											call TimerStart(NewTimerEx(curUserNode.value), COLLISION_TIME, false, function AfterCollisionCB)
+											call User(curUserNode.value).InitializeAfterCollisionCB(cu, COLLISION_TIME)
 										endif
 									endif
 								elseif User(curUserNode.value).GameMode == Teams_GAMEMODE_PLATFORMING then
@@ -360,8 +335,7 @@ private function CollisionIteration takes nothing returns nothing
 										//set User(curUserNode.value).Platformer.GravitationalAccel = -1 * User(curUserNode.value).Platformer.GravitationalAccel
 										set User(curUserNode.value).Platformer.YVelocity = 0
 										
-										set LastCollidedUnit[curUserNode.value] = cu
-										call TimerStart(NewTimerEx(curUserNode.value), 1., false, function AfterCollisionCB)
+										call User(curUserNode.value).InitializeAfterCollisionCB(cu, 2.)
 										
 										call GravityEffect(User(curUserNode.value).ActiveUnit, cu)
 									elseif cuTypeID == BOUNCER then
@@ -387,8 +361,7 @@ private function CollisionIteration takes nothing returns nothing
 											endif
 										endif
 										
-										set LastCollidedUnit[curUserNode.value] = cu
-										call TimerStart(NewTimerEx(curUserNode.value), .1, false, function AfterCollisionCB)
+										call User(curUserNode.value).InitializeAfterCollisionCB(cu, .25)
 										
 										call BounceEffect(User(curUserNode.value).ActiveUnit, cu)
 									elseif cuTypeID == UBOUNCE then
@@ -425,10 +398,7 @@ private function CollisionIteration takes nothing returns nothing
 										set User(curUserNode.value).Platformer.XVelocity = SUPERSPEED_SPEED * Cos(dx)
 										set User(curUserNode.value).Platformer.YVelocity = SUPERSPEED_SPEED * Sin(dx)
 										
-										//call DisplayTextToForce(bj_FORCE_PLAYER[0], "unit is angle: " + R2S(dx))
-										
-										set LastCollidedUnit[curUserNode.value] = cu
-										call TimerStart(NewTimerEx(curUserNode.value), 1., false, function AfterCollisionCB)
+										call User(curUserNode.value).InitializeAfterCollisionCB(cu, 1.)
 										
 										call SuperSpeedEffect(User(curUserNode.value).ActiveUnit, cu)
 									endif

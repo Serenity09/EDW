@@ -50,6 +50,9 @@ struct User extends array
     public SimpleList_List CinematicQueue //FiFo
 	public effect ActiveEffect
 	private timer UnpauseTimer
+	
+	readonly unit LastCollidedUnit
+	readonly timer LastCollidedUnitTimer
 	   
 	// public real CameraIdleTime //only as accurate as the last sync
 	readonly real AFKPlatformerDeathClock
@@ -839,6 +842,20 @@ struct User extends array
         return GetUnitX(.ActiveUnit) >= topLeft.x and GetUnitX(.ActiveUnit) <= botRight.x and GetUnitY(.ActiveUnit) >= botRight.y and GetUnitY(.ActiveUnit) <= topLeft.y
     endmethod
 	
+	private static method AfterCollisionCB takes nothing returns nothing
+		local User user = GetTimerData(GetExpiredTimer())
+		
+		set user.LastCollidedUnit = null
+	endmethod
+	public method InitializeAfterCollisionCB takes unit cu, real timeout returns nothing
+		//cancel the last collision CB (checks if timer is actually active under the hood - or at least doesn't error)
+		call PauseTimer(this.LastCollidedUnitTimer)
+		
+		//start a new collision CB
+		set this.LastCollidedUnit = cu
+		call TimerStart(this.LastCollidedUnitTimer, timeout, false, function thistype.AfterCollisionCB)
+	endmethod
+	
 	private static method UnpauseAFKCB takes nothing returns nothing
 		local timer t = GetExpiredTimer()
 		local User u = GetTimerData(t)
@@ -1211,6 +1228,9 @@ struct User extends array
         
         //set new.Platformer = Platformer.AllPlatformers[new]
         set new.Platformer = Platformer.create(new)
+		
+		set new.LastCollidedUnit = null
+		set new.LastCollidedUnitTimer = NewTimerEx(new)
 		
         return new
     endmethod
