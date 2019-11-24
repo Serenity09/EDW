@@ -154,7 +154,10 @@ library EDWCinematicContent requires EDWLevelContent, Cinema, EDWGameTime
         set cine.Priority = 5
 		call cine.AddMessage(null, GetEDWSpeakerMessage(PRIMARY_SPEAKER_NAME, "You're a circle now!", DEFAULT_TEXT_COLOR), DEFAULT_SHORT_TEXT_SPEED)
         call cine.AddMessage(null, GetEDWSpeakerMessage(PRIMARY_SPEAKER_NAME, "Show some dignity, and use your arrow keys to move", DEFAULT_TEXT_COLOR), DEFAULT_SHORT_TEXT_SPEED)
-        call cine.SetLastMessageBuffer(-1)
+		call Levels_Level(1).AddCinematic(cine)
+		
+		set cineMsg = CinemaMessage.create(null, GetEDWSpeakerMessage(PRIMARY_SPEAKER_NAME, "Press the up arrow key to jump!", DEFAULT_TEXT_COLOR), DEFAULT_MEDIUM_TEXT_SPEED)
+        set cine = Cinematic.create(gg_rct_SargeJumpIntro, true, false, cineMsg)
 		call Levels_Level(1).AddCinematic(cine)
         
         set cineMsg = CinemaMessage.create(null, GetEDWSpeakerMessage(PRIMARY_SPEAKER_NAME, "Jesus christ, no, not like that", DEFAULT_TEXT_COLOR), DEFAULT_SHORT_TEXT_SPEED)
@@ -164,7 +167,6 @@ library EDWCinematicContent requires EDWLevelContent, Cinema, EDWGameTime
 		call cine.AddMessage(null, GetEDWSpeakerMessage(PRIMARY_SPEAKER_NAME, "Press up to jump UP!", DEFAULT_TEXT_COLOR), DEFAULT_MEDIUM_TEXT_SPEED)
         call cine.AddMessage(null, GetEDWSpeakerMessage(PRIMARY_SPEAKER_NAME, "I swear, you're the reason I needed to add these tutorials", DEFAULT_TEXT_COLOR), DEFAULT_SHORT_TEXT_SPEED)
         call cine.AddMessage(null, NEW_TUTORIAL_QUEST_ALERT, DEFAULT_MEDIUM_TEXT_SPEED)
-		call cine.SetLastMessageBuffer(-1)
 		call Levels_Level(1).AddCinematic(cine)
 		
 		set PLATFORMING_DEATH = cine

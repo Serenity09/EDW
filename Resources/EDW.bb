@@ -36,10 +36,10 @@ When playing in a team mode, dying will leave a revive circle in your wake. [b]A
 [/otablei]
 [/hidden]
 
-Some settings have been intentionally left out of the options menus. I want to leave them preset for now, but let's play with their values based on outside and inside feedback. Time-limit is fixed to 45min (up from 30min) -- after which the team with the leading score will win -- and score to win immediately is fixed at 20. 
+Some settings have been intentionally left out of the options menus. I want to leave them preset for now, but let's play with their values based on feedback. The best candidates for feedback are: Time-limit is fixed to 45min (up from 30min) -- after which the team with the leading score will win -- and score to win immediately is fixed at 20. 
 [/Tab]
 [Tab=Worlds][Center]Choices, choices, everywhere; and not a one for me
-I hope that when I wake up, I'll know where to be.
+I hope when I wake up that I'll know where to be.
 
 Winter seems so cold and lonely,
 But at least there I can relate.
@@ -56,10 +56,10 @@ That's the place for Oz.[/Center]
 
 Learn how the basics of the game in a easy-does-it tutorial level. While on the tutorial level you'll have unlimited continues, your deaths won't be counted, and you'll even instantly come back to life! What a deal!
 
-Past the intro you'll find the Doors to different worlds. Each world has a different theme, mostly focusing on the types of terrain and enemies. The game is shipping with two worlds initially. A full game for new players will probably only see part of one world.
+Past the intro you'll find the Doors to different worlds. Each world has a different theme, mostly focusing on the types of terrain and enemies. The game is shipping with three worlds initially. A full game for new players will probably only see part of one world.
 
+The land world is about optimal movement, but also being able to pause for a second when necessary. It's probably the most beginner friendly world, focusing on fun elements while keeping the gameplay familiar
 The Ice world focuses on movement mechanics. It's meant to highlight your understanding and dexterity of movement. This world is pretty hard to start, and then picks up drastically from Level 3 onward
-
 The 2.5D world focuses on changing perspective. It's meant to highlight how the same experience can play out so many different ways. This world isn't easy, but fun is definitely prioritized over difficulty
 
 As you advance through a world, you'll gain and lose continues, and (hopefully) gain in score. Run out of continues, though, and you'll be booted back to the Doors, where you can start another world. Want to retry a world? Go again and you'll be sent back to the last level you started. Your team cannot replay a world that they have already fully finished.
@@ -75,10 +75,10 @@ As you advance through a world, you'll gain and lose continues, and (hopefully) 
 [tr][td]Leaves[/td][td]Super speed. Use with caution[/td][/tr]
 [tr][td]Ices[/td][td]Causes "ice skating" effect. The darker the ice, the faster you go[/td][/tr]
 [tr][td]Snow[/td][td]Causes "velocity skating" effect[/td][/tr]
-[tr][td]Rocky Snow[/td][td]Causes "velocity skating" effect, but with delays in your change in facing having any effect[/td][/tr]
+[tr][td]Rocky Snow[/td][td]Causes "velocity skating" effect, but you can't control your direction while on it[/td][/tr]
 [tr][td]Sand[/td][td]Causes "velocity running" effect[/td][/tr]
 [tr][td]Compass Tile[/td][td]Enables willful teleportation in 4 cardinal compass directions[/td][/tr]
-[tr][td]Mossy Bricks[/td][td]Switch between 2D and 3D[/td][/tr]
+[tr][td]Mossy Bricks[/td][td]Switch between 3D and 2D[/td][/tr]
 [tr][td]The Road[/td][td]The inky asphalt of the soul. No really, it's just visual[/td][/tr]
 [/otablei]
 [/hidden]
@@ -149,7 +149,7 @@ As you advance through a world, you'll gain and lose continues, and (hopefully) 
 [/otablei]
 [/hidden]
 [/Tab]
-[Tab=Screenshots]Submit your screenshots to WCEscapeDreamWorld@gmail.com!
+[Tab=Screenshots]Submit your screenshots to this thread or via PM!
 [hidden=Ice World]
 [img]https://i.imgur.com/8oy8jsV.jpg[/img]
 [img]https://imgur.com/IskZqCH.jpg[/img]
@@ -174,7 +174,7 @@ As you advance through a world, you'll gain and lose continues, and (hopefully) 
 [img]https://imgur.com/hIdHROT.jpg[/img]
 [/hidden]
 [/Tab]
-[Tab=Videos]Submit your videos to WCEscapeDreamWorld@gmail.com!
+[Tab=Videos]Submit links to your videos to this thread or via PM!
 Demo of square and diamond 2d geometry shapes: https://www.youtube.com/watch?v=qql13Uy7qbg&feature=youtu.be
 Demo of Ice world: 
 Demo of 2.5D world: 
@@ -187,11 +187,10 @@ Demo of 2.5D world:
 [Tab=Credits]Thanks to my partner, who's endured this map's development.
 
 Shout out to the old WC3 crew: Pat1487, Achilles.42, Mazemasta77, Amazin[G], FFSlayer, Olonavy, hlw_rocer, popartica., Eat_Bacon_Daily, marksoccer, monkeys-forever, DoughnutMuffin, God[A]nt69, Makshak
-To Pat1487 and Anitarf for level ideas and coding help
+To Pat1487 and Anitarf for level ideas and more coding guidance than anyone should reasonably expect
 
-Programming:
+Code:
 Pat1487 - OG locust trick
-actboy168 - W3x2Lni (https://www.hiveworkshop.com/threads/w3x2lni-v2-4-6.305201/)
 Vexorian - TimerUtils (http://www.wc3c.net/showthread.php?t=101322)
 Anitarf - vector3 (http://www.wc3c.net/showthread.php?t=87027)
 Bribe - Table (https://www.hiveworkshop.com/threads/snippet-new-table.188084/)
@@ -202,55 +201,71 @@ TriggerHappy - PreventSave (https://www.hiveworkshop.com/threads/snippet-prevent
 Terrain Art:
 MassiveMaster - Road (https://www.hiveworkshop.com/threads/north_rock-blp.143827/)
 
-3D Models:
+3D Models & Textures:
 MC ! - Blackhole (https://www.hiveworkshop.com/threads/blackhole.48038/#resource-20933)
 Ket - Soviet Truck (https://www.hiveworkshop.com/threads/soviet-truck.220028/), Soviet Car (https://www.hiveworkshop.com/threads/soviet-car.219538/#resource-33052)
 skrab - Firetruck (https://www.hiveworkshop.com/threads/firetruck.112949/#resource-26401), Ambulance (https://www.hiveworkshop.com/threads/ambulance.112740/#resource-26389), Police Car (https://www.hiveworkshop.com/threads/police-car.112571/)
 SD_Ryoko - Corvette (https://www.hiveworkshop.com/threads/vette.47681/#resource-20459)
 Illidan(Evil)X - Jeep (https://www.hiveworkshop.com/threads/jeep.50462/#resource-23707)
 vile - SlidingDustWith(out)Rocks (https://www.hiveworkshop.com/threads/slidingdustwithrocks.49097/#resource-22244)
-2D Art:
+Firelord213 - Walk Sign (https://www.hiveworkshop.com/threads/walkpole.93195/#resource-25495)
+3rgytr54 - Nowhere/Lost, Stop, and Do Not Enter signs (https://www.hiveworkshop.com/threads/street-name-sign.121171/, https://www.hiveworkshop.com/threads/stop-sign.121175/#resource-26814, https://www.hiveworkshop.com/threads/do-not-enter-sign.121169/)
+Blood Raven - Snow Pile (https://www.hiveworkshop.com/threads/frozen-cliff-snow-pile.245486/#resource-35326)
+
+2D Textures:
 Anonymous author - Anime Sunset loadscreen art (https://www.wallpapervortex.com/wallpaper-38651_anime_scenery_anime_sunset.html)
+
+Sound Effects:
+Hasbro - Frogger Victory
 
 Warcraft 3 Tools:
 Vexorian - vJASS compiler (http://www.wc3c.net/vexorian/jasshelpermanual.html)
 PipeDream, Vecorian, Cohadar, UMSWE team, Pitzermike, SFilip, Van Damm, Risc, ScorpioT1000, Mc!, Moyack, PurgeAndFire - JNGP World Editor v2.0
 MindWorx & the above - SharpCraft World Editor Extended
-Blizzard - Vanilla World Editor
+Blizzard - Vanilla World Editor (Reforged)
+sumneko, actboy168, other authors? - w3x2lni (https://github.com/sumneko/w3x2lni/blob/master/docs/en-us/insider.md)
 Shadow Daemon - BLP Lab (https://www.hiveworkshop.com/threads/blp-lab-v0-5-0.137599/)
 
-
+Influences:
 gameslayer001 - Platform Escape (influenced Platform/2D game mode and levels)
 Mech_1000 - Tricks & Traps (influenced goals for level content)
-nomorholywar - Into the Wild (influenced ice level design), Sliding Murlocs (influenced direction)
+nomorholywar - Into the Wild (influenced ice level design), Sliding Murlocs (tangentially influenced direction)
 adamt - Maze (influenced land level design)
 Hasbro - Frogger (influenced land level designs)
 
-aznricepuff - The best guide to understanding vJASS's OOP design and intended usage (https://www.hiveworkshop.com/threads/vjass-oop-lesson.128236/#13)
+Guides:
+aznricepuff - My favorite guide to understanding vJASS's OOP design and intended usage (https://www.hiveworkshop.com/threads/vjass-oop-lesson.128236/#13)
 Nestheasarus - A guide to optimizing vJASS's syntactic sugar (where did you go)
 Codemonkey11 - A guide to scaling group enums in WC3's engine (https://www.hiveworkshop.com/threads/vjass-optimization-using-a-first-of-group-loop-for-enumeration.223140/)
 BloodRaven - A guide to WE doodads & terrain (https://www.hiveworkshop.com/threads/advanced-terraining-tutorial.203428/)
 SD_Ryoko - A guide to creating and importing custom terrain tiles in WC3 (http://world-editor-tutorials.thehelper.net/tilesets.php)
 Jeff Pang - Online vanilla JASS documentation (http://jass.sourceforge.net/index.shtml)
-Dr Super Good - Too many small answers to list all, but among which are tips to generating random points (https://www.hiveworkshop.com/threads/get-evenly-weighted-random-point-in-rectangle.294547/), unit rotation mechanics (https://www.hiveworkshop.com/threads/unit-turning-mechanics.300224/), 
--Manuel- - Fix to setting unit immobile/mobile (https://www.hiveworkshop.com/threads/prevent-movement.312061/#post-3321807)
-Wrda & Pyrogasm - Approach to making units locally visible/invisible (https://www.hiveworkshop.com/threads/make-units-locally-visible.310326/)
+Tyrande-ma3x - WC3 Terrain raw codes (https://www.thehelper.net/threads/terrain-type-raw-value.105981/)
 Raen7 - WC3 playercolors to hex codes (https://docs.google.com/spreadsheets/d/1wzWIYzRW9pqpo1ZuEcU-qJTg-H4z5-PaTnHIXPezaRQ/edit#gid=1812483906)
 Rufus - Map Description guide & templates (https://www.hiveworkshop.com/threads/description-guide-maps.287829/)
+
+Help:
+Pat1487 - Too many small answers to list all (original source no longer exists)
+Anitarf, PurgeandFire111, Bannar - Questions about globals (http://www.wc3c.net/showthread.php?p=1134646#post1134646) 
+Anitarf, PurgeandFire111, BBQ, Fledermaus - Questions about structs (http://www.wc3c.net/showthread.php?p=1132076#post1132076)
+Anitarf, BBQ, Bribe - Wisp Wheel (http://www.wc3c.net/showthread.php?p=1131278#post1131278)
+Dr Super Good - Too many small answers to list all, but among which are tips to generating random points (https://www.hiveworkshop.com/threads/get-evenly-weighted-random-point-in-rectangle.294547/), and unit rotation mechanics (https://www.hiveworkshop.com/threads/unit-turning-mechanics.300224/)
+-Manuel- - Fix to setting unit immobile/mobile (https://www.hiveworkshop.com/threads/prevent-movement.312061/#post-3321807)
+Pyrogasm & Wrda - Approach to making units locally visible/invisible (https://www.hiveworkshop.com/threads/make-units-locally-visible.310326/)
+wc3neverdies - A fix for selecting terrain in the World Editor (https://www.hiveworkshop.com/threads/world-editor-crash.320150/#post-3384554)
 [/Tab]
 [Tab=Future releases]The V1 release includes what I consider a fully playable game. To be fair, I think there's often too much going on, and occassionally too little. There's a lot more that I want to add, but I think its time to get some outside feedback. Here are my current priorities, in something like an order
-
 Language Localizations (German, French, etc) -- start with all major languages for important tutorial dialogues, but add in all dialogues as able. will need to look into if WC3 offers any extendable solution. since WC3 1.30+ games will often include multiple languages among its user list, the solution will need to run in the game instance, targetting local player, rather than be set at compile time
+
+Minigames -- every so often a random arcade game will be held between all teams. Progress for all teams in their current level will be fully saved (and paused while the minigame happens). Minigames should be short-scale games (around 5min duration) with a focus on fun, ala Mario Party. Each world should have 2 minigames in its theme. The winning team gets a choice between a boosted powerup (eg 5 additional continues, stealing 2 continues from a specific team, stealing 3 points from a random team). More interesting rewards should trickle down from Powerup scope enhancements
+
+The first Boss -- for either hard ice or platforming. will include checkpoint-based behaviors capable of handling 1+ teams. behaviors will be largely limited to teams on same CP, mostly to prevent FU moments from out of nowhere. Whatever the players use to hurt the boss, they can also use to snipe other teams' members
 
 The fourth platforming level -- the moon, focused on jumping between geometric planes
 
-Another world -- probably an easy ice world with lower scores, OR a world focused purely on platforming, OR a mostly land world
+Another world -- probably an easy ice world with lower scores, OR a world focused purely on platforming
 
-Minigames -- every 10min a random arcade game will be held between all teams. Progress for all teams in their current level will be fully saved (and paused while the minigame happens). Minigames should be short-scale games (around 5min duration) with a focus on fun, ala Mario Party. Each world should have 2 minigames in its theme. The winning team gets a choice between 5 additional continues, stealing 2 continues from a specific team (able to send them back to Doors), stealing 3 points from a specific team (actually a lot of points). More interesting rewards should trickle down from Powerup scope enhancements
-
-Rework terrain detection algorithm -- terrain effects would transition when they're applying much more smoothly
-
-The first Boss -- for either hard ice or platforming. will include checkpoint-based behaviors capable of handling 1+ teams. behaviors will be largely limited to teams on same CP, mostly to prevent FU moments from out of nowhere. Whatever the players use to hurt the boss, they can also use to snipe other teams' members
+Uber variants -- levels often configure their elements with some (highly controlled) amount of randomization. It'd be interesting to identify the hardest variant possible for a level and then react to that (more score/continues, maybe a message/warning, additional difficulty setting for forcing uber variants everywhere)
 
 Performance -- mostly will effect when 2+ levels are active for different teams
 
@@ -259,16 +274,19 @@ More interesting powerups -- some of the offensive variety, and more that intera
 A dragged out victory process -- basically 30 seconds to gloat and chat. I know its a popular feature but I sure as f*** don't want to do it
 [/Tab]
 [Tab=FAQ]Q: there's so many terrain tiles! I can't enjoy all of them because I don't even know what's happening some of the time
-A: yeah, that's a very real problem, and at this point I can't really see it fresh. The basic premise was that the tiles should all effect gameplay to some degree, and their combinations alone should be enough to be interesting even to veteran players. I think one of the biggest issues is that I present too many tiles that have huge gameplay impacts in quick succession, especially in the tutorial. I'd love to get feedback from you all on that topic
+A: yeah, that's a very real problem, and at this point I can't really see it fresh. The basic premise was that the tiles should all effect gameplay to some degree, and their combinations alone should be enough to be interesting even to veteran players. I think one of the biggest issues is that I present too many tiles that have significant gameplay impacts in quick succession, especially in the tutorial. I'd love to get feedback from you all on that topic
 
 Q: the 2d terrain tiles looks don't match their physics geometry
-A: that's another problem and I'm not going to solve it fully on my own. I tried to pick the most diamond looking tiles, and those are somewhat okay, but the square grass tile is especially confusing. **If anyone would be willing to make a square grass tile based on the original, they would get any ingame credits they'd want, continuing after Reforged releases**
+A: that's another problem and I'm not going to solve it fully on my own. I tried to pick the most diamond looking tiles, and those are somewhat okay, but the square grass tile is especially confusing
 
 Q: can you explain a mechanic more properly in game? trying to figure it out really detracted from my experience
-A: yes! please let me know which ones need it. That said, I try to explain less than more, while keeping the penalty for failure small. I really like the idea of discovering the different terrain effects and then exploring how it effects your gameplay / how you can use them situationally
+A: yes! Please let me know which ones need it. That said, I try to explain less than more, while keeping the penalty for failure small initially. I really like the idea of the player discovering the different terrain effects and then exploring how it effects their gameplay / how they can use them situationally
+
+Q: its hard to see the ice sometimes because of the trees!
+A: true again! But you have to admit the trees add a lot more of a vibe to those levels than leaving them empty, and i can assure you that trees cannot kill people in my game. You should always be utterly confident of the fact that any time you die, it was me personally who killed you, and i don't do that about trees. The only exception to this rule are mortars teams, who are, by nature, single-mindedly murderous. But this is splitting hairs, and there is something to your original point: you can still find trees not fun to deal with. Let me know the when/where/why that's the case and i'll remember your feelings (may not do anything about em, but they'll be there). Also, try those levels again with the wc3 occlusion setting enabled, and let me know how that is for you
 
 Q: can I leave feedback directly?
-A: yes! thank you for taking the time to share. WCEscapeDreamWorld@gmail.com, PM, or thread reply here
+A: yes! Thank you for taking the time to share. PM me directly here, or reply to the thread here
 [/Tab]
 [Tab=Bugs]Only showstoppers will be shown on the forum. For the full up-to-date list, check https://trello.com/b/L5ajt18j/edw
 1. Desync issue when multiple users play together and meet an unknown set of conditions. The set is not always met, and so desync is not always problematic. This looks to be ultimately on Blizzard to fix, but it also appears that not every map is desyncing, so a WE side fix might also be possible.

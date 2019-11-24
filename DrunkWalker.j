@@ -82,11 +82,15 @@ library DrunkWalker requires Recycle, TimerUtils, IStartable
 			local real timeoutRand
             
             if dw.TimeAlive < dw.Parent.WalkerLife then
-                //set dw.beer = AddSpecialEffectTarget("Abilities\\Spells\\Other\\StrongDrink\\BrewmasterMissile.mdl", dw.Walker, "overhead")
-                set dw.beer = AddSpecialEffect("Abilities\\Spells\\Other\\StrongDrink\\BrewmasterMissile.mdl", GetUnitX(dw.Walker), GetUnitY(dw.Walker))
-				call BlzSetSpecialEffectScale(dw.beer, STATIC_BEER_VFX_SCALE)
-				call BlzSetSpecialEffectHeight(dw.beer, STATIC_BEER_VFX_HEIGHT)
-				//call BlzSetSpecialEffectScale(dw.beer, IDEAL_BEER_MODEL_RADIUS / GetUnitDefaultRadius(dw.Parent.uID))
+				//tiny units have tiny (attached) effects, so instead position a beer of the desired size approximately overhead
+				if GetUnitDefaultRadius(dw.Parent.uID) <= 30. then
+					set dw.beer = AddSpecialEffect("Abilities\\Spells\\Other\\StrongDrink\\BrewmasterMissile.mdl", GetUnitX(dw.Walker), GetUnitY(dw.Walker))
+					call BlzSetSpecialEffectScale(dw.beer, STATIC_BEER_VFX_SCALE)
+					call BlzSetSpecialEffectHeight(dw.beer, STATIC_BEER_VFX_HEIGHT)
+				else
+					//big units can drink their own beer just fine
+					set dw.beer = AddSpecialEffectTarget("Abilities\\Spells\\Other\\StrongDrink\\BrewmasterMissile.mdl", dw.Walker, SpecialEffect_OVERHEAD)
+                endif
 				
                 set timeoutRand = GetRandomReal(1, 3)
 				set dw.TimeAlive = dw.TimeAlive + timeoutRand

@@ -64,7 +64,7 @@ struct MortarNTarget extends IStartable
             set newX = GetRandomReal(this.minX, this.maxX)
             set newY = GetRandomReal(this.minY, this.maxY)
             
-            exitwhen GetTerrainType(newX, newY) != IllegalTerrainType or attempt == MAX_VALID_TARGET_ATTEMPTS
+            exitwhen (GetTerrainType(newX, newY) != IllegalTerrainType and GetTerrainType(newX, newY) != PLATFORMING) or attempt == MAX_VALID_TARGET_ATTEMPTS
         endloop
 		
 		static if DEBUG_VALID_TARGET then
