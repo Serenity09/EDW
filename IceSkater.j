@@ -1,8 +1,8 @@
-library IceSkater requires SimpleList, Vector2, IceMovement
+library IceSkater requires SimpleList, Vector2, IceMovement, Event
 	globals
-		private constant real TIMESTEP = .1
+		private constant real TIMESTEP = .035
 		private constant real TURN_SMOOTH_DURATION = 0.0
-		private constant player NPC_SKATE_PLAYER = Player(10)
+		private constant player NPC_SKATE_PLAYER = Player(11)
 		private constant real AXIS_BUFFER = 2.*TERRAIN_TILE_SIZE //amount of buffer to use to infer destination buffer from, specifically applied to checking if a destination is along a vertical or horizontal axis
 				
 		private timer t = CreateTimer()
@@ -89,13 +89,17 @@ library IceSkater requires SimpleList, Vector2, IceMovement
 	
 	struct IceSkater extends IStartable
 		public SimpleList_List Destinations
-		public SimpleList_ListNode CurrentDestination
+		public SimpleList_ListNode CurrentDestinationNode
 		
 		public unit SkateUnit
 		public real CurrentAngleDelta
 		public real MaxAngleDelta
 		public real AngleChangeRate
 		public integer CurrentAngleDirection
+		public integer InitialAngleDirection
+		
+		readonly static Event OnSkaterReset
+		readonly static IceSkater EventSkater
 		
 		private static SimpleList_List ActiveSkaters
 		
@@ -156,12 +160,12 @@ library IceSkater requires SimpleList, Vector2, IceMovement
 		endmethod
 		
 		private method SetDefaults takes nothing returns nothing
-			set .CurrentDestination = .Destinations.first.next
+			set .CurrentDestinationNode = .Destinations.first.next
 			call SetUnitPosition(.SkateUnit, Destination(.Destinations.first.value).Position.x, Destination(.Destinations.first.value).Position.y)
-			call SetUnitFacing(.SkateUnit, Destination(.CurrentDestination.value).AngleFromPrevious)
+			call SetUnitFacing(.SkateUnit, Destination(.CurrentDestinationNode.value).AngleFromPrevious)
 			
 			set .CurrentAngleDelta = 0
-			set .CurrentAngleDirection = -1
+			set .CurrentAngleDirection = .InitialAngleDirection
 		endmethod
 		
 		private static method UpdateSkaters takes nothing returns nothing
@@ -172,80 +176,104 @@ library IceSkater requires SimpleList, Vector2, IceMovement
 			
 			//TODO may need to replace this with a theoretical facing which matches expectations 
 			//local real facing
-			
+						
 			loop
 			exitwhen currentSkaterNode == 0
 				set currentSkater = IceSkater(currentSkaterNode.value)
-				set currentDestination = Destination(currentSkater.CurrentDestination.value)
+				set currentDestination = Destination(currentSkater.CurrentDestinationNode.value)
 				
 				//check if skater has passed their current destination
 				if currentDestination.QuadrantDirection.x > 0 then
 					if currentDestination.QuadrantDirection.y > 0 then
 						if GetUnitX(currentSkater.SkateUnit) >= currentDestination.Position.x and GetUnitY(currentSkater.SkateUnit) >= currentDestination.Position.y then
-							set currentSkater.CurrentDestination = currentSkater.CurrentDestination.next
-							if currentSkater.CurrentDestination == 0 then
+							set currentSkater.CurrentDestinationNode = currentSkater.CurrentDestinationNode.next
+							if currentSkater.CurrentDestinationNode == 0 then
 								//instantly reset to starting state -- only occurs if the ends of the destination chain are NOT connected
 								call currentSkater.SetDefaults()
+								
+								set thistype.EventSkater = currentSkater
+								call thistype.OnSkaterReset.fire()
 							endif
 						endif
 					elseif currentDestination.QuadrantDirection.y < 0 then
 						if GetUnitX(currentSkater.SkateUnit) >= currentDestination.Position.x and GetUnitY(currentSkater.SkateUnit) < currentDestination.Position.y then
-							set currentSkater.CurrentDestination = currentSkater.CurrentDestination.next
-							if currentSkater.CurrentDestination == 0 then
+							set currentSkater.CurrentDestinationNode = currentSkater.CurrentDestinationNode.next
+							if currentSkater.CurrentDestinationNode == 0 then
 								//instantly reset to starting state -- only occurs if the ends of the destination chain are NOT connected
 								call currentSkater.SetDefaults()
+								
+								set thistype.EventSkater = currentSkater
+								call thistype.OnSkaterReset.fire()
 							endif
 						endif
 					else
 						if GetUnitX(currentSkater.SkateUnit) >= currentDestination.Position.x then
-							set currentSkater.CurrentDestination = currentSkater.CurrentDestination.next
-							if currentSkater.CurrentDestination == 0 then
+							set currentSkater.CurrentDestinationNode = currentSkater.CurrentDestinationNode.next
+							if currentSkater.CurrentDestinationNode == 0 then
 								//instantly reset to starting state -- only occurs if the ends of the destination chain are NOT connected
 								call currentSkater.SetDefaults()
+								
+								set thistype.EventSkater = currentSkater
+								call thistype.OnSkaterReset.fire()
 							endif
 						endif
 					endif
 				elseif currentDestination.QuadrantDirection.x < 0 then
 					if currentDestination.QuadrantDirection.y > 0 then
 						if GetUnitX(currentSkater.SkateUnit) < currentDestination.Position.x and GetUnitY(currentSkater.SkateUnit) >= currentDestination.Position.y then
-							set currentSkater.CurrentDestination = currentSkater.CurrentDestination.next
-							if currentSkater.CurrentDestination == 0 then
+							set currentSkater.CurrentDestinationNode = currentSkater.CurrentDestinationNode.next
+							if currentSkater.CurrentDestinationNode == 0 then
 								//instantly reset to starting state -- only occurs if the ends of the destination chain are NOT connected
 								call currentSkater.SetDefaults()
+								
+								set thistype.EventSkater = currentSkater
+								call thistype.OnSkaterReset.fire()
 							endif
 						endif
 					elseif currentDestination.QuadrantDirection.y < 0 then
 						if GetUnitX(currentSkater.SkateUnit) < currentDestination.Position.x and GetUnitY(currentSkater.SkateUnit) < currentDestination.Position.y then
-							set currentSkater.CurrentDestination = currentSkater.CurrentDestination.next
-							if currentSkater.CurrentDestination == 0 then
+							set currentSkater.CurrentDestinationNode = currentSkater.CurrentDestinationNode.next
+							if currentSkater.CurrentDestinationNode == 0 then
 								//instantly reset to starting state -- only occurs if the ends of the destination chain are NOT connected
 								call currentSkater.SetDefaults()
+								
+								set thistype.EventSkater = currentSkater
+								call thistype.OnSkaterReset.fire()
 							endif
 						endif
 					else
 						if GetUnitX(currentSkater.SkateUnit) < currentDestination.Position.x then
-							set currentSkater.CurrentDestination = currentSkater.CurrentDestination.next
-							if currentSkater.CurrentDestination == 0 then
+							set currentSkater.CurrentDestinationNode = currentSkater.CurrentDestinationNode.next
+							if currentSkater.CurrentDestinationNode == 0 then
 								//instantly reset to starting state -- only occurs if the ends of the destination chain are NOT connected
 								call currentSkater.SetDefaults()
+								
+								set thistype.EventSkater = currentSkater
+								call thistype.OnSkaterReset.fire()
 							endif
 						endif
 					endif
 				else
 					if currentDestination.QuadrantDirection.y >= 0 then
 						if GetUnitY(currentSkater.SkateUnit) >= currentDestination.Position.y then
-							set currentSkater.CurrentDestination = currentSkater.CurrentDestination.next
-							if currentSkater.CurrentDestination == 0 then
+							set currentSkater.CurrentDestinationNode = currentSkater.CurrentDestinationNode.next
+							if currentSkater.CurrentDestinationNode == 0 then
 								//instantly reset to starting state -- only occurs if the ends of the destination chain are NOT connected
 								call currentSkater.SetDefaults()
+								
+								set thistype.EventSkater = currentSkater
+								call thistype.OnSkaterReset.fire()
 							endif
 						endif
 					else
 						if GetUnitY(currentSkater.SkateUnit) < currentDestination.Position.y then
-							set currentSkater.CurrentDestination = currentSkater.CurrentDestination.next
-							if currentSkater.CurrentDestination == 0 then
+							set currentSkater.CurrentDestinationNode = currentSkater.CurrentDestinationNode.next
+							if currentSkater.CurrentDestinationNode == 0 then
 								//instantly reset to starting state -- only occurs if the ends of the destination chain are NOT connected
 								call currentSkater.SetDefaults()
+								
+								set thistype.EventSkater = currentSkater
+								call thistype.OnSkaterReset.fire()
 							endif
 						endif
 					endif
@@ -255,17 +283,17 @@ library IceSkater requires SimpleList, Vector2, IceMovement
 				if currentDestination.QuadrantDirection.x * GetUnitX(currentSkater.SkateUnit) >= currentDestination.Position.x and currentDestination.QuadrantDirection.y * GetUnitY(currentSkater.SkateUnit) >= currentDestination.Position.y then
 					call DisplayTextToForce(bj_FORCE_PLAYER[0], "Skater " + I2S(currentSkater) + " reached destination " + I2S(currentDestination))
 					
-					if currentSkater.CurrentDestination.next != 0 then
-						set currentSkater.CurrentDestination = currentSkater.CurrentDestination.next
+					if currentSkater.CurrentDestinationNode.next != 0 then
+						set currentSkater.CurrentDestinationNode = currentSkater.CurrentDestinationNode.next
 					else
 						//instantly reset to starting state -- only occurs if the ends of the destination chain are NOT connected
-						set currentSkater.CurrentDestination = currentSkater.Destinations.first.next
+						set currentSkater.CurrentDestinationNode = currentSkater.Destinations.first.next
 						call SetUnitPosition(currentSkater.SkateUnit, Destination(currentSkater.Destinations.first.value).Position.x, Destination(currentSkater.Destinations.first.value).Position.y)
-						call SetUnitFacing(currentSkater.SkateUnit, Destination(currentSkater.CurrentDestination.value).AngleFromPrevious)
+						call SetUnitFacing(currentSkater.SkateUnit, Destination(currentSkater.CurrentDestinationNode.value).AngleFromPrevious)
 					endif
 					
-					call DisplayTextToForce(bj_FORCE_PLAYER[0], "Next destination is " + I2S(currentSkater.CurrentDestination.value))
-					call Destination(currentSkater.CurrentDestination.value).print()
+					call DisplayTextToForce(bj_FORCE_PLAYER[0], "Next destination is " + I2S(currentSkater.CurrentDestinationNode.value))
+					call Destination(currentSkater.CurrentDestinationNode.value).print()
 				endif
 				*/
 				
@@ -278,16 +306,16 @@ library IceSkater requires SimpleList, Vector2, IceMovement
 				//set facing = facing + .CurrentAngleDelta
 				//set unitDirection = vector2.create(Cos(facing + .CurrentAngleDelta), Sin(facing + .CurrentAngleDelta))
 				
-				call SetUnitFacingTimed(currentSkater.SkateUnit, Destination(currentSkater.CurrentDestination.value).AngleFromPrevious + currentSkater.CurrentAngleDelta, TURN_SMOOTH_DURATION)
+				call SetUnitFacingTimed(currentSkater.SkateUnit, Destination(currentSkater.CurrentDestinationNode.value).AngleFromPrevious + currentSkater.CurrentAngleDelta, TURN_SMOOTH_DURATION)
 			set currentSkaterNode = currentSkaterNode.next
 			endloop
 		endmethod
 		
 		public method Start takes nothing returns nothing
 			if not thistype.ActiveSkaters.contains(this) then
-				//set .CurrentDestination = .Destinations.first.next
+				//set .CurrentDestinationNode = .Destinations.first.next
 				//call SetUnitPosition(.SkateUnit, Destination(.Destinations.first.value).Position.x, Destination(.Destinations.first.value).Position.y)
-				//call SetUnitFacing(.SkateUnit, Destination(.CurrentDestination.value).AngleFromPrevious)
+				//call SetUnitFacing(.SkateUnit, Destination(.CurrentDestinationNode.value).AngleFromPrevious)
 				call .SetDefaults()
 				
 				call ShowUnit(.SkateUnit, true)
@@ -297,7 +325,7 @@ library IceSkater requires SimpleList, Vector2, IceMovement
 				
 				if ActiveSkaters.count == 1 then
                     call TimerStart(t, TIMESTEP, true, function thistype.UpdateSkaters)
-                    call DisplayTextToForce(bj_FORCE_PLAYER[0], "Started NPC skater timer")
+                    // call DisplayTextToForce(bj_FORCE_PLAYER[0], "Started NPC skater timer")
                 endif
 			endif
 		endmethod
@@ -310,7 +338,7 @@ library IceSkater requires SimpleList, Vector2, IceMovement
 				
 				if thistype.ActiveSkaters.count == 0 then
                     call PauseTimer(t)
-                    call DisplayTextToForce(bj_FORCE_PLAYER[0], "Paused NPC skater timer")
+                    // call DisplayTextToForce(bj_FORCE_PLAYER[0], "Paused NPC skater timer")
                 endif
 			endif
 		endmethod
@@ -328,7 +356,7 @@ library IceSkater requires SimpleList, Vector2, IceMovement
 			endloop
 			
 			call .Destinations.destroy()
-			set .CurrentDestination = 0
+			set .CurrentDestinationNode = 0
 			
 			call RemoveUnit(.SkateUnit)
 			set .SkateUnit = null
@@ -341,14 +369,16 @@ library IceSkater requires SimpleList, Vector2, IceMovement
 			set new.Destinations = SimpleList_List.create()
 			call new.AddDestination(start)
 			call new.AddDestination(next)
-			set new.CurrentDestination = new.Destinations.first.next
+			set new.CurrentDestinationNode = new.Destinations.first.next
 			
-			set new.SkateUnit = CreateUnit(NPC_SKATE_PLAYER, unitID, start.x, start.y, Destination(new.CurrentDestination.value).AngleFromPrevious)
+			set new.SkateUnit = CreateUnit(NPC_SKATE_PLAYER, unitID, start.x, start.y, Destination(new.CurrentDestinationNode.value).AngleFromPrevious)
 			call IndexedUnit.create(new.SkateUnit)
 			//call ShowUnit(new.SkateUnit, false)
 			
 			set new.MaxAngleDelta = maxAngle
 			set new.AngleChangeRate = rawAngleChangeRate*TIMESTEP
+			
+			set new.InitialAngleDirection = -1
 			
 			//set new.CurrentAngleDelta = 0
 			//set new.CurrentAngleDirection = -1
@@ -359,6 +389,8 @@ library IceSkater requires SimpleList, Vector2, IceMovement
 		
 		private static method onInit takes nothing returns nothing
 			set thistype.ActiveSkaters = SimpleList_List.create()
+			
+			set thistype.OnSkaterReset = Event.create()
 		endmethod
 	endstruct
 endlibrary

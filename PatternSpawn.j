@@ -36,7 +36,8 @@ library PatternSpawn requires Draw
 			endif
 			
 			static if DEBUG_PATTERN then
-				debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "Spawning for pattern " + I2S(this))
+				call DisplayTextToForce(bj_FORCE_PLAYER[0], "Spawning for pattern " + I2S(this))
+				call DisplayTextToForce(bj_FORCE_PLAYER[0], "Current cycle " + I2S(.CurrentCycle))
 			endif
 			
 			return .SpawnCB.evaluate(this, parentLevel)

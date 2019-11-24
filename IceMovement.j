@@ -64,9 +64,11 @@ function AdvancedIceMovement takes nothing returns nothing
 			call IssueImmediateOrder(u, "stop")
 		else
 			//handle non-player units
-			//call DisplayTextToForce(bj_FORCE_PLAYER[0], "Skating NPC in direction: " + R2S(GetUnitFacing(u)))
-			call SetUnitX(u, GetUnitX(u) + NPC_SKATE_SPEED * Cos(GetUnitFacing(u) * DEGREE_TO_RADIANS))
-			call SetUnitY(u, GetUnitY(u) + NPC_SKATE_SPEED * Sin(GetUnitFacing(u) * DEGREE_TO_RADIANS))
+			// call DisplayTextToForce(bj_FORCE_PLAYER[0], "Skating NPC in direction: " + R2S(GetUnitFacing(u)))
+			// call DisplayTextToForce(bj_FORCE_PLAYER[0], "Skating NPC with speed: " + R2S(IndexedUnit[u].MoveSpeed))
+			
+			call SetUnitX(u, GetUnitX(u) + IndexedUnit[u].MoveSpeed * TIMEOUT * Cos(GetUnitFacing(u) * DEGREE_TO_RADIANS))
+			call SetUnitY(u, GetUnitY(u) + IndexedUnit[u].MoveSpeed * TIMEOUT * Sin(GetUnitFacing(u) * DEGREE_TO_RADIANS))
 			call IssueImmediateOrder(u, "stop")
 		endif
 		

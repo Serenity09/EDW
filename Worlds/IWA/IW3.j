@@ -65,32 +65,34 @@ library IW3 requires Recycle, Levels
 		set jtimber.AllOrders.last.next = jtimber.AllOrders.first
         
 		//
-		set nsync = SynchronizedGroup.create()
-		call l.AddStartable(nsync)
+		// set nsync = SynchronizedGroup.create()
+		// call l.AddStartable(nsync)
 		
-		set jtimber = nsync.AddUnit(LGUARD)
-		call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_Rect_182))
-		call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_Rect_183))
-		set jtimber.AllOrders.last.next = jtimber.AllOrders.first
+		// set jtimber = nsync.AddUnit(LGUARD)
+		// call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_Rect_182))
+		// call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_Rect_183))
+		// set jtimber.AllOrders.last.next = jtimber.AllOrders.first
 		
-		set jtimber = nsync.AddUnit(LGUARD)
-		call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_Rect_184))
-		call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_Rect_185))
-		set jtimber.AllOrders.last.next = jtimber.AllOrders.first
+		// set jtimber = nsync.AddUnit(LGUARD)
+		// call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_Rect_184))
+		// call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_Rect_185))
+		// set jtimber.AllOrders.last.next = jtimber.AllOrders.first
+		
+		call l.AddStartable(IceSkaterGenerator.create(PatternSpawn.create(IW3SkaterPattern, 3), 5.))
 		
 		//
-		set nsync = SynchronizedGroup.create()
-		call l.AddStartable(nsync)
+		// set nsync = SynchronizedGroup.create()
+		// call l.AddStartable(nsync)
 		
-		set jtimber = nsync.AddUnit(LGUARD)
-		call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_Rect_186))
-		call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_Rect_187))
-		set jtimber.AllOrders.last.next = jtimber.AllOrders.first
+		// set jtimber = nsync.AddUnit(LGUARD)
+		// call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_Rect_186))
+		// call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_Rect_187))
+		// set jtimber.AllOrders.last.next = jtimber.AllOrders.first
 		
-		set jtimber = nsync.AddUnit(LGUARD)
-		call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_Rect_188))
-		call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_Rect_189))
-		set jtimber.AllOrders.last.next = jtimber.AllOrders.first
+		// set jtimber = nsync.AddUnit(LGUARD)
+		// call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_Rect_188))
+		// call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_Rect_189))
+		// set jtimber.AllOrders.last.next = jtimber.AllOrders.first
 		
 		//
 		set nsync = SynchronizedGroup.create()
@@ -185,15 +187,15 @@ library IW3 requires Recycle, Levels
 		// call Recycle_MakeUnitAndPatrolRect(LGUARD, gg_rct_Rect_184, gg_rct_Rect_185)
 		// call Recycle_MakeUnitAndPatrolRect(LGUARD, gg_rct_Rect_186, gg_rct_Rect_187)
 		// call Recycle_MakeUnitAndPatrolRect(LGUARD, gg_rct_Rect_188, gg_rct_Rect_189)
-		call Recycle_MakeUnitAndPatrolRect(LGUARD, gg_rct_Rect_190, gg_rct_Rect_191)
-		call Recycle_MakeUnitAndPatrolRect(LGUARD, gg_rct_Rect_192, gg_rct_Rect_193)
-		call Recycle_MakeUnitAndPatrolRect(LGUARD, gg_rct_Rect_194, gg_rct_Rect_195)
-		call Recycle_MakeUnitAndPatrolRect(LGUARD, gg_rct_Rect_196, gg_rct_Rect_197)
+		// call Recycle_MakeUnitAndPatrolRect(LGUARD, gg_rct_Rect_190, gg_rct_Rect_191)
+		// call Recycle_MakeUnitAndPatrolRect(LGUARD, gg_rct_Rect_192, gg_rct_Rect_193)
+		// call Recycle_MakeUnitAndPatrolRect(LGUARD, gg_rct_Rect_194, gg_rct_Rect_195)
+		// call Recycle_MakeUnitAndPatrolRect(LGUARD, gg_rct_Rect_196, gg_rct_Rect_197)
 		// call Recycle_MakeUnitAndPatrolRect(LGUARD, gg_rct_Rect_198, gg_rct_Rect_199)
 		// call Recycle_MakeUnitAndPatrolRect(LGUARD, gg_rct_Rect_200, gg_rct_Rect_201)
-		if RewardMode == GameModesGlobals_HARD then
-			call Recycle_MakeUnitAndPatrolRect(LGUARD, gg_rct_Rect_207, gg_rct_Rect_208)
-		endif
+		// if RewardMode == GameModesGlobals_HARD then
+			// call Recycle_MakeUnitAndPatrolRect(LGUARD, gg_rct_Rect_207, gg_rct_Rect_208)
+		// endif
 		
 		if RewardMode != GameModesGlobals_HARD then
 			call Recycle_MakeUnitAndPatrolRect(LGUARD, gg_rct_Rect_202, gg_rct_Rect_203)

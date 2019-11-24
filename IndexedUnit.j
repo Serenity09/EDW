@@ -1,7 +1,8 @@
 library IndexedUnit requires UnitDefaultRadius
 	struct IndexedUnit extends array
 		public unit Unit
-		public IStartable ParentStartable
+		//replace the UnitUserData property that was taken
+		public integer Data
 		readonly real MoveSpeed //can be any real, max value depends on the struct using the custom movespeed
 		
 		public boolean Collideable
