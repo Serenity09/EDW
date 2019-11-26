@@ -1,4 +1,4 @@
-library InGameCommands initializer init requires MazerGlobals, Platformer, RelayGenerator, Deferred
+library InGameCommands initializer init requires MazerGlobals, Platformer, RelayGenerator, Deferred, EDWQuests
 	function ExportPlatformingVariables takes Platformer p returns nothing
 		//display all variables on screen
 		//call DisplayTextToForce(bj_FORCE_PLAYER[p.PID], "[tvx] Terminal Velocity X: " + R2S(p.TerminalVelocityX / PlatformerGlobals_GAMELOOP_TIMESTEP))
@@ -69,15 +69,18 @@ library InGameCommands initializer init requires MazerGlobals, Platformer, Relay
 
 	function PrintMemoryAnalysis takes integer pID returns nothing
 		call DisplayTextToForce(bj_FORCE_PLAYER[pID], "Memory Analysis:")
-		debug call DisplayTextToForce(bj_FORCE_PLAYER[pID], "Vector2: " + I2S(vector2.calculateMemoryUsage()))
-		debug call DisplayTextToForce(bj_FORCE_PLAYER[pID], "SimpleList: " + I2S(SimpleList_List.calculateMemoryUsage()))
-		debug call DisplayTextToForce(bj_FORCE_PLAYER[pID], "SimpleListNode: " + I2S(SimpleList_ListNode.calculateMemoryUsage()))
-		debug call DisplayTextToForce(bj_FORCE_PLAYER[pID], "PlatformerPropertyEquation: " + I2S(PlatformerPropertyEquation.calculateMemoryUsage()))
-		debug call DisplayTextToForce(bj_FORCE_PLAYER[pID], "PlatformerPropertyAdjustment: " + I2S(PlatformerPropertyAdjustment.calculateMemoryUsage()))
-		debug call DisplayTextToForce(bj_FORCE_PLAYER[pID], "RelayUnit: " + I2S(RelayUnit.calculateMemoryUsage()))
-		debug call DisplayTextToForce(bj_FORCE_PLAYER[pID], "Deferred: " + I2S(Deferred.calculateMemoryUsage()))
-		debug call DisplayTextToForce(bj_FORCE_PLAYER[pID], "Deferred Awaiter: " + I2S(DeferredAwaiter.calculateMemoryUsage()))
-		debug call DisplayTextToForce(bj_FORCE_PLAYER[pID], "IndexedUnit: " + I2S(IndexedUnit.calculateMemoryUsage()))
+		static if MemoryAnalysis_ENABLED then
+			call DisplayTextToForce(bj_FORCE_PLAYER[pID], "Vector2: " + I2S(vector2.calculateMemoryUsage()))
+			call DisplayTextToForce(bj_FORCE_PLAYER[pID], "SimpleList: " + I2S(SimpleList_List.calculateMemoryUsage()))
+			call DisplayTextToForce(bj_FORCE_PLAYER[pID], "SimpleListNode: " + I2S(SimpleList_ListNode.calculateMemoryUsage()))
+			call DisplayTextToForce(bj_FORCE_PLAYER[pID], "PlatformerPropertyEquation: " + I2S(PlatformerPropertyEquation.calculateMemoryUsage()))
+			call DisplayTextToForce(bj_FORCE_PLAYER[pID], "PlatformerPropertyAdjustment: " + I2S(PlatformerPropertyAdjustment.calculateMemoryUsage()))
+			call DisplayTextToForce(bj_FORCE_PLAYER[pID], "RelayUnit: " + I2S(RelayUnit.calculateMemoryUsage()))
+			call DisplayTextToForce(bj_FORCE_PLAYER[pID], "Deferred: " + I2S(Deferred.calculateMemoryUsage()))
+			call DisplayTextToForce(bj_FORCE_PLAYER[pID], "Deferred Awaiter: " + I2S(DeferredAwaiter.calculateMemoryUsage()))
+			call DisplayTextToForce(bj_FORCE_PLAYER[pID], "IndexedUnit: " + I2S(IndexedUnit.calculateMemoryUsage()))
+			call DisplayTextToForce(bj_FORCE_PLAYER[pID], "--------------------")
+		endif
 	endfunction
 
 	function RelayCallback takes nothing returns nothing
@@ -354,6 +357,10 @@ library InGameCommands initializer init requires MazerGlobals, Platformer, Relay
 				elseif u.GameMode == Teams_GAMEMODE_STANDARD_PAUSED or u.GameMode == Teams_GAMEMODE_PLATFORMING_PAUSED then
 					call u.Pause(false)
 				endif
+			elseif cmd == "language" or cmd == "lang" then
+				call DisplayTextToPlayer(Player(u), 0, 0, "Current language: " + u.LanguageCode)
+			elseif cmd == "quests" then
+				call LocalizeAllQuestsForPlayer(u)
 			elseif cmd == "a" or cmd == "animate" then
 				set unitgroup = CreateGroup()
 				call GroupEnumUnitsSelected(unitgroup, Player(pID), null)

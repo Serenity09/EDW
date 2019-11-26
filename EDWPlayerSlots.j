@@ -6,7 +6,7 @@ library EDWPlayerSlots requires MazerGlobals, User, PlayerUtils, VisualVote, Tea
         
 		//TODO remove -- functionality deprecated / replaced by User
 		//initialize player utility collection
-		call PlayerUtils_Init()
+		// call PlayerUtils_Init()
 		
 		//initialize visual vote selection events
 		call VisualVote_Init()

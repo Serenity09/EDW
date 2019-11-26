@@ -1,4 +1,4 @@
-library PlayerUtils requires SimpleList, GameGlobalConstants
+library PlayerUtils initializer Init requires SimpleList, GameGlobalConstants
 //===========================================================================
 // "PlayerUtils" by Alain.Mark
 //
@@ -62,7 +62,7 @@ library PlayerUtils requires SimpleList, GameGlobalConstants
         endfunction
         
     //=======================================================================
-        public function Init takes nothing returns nothing
+        private function Init takes nothing returns nothing
             local player  pl
             local integer n = 0
             
