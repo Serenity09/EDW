@@ -1,4 +1,4 @@
-library User requires UnitDefaultRadius, MazerGlobals, Platformer, TerrainHelpers, Cinema
+library User requires UnitDefaultRadius, MazerGlobals, Platformer, TerrainHelpers, Cinema, Localization
 
 globals
 	User TriggerUser //used with events
@@ -57,6 +57,9 @@ struct User extends array
 	// public real CameraIdleTime //only as accurate as the last sync
 	readonly real AFKPlatformerDeathClock
 	
+	//consider syncing this at game start so it can be depended on / changed in game without desyncing
+	readonly string LanguageCode
+	
     public static integer ActivePlayers
 	
 	// private static trigger AFKLocalCameraTimeSyncEvent
@@ -71,10 +74,6 @@ struct User extends array
 	// public static vector2 LocalUserMousePosition
 	
 	private static Cinematic ToggleCameraTrackingTutorial
-		    
-    //MOST IMPORTANT that "this" returns the exact player ID without having to remember to add / subtract 1
-    //also no need to recycle users, let's just keep a basic count
-    private static integer count = -1
     
 	public method SetActiveEffect takes string strEffect, string attachPoint returns nothing
 		if .ActiveEffect != null then
@@ -134,12 +133,12 @@ struct User extends array
 	endmethod
 	
     public static method DisplayMessageAll takes string message returns nothing
-        local integer i = 0
+        local SimpleList_ListNode curUserNode = PlayerUtils_FirstPlayer
         
         loop
-        exitwhen i > count
-            call User(i).DisplayMessage(message, 0)
-        set i = i + 1
+        exitwhen curUserNode == 0
+            call User(curUserNode.value).DisplayMessage(message, 0)
+        set curUserNode = curUserNode.next
         endloop
     endmethod
     
@@ -479,7 +478,7 @@ struct User extends array
 		
         //set .LastTransferTime = GameElapsedTime()
     endmethod
-	
+		
 	public method SetKeyColor takes integer keyColor returns nothing
 		if MazerColor[this] != keyColor then
 			set MazerColor[this] = keyColor
@@ -993,7 +992,7 @@ struct User extends array
 	public method ToggleAFK takes nothing returns nothing
 		local SyncRequest request
 		
-		//this hurts, but its advantageous to have GetStylizedPlayerName include the AFK prefix in every other situation but this
+		//this could be more elegant, but applying this logic first lets GetStylizedPlayerName stay simple
 		if not .IsAFK then
 			if DEBUG_AFK or .Team.Users.count > 1 then
 				call .Team.PrintMessage(.GetStylizedPlayerName() + " is now AFK!")
@@ -1004,8 +1003,6 @@ struct User extends array
 		
 		if .IsAFK then
 			if DEBUG_AFK or .Team.Users.count > 1 then
-				// call .Team.PrintMessage(.GetStylizedPlayerName() + " is now AFK!")
-				
 				if .GameMode == Teams_GAMEMODE_STANDARD or .GameMode == Teams_GAMEMODE_STANDARD_PAUSED then
 					call .Team.SetSharedControlForTeam(this, true)
 				elseif .GameMode == Teams_GAMEMODE_PLATFORMING or .GameMode == Teams_GAMEMODE_PLATFORMING_PAUSED then
@@ -1031,19 +1028,26 @@ struct User extends array
 				call .Team.SetSharedControlForTeam(this, false)
 				
 				if .GameMode == Teams_GAMEMODE_STANDARD then
+					//why does this need to happen here? couldn't it just happen in the original async check?
 					//check that unit is not near owner's camera bounds as well
-					set request = SyncRequest.create(OnUnapplyAFKStandard, this)
-					// set request = SyncRequest.create()
-					// call request.Then(OnUnapplyAFKStandard, 0, this)
 					
-					if GetLocalPlayer() == Player(this) then
-						call request.Sync(B2S(RAbsBJ(GetCameraTargetPositionX() - GetUnitX(.ActiveUnit)) >= CAMERA_TARGET_POSITION_PAUSE_X_FLEX or (GetCameraTargetPositionY() >= GetUnitY(.ActiveUnit) and GetCameraTargetPositionY() - GetUnitY(.ActiveUnit) >= CAMERA_TARGET_POSITION_PAUSE_Y_BOTTOM_FLEX) or (GetCameraTargetPositionY() < GetUnitY(.ActiveUnit) and GetUnitY(.ActiveUnit) - GetCameraTargetPositionY()  >= CAMERA_TARGET_POSITION_PAUSE_Y_TOP_FLEX)))
+					//this is saying only go through with removing AFK status if the user's active unit is far from its original position
+					//checking this here requires an additional sync, is there ANY reason not to just check this during the original toggle?
+					//is there any reason to check this at all?
+					// set request = SyncRequest.create(OnUnapplyAFKStandard, this)
+					
+					// if GetLocalPlayer() == Player(this) then
+						// call request.Sync(B2S(RAbsBJ(GetCameraTargetPositionX() - GetUnitX(.ActiveUnit)) >= CAMERA_TARGET_POSITION_PAUSE_X_FLEX or (GetCameraTargetPositionY() >= GetUnitY(.ActiveUnit) and GetCameraTargetPositionY() - GetUnitY(.ActiveUnit) >= CAMERA_TARGET_POSITION_PAUSE_Y_BOTTOM_FLEX) or (GetCameraTargetPositionY() < GetUnitY(.ActiveUnit) and GetUnitY(.ActiveUnit) - GetCameraTargetPositionY()  >= CAMERA_TARGET_POSITION_PAUSE_Y_TOP_FLEX)))
 						
-						// call DisplayTextToPlayer(GetLocalPlayer(), 0, 0, "Unpause AFK, pt 1: " + B2S(RAbsBJ(GetCameraTargetPositionX() - GetUnitX(.ActiveUnit)) >= CAMERA_TARGET_POSITION_PAUSE_X_FLEX) + ", pt 2: " + B2S(GetCameraTargetPositionY() >= GetUnitY(.ActiveUnit) and GetCameraTargetPositionY() - GetUnitY(.ActiveUnit) >= CAMERA_TARGET_POSITION_PAUSE_Y_BOTTOM_FLEX) + ", pt 3: " + B2S(GetCameraTargetPositionY() < GetUnitY(.ActiveUnit) and GetUnitY(.ActiveUnit) - GetCameraTargetPositionY()  >= CAMERA_TARGET_POSITION_PAUSE_Y_TOP_FLEX))
-					endif
+						// // call DisplayTextToPlayer(GetLocalPlayer(), 0, 0, "Unpause AFK, pt 1: " + B2S(RAbsBJ(GetCameraTargetPositionX() - GetUnitX(.ActiveUnit)) >= CAMERA_TARGET_POSITION_PAUSE_X_FLEX) + ", pt 2: " + B2S(GetCameraTargetPositionY() >= GetUnitY(.ActiveUnit) and GetCameraTargetPositionY() - GetUnitY(.ActiveUnit) >= CAMERA_TARGET_POSITION_PAUSE_Y_BOTTOM_FLEX) + ", pt 3: " + B2S(GetCameraTargetPositionY() < GetUnitY(.ActiveUnit) and GetUnitY(.ActiveUnit) - GetCameraTargetPositionY()  >= CAMERA_TARGET_POSITION_PAUSE_Y_TOP_FLEX))
+					// endif
+					set .AFKPlatformerDeathClock = AFK_UNPAUSE_BUFFER
+					call .Pause(true)
+					call .ApplyDefaultCameras(AFK_PAN_CAMERA_DURATION)
+					call .ApplyDefaultSelections()
+					
+					call TimerStart(NewTimerEx(this), AFK_PAN_CAMERA_DURATION, false, function thistype.PanAFKCameraCB)
 				endif
-				
-				
 			endif
 		endif
 		
@@ -1057,17 +1061,18 @@ struct User extends array
 	endmethod
 		
 	private method CheckAFKPlayer takes real timeElapsed returns nothing
-		//call sync AFK checks, sync wrappers around async data
+		//call sync AFK logic
 		if this.GameMode == Teams_GAMEMODE_PLATFORMING and not this.PlatformerStartStable and ((this.Platformer.PushedAgainstVector != 0 and this.Platformer.YVelocity == 0.) or this.Platformer.HorizontalAxisState != 0) then
 			set this.PlatformerStartStable = true
 			
+			//special case where the local player's camera target should be reset on PlatformerStartStable -> true
 			if GetLocalPlayer() == Player(this) and this.Platformer.HorizontalAxisState == 0 then
 				set thistype.LocalCameraTargetPosition.x = GetCameraTargetPositionX()
 				set thistype.LocalCameraTargetPosition.y = GetCameraTargetPositionY()
 			endif
 		endif
 		
-		//call async AFK checks
+		//call async AFK logic
 		if GetLocalPlayer() == Player(this) then
 			if this.GameMode == Teams_GAMEMODE_PLATFORMING or this.GameMode == Teams_GAMEMODE_PLATFORMING_PAUSED then				
 				if this.Platformer.HorizontalAxisState != 0 or (this.PlatformerStartStable and (GetCameraTargetPositionX() != LocalCameraTargetPosition.x or GetCameraTargetPositionY() != LocalCameraTargetPosition.y)) then
@@ -1079,6 +1084,7 @@ struct User extends array
 					set thistype.LocalCameraIdleTime = thistype.LocalCameraIdleTime + timeElapsed
 				endif
 			else
+				//TODO check mouse position, if that ever gets an async API
 				if RAbsBJ(GetCameraTargetPositionX() - LocalCameraTargetPosition.x) > CAMERA_TARGET_POSITION_FLEX or RAbsBJ(GetCameraTargetPositionY() - LocalCameraTargetPosition.y) > CAMERA_TARGET_POSITION_FLEX then
 					// call DisplayTextToPlayer(GetLocalPlayer(), 0, 0, "Difference for camera destination x: " + R2S(RAbsBJ(GetCameraTargetPositionX() - LocalCameraTargetPosition.x)) + ", y: " + R2S(RAbsBJ(GetCameraTargetPositionY() - LocalCameraTargetPosition.y)))
 					
@@ -1087,20 +1093,10 @@ struct User extends array
 					set thistype.LocalCameraTargetPosition.x = GetCameraTargetPositionX()
 					set thistype.LocalCameraTargetPosition.y = GetCameraTargetPositionY()
 				else
-					// if .IsAFK then
-						// call DisplayTextToPlayer(GetLocalPlayer(), 0, 0, "(No) Difference for camera destination x: " + R2S(RAbsBJ(GetCameraTargetPositionX() - LocalCameraTargetPosition.x)) + ", y: " + R2S(RAbsBJ(GetCameraTargetPositionY() - LocalCameraTargetPosition.y)))
-						// call DisplayTextToPlayer(GetLocalPlayer(), 0, 0, "Full boolean: " + B2S(RAbsBJ(GetCameraTargetPositionX() - LocalCameraTargetPosition.x) > CAMERA_TARGET_POSITION_FLEX or RAbsBJ(GetCameraTargetPositionY() - LocalCameraTargetPosition.y) > CAMERA_TARGET_POSITION_FLEX) + ", pt 1: " + B2S(RAbsBJ(GetCameraTargetPositionX() - LocalCameraTargetPosition.x) > CAMERA_TARGET_POSITION_FLEX) + ", pt 2: " + B2S(RAbsBJ(GetCameraTargetPositionY() - LocalCameraTargetPosition.y) > CAMERA_TARGET_POSITION_FLEX))
-					// endif
-
 					set thistype.LocalCameraIdleTime = thistype.LocalCameraIdleTime + timeElapsed
 				endif
 			endif
 			
-			//if (this.IsAFK and thistype.LocalCameraIdleTime < AFK_CAMERA_MAX_TIMEOUT) or /*
-			//	*/(not this.IsAFK and /*
-			//	*/((thistype.LocalCameraIdleTime >= AFK_CAMERA_MAX_TIMEOUT) or /*
-			//	*/(thistype.LocalCameraIdleTime >= AFK_MANUAL_CHECK_FACTOR * AFK_CAMERA_MAX_TIMEOUT)) then
-			//
 			if (this.IsAFK and thistype.LocalCameraIdleTime < thistype.LocalAFKThreshold) or (not this.IsAFK and thistype.LocalCameraIdleTime >= thistype.LocalAFKThreshold) then
 				// call DisplayTextToPlayer(GetLocalPlayer(), 0, 0, "On sync event, idle time: " + R2S(thistype.LocalCameraIdleTime))
 				call BlzSendSyncData(AFK_SYNC_EVENT_PREFIX, I2S(this))
@@ -1117,93 +1113,20 @@ struct User extends array
 		set curUserNode = curUserNode.next
 		endloop
 	endmethod
-	
-	// private static method ClearSyncLocalCameraPromises takes nothing returns nothing
-		// local SimpleList_ListNode curCameraPromiseNode
+	            
+	private static method SyncUserLanguageCode takes SyncRequest request, User user returns integer
+		set user.LanguageCode = request.Data
+		call DisplayTextToPlayer(Player(user), 0, 0, request.Data)
 		
-		// loop
-		// set curCameraPromiseNode = AFKSyncLocalCameraTimePromises.pop()
-		// exitwhen curCameraPromiseNode == 0
-			// call Deferred(curCameraPromiseNode.value).destroy()
-			
-			// call curCameraPromiseNode.deallocate()
-		// endloop
-	// endmethod
-	// private static method OnSyncAll takes integer result, All allCameraTimeSynced returns integer
-		// local SimpleList_ListNode curUserNode = PlayerUtils_FirstPlayer
+		call request.destroy()
 		
-		// call DisplayTextToPlayer(Player(0), 0, 0, "All camera idle times synced (all: " + I2S(allCameraTimeSynced) + ")")
-		
-		// loop
-		// exitwhen curUserNode == 0
-			// call DisplayTextToPlayer(Player(0), 0, 0, "Idle time: " + R2S(User(curUserNode.value).CameraIdleTime))
-		// set curUserNode = curUserNode.next
-		// endloop
-		
-		// // call allCameraTimeSynced.destroy()
-		
-		// return 0
-	// endmethod
-	// private static method OnSyncLocal takes nothing returns boolean
-		// local string data = BlzGetTriggerSyncData()
-		// local integer uIndex = S2I(SubString(data, 0, 1))
-		// local User u = PlayerUtils_PlayerList.get(uIndex).value
-		// // local real time = S2R(SubString(data, 1, StringLength(data)))
-		
-		// // // call DisplayTextToPlayer(Player(0), 0, 0, "user index: " + I2S(uIndex) + ", user: " + I2S(u) + ", time: " + R2S(time))
-		
-		// // set u.CameraIdleTime = time
-		
-		// // call DisplayTextToPlayer(Player(0), 0, 0, "user index: " + I2S(uIndex) + ", user: " + I2S(u) + ", time: " + R2S(S2R(SubString(data, 1, StringLength(data)))))
-		
-		// set u.CameraIdleTime = S2R(SubString(data, 1, StringLength(data)))
-		// call Deferred(thistype.AFKSyncLocalCameraTimePromises.get(uIndex).value).Resolve(u)
-		
-		// return false
-	// endmethod
-	
-	// public method IsAFKSync takes nothing returns boolean
-		// // call DisplayTextToPlayer(Player(0), 0, 0, "User: " + I2S(this) + ", idle time: " + R2S(.CameraIdleTime) + ", threshold: " + R2S(AFK_MANUAL_CHECK_FACTOR * AFK_CAMERA_MAX_TIMEOUT))
-		
-		// return .CameraIdleTime >=  AFK_MANUAL_CHECK_FACTOR * AFK_CAMERA_MAX_TIMEOUT
-	// endmethod
-	// public static method SyncLocalCameraIdleTime takes nothing returns Deferred
-		// local SimpleList_ListNode curUserNode = PlayerUtils_FirstPlayer
-		// local integer i = 0
-		// // local Deferred allCameraTimeSynced
-		
-		// call ClearSyncLocalCameraPromises()
-		
-		// loop
-		// exitwhen curUserNode == 0
-			// call AFKSyncLocalCameraTimePromises.addEnd(Deferred.create())
-			
-			// if GetLocalPlayer() == Player(curUserNode.value) then
-				// //TODO encode to base-whatever to support max possible players
-				// call BlzSendSyncData(LOCAL_CAMERA_IDLE_TIME_EVENT_PREFIX, I2S(i) + R2S(thistype.LocalCameraIdleTime))
-			// endif
-		// set curUserNode = curUserNode.next
-		// set i = i + 1
-		// endloop
-		
-		// // set allCameraTimeSynced = All(AFKSyncLocalCameraTimePromises)
-		// // //TODO move this to the caller
-		// // // call allCameraTimeSynced.Then(thistype.OnSyncAll, 0, allCameraTimeSynced)
-		
-		// // return allCameraTimeSynced
-		
-		// return All(AFKSyncLocalCameraTimePromises)
-	// endmethod
-	        
-    static method allocate takes nothing returns thistype
-        set .count = .count + 1
-        return .count
-    endmethod
+		return 0
+	endmethod
+    public static method create takes integer playerID returns thistype
+        local thistype new
+		local SyncRequest request
         
-    public static method create takes nothing returns thistype
-        local thistype new 
-        
-        set new = thistype.allocate()
+        set new = playerID
         
         //debug call DisplayTextToPlayer(Player(0), 0, 0, "Creating User: " + I2S(new))
         
@@ -1231,6 +1154,11 @@ struct User extends array
 		
 		set new.LastCollidedUnit = null
 		set new.LastCollidedUnitTimer = NewTimerEx(new)
+		
+		set request = SyncRequest.create(thistype.SyncUserLanguageCode, new)
+		if GetLocalPlayer() == Player(new) then
+			call request.Sync(GetLanguageCode())
+		endif
 		
         return new
     endmethod
@@ -1274,7 +1202,7 @@ struct User extends array
             
             //if GetPlayerSlotState(Player(n))==PLAYER_SLOT_STATE_PLAYING then
                 if GetPlayerController(Player(n))==MAP_CONTROL_USER then
-                    call User.create()
+                    call User.create(n)
                 endif
             //endif
         set n=n+1
