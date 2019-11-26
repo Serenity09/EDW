@@ -91,6 +91,10 @@ library Deferred requires Alloc, SimpleList
 					// call curAwaiter.deallocate()
 				set curAwaiter = curAwaiter.next
 				endloop
+			static if LIBRARY_ErrorMessage then
+			else
+				call ThrowError(false, "Deferred", "Resolve", null, 0, "Deferred " + I2S(this) + " has already been resolved!")
+			endif
 			endif
 		endmethod
 		
