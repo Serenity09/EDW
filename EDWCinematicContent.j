@@ -158,6 +158,7 @@ library EDWCinematicContent requires EDWLevelContent, Cinema, EDWGameTime
 		
 		set cineMsg = CinemaMessage.create(null, GetEDWSpeakerMessage(PRIMARY_SPEAKER_NAME, "Press the up arrow key to jump!", DEFAULT_TEXT_COLOR), DEFAULT_MEDIUM_TEXT_SPEED)
         set cine = Cinematic.create(gg_rct_SargeJumpIntro, true, false, cineMsg)
+		set cine.ActivationCondition = IsUserNotInCinema
 		call Levels_Level(1).AddCinematic(cine)
         
         set cineMsg = CinemaMessage.create(null, GetEDWSpeakerMessage(PRIMARY_SPEAKER_NAME, "Jesus christ, no, not like that", DEFAULT_TEXT_COLOR), DEFAULT_SHORT_TEXT_SPEED)

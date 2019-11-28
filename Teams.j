@@ -56,7 +56,7 @@ public struct MazingTeam extends array
     // public real LastTransferTime
 	// public boolean IsRemainingTeamAFK
     public Levels_Level OnLevel
-    public string TeamName
+    public string TeamName // TODO allow custom player defined team names
     public integer OnCheckpoint //Used purely in conjunction with levels struct. ==0 refers to the initial CP for a level
     private integer Score
     public real Weight
@@ -315,6 +315,28 @@ public struct MazingTeam extends array
             set curTeamNode = curTeamNode.next
         endloop
 	endmethod
+	
+	public method LocalizeMessage takes integer contentID returns nothing
+        local SimpleList_ListNode fp = .FirstUser
+        
+        loop
+        exitwhen fp == 0
+            call User(fp.value).DisplayLocalizedMessage(contentID, 0)
+        set fp = fp.next
+        endloop
+    endmethod
+	public static method LocalizeMessageAll takes integer contentID, MazingTeam filterTeam returns nothing
+		local SimpleList_ListNode curTeamNode = thistype.AllTeams.first
+        
+        loop
+        exitwhen curTeamNode == 0
+            if filterTeam == 0 or curTeamNode.value != filterTeam then
+				call MazingTeam(curTeamNode.value).LocalizeMessage(contentID)
+			endif
+			
+            set curTeamNode = curTeamNode.next
+        endloop
+	endmethod
     
     //returns -1 if could not find that player in this.plist
     public method ConvertPlayerID takes integer pID returns User
@@ -509,7 +531,7 @@ public struct MazingTeam extends array
         call Users.addEnd(User(pID))
         set User(pID).Team = this
         set User(pID).IsPlaying = true
-        
+		        
         //check if this was the first player added to the team
         if Users.count == 1 then
             set .FirstUser = Users.first
@@ -534,7 +556,7 @@ public struct MazingTeam extends array
             set pID = u
             
             if GetPlayerSlotState(Player(pID)) == PLAYER_SLOT_STATE_PLAYING then          
-				call MultiboardSetItemValue(MultiboardGetItem(.PlayerStats, pID + 1, 0), .GetStylizedPlayerName(pID))
+				call MultiboardSetItemValue(MultiboardGetItem(.PlayerStats, pID + 1, 0), u.GetStylizedPlayerName())
                 call MultiboardSetItemValue(MultiboardGetItem(.PlayerStats, pID + 1, 1), .OnLevel.Name)
                 call MultiboardSetItemValue(MultiboardGetItem(.PlayerStats, pID + 1, 2), I2S(.Score))
                 call MultiboardSetItemValue(MultiboardGetItem(.PlayerStats, pID + 1, 3), I2S(.ContinueCount))
@@ -626,19 +648,55 @@ public struct MazingTeam extends array
 		
 		return ColorMessage(name, .GetTeamColor())
 	endmethod
-    public method GetStylizedPlayerName takes integer pID returns string
-        if GetPlayerSlotState(Player(pID)) == PLAYER_SLOT_STATE_PLAYING then
-			if User(pID).IsAFK then
-				return ColorMessage("(AFK) ", DISABLED_COLOR) + ColorMessage(GetPlayerName(Player(pID)), .GetTeamColor())
-			else
-				return ColorMessage(GetPlayerName(Player(pID)), .GetTeamColor())
+	public method GetLocalizedTeamName takes User forUser returns string
+		local string name = ""
+		
+		if GetLocalPlayer() == Player(forUser) then
+			if this == 1 then
+				set name = LocalizeContent('TGRE', forUser.LanguageCode)
+			elseif this == 2 then
+				set name = LocalizeContent('TGBL', forUser.LanguageCode)
+			elseif this == 3 then
+				set name = LocalizeContent('TGTE', forUser.LanguageCode)
+			elseif this == 4 then
+				set name = LocalizeContent('TGPU', forUser.LanguageCode)
+			elseif this == 5 then
+				set name = LocalizeContent('TGYE', forUser.LanguageCode)
+			elseif this == 6 then
+				set name = LocalizeContent('TGOR', forUser.LanguageCode)
+			elseif this == 7 then
+				set name = LocalizeContent('TGRE', forUser.LanguageCode)
+			elseif this == 8 then
+				set name = LocalizeContent('TGPI', forUser.LanguageCode)
 			endif
-			
-        else
-			return ColorMessage("Gone", .GetTeamColor())
-        endif
-    endmethod
-    
+		
+			set name = ColorMessage(name, .GetTeamColor())
+		endif
+		
+		return name
+	endmethod
+	public method GetTeamNameContentID takes nothing returns integer
+		if this == 1 then
+				return 'TGRE'
+			elseif this == 2 then
+				return 'TGBL'
+			elseif this == 3 then
+				return 'TGTE'
+			elseif this == 4 then
+				return 'TGPU'
+			elseif this == 5 then
+				return 'TGYE'
+			elseif this == 6 then
+				return 'TGOR'
+			elseif this == 7 then
+				return 'TGRE'
+			elseif this == 8 then
+				return 'TGPI'
+			else
+				return 0
+			endif
+	endmethod
+	   
     public static method ComputeTeamWeights takes nothing returns nothing
         local SimpleList_ListNode curTeamNode = thistype.AllTeams.first
         local real avgSize = 0
@@ -732,7 +790,9 @@ public struct MazingTeam extends array
 	public method ChangeContinueCount takes integer continueOffset returns nothing
 		if continueOffset != 0 then
 			if .ContinueCount + continueOffset < 0 then
-				call .PrintMessage("Your team ran out of lives!")
+				call .LocalizeMessage('TGGG')
+				// call .PrintMessage("Your team ran out of lives!")
+				
 				call .OnLevel.SwitchLevels(this, Levels_Level(DOORS_LEVEL_ID), 0, false)
 				
 				//if not in 99 and none mode, reset continues
@@ -753,32 +813,110 @@ public struct MazingTeam extends array
 		endif
 	endmethod
 	
+	public method DisplayDynamicContent takes LocalizeContentFunc localizeFunc returns nothing
+		local SimpleList_ListNode curUserNode = this.Users.first
+		
+		loop
+		exitwhen curUserNode == 0
+			if GetLocalPlayer() == Player(curUserNode.value) then
+				call User(curUserNode.value).DisplayMessage(localizeFunc.evaluate(Player(curUserNode.value)), 0)
+			endif
+		set curUserNode = curUserNode.next
+		endloop
+	endmethod
+	public static method DisplayDynamicContentAll takes LocalizeContentFunc localizeFunc returns nothing
+		local SimpleList_ListNode curTeamNode = thistype.AllTeams.first
+		
+		loop
+		exitwhen curTeamNode == 0
+			call Teams_MazingTeam(curTeamNode.value).DisplayDynamicContent(localizeFunc)
+		set curTeamNode = curTeamNode.next
+		endloop
+	endmethod
+		
+	private method LocalizeNeedsScore takes player p returns string
+		local User u = User(GetPlayerId(p))
+		
+		return LocalizeContent('TCTE', u.LanguageCode) + " " /*
+			*/ + ColorMessage(LocalizeContent(u.Team.GetTeamNameContentID(), u.LanguageCode), u.Team.GetTeamColor()) + " " /*
+			*/ + LocalizeContent('TCNE', u.LanguageCode) + " " /*
+			*/ + ColorValue(I2S(VictoryScore - u.Team.Score)) + " " /*
+			*/ + LocalizeContent('TCMO', u.LanguageCode)
+	endmethod
+	private method LocalizeOnlyNeedsScore takes player p returns string
+		local User u = User(GetPlayerId(p))
+		
+		return LocalizeContent('TCTE', u.LanguageCode) + " " /*
+			*/ + ColorMessage(LocalizeContent(u.Team.GetTeamNameContentID(), u.LanguageCode), u.Team.GetTeamColor()) + " " /*
+			*/ + LocalizeContent('TCON', u.LanguageCode) + " " /*
+			*/ + ColorValue(I2S(VictoryScore - u.Team.Score)) + " " /*
+			*/ + LocalizeContent('TCMO', u.LanguageCode)
+	endmethod
+	
 	public method GetScore takes nothing returns integer
 		return .Score
 	endmethod
 	public method ChangeScore takes integer scoreOffset returns nothing
 		local integer ogScore = VictoryScore - .Score
+		local integer teamNameContentID = this.GetTeamNameContentID()
+		local string teamColor = this.GetTeamColor()
+		
+		local SimpleList_ListNode curTeamNode = thistype.AllTeams.first
+		local SimpleList_ListNode curUserNode
 		
 		if scoreOffset != 0 then
-			set .Score = .Score + scoreOffset
+			set .Score = .Score + scoreOffset			
 			
-			//TODO update multiboard leader positions
-			
-			//check for victory conditions
+			//check for victory conditions if VictoryScore is configured to be non-zero
 			if VictoryScore != 0 then
 				if VictoryScore - .Score <= 0 then
 					call MazingTeam.ApplyEndGameAll(this)
-				elseif (VictoryScore - .Score <= 10 and ogScore > 10) or (VictoryScore - .Score <= 5 and ogScore > 5) then
-					call MazingTeam.PrintMessageAll("Team " + this.TeamName + " needs " + ColorValue(I2S(VictoryScore - .Score)) + " more points to win", 0)
-				elseif VictoryScore - .Score <= 3 and ogScore > 3 then
-					if VictoryScore - .Score == 1 then
-						call MazingTeam.PrintMessageAll("Team " + this.TeamName + " only needs " + ColorValue(I2S(VictoryScore - .Score)) + " more point to win!", 0)
-					else
-						call MazingTeam.PrintMessageAll("Team " + this.TeamName + " only needs " + ColorValue(I2S(VictoryScore - .Score)) + " more points to win!", 0)
+				else
+					if (VictoryScore - .Score <= 10 and ogScore > 10) or (VictoryScore - .Score <= 5 and ogScore > 5) then
+						// call User(curUserNode.value).DisplayMessage(LocalizeContent('TCTE', User(curUserNode.value).LanguageCode) + " " /*
+							// */ + ColorMessage(LocalizeContent(teamNameContentID, User(curUserNode.value).LanguageCode), teamColor) + " " /*
+							// */ + LocalizeContent('TCNE', User(curUserNode.value).LanguageCode) + " " /*
+							// */ + ColorValue(I2S(VictoryScore - .Score)) + " " /*
+							// */ + LocalizeContent('TCMO', User(curUserNode.value).LanguageCode), 0)
+						call thistype.DisplayDynamicContentAll(LocalizeNeedsScore)
+					elseif VictoryScore - .Score <= 3 and ogScore > 3 then
+						// call User(curUserNode.value).DisplayMessage(LocalizeContent('TCTE', User(curUserNode.value).LanguageCode) + " " /*
+							// */ + ColorMessage(LocalizeContent(teamNameContentID, User(curUserNode.value).LanguageCode), teamColor) + " " /*
+							// */ + LocalizeContent('TCON', User(curUserNode.value).LanguageCode) + " " /*
+							// */ + ColorValue(I2S(VictoryScore - .Score)) + " " /*
+							// */ + LocalizeContent('TCMO', User(curUserNode.value).LanguageCode), 0)
+						call thistype.DisplayDynamicContentAll(LocalizeOnlyNeedsScore)
 					endif
+					
+					// loop
+					// exitwhen curTeamNode == 0
+						// set curUserNode = Teams_MazingTeam(curTeamNode.value).Users.first
+						
+						// loop
+						// exitwhen curUserNode == 0
+							// if (VictoryScore - .Score <= 10 and ogScore > 10) or (VictoryScore - .Score <= 5 and ogScore > 5) then
+								// // call User(curUserNode.value).DisplayMessage(LocalizeContent('TCTE', User(curUserNode.value).LanguageCode) + " " /*
+									// // */ + ColorMessage(LocalizeContent(teamNameContentID, User(curUserNode.value).LanguageCode), teamColor) + " " /*
+									// // */ + LocalizeContent('TCNE', User(curUserNode.value).LanguageCode) + " " /*
+									// // */ + ColorValue(I2S(VictoryScore - .Score)) + " " /*
+									// // */ + LocalizeContent('TCMO', User(curUserNode.value).LanguageCode), 0)
+								// call thistype.DisplayDynamicContentAll(LocalizeNeedsScore)
+							// elseif VictoryScore - .Score <= 3 and ogScore > 3 then
+								// // call User(curUserNode.value).DisplayMessage(LocalizeContent('TCTE', User(curUserNode.value).LanguageCode) + " " /*
+									// // */ + ColorMessage(LocalizeContent(teamNameContentID, User(curUserNode.value).LanguageCode), teamColor) + " " /*
+									// // */ + LocalizeContent('TCON', User(curUserNode.value).LanguageCode) + " " /*
+									// // */ + ColorValue(I2S(VictoryScore - .Score)) + " " /*
+									// // */ + LocalizeContent('TCMO', User(curUserNode.value).LanguageCode), 0)
+								// call thistype.DisplayDynamicContentAll(LocalizeOnlyNeedsScore)
+							// endif
+						// set curUserNode = curUserNode.next
+						// endloop
+					// set curTeamNode = curTeamNode.next
+					// endloop
 				endif
 			endif
 			
+			//TODO order multiboard by score, user ID
 			call .UpdateMultiboard()
 		endif
 	endmethod
@@ -793,6 +931,7 @@ public struct MazingTeam extends array
     endmethod
 
     //intended to be run after initial team setup
+	//TODO deprecate loop from implementing row logic to calling user's row logic
     public static method MultiboardSetupInit takes nothing returns nothing
         local integer i = 0
         local User u
@@ -850,7 +989,7 @@ public struct MazingTeam extends array
                 set u = User(i)
                 set mt = u.Team
                 
-                call MultiboardSetItemValue(MultiboardGetItem(.PlayerStats, i + 1, 0), mt.GetStylizedPlayerName(i))
+                call MultiboardSetItemValue(MultiboardGetItem(.PlayerStats, i + 1, 0), u.GetStylizedPlayerName())
                 call MultiboardSetItemValue(MultiboardGetItem(.PlayerStats, i + 1, 1), mt.OnLevel.Name)
                 call MultiboardSetItemValue(MultiboardGetItem(.PlayerStats, i + 1, 2), I2S(mt.Score))
                 call MultiboardSetItemValue(MultiboardGetItem(.PlayerStats, i + 1, 3), I2S(mt.ContinueCount))
@@ -891,7 +1030,7 @@ public struct MazingTeam extends array
 			if victory then
 				call CustomVictoryBJ(Player(curPlayer.value), true, false)
 			else
-				call CustomDefeatDialogBJ(Player(curPlayer.value), "Here to play. Forever stay.")
+				call CustomDefeatDialogBJ(Player(curPlayer.value), LocalizeContent('TCEG', User(curPlayer.value).LanguageCode))
 			endif
 		set curPlayer = curPlayer.next
 		endloop
@@ -1124,8 +1263,7 @@ public struct MazingTeam extends array
         local thistype mt = thistype.allocate()
 		
         if not .AllTeams.contains(mt) then
-            set mt.TeamName = mt.GetDefaultTeamName() //set later
-            // set mt.RecentlyTransferred = false //used to make sure triggers aren't run multiple times / no interrupts
+			// set mt.RecentlyTransferred = false //used to make sure triggers aren't run multiple times / no interrupts
             // set mt.LastTransferTime = -50 //has never transferred
             set mt.OnLevel = TEMP_LEVEL_ID
             set mt.OnCheckpoint = -1

@@ -1,4 +1,4 @@
-library User requires UnitDefaultRadius, MazerGlobals, Platformer, TerrainHelpers, Cinema, Localization
+library User requires UnitDefaultRadius, MazerGlobals, Platformer, TerrainHelpers, Cinema, LocalizationData
 
 globals
 	User TriggerUser //used with events
@@ -132,6 +132,15 @@ struct User extends array
 		endif
 	endmethod
 	
+	public method DisplayMessage takes string message, real duration returns nothing
+        if .IsPlaying then
+            if duration == 0 then
+                call DisplayTextToPlayer(Player(this), 0, 0, message)
+            else
+                call DisplayTimedTextToPlayer(Player(this), 0, 0, duration, message)
+            endif
+        endif
+    endmethod
     public static method DisplayMessageAll takes string message returns nothing
         local SimpleList_ListNode curUserNode = PlayerUtils_FirstPlayer
         
@@ -141,7 +150,26 @@ struct User extends array
         set curUserNode = curUserNode.next
         endloop
     endmethod
-    
+	
+	public method DisplayLocalizedMessage takes integer contentID, real duration returns nothing
+		if .IsPlaying and GetLocalPlayer() == Player(this) then
+            if duration == 0 then
+                call DisplayTextToPlayer(Player(this), 0, 0, LocalizeContent(contentID, this.LanguageCode))
+            else
+                call DisplayTimedTextToPlayer(Player(this), 0, 0, duration, LocalizeContent(contentID, this.LanguageCode))
+            endif
+        endif
+	endmethod
+	public method DisplayLocalizedMessageAll takes integer contentID returns nothing
+		local SimpleList_ListNode curUserNode = PlayerUtils_FirstPlayer
+        
+        loop
+        exitwhen curUserNode == 0
+            call User(curUserNode.value).DisplayLocalizedMessage(contentID, 0)
+        set curUserNode = curUserNode.next
+        endloop
+	endmethod
+	
     public static method OnCinemaEndCB takes nothing returns boolean       
         set EventUser.CinematicPlaying = 0
         call EventUser.CheckCinematicQueue()
@@ -210,19 +238,11 @@ struct User extends array
             // call .CinematicPlaying.Activate(this)
         endif
     endmethod
-    
-    public method DisplayMessage takes string message, real duration returns nothing
-        if .IsPlaying then
-            if duration == 0 then
-                call DisplayTextToPlayer(Player(this), 0, 0, message)
-            else
-                call DisplayTimedTextToPlayer(Player(this), 0, 0, duration, message)
-            endif
-        endif
-    endmethod
-    
+        
     public method OnLeave takes nothing returns nothing
-        call SwitchGameModesDefaultLocation(Teams_GAMEMODE_STANDARD)
+        local SimpleList_ListNode curUserNode = PlayerUtils_FirstPlayer
+		
+		call SwitchGameModesDefaultLocation(Teams_GAMEMODE_STANDARD)
         
         set .IsPlaying = false
 		
@@ -230,8 +250,15 @@ struct User extends array
 
         //TODO cleanup any structs
         
-        //call thistype.DisplayMessageAll(GetPlayerName(Player(this)) + " has left the game!")
-        call thistype.DisplayMessageAll(this.GetStylizedPlayerName() + " has left the game!")
+        loop
+        exitwhen curUserNode == 0
+			if User(curUserNode.value).IsPlaying and GetLocalPlayer() == Player(curUserNode.value) then
+				call User(curUserNode.value).DisplayMessage(GetPlayerName(Player(this)) + " " + LocalizeContent('UONL', User(curUserNode.value).LanguageCode), 0)
+			endif
+        set curUserNode = curUserNode.next
+        endloop
+		
+		// call thistype.DisplayMessageAll(this.GetStylizedPlayerName() + " has left the game!")
         
         set .ActiveUnit = null
         
@@ -263,7 +290,7 @@ struct User extends array
 					// if .CinematicPlaying.Cinematic != thistype.ToggleCameraTrackingTutorial or thistype.ToggleCameraTrackingTutorial == 0 then
 						// call .DisplayMessage("Camera tracking: " + ColorMessage("ON", TOGGLE_ON_COLOR), 1.)
 					// endif
-					call .DisplayMessage("Camera tracking: " + ColorMessage("ON", TOGGLE_ON_COLOR), 1.)
+					call .DisplayMessage(LocalizeContent('UCTR', this.LanguageCode) + " " + ColorMessage(LocalizeContent('UCTT', this.LanguageCode), TOGGLE_ON_COLOR), 1.)
 				else
 					//disable
 					call ResetToGameCamera(0)
@@ -272,7 +299,7 @@ struct User extends array
 					// if .CinematicPlaying.Cinematic != thistype.ToggleCameraTrackingTutorial or thistype.ToggleCameraTrackingTutorial == 0 then
 						// call .DisplayMessage("Camera tracking: " + ColorMessage("OFF", TOGGLE_OFF_COLOR), 1.)
 					// endif
-					call .DisplayMessage("Camera tracking: " + ColorMessage("OFF", TOGGLE_OFF_COLOR), 1.)
+					call .DisplayMessage(LocalizeContent('UCTR', this.LanguageCode) + " " + ColorMessage(LocalizeContent('UCTF', this.LanguageCode), TOGGLE_OFF_COLOR), 1.)
 				endif
 			endif
 			
@@ -520,23 +547,37 @@ struct User extends array
 		
 		return hex
 	endmethod
+	
 	public method GetStylizedPlayerName takes nothing returns string
         local string hex = .GetPlayerColorHex()
         
         if GetPlayerSlotState(Player(this)) == PLAYER_SLOT_STATE_PLAYING then
 			if .IsAFK then
-				return ColorMessage("(AFK) ", DISABLED_COLOR) + ColorMessage(GetPlayerName(Player(this)), hex)
+				return ColorMessage("(AFK)" + " ", DISABLED_COLOR) + ColorMessage(GetPlayerName(Player(this)), hex)
 			else
 				return ColorMessage(GetPlayerName(Player(this)), hex)
 			endif
         else
-			return ColorMessage("(Left) " + GetPlayerName(Player(this)), hex)
+			return ColorMessage("(Left)" + " " + GetPlayerName(Player(this)), hex)
+        endif
+    endmethod
+	public method GetLocalizedPlayerName takes User forUser returns string
+        local string hex = .GetPlayerColorHex()
+        
+        if GetPlayerSlotState(Player(this)) == PLAYER_SLOT_STATE_PLAYING and GetLocalPlayer() == Player(forUser) then
+			if .IsAFK then
+				return ColorMessage(LocalizeContent('USAF', forUser.LanguageCode) + " ", DISABLED_COLOR) + ColorMessage(GetPlayerName(Player(this)), hex)
+			else
+				return ColorMessage(GetPlayerName(Player(this)), hex)
+			endif
+        else
+			return ColorMessage(LocalizeContent('USAF', forUser.LanguageCode) + " " + GetPlayerName(Player(this)), hex)
         endif
     endmethod
     
     public method PartialUpdateMultiboard takes nothing returns nothing
         if GetPlayerSlotState(Player(this)) == PLAYER_SLOT_STATE_PLAYING then                
-            call MultiboardSetItemValue(MultiboardGetItem(.Team.PlayerStats, this + 1, 0), .Team.GetStylizedPlayerName(this))
+            call MultiboardSetItemValue(MultiboardGetItem(.Team.PlayerStats, this + 1, 0), this.GetStylizedPlayerName())
 			call MultiboardSetItemValue(MultiboardGetItem(.Team.PlayerStats, this + 1, 2), I2S(.Team.GetScore()))
             call MultiboardSetItemValue(MultiboardGetItem(.Team.PlayerStats, this + 1, 3), I2S(.Team.GetContinueCount()))
             
@@ -859,10 +900,19 @@ struct User extends array
 		local timer t = GetExpiredTimer()
 		local User u = GetTimerData(t)
 		local texttag text
+		local SimpleList_ListNode curUserNode = PlayerUtils_FirstPlayer
 		
 		if u.AFKPlatformerDeathClock == AFK_UNPAUSE_BUFFER then
 			set text = CreateTextTag()
-			call SetTextTagText(text, ColorMessage("Unpausing", u.GetPlayerColorHex()) + " in ", SMALL_FONT_SIZE)
+			
+			loop
+			exitwhen curUserNode == 0
+				if GetLocalPlayer() == Player(curUserNode.value) then
+					call SetTextTagText(text, ColorMessage(LocalizeContent('UAUN', User(curUserNode.value).LanguageCode), u.GetPlayerColorHex()) + " " + LocalizeContent('UAIN', User(curUserNode.value).LanguageCode) + " ", SMALL_FONT_SIZE)
+				endif
+			set curUserNode = curUserNode.next
+			endloop
+			
 			call SetTextTagPos(text, GetUnitX(u.ActiveUnit) - 13 * 5.5, GetUnitY(u.ActiveUnit), 16.0)
 			call SetTextTagVisibility(text, true)
 			call SetTextTagFadepoint(text, AFK_UNPAUSE_BUFFER)
@@ -912,12 +962,21 @@ struct User extends array
 		local timer t = GetExpiredTimer()
 		local User u = GetTimerData(t)
 		local texttag text
+		local SimpleList_ListNode curUserNode = PlayerUtils_FirstPlayer
 		
 		if u.IsAFK then
 			if u.PlatformerStartStable then
 				if u.AFKPlatformerDeathClock == AFK_PLATFORMER_DEATH_CLOCK_START then
 					set text = CreateTextTag()
-					call SetTextTagText(text, ColorMessage("Dead", u.GetPlayerColorHex()) + " in ", SMALL_FONT_SIZE)
+					
+					loop
+					exitwhen curUserNode == 0
+						if GetLocalPlayer() == Player(curUserNode.value) then
+							call SetTextTagText(text, ColorMessage(LocalizeContent('UADE', User(curUserNode.value).LanguageCode), u.GetPlayerColorHex()) + " " + LocalizeContent('UAIN', User(curUserNode.value).LanguageCode) + " ", SMALL_FONT_SIZE)
+						endif
+					set curUserNode = curUserNode.next
+					endloop
+					
 					call SetTextTagPos(text, u.Platformer.XPosition - 8 * 5.5, u.Platformer.YPosition, 16.0)
 					call SetTextTagVisibility(text, true)
 					call SetTextTagFadepoint(text, AFK_PLATFORMER_DEATH_CLOCK_START)
@@ -991,11 +1050,19 @@ struct User extends array
 	//User AFK synced event callback and async logic for checking/tracking idle state
 	public method ToggleAFK takes nothing returns nothing
 		local SyncRequest request
+		local SimpleList_ListNode curUserNode = this.Team.FirstUser
 		
 		//this could be more elegant, but applying this logic first lets GetStylizedPlayerName stay simple
 		if not .IsAFK then
 			if DEBUG_AFK or .Team.Users.count > 1 then
-				call .Team.PrintMessage(.GetStylizedPlayerName() + " is now AFK!")
+				loop
+				exitwhen curUserNode == 0
+					if GetLocalPlayer() == Player(curUserNode.value) then
+						call User(curUserNode.value).DisplayMessage(.GetLocalizedPlayerName(curUserNode.value) + " " + LocalizeContent('UAAT', User(curUserNode.value).LanguageCode), 0)
+					endif
+				set curUserNode = curUserNode.next
+				endloop
+				// call .Team.PrintMessage(.GetStylizedPlayerName() + " " + "is now AFK!")
 			endif
 		endif
 		
@@ -1024,7 +1091,15 @@ struct User extends array
 			endif
 		else
 			if DEBUG_AFK or .Team.Users.count > 1 then
-				call .Team.PrintMessage(.GetStylizedPlayerName() + " is no longer AFK")
+				loop
+				exitwhen curUserNode == 0
+					if GetLocalPlayer() == Player(curUserNode.value) then
+						call User(curUserNode.value).DisplayMessage(.GetLocalizedPlayerName(curUserNode.value) + " " + LocalizeContent('UAAF', User(curUserNode.value).LanguageCode), 0)
+					endif
+				set curUserNode = curUserNode.next
+				endloop
+				// call .Team.PrintMessage(.GetStylizedPlayerName() + " " + "is no longer AFK")
+				
 				call .Team.SetSharedControlForTeam(this, false)
 				
 				if .GameMode == Teams_GAMEMODE_STANDARD then
@@ -1116,7 +1191,7 @@ struct User extends array
 	            
 	private static method SyncUserLanguageCode takes SyncRequest request, User user returns integer
 		set user.LanguageCode = request.Data
-		call DisplayTextToPlayer(Player(user), 0, 0, request.Data)
+		// call DisplayTextToPlayer(Player(user), 0, 0, request.Data)
 		
 		call request.destroy()
 		
@@ -1157,7 +1232,7 @@ struct User extends array
 		
 		set request = SyncRequest.create(thistype.SyncUserLanguageCode, new)
 		if GetLocalPlayer() == Player(new) then
-			call request.Sync(GetLanguageCode())
+			call request.Sync(SubString(BlzGetLocale(), 0, 2))
 		endif
 		
         return new

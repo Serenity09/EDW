@@ -19,6 +19,10 @@ library EDWGameTime requires Teams, GameMessage
 			if remainingTime == 0 then
 				//end the game
 				call Teams_MazingTeam.ApplyEndGameAll(Teams_MazingTeam.GetLeadingScore())
+				
+				call PauseTimer(t)
+				call DestroyTimer(t)
+				set t = null
 			elseif remainingTime >= 10 and remainingTime <= 30 then
 				if ModuloInteger(R2I(currentTime), 600) == 0 then
 					//post elapsed time every 10 minutes

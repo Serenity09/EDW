@@ -205,8 +205,10 @@ library Levels requires SimpleList, Teams, GameModesGlobals, LevelIDGlobals, Cin
                 return ""
             elseif onWorld == 6 then
                 return FOUR_SEASONS_WORLD_COLOR
-            elseif onWorld == 7
+            elseif onWorld == 7 then
                 return PLATFORMING_WORLD_COLOR
+			else
+				return ""
             endif
 		endmethod
         public method GetWorldString takes nothing returns string
@@ -576,7 +578,7 @@ library Levels requires SimpleList, Teams, GameModesGlobals, LevelIDGlobals, Cin
 			local timer t = GetExpiredTimer()
 			local AnimatedLevelTransferData transferData = GetTimerData(t)
 			
-			call transferData.Team.PrintMessage("Now starting: " + transferData.NextLevel.Name)
+			call transferData.Team.PrintMessage("Now starting:" + " " + transferData.NextLevel.Name)
 			call transferData.Team.FadeInForTeam(LEVEL_TRANSFER_FADE_DURATION)
 			
 			if transferData.Team.DefaultGameMode == Teams_GAMEMODE_PLATFORMING then
@@ -594,7 +596,7 @@ library Levels requires SimpleList, Teams, GameModesGlobals, LevelIDGlobals, Cin
 			local timer t = GetExpiredTimer()
 			local AnimatedLevelTransferData transferData = GetTimerData(t)
 			
-			call transferData.Team.PrintMessage("You have " + ColorValue(I2S(transferData.Team.GetContinueCount())) + " continues left")
+			call transferData.Team.PrintMessage("You have" + " " + ColorValue(I2S(transferData.Team.GetContinueCount())) + " " + "continues left")
 			
 			call TimerStart(t, LEVEL_TRANSFER_MESSAGE_DELAY, false, function thistype.SwitchLevels_Message3)
 		endmethod
@@ -604,9 +606,9 @@ library Levels requires SimpleList, Teams, GameModesGlobals, LevelIDGlobals, Cin
 			
 			if transferData.Team.OnLevel.GetWeightedScore() > 0 then				
 				if transferData.Team.GetScore() > 0 then
-					call transferData.Team.PrintMessage("You gained " + ColorValue(I2S(transferData.Team.OnLevel.GetWeightedScore())) + " points (" + ColorValue(I2S(transferData.Team.GetScore() + transferData.Team.OnLevel.GetWeightedScore())) + " total)")
+					call transferData.Team.PrintMessage("You gained" + " " + ColorValue(I2S(transferData.Team.OnLevel.GetWeightedScore())) + " " + "points" + " (" + ColorValue(I2S(transferData.Team.GetScore() + transferData.Team.OnLevel.GetWeightedScore())) + " " + "total" + ")")
 				else
-					call transferData.Team.PrintMessage("You gained " + ColorValue(I2S(transferData.Team.OnLevel.GetWeightedScore())) + " points")
+					call transferData.Team.PrintMessage("You gained" + " " + ColorValue(I2S(transferData.Team.OnLevel.GetWeightedScore())) + " " + "points")
 				endif
 			endif
 			
@@ -697,6 +699,13 @@ library Levels requires SimpleList, Teams, GameModesGlobals, LevelIDGlobals, Cin
 			
 			call TimerStart(t, 1.15, false, function thistype.SwitchLevels_FadeOut)
 		endmethod
+		
+		private method LocalizeLevelClear takes player p returns string
+			local User u = GetPlayerId(p)
+			local User clearPlayer = u.Team.LastEventUser
+			
+			return clearPlayer.GetLocalizedPlayerName(u) + " " + LocalizeContent('LSAH', u.LanguageCode)
+		endmethod
 		public method SwitchLevelsAnimated takes Teams_MazingTeam mt, Level nextLevel, boolean updateProgress returns nothing
 			local AnimatedLevelTransferData transferData = AnimatedLevelTransferData.allocate()
 			set transferData.Team = mt
@@ -706,12 +715,14 @@ library Levels requires SimpleList, Teams, GameModesGlobals, LevelIDGlobals, Cin
 			call mt.PauseTeam(true)
 			if this != DOORS_LEVEL_ID then
 				if mt.LastEventUser != -1 then
-					call mt.PrintMessage(mt.LastEventUser.GetStylizedPlayerName() + " has cleared the level!")
+					call mt.PrintMessage(mt.LastEventUser.GetStylizedPlayerName() + " " + "has cleared the level!")
+					
+					call mt.DisplayDynamicContent(LocalizeLevelClear)
 				endif
 			else
 				//TODO remove when there's a less intrusive and more relevant way to convey what team is where via the Doors level
-				call Teams_MazingTeam.PrintMessageAll(mt.TeamName + " team has just started " + nextLevel.GetWorldString(), mt)
-				call mt.PrintMessage("Entering new world: " + nextLevel.GetWorldString())
+				call Teams_MazingTeam.PrintMessageAll(mt.TeamName + " " + "team has just started" + " " + nextLevel.GetWorldString(), mt)
+				call mt.PrintMessage("Entering new world:" + " " + nextLevel.GetWorldString())
 			endif
 			
 			call TimerStart(NewTimerEx(transferData), .5, false, function thistype.SwitchLevels_DisappearingVFX)
