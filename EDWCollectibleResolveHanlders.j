@@ -22,6 +22,7 @@ library EDWCollectibleResolveHandlers requires TimerUtils, User
 		call ReleaseTimer(t)
 		set t = null
 	endfunction
+	
 	private function AdvanceLevelPlaySFX takes nothing returns nothing
 		local timer t = GetExpiredTimer()
 		local User user = GetTimerData(t)
@@ -33,7 +34,9 @@ library EDWCollectibleResolveHandlers requires TimerUtils, User
 		
 		if user.Team.Users.count > 1 then
 			set user.Team.LastEventUser = -1
-			call user.Team.PrintMessage("Your team has cleared the level!")
+			
+			// call user.Team.PrintMessage("Your team has cleared the level!")
+			call user.Team.LocalizeMessage('ECGG')
 		else
 			set user.Team.LastEventUser = user
 		endif
