@@ -29,7 +29,8 @@ public function onPlayerUnitDiedCB takes nothing returns nothing
 			return
 		endif
 		
-		set user.Deaths = user.Deaths + 1
+		// set user.Deaths = user.Deaths + 1
+		call user.ChangeDeathCount(1)
 			
 		//check if the team has any more continues AND needs to use one
 		
@@ -50,7 +51,7 @@ public function onPlayerUnitDiedCB takes nothing returns nothing
 			call mt.ChangeContinueCount(-1)
 		endif
 		
-		call mt.UpdateMultiboard()
+		// call mt.UpdateMultiboard()
 	endif
 	    
     call ReleaseTimer(t)

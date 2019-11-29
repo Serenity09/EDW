@@ -1,4 +1,4 @@
-library Teams requires MazerGlobals, User, UnitLocalVisibility
+library Teams requires MazerGlobals, MultiboardGlobals, User, UnitLocalVisibility
 globals
     private constant real VOTE_TOP_LEFT_X = -15000
 	private constant real VOTE_TOP_LEFT_Y = -4220
@@ -569,61 +569,7 @@ public struct MazingTeam extends array
         //debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "Player count of team " + I2S(this) + ", is now: " + I2S(.PlayerCount))
     endmethod
     
-    public method UpdateMultiboard takes nothing returns nothing
-        local integer pID
-        
-        local SimpleList_ListNode fp = .FirstUser
-        local User u
-        
-        //PLAYER_SLOT_STATE_LEFT
-        
-        loop
-        exitwhen fp == 0
-            set u = User(fp.value)
-            set pID = u
-            
-            if GetPlayerSlotState(Player(pID)) == PLAYER_SLOT_STATE_PLAYING then          
-				call MultiboardSetItemValue(MultiboardGetItem(.PlayerStats, pID + 1, 0), u.GetStylizedPlayerName())
-                call MultiboardSetItemValue(MultiboardGetItem(.PlayerStats, pID + 1, 1), .OnLevel.Name)
-                call MultiboardSetItemValue(MultiboardGetItem(.PlayerStats, pID + 1, 2), I2S(.Score))
-                call MultiboardSetItemValue(MultiboardGetItem(.PlayerStats, pID + 1, 3), I2S(.ContinueCount))
-                
-                
-                call MultiboardReleaseItem(MultiboardGetItem(.PlayerStats, pID + 1, 0))
-                call MultiboardReleaseItem(MultiboardGetItem(.PlayerStats, pID + 1, 1))
-                call MultiboardReleaseItem(MultiboardGetItem(.PlayerStats, pID + 1, 2))
-                call MultiboardReleaseItem(MultiboardGetItem(.PlayerStats, pID + 1, 3))
-                
-				
-				if RewardMode == GameModesGlobals_HARD then
-					call MultiboardSetItemValue(MultiboardGetItem(.PlayerStats, pID + 1, 4), I2S(u.Deaths))
-					call MultiboardReleaseItem(MultiboardGetItem(.PlayerStats, pID + 1, 4))
-				endif
-			elseif GetPlayerSlotState(Player(pID)) == PLAYER_SLOT_STATE_LEFT then
-                call MultiboardSetItemValue(MultiboardGetItem(.PlayerStats, pID + 1, 0), "Left the game")
-                call MultiboardSetItemValue(MultiboardGetItem(.PlayerStats, pID + 1, 1), "Gone")
-                call MultiboardSetItemValue(MultiboardGetItem(.PlayerStats, pID + 1, 2), "Negative")
-                call MultiboardSetItemValue(MultiboardGetItem(.PlayerStats, pID + 1, 3), "Zilch")
-                
-                
-                call MultiboardReleaseItem(MultiboardGetItem(.PlayerStats, pID + 1, 0))
-                call MultiboardReleaseItem(MultiboardGetItem(.PlayerStats, pID + 1, 1))
-                call MultiboardReleaseItem(MultiboardGetItem(.PlayerStats, pID + 1, 2))
-                call MultiboardReleaseItem(MultiboardGetItem(.PlayerStats, pID + 1, 3))
-                
-				
-				if RewardMode == GameModesGlobals_HARD then
-					call MultiboardSetItemValue(MultiboardGetItem(.PlayerStats, pID + 1, 4), "Too many")
-					call MultiboardReleaseItem(MultiboardGetItem(.PlayerStats, pID + 1, 4))
-				endif
-            else
-                call MultiboardSetItemValue(MultiboardGetItem(.PlayerStats, pID + 1, 0), "Not playing")
-                call MultiboardReleaseItem(MultiboardGetItem(.PlayerStats, pID + 1, 0))
-            endif
-            
-        set fp = fp.next
-        endloop
-    endmethod
+    
     
 	public method GetTeamColor takes nothing returns string
 		local string hex
@@ -723,6 +669,20 @@ public struct MazingTeam extends array
 				return 0
 			endif
 	endmethod
+	
+	public method GetLocalizedPlayerName takes User target, User localizer returns string
+        local string hex = this.GetTeamColor()
+        
+        if GetPlayerSlotState(Player(target)) == PLAYER_SLOT_STATE_PLAYING and GetLocalPlayer() == Player(localizer) then
+			if target.IsAFK then
+				return ColorMessage(LocalizeContent('USAF', localizer.LanguageCode) + " ", DISABLED_COLOR) + ColorMessage(GetPlayerName(Player(target)), hex)
+			else
+				return ColorMessage(GetPlayerName(Player(target)), hex)
+			endif
+        else
+			return ColorMessage(LocalizeContent('USAF', localizer.LanguageCode) + " " + GetPlayerName(Player(target)), hex)
+        endif
+    endmethod
 	   
     public static method ComputeTeamWeights takes nothing returns nothing
         local SimpleList_ListNode curTeamNode = thistype.AllTeams.first
@@ -812,7 +772,7 @@ public struct MazingTeam extends array
 		
 		set .ContinueCount = continueCount
 		
-		call .UpdateMultiboard()
+		call .PartialUpdateMultiboard(MULTIBOARD_CONTINUES)
 	endmethod
 	public method ChangeContinueCount takes integer continueOffset returns nothing
 		if continueOffset != 0 then
@@ -836,7 +796,7 @@ public struct MazingTeam extends array
 				set .ContinueCount = .ContinueCount + continueOffset
 			endif
 			
-			call .UpdateMultiboard()
+			call .PartialUpdateMultiboard(MULTIBOARD_CONTINUES)
 		endif
 	endmethod
 		
@@ -862,9 +822,9 @@ public struct MazingTeam extends array
 		local integer ogScore = VictoryScore - .Score
 		local integer teamNameContentID = this.GetTeamNameContentID()
 		local string teamColor = this.GetTeamColor()
-				
+		
 		if scoreOffset != 0 then
-			set .Score = .Score + scoreOffset			
+			set .Score = .Score + scoreOffset
 			
 			//check for victory conditions if VictoryScore is configured to be non-zero
 			if VictoryScore != 0 then
@@ -875,12 +835,12 @@ public struct MazingTeam extends array
 						call thistype.DisplayDynamicContentAll(LocalizeNeedsScore, this.LastEventUser, 0)
 					elseif VictoryScore - .Score <= 3 and ogScore > 3 then
 						call thistype.DisplayDynamicContentAll(LocalizeOnlyNeedsScore, this.LastEventUser,  0)
-					endif					
+					endif
 				endif
 			endif
 			
 			//TODO order multiboard by score, user ID
-			call .UpdateMultiboard()
+			call .PartialUpdateMultiboard(MULTIBOARD_SCORE)
 		endif
 	endmethod
     
@@ -892,20 +852,39 @@ public struct MazingTeam extends array
         call ReleaseTimer(t)
         set t = null
     endmethod
-
+	
+	
+	public method UpdateMultiboard takes nothing returns nothing
+        local SimpleList_ListNode curUserNode = .FirstUser
+        
+        loop
+        exitwhen curUserNode == 0
+            call User(curUserNode.value).UpdateMultiboard()
+        set curUserNode = curUserNode.next
+        endloop
+    endmethod
+	public method PartialUpdateMultiboard takes integer columnID returns nothing
+		local SimpleList_ListNode curUserNode = .FirstUser
+        
+        loop
+        exitwhen curUserNode == 0
+            call User(curUserNode.value).PartialUpdateMultiboard(columnID)
+        set curUserNode = curUserNode.next
+        endloop
+	endmethod
+	
     //intended to be run after initial team setup
 	//TODO deprecate loop from implementing row logic to calling user's row logic
     public static method MultiboardSetupInit takes nothing returns nothing
         local integer i = 0
-        local User u
-        local thistype mt
-        local timer t = NewTimer()
+		local SimpleList_ListNode curTeamNode = thistype.AllTeams.first
+		local SimpleList_ListNode curUserNode
         
         set .PlayerStats = CreateMultiboard()
         set bj_lastCreatedMultiboard = .PlayerStats
         
         call MultiboardSetRowCount(.PlayerStats, NumberPlayers + 1)
-        call MultiboardSetTitleText(.PlayerStats, "Player Stats")
+        // call MultiboardSetTitleText(.PlayerStats, "Player Stats")
         call MultiboardDisplay(.PlayerStats, true)
         call MultiboardSetItemsWidth(.PlayerStats, .1)
 		
@@ -915,74 +894,81 @@ public struct MazingTeam extends array
 			call MultiboardSetColumnCount(.PlayerStats, 4)
         endif
         
-        //multiboard column titles
-        call MultiboardSetItemValue(MultiboardGetItem(.PlayerStats, 0, 0), "Player Name")
-        call MultiboardSetItemValue(MultiboardGetItem(.PlayerStats, 0, 1), "On Level")
-        call MultiboardSetItemValue(MultiboardGetItem(.PlayerStats, 0, 2), "Score")
-        call MultiboardSetItemValue(MultiboardGetItem(.PlayerStats, 0, 3), "Continues")
-        
+		//initialize multiboard column
         call MultiboardSetItemIcon(MultiboardGetItem(.PlayerStats, 0, 0), "ReplaceableTextures\\CommandButtons\\BTNPeasant.blp")
         call MultiboardSetItemIcon(MultiboardGetItem(.PlayerStats, 0, 1), "ReplaceableTextures\\CommandButtons\\BTNDemonGate.blp")
         call MultiboardSetItemIcon(MultiboardGetItem(.PlayerStats, 0, 2), "ReplaceableTextures\\CommandButtons\\BTNGlyph.blp")
         call MultiboardSetItemIcon(MultiboardGetItem(.PlayerStats, 0, 3), "ReplaceableTextures\\CommandButtons\\BTNSkillz.tga")
-        
-        call MultiboardReleaseItem(MultiboardGetItem(.PlayerStats, 0, 0))
+		if RewardMode == GameModesGlobals_HARD then
+			call MultiboardSetItemIcon(MultiboardGetItem(.PlayerStats, 0, 4), "ReplaceableTextures\\CommandButtons\\BTNAnkh.blp")
+		endif
+		
+		//init localized column text for multiboard
+		loop
+		exitwhen curTeamNode == 0
+			set curUserNode = Teams_MazingTeam(curTeamNode.value).Users.first
+			
+			loop
+			exitwhen curUserNode == 0
+				if GetLocalPlayer() == Player(curUserNode.value) then
+					call MultiboardSetTitleText(.PlayerStats, LocalizeContent('UMPS', User(curUserNode.value).LanguageCode))
+					
+					call MultiboardSetItemValue(MultiboardGetItem(.PlayerStats, 0, 0), LocalizeContent('UMPN', User(curUserNode.value).LanguageCode))
+					call MultiboardSetItemValue(MultiboardGetItem(.PlayerStats, 0, 1), LocalizeContent('UMOL', User(curUserNode.value).LanguageCode))
+					call MultiboardSetItemValue(MultiboardGetItem(.PlayerStats, 0, 2), LocalizeContent('UMSC', User(curUserNode.value).LanguageCode))
+					call MultiboardSetItemValue(MultiboardGetItem(.PlayerStats, 0, 3), LocalizeContent('UMCC', User(curUserNode.value).LanguageCode))
+					if RewardMode == GameModesGlobals_HARD then
+						call MultiboardSetItemValue(MultiboardGetItem(.PlayerStats, 0, 4), LocalizeContent('UMDC', User(curUserNode.value).LanguageCode))
+					endif
+				endif
+			set curUserNode = curUserNode.next
+			endloop
+		set curTeamNode = curTeamNode.next
+		endloop
+		
+		//release columns
+		call MultiboardReleaseItem(MultiboardGetItem(.PlayerStats, 0, 0))
         call MultiboardReleaseItem(MultiboardGetItem(.PlayerStats, 0, 1))
         call MultiboardReleaseItem(MultiboardGetItem(.PlayerStats, 0, 2))
         call MultiboardReleaseItem(MultiboardGetItem(.PlayerStats, 0, 3))
-        
 		if RewardMode == GameModesGlobals_HARD then
-			call MultiboardSetItemValue(MultiboardGetItem(.PlayerStats, 0, 4), "Deaths")
-			call MultiboardSetItemIcon(MultiboardGetItem(.PlayerStats, 0, 4), "ReplaceableTextures\\CommandButtons\\BTNAnkh.blp")
 			call MultiboardReleaseItem(MultiboardGetItem(.PlayerStats, 0, 4))
 		endif
 		
+		//initialize rows/cells
         loop
         exitwhen i >= NumberPlayers
+			//set row icons
             call MultiboardSetItemIcon(MultiboardGetItem(.PlayerStats, i + 1, 0), "ReplaceableTextures\\CommandButtons\\BTNPeasant.blp")
-            call MultiboardSetItemIcon(MultiboardGetItem(.PlayerStats, i + 1, 1), "ReplaceableTextures\\CommandButtons\\BTNDemonGate.blp")
-            call MultiboardSetItemIcon(MultiboardGetItem(.PlayerStats, i + 1, 2), "ReplaceableTextures\\CommandButtons\\BTNGlyph.blp")
-            call MultiboardSetItemIcon(MultiboardGetItem(.PlayerStats, i + 1, 3), "ReplaceableTextures\\CommandButtons\\BTNSkillz.tga")
-            
+            call MultiboardReleaseItem(MultiboardGetItem(.PlayerStats, i + 1, 0))
+			
+			call MultiboardSetItemIcon(MultiboardGetItem(.PlayerStats, i + 1, 1), "ReplaceableTextures\\CommandButtons\\BTNDemonGate.blp")
+            call MultiboardReleaseItem(MultiboardGetItem(.PlayerStats, i + 1, 1))
+			
+			call MultiboardSetItemIcon(MultiboardGetItem(.PlayerStats, i + 1, 2), "ReplaceableTextures\\CommandButtons\\BTNGlyph.blp")
+            call MultiboardReleaseItem(MultiboardGetItem(.PlayerStats, i + 1, 2))
+			
+			call MultiboardSetItemIcon(MultiboardGetItem(.PlayerStats, i + 1, 3), "ReplaceableTextures\\CommandButtons\\BTNSkillz.tga")
+            call MultiboardReleaseItem(MultiboardGetItem(.PlayerStats, i + 1, 3))
+			
 			if RewardMode == GameModesGlobals_HARD then
 				call MultiboardSetItemIcon(MultiboardGetItem(.PlayerStats, i + 1, 4), "ReplaceableTextures\\CommandButtons\\BTNAnkh.blp")
-            endif
+				call MultiboardReleaseItem(MultiboardGetItem(.PlayerStats, i + 1, 4))
+			endif
 			
-            if GetPlayerSlotState(Player(i)) == PLAYER_SLOT_STATE_PLAYING then
-                set u = User(i)
-                set mt = u.Team
-                
-                call MultiboardSetItemValue(MultiboardGetItem(.PlayerStats, i + 1, 0), u.GetStylizedPlayerName())
-                call MultiboardSetItemValue(MultiboardGetItem(.PlayerStats, i + 1, 1), mt.OnLevel.Name)
-                call MultiboardSetItemValue(MultiboardGetItem(.PlayerStats, i + 1, 2), I2S(mt.Score))
-                call MultiboardSetItemValue(MultiboardGetItem(.PlayerStats, i + 1, 3), I2S(mt.ContinueCount))
-                
-                
-                call MultiboardReleaseItem(MultiboardGetItem(.PlayerStats, i + 1, 0))
-                call MultiboardReleaseItem(MultiboardGetItem(.PlayerStats, i + 1, 1))
-                call MultiboardReleaseItem(MultiboardGetItem(.PlayerStats, i + 1, 2))
-                call MultiboardReleaseItem(MultiboardGetItem(.PlayerStats, i + 1, 3))
-                
-				
-				if RewardMode == GameModesGlobals_HARD then
-					call MultiboardSetItemValue(MultiboardGetItem(.PlayerStats, i + 1, 4), I2S(u.Deaths))
-					call MultiboardReleaseItem(MultiboardGetItem(.PlayerStats, i + 1, 4))
-				endif
-            else
-                call MultiboardSetItemValue(MultiboardGetItem(.PlayerStats, i + 1, 0), "Not Playing")
-                call MultiboardReleaseItem(MultiboardGetItem(.PlayerStats, i + 1, 0))
-            endif
+			//initialize cell values localized for all players
+            call User(i).PartialUpdateMultiboard(MULTIBOARD_PLAYERNAME)
+			call User(i).PartialUpdateMultiboard(MULTIBOARD_SCORE)
+			call User(i).PartialUpdateMultiboard(MULTIBOARD_DEATHS)
+			
             
             set i = i + 1
         endloop
+		
         call MultiboardDisplay(.PlayerStats, false)
         call MultiboardDisplay(.PlayerStats, true)
         call MultiboardMinimize(.PlayerStats, true)
         call MultiboardMinimize(.PlayerStats, false)
-        
-        //call TimerStart(t, MULTIBOARD_HIDE_DELAY, false, function MazingTeam.MultiboardHideCallback)
-        
-        set t = null
     endmethod
 	
 	public method ApplyEndGame takes boolean victory returns nothing

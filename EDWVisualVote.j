@@ -400,15 +400,8 @@ library EDWVisualVote requires VisualVote, ContinueGlobals, Teams, PlayerUtils, 
 		endif
 	endfunction
     
-    //2 stage menu, first choose difficulty and team breakdown -- then specify for final options
-    public function CreateMenu takes nothing returns nothing
-		local VisualVote_voteMenu MyMenu
-		local VisualVote_voteColumn col
-        local VisualVote_voteContainer con
-        local VisualVote_voteOption opt        
-
-		if not ShouldShowSettingVoteMenu() then
-            if DEBUG_USE_FULL_VISIBILITY then
+	private function SkipMenuCB takes nothing returns nothing
+		if DEBUG_USE_FULL_VISIBILITY then
 				call CreateFogModifierRectBJ(true, Player(0), FOG_OF_WAR_VISIBLE, GetPlayableMapRect())
 			endif
 			
@@ -430,6 +423,20 @@ library EDWVisualVote requires VisualVote, ContinueGlobals, Teams, PlayerUtils, 
 			if GetFirstLevel() != Levels_Level(1) then
 				call TrackGameTime()
 			endif
+		
+		call DestroyTimer(GetExpiredTimer())
+	endfunction
+	
+    //2 stage menu, first choose difficulty and team breakdown -- then specify for final options
+    public function CreateMenu takes nothing returns nothing
+		local VisualVote_voteMenu MyMenu
+		local VisualVote_voteColumn col
+        local VisualVote_voteContainer con
+        local VisualVote_voteOption opt        
+
+		if not ShouldShowSettingVoteMenu() then
+			//TODO replace with awaiting an .All promise for User async property init
+            call TimerStart(CreateTimer(), .5, false, function SkipMenuCB)
 		elseif GetHumanPlayersCount() == 1 then
 			call GameModeSolo()
 			call InstantRespawnOn()

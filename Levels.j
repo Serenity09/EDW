@@ -321,6 +321,9 @@ library Levels requires SimpleList, Teams, GameModesGlobals, LevelIDGlobals, Cin
 			elseif this == BRICK_BREAK_LEVEL_ID then
 				return LocalizeContent('LNM1', user.LanguageCode)
 			
+			elseif this == TEMP_LEVEL_ID then
+				//should never be persisted across wc UI frames
+				return "In Transit"
 			else
 				if CONFIGURATION_PROFILE != RELEASE then
 					call BJDebugMsg("Localizing level name for unhandled level ID: " + I2S(this))
@@ -378,7 +381,7 @@ library Levels requires SimpleList, Teams, GameModesGlobals, LevelIDGlobals, Cin
                 call mt.ApplyKeyToTeam(cp.DefaultColor)
 				call mt.ResetHealthForTeam()
                 
-                call mt.UpdateMultiboard()
+                // call mt.UpdateMultiboard()
 				
 				if this.OnCheckpointChange != 0 then
 					//debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "Firing checkpoint event for: " + I2S(this.OnCheckpointChange))
@@ -618,9 +621,12 @@ library Levels requires SimpleList, Teams, GameModesGlobals, LevelIDGlobals, Cin
 			set i = i + 1
 			endloop
 			set r = null
+						
             //debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "Started")
             //team tele, respawn update, vision, pause + unpause
             call this.SetCheckpointForTeam(mt, 0)
+			
+			call mt.PartialUpdateMultiboard(MULTIBOARD_LEVELNAME)
 		endmethod
 		
         //update level continuously or discontinuously from one to the next. IE lvl 1 -> 2 -> 3 -> 4 OR 1 -> 4 -> 2 etc
@@ -673,6 +679,9 @@ library Levels requires SimpleList, Teams, GameModesGlobals, LevelIDGlobals, Cin
 			else
 				call transferData.Team.RegisterAutoUnpauseForTeam(LEVEL_TRANSFER_FADE_DURATION + LEVEL_TRANSFER_UNPAUSE_DELAY)
 			endif
+			
+			//Team.LastEventUser refers to the level transfer event, clear it now
+			set transferData.Team.LastEventUser = -1
 			
 			call transferData.deallocate()
 			call ReleaseTimer(t)
@@ -1034,7 +1043,6 @@ library Levels requires SimpleList, Teams, GameModesGlobals, LevelIDGlobals, Cin
         public static method CreateDoors takes Level intro, string startFunction, string stopFunction, rect startspawn, rect vision returns Level
             local Level new = DOORS_LEVEL_ID
             
-            set new.Name = "Doors"
             set new.RawContinues = 0
             set new.RawScore = 0
 
@@ -1097,7 +1105,6 @@ library Levels requires SimpleList, Teams, GameModesGlobals, LevelIDGlobals, Cin
             
             //infer this is a partial level
             //set new.Name = new.ToString()
-            set new.Name = name
             set new.RawContinues = rawContinues
             set new.RawScore = rawScore
             //set new.Difficulty = diff
