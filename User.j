@@ -561,17 +561,17 @@ struct User extends array
 			return ColorMessage("(Left)" + " " + GetPlayerName(Player(this)), hex)
         endif
     endmethod
-	public method GetLocalizedPlayerName takes User forUser returns string
+	public method GetLocalizedPlayerName takes User localizer returns string
         local string hex = .GetPlayerColorHex()
         
-        if GetPlayerSlotState(Player(this)) == PLAYER_SLOT_STATE_PLAYING and GetLocalPlayer() == Player(forUser) then
+        if GetPlayerSlotState(Player(this)) == PLAYER_SLOT_STATE_PLAYING and GetLocalPlayer() == Player(localizer) then
 			if .IsAFK then
-				return ColorMessage(LocalizeContent('USAF', forUser.LanguageCode) + " ", DISABLED_COLOR) + ColorMessage(GetPlayerName(Player(this)), hex)
+				return ColorMessage(LocalizeContent('USAF', localizer.LanguageCode) + " ", DISABLED_COLOR) + ColorMessage(GetPlayerName(Player(this)), hex)
 			else
 				return ColorMessage(GetPlayerName(Player(this)), hex)
 			endif
         else
-			return ColorMessage(LocalizeContent('USAF', forUser.LanguageCode) + " " + GetPlayerName(Player(this)), hex)
+			return ColorMessage(LocalizeContent('USAF', localizer.LanguageCode) + " " + GetPlayerName(Player(this)), hex)
         endif
     endmethod
     

@@ -177,7 +177,7 @@ library Levels requires SimpleList, Teams, GameModesGlobals, LevelIDGlobals, Cin
         
         public method GetWorldID takes nothing returns integer
             //World levels follow this format
-			if this >= 3 and this <= 37 then //last level ID
+			if this >= 3 and this <= 50 then //last level ID
                 return ModuloInteger(this - 3, 7) + 1
 			else
 				return -this
@@ -238,22 +238,98 @@ library Levels requires SimpleList, Teams, GameModesGlobals, LevelIDGlobals, Cin
 			return ColorMessage(worldName, .GetWorldColor())
         endmethod
 		
-        public method ToString takes nothing returns string
-            local string name
+		//TODO consolidate to one method - use Get prefix, closer to a convention
+		public method GetLocalizedWorldString takes User user returns string
+			local integer onWorld = .GetWorldID()
+			local string worldName = ""
+            			
+            if onWorld == -1 then
+                set worldName = "???"
+			elseif onWorld == -2 then
+				set worldName = LocalizeContent('DOOR', user.LanguageCode)
+            elseif onWorld == 1 then
+                set worldName = LocalizeContent('LGI1', user.LanguageCode)
+            elseif onWorld == 2 then
+                set worldName = LocalizeContent('LGI2', user.LanguageCode)
+            elseif onWorld == 3 then
+                set worldName = LocalizeContent('LGL1', user.LanguageCode)
+            elseif onWorld == 4 then
+                set worldName = "Greed"
+            elseif onWorld == 5 then
+                set worldName = "Sloth"
+            elseif onWorld == 6 then
+                set worldName = LocalizeContent('LGFS', user.LanguageCode)
+            else//if onWorld == 7
+                set worldName = LocalizeContent('LG25', user.LanguageCode)
+            endif
+						
+			return ColorMessage(worldName, .GetWorldColor())
+		endmethod
+		public method ToLocalizedWorldString takes User user returns string
+			local string name
             
             //debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "Level ID: " + I2S(this))
             
             if this == INTRO_LEVEL_ID then
-                return "Entrance"
+                return LocalizeContent('ENTR', user.LanguageCode)
             elseif this == DOORS_LEVEL_ID then
-                return "Doors"
+                return LocalizeContent('DOOR', user.LanguageCode)
             else
-                set name = .GetWorldString()
+                set name = .GetLocalizedWorldString(user)
 
                 return name + " " + I2S(R2I((this - 3) / 7) + 1)
             endif
-        endmethod
-                        
+		endmethod
+		
+		public method GetLocalizedLevelName takes User user returns string
+			if this == INTRO_LEVEL_ID then
+				return LocalizeContent('ENTR', user.LanguageCode)
+			elseif this == DOORS_LEVEL_ID then
+				return LocalizeContent('DOOR', user.LanguageCode)
+				
+			elseif this == IW1_LEVEL_ID then
+				return LocalizeContent('LNI1', user.LanguageCode)
+			elseif this == IW2_LEVEL_ID then
+				return LocalizeContent('LNI2', user.LanguageCode)
+			elseif this == IW3_LEVEL_ID then
+				return LocalizeContent('LNI3', user.LanguageCode)
+			elseif this == IW4_LEVEL_ID then
+				return LocalizeContent('LNI4', user.LanguageCode)
+			elseif this == IW5_LEVEL_ID then
+				return LocalizeContent('LNI5', user.LanguageCode)
+				
+			elseif this == IWB1_LEVEL_ID then
+				return LocalizeContent('LNE1', user.LanguageCode)
+				
+			elseif this == LW1_LEVEL_ID then
+				return LocalizeContent('LNL1', user.LanguageCode)
+			elseif this == LW2_LEVEL_ID then
+				return LocalizeContent('LNL2', user.LanguageCode)
+				
+			elseif this == FS1_LEVEL_ID then
+				return LocalizeContent('LNF1', user.LanguageCode)
+				
+			elseif this == PW1_LEVEL_ID then
+				return LocalizeContent('LNP1', user.LanguageCode)
+			elseif this == PW2_LEVEL_ID then
+				return LocalizeContent('LNP2', user.LanguageCode)
+			elseif this == PW3_LEVEL_ID then
+				return LocalizeContent('LNP3', user.LanguageCode)
+			elseif this == PW4_LEVEL_ID then
+				return LocalizeContent('LNP4', user.LanguageCode)
+				
+			elseif this == BRICK_BREAK_LEVEL_ID then
+				return LocalizeContent('LNM1', user.LanguageCode)
+			
+			else
+				if CONFIGURATION_PROFILE != RELEASE then
+					call BJDebugMsg("Localizing level name for unhandled level ID: " + I2S(this))
+				endif
+				
+				return ""
+			endif
+		endmethod
+        
         public method RemoveGreenFromLevel takes nothing returns nothing
             local unit u
 			local integer i = 0
@@ -388,15 +464,22 @@ library Levels requires SimpleList, Teams, GameModesGlobals, LevelIDGlobals, Cin
 			
 			call TimerStart(t, 1.15, false, function thistype.OnCheckpointChangeFX_HideAndPan)
 		endmethod
+		
+		private static method LocalizeReachedCheckpoint takes User origin, User localizer returns string
+			return origin.GetLocalizedPlayerName(localizer) + " " + LocalizeContent('LSCP', localizer.LanguageCode)
+		endmethod
 		public method AnimatedSetCheckpointForTeam takes Teams_MazingTeam mt, integer cpID returns nothing
 			local Checkpoint cp = Checkpoint(.Checkpoints.get(cpID).value)
 			
-			//call DisplayTextToForce(bj_FORCE_PLAYER[0], "Started setting CP for team " + I2S(mt) + ", index " + I2S(cpID) + ", cp " + I2S(cp))
+			// call DisplayTextToForce(bj_FORCE_PLAYER[0], "Started setting CP for team " + I2S(mt) + ", index " + I2S(cpID) + ", cp " + I2S(cp))
 			if mt.Users.count > 1 then
 				if cp != 0 then
 					call mt.PauseTeam(true)
+					
+					// call DisplayTextToForce(bj_FORCE_PLAYER[0], "Last Event User: " + I2S(mt.LastEventUser))
 					if mt.LastEventUser != -1 then
-						call mt.PrintMessage(mt.LastEventUser.GetStylizedPlayerName() + " has reached a checkpoint!")
+						call mt.DisplayDynamicContent(LocalizeReachedCheckpoint, mt.LastEventUser)
+						//call mt.PrintMessage(mt.LastEventUser.GetStylizedPlayerName() + " " + "has reached a checkpoint!")
 					endif
 					
 					//just for safety
@@ -574,11 +657,15 @@ library Levels requires SimpleList, Teams, GameModesGlobals, LevelIDGlobals, Cin
 			// call ReleaseTimer(t)
 			// set t = null
 		// endmethod
+		private static method LocalizeSwitchLevelsNowStarting takes AnimatedLevelTransferData origin, User localizer returns string
+			return LocalizeContent('LS3N', localizer.LanguageCode) + " " + origin.NextLevel.GetLocalizedLevelName(localizer)
+		endmethod
 		private static method SwitchLevels_Message3 takes nothing returns nothing
 			local timer t = GetExpiredTimer()
 			local AnimatedLevelTransferData transferData = GetTimerData(t)
 			
-			call transferData.Team.PrintMessage("Now starting:" + " " + transferData.NextLevel.Name)
+			// call transferData.Team.PrintMessage("Now starting:" + " " + transferData.NextLevel.Name)
+			call transferData.Team.DisplayDynamicContent(LocalizeSwitchLevelsNowStarting, transferData)
 			call transferData.Team.FadeInForTeam(LEVEL_TRANSFER_FADE_DURATION)
 			
 			if transferData.Team.DefaultGameMode == Teams_GAMEMODE_PLATFORMING then
@@ -592,23 +679,43 @@ library Levels requires SimpleList, Teams, GameModesGlobals, LevelIDGlobals, Cin
 			set t = null
 			// call TimerStart(t, LEVEL_TRANSFER_MESSAGE_DELAY, false, function thistype.SwitchLevels_FadeIn)
 		endmethod
+		
+		private static method LocalizeSwitchLevelsContinueCount takes Teams_MazingTeam origin, User localizer returns string
+			return ColorValue(I2S(origin.GetContinueCount())) + " " + LocalizeContent('LS2C', localizer.LanguageCode)
+		endmethod
 		private static method SwitchLevels_Message2 takes nothing returns nothing
 			local timer t = GetExpiredTimer()
 			local AnimatedLevelTransferData transferData = GetTimerData(t)
 			
-			call transferData.Team.PrintMessage("You have" + " " + ColorValue(I2S(transferData.Team.GetContinueCount())) + " " + "continues left")
+			// call transferData.Team.PrintMessage(ColorValue(I2S(transferData.Team.GetContinueCount())) + " " + "continues left")
+			call transferData.Team.DisplayDynamicContent(LocalizeSwitchLevelsContinueCount, transferData.Team)
 			
 			call TimerStart(t, LEVEL_TRANSFER_MESSAGE_DELAY, false, function thistype.SwitchLevels_Message3)
+		endmethod
+		
+		private static method LocalizeSwitchLevelsScore takes Teams_MazingTeam origin, User localizer returns string
+			return LocalizeContent('LS1A', localizer.LanguageCode) /*
+			*/ + " " + ColorValue(I2S(origin.OnLevel.GetWeightedScore())) /*
+			*/ + " " + LocalizeContent('LS1B', localizer.LanguageCode)
+		endmethod
+		private static method LocalizeSwitchLevelsScoreTotal takes Teams_MazingTeam origin, User localizer returns string
+			return LocalizeContent('LS1A', localizer.LanguageCode) + " " /*
+				*/ + ColorValue(I2S(origin.OnLevel.GetWeightedScore())) + " " /*
+				*/ + LocalizeContent('LS1B', localizer.LanguageCode) + /*
+				*/ " (" + ColorValue(I2S(origin.GetScore() + origin.OnLevel.GetWeightedScore())) /*
+				*/ + " " + LocalizeContent('LS1C', localizer.LanguageCode) + ")"
 		endmethod
 		private static method SwitchLevels_Message1 takes nothing returns nothing
 			local timer t = GetExpiredTimer()
 			local AnimatedLevelTransferData transferData = GetTimerData(t)
 			
 			if transferData.Team.OnLevel.GetWeightedScore() > 0 then				
-				if transferData.Team.GetScore() > 0 then
-					call transferData.Team.PrintMessage("You gained" + " " + ColorValue(I2S(transferData.Team.OnLevel.GetWeightedScore())) + " " + "points" + " (" + ColorValue(I2S(transferData.Team.GetScore() + transferData.Team.OnLevel.GetWeightedScore())) + " " + "total" + ")")
+				if transferData.Team.GetScore() <= 0 then
+					// call transferData.Team.PrintMessage("You gained" + " " + ColorValue(I2S(transferData.Team.OnLevel.GetWeightedScore())) + " " + "points")
+					call transferData.Team.DisplayDynamicContent(LocalizeSwitchLevelsScore, transferData.Team)
 				else
-					call transferData.Team.PrintMessage("You gained" + " " + ColorValue(I2S(transferData.Team.OnLevel.GetWeightedScore())) + " " + "points")
+					// call transferData.Team.PrintMessage("You gained" + " " + ColorValue(I2S(transferData.Team.OnLevel.GetWeightedScore())) + " " + "points" + " (" + ColorValue(I2S(transferData.Team.GetScore() + transferData.Team.OnLevel.GetWeightedScore())) + " " + "total" + ")")
+					call transferData.Team.DisplayDynamicContent(LocalizeSwitchLevelsScoreTotal, transferData.Team)
 				endif
 			endif
 			
@@ -700,11 +807,16 @@ library Levels requires SimpleList, Teams, GameModesGlobals, LevelIDGlobals, Cin
 			call TimerStart(t, 1.15, false, function thistype.SwitchLevels_FadeOut)
 		endmethod
 		
-		private method LocalizeLevelClear takes player p returns string
-			local User u = GetPlayerId(p)
-			local User clearPlayer = u.Team.LastEventUser
-			
-			return clearPlayer.GetLocalizedPlayerName(u) + " " + LocalizeContent('LSAH', u.LanguageCode)
+		private static method LocalizeLevelClear takes User origin, User localizer returns string
+			return origin.GetLocalizedPlayerName(localizer) + " " + LocalizeContent('LSAH', localizer.LanguageCode)
+		endmethod
+		private static method LocalizeWorldStartAll takes AnimatedLevelTransferData origin, User localizer returns string
+			return origin.Team.GetLocalizedTeamName(localizer) + " " /*
+				*/ + LocalizeContent('LSAT', localizer.LanguageCode) + " " /*
+				*/ + origin.NextLevel.GetLocalizedWorldString(localizer)
+		endmethod
+		private static method LocalizeWorldStartTeam takes AnimatedLevelTransferData origin, User localizer returns string
+			return LocalizeContent('LSAE', localizer.LanguageCode) + " " + origin.NextLevel.GetLocalizedWorldString(localizer)
 		endmethod
 		public method SwitchLevelsAnimated takes Teams_MazingTeam mt, Level nextLevel, boolean updateProgress returns nothing
 			local AnimatedLevelTransferData transferData = AnimatedLevelTransferData.allocate()
@@ -715,19 +827,21 @@ library Levels requires SimpleList, Teams, GameModesGlobals, LevelIDGlobals, Cin
 			call mt.PauseTeam(true)
 			if this != DOORS_LEVEL_ID then
 				if mt.LastEventUser != -1 then
-					call mt.PrintMessage(mt.LastEventUser.GetStylizedPlayerName() + " " + "has cleared the level!")
-					
-					call mt.DisplayDynamicContent(LocalizeLevelClear)
+					// call mt.PrintMessage(mt.LastEventUser.GetStylizedPlayerName() + " " + "has cleared the level!")
+					call mt.DisplayDynamicContent(LocalizeLevelClear, mt.LastEventUser)
 				endif
 			else
 				//TODO remove when there's a less intrusive and more relevant way to convey what team is where via the Doors level
-				call Teams_MazingTeam.PrintMessageAll(mt.TeamName + " " + "team has just started" + " " + nextLevel.GetWorldString(), mt)
-				call mt.PrintMessage("Entering new world:" + " " + nextLevel.GetWorldString())
+				// call Teams_MazingTeam.PrintMessageAll(mt.TeamName + " " + "team has just started" + " " + nextLevel.GetWorldString(), mt)
+				call Teams_MazingTeam.DisplayDynamicContentAll(LocalizeWorldStartAll, transferData, mt)
+				
+				// call mt.PrintMessage("Entering new world:" + " " + nextLevel.GetWorldString())
+				call mt.DisplayDynamicContent(LocalizeWorldStartTeam, transferData)
 			endif
 			
 			call TimerStart(NewTimerEx(transferData), .5, false, function thistype.SwitchLevels_DisappearingVFX)
 		endmethod
-        		
+        
 		private static method CheckTransfers takes nothing returns nothing
             local SimpleList_ListNode curLevel = thistype.ActiveLevels.first
             local SimpleList_ListNode curTeam
@@ -777,7 +891,9 @@ library Levels requires SimpleList, Teams, GameModesGlobals, LevelIDGlobals, Cin
 										if worldProgress != 0 then
 											if worldProgress.FurthestLevel.NextLevel == 0 then
 												//team has already beaten this world!
-												call DisplayTextToForce(bj_FORCE_PLAYER[0], "You've already beaten that world!")
+												// call DisplayTextToForce(bj_FORCE_PLAYER[curUser.value], "You've already beaten that world!")
+												call User(curUser.value).DisplayLocalizedMessage('LCGG', 0)
+												
 												set nextLevel = 0
 												call User(curUser.value).RespawnAtRect(Teams_MazingTeam(curTeam.value).Revive, true)
 											else
@@ -1028,7 +1144,7 @@ library Levels requires SimpleList, Teams, GameModesGlobals, LevelIDGlobals, Cin
 			set thistype.ActiveLevels = SimpleList_List.create()
 			
 			call TimerStart(CreateTimer(), TRANSFER_TIMER_TIMEOUT, true, function thistype.CheckTransfers)
-			call TimerStart(CreateTimer(), CINEMATIC_TIMER_TIMEOUT, true, function thistype.CheckCinematics)
+			call TimerStart(CreateTimer(), CINEMATIC_TIMER_TIMEOUT, true, function thistype.CheckCinematics)			
 		endmethod
     endstruct
 endlibrary

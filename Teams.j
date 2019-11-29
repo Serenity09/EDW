@@ -22,11 +22,12 @@ globals
 	Teams_MazingTeam TriggerTeam //used with events
 endglobals
 
+function interface LocalizeContentFunc takes integer origin, User localizer returns string
+
 //ASSUMPTIONS: !!IMPORTANT!!
 //when creating a new MazingTeam, the game assumes that MazersArray[PlayerId(i)] = that player's starting demonhunter
 //it also assumes that the platforming unit is fit to match (mistakes were made) and that all the relevant gameloops are ready to go / have been recycled properly
 //this should only be relevant when first starting the game (for which it's hardcoded in already...) or if attempting to implement -restart lol
-
 struct WorldProgress extends array
 	public integer WorldID
 	public Levels_Level FurthestLevel
@@ -336,6 +337,32 @@ public struct MazingTeam extends array
 			
             set curTeamNode = curTeamNode.next
         endloop
+	endmethod
+	
+	public method DisplayDynamicContent takes LocalizeContentFunc localizeFunc, integer origin returns nothing
+		local SimpleList_ListNode curUserNode = this.Users.first
+		
+		// call DisplayTextToPlayer(Player(0), 0, 0, "Displaying localized content: " + I2S(localizeFunc) + ", origin: " + I2S(origin))
+		
+		loop
+		exitwhen curUserNode == 0
+			// call DisplayTextToPlayer(Player(0), 0, 0, "Displaying local content for: " + I2S(curUserNode.value))
+			if GetLocalPlayer() == Player(curUserNode.value) then
+				call User(curUserNode.value).DisplayMessage(localizeFunc.evaluate(origin, curUserNode.value), 0)
+			endif
+		set curUserNode = curUserNode.next
+		endloop
+	endmethod
+	public static method DisplayDynamicContentAll takes LocalizeContentFunc localizeFunc, integer origin, Teams_MazingTeam filter returns nothing
+		local SimpleList_ListNode curTeamNode = thistype.AllTeams.first
+		
+		loop
+		exitwhen curTeamNode == 0
+			if curTeamNode.value != filter  then
+				call Teams_MazingTeam(curTeamNode.value).DisplayDynamicContent(localizeFunc, origin)
+			endif
+		set curTeamNode = curTeamNode.next
+		endloop
 	endmethod
     
     //returns -1 if could not find that player in this.plist
@@ -812,45 +839,20 @@ public struct MazingTeam extends array
 			call .UpdateMultiboard()
 		endif
 	endmethod
-	
-	public method DisplayDynamicContent takes LocalizeContentFunc localizeFunc returns nothing
-		local SimpleList_ListNode curUserNode = this.Users.first
 		
-		loop
-		exitwhen curUserNode == 0
-			if GetLocalPlayer() == Player(curUserNode.value) then
-				call User(curUserNode.value).DisplayMessage(localizeFunc.evaluate(Player(curUserNode.value)), 0)
-			endif
-		set curUserNode = curUserNode.next
-		endloop
+	private method LocalizeNeedsScore takes User origin, User localizer returns string
+		return LocalizeContent('TCTE', localizer.LanguageCode) + " " /*
+			*/ + ColorMessage(LocalizeContent(origin.Team.GetTeamNameContentID(), localizer.LanguageCode), origin.Team.GetTeamColor()) + " " /*
+			*/ + LocalizeContent('TCNE', localizer.LanguageCode) + " " /*
+			*/ + ColorValue(I2S(VictoryScore - origin.Team.Score)) + " " /*
+			*/ + LocalizeContent('TCMO', localizer.LanguageCode)
 	endmethod
-	public static method DisplayDynamicContentAll takes LocalizeContentFunc localizeFunc returns nothing
-		local SimpleList_ListNode curTeamNode = thistype.AllTeams.first
-		
-		loop
-		exitwhen curTeamNode == 0
-			call Teams_MazingTeam(curTeamNode.value).DisplayDynamicContent(localizeFunc)
-		set curTeamNode = curTeamNode.next
-		endloop
-	endmethod
-		
-	private method LocalizeNeedsScore takes player p returns string
-		local User u = User(GetPlayerId(p))
-		
-		return LocalizeContent('TCTE', u.LanguageCode) + " " /*
-			*/ + ColorMessage(LocalizeContent(u.Team.GetTeamNameContentID(), u.LanguageCode), u.Team.GetTeamColor()) + " " /*
-			*/ + LocalizeContent('TCNE', u.LanguageCode) + " " /*
-			*/ + ColorValue(I2S(VictoryScore - u.Team.Score)) + " " /*
-			*/ + LocalizeContent('TCMO', u.LanguageCode)
-	endmethod
-	private method LocalizeOnlyNeedsScore takes player p returns string
-		local User u = User(GetPlayerId(p))
-		
-		return LocalizeContent('TCTE', u.LanguageCode) + " " /*
-			*/ + ColorMessage(LocalizeContent(u.Team.GetTeamNameContentID(), u.LanguageCode), u.Team.GetTeamColor()) + " " /*
-			*/ + LocalizeContent('TCON', u.LanguageCode) + " " /*
-			*/ + ColorValue(I2S(VictoryScore - u.Team.Score)) + " " /*
-			*/ + LocalizeContent('TCMO', u.LanguageCode)
+	private method LocalizeOnlyNeedsScore takes User origin, User localizer returns string	
+		return LocalizeContent('TCTE', localizer.LanguageCode) + " " /*
+			*/ + ColorMessage(LocalizeContent(origin.Team.GetTeamNameContentID(), localizer.LanguageCode), origin.Team.GetTeamColor()) + " " /*
+			*/ + LocalizeContent('TCON', localizer.LanguageCode) + " " /*
+			*/ + ColorValue(I2S(VictoryScore - origin.Team.Score)) + " " /*
+			*/ + LocalizeContent('TCMO', localizer.LanguageCode)
 	endmethod
 	
 	public method GetScore takes nothing returns integer
@@ -860,10 +862,7 @@ public struct MazingTeam extends array
 		local integer ogScore = VictoryScore - .Score
 		local integer teamNameContentID = this.GetTeamNameContentID()
 		local string teamColor = this.GetTeamColor()
-		
-		local SimpleList_ListNode curTeamNode = thistype.AllTeams.first
-		local SimpleList_ListNode curUserNode
-		
+				
 		if scoreOffset != 0 then
 			set .Score = .Score + scoreOffset			
 			
@@ -873,46 +872,10 @@ public struct MazingTeam extends array
 					call MazingTeam.ApplyEndGameAll(this)
 				else
 					if (VictoryScore - .Score <= 10 and ogScore > 10) or (VictoryScore - .Score <= 5 and ogScore > 5) then
-						// call User(curUserNode.value).DisplayMessage(LocalizeContent('TCTE', User(curUserNode.value).LanguageCode) + " " /*
-							// */ + ColorMessage(LocalizeContent(teamNameContentID, User(curUserNode.value).LanguageCode), teamColor) + " " /*
-							// */ + LocalizeContent('TCNE', User(curUserNode.value).LanguageCode) + " " /*
-							// */ + ColorValue(I2S(VictoryScore - .Score)) + " " /*
-							// */ + LocalizeContent('TCMO', User(curUserNode.value).LanguageCode), 0)
-						call thistype.DisplayDynamicContentAll(LocalizeNeedsScore)
+						call thistype.DisplayDynamicContentAll(LocalizeNeedsScore, this.LastEventUser, 0)
 					elseif VictoryScore - .Score <= 3 and ogScore > 3 then
-						// call User(curUserNode.value).DisplayMessage(LocalizeContent('TCTE', User(curUserNode.value).LanguageCode) + " " /*
-							// */ + ColorMessage(LocalizeContent(teamNameContentID, User(curUserNode.value).LanguageCode), teamColor) + " " /*
-							// */ + LocalizeContent('TCON', User(curUserNode.value).LanguageCode) + " " /*
-							// */ + ColorValue(I2S(VictoryScore - .Score)) + " " /*
-							// */ + LocalizeContent('TCMO', User(curUserNode.value).LanguageCode), 0)
-						call thistype.DisplayDynamicContentAll(LocalizeOnlyNeedsScore)
-					endif
-					
-					// loop
-					// exitwhen curTeamNode == 0
-						// set curUserNode = Teams_MazingTeam(curTeamNode.value).Users.first
-						
-						// loop
-						// exitwhen curUserNode == 0
-							// if (VictoryScore - .Score <= 10 and ogScore > 10) or (VictoryScore - .Score <= 5 and ogScore > 5) then
-								// // call User(curUserNode.value).DisplayMessage(LocalizeContent('TCTE', User(curUserNode.value).LanguageCode) + " " /*
-									// // */ + ColorMessage(LocalizeContent(teamNameContentID, User(curUserNode.value).LanguageCode), teamColor) + " " /*
-									// // */ + LocalizeContent('TCNE', User(curUserNode.value).LanguageCode) + " " /*
-									// // */ + ColorValue(I2S(VictoryScore - .Score)) + " " /*
-									// // */ + LocalizeContent('TCMO', User(curUserNode.value).LanguageCode), 0)
-								// call thistype.DisplayDynamicContentAll(LocalizeNeedsScore)
-							// elseif VictoryScore - .Score <= 3 and ogScore > 3 then
-								// // call User(curUserNode.value).DisplayMessage(LocalizeContent('TCTE', User(curUserNode.value).LanguageCode) + " " /*
-									// // */ + ColorMessage(LocalizeContent(teamNameContentID, User(curUserNode.value).LanguageCode), teamColor) + " " /*
-									// // */ + LocalizeContent('TCON', User(curUserNode.value).LanguageCode) + " " /*
-									// // */ + ColorValue(I2S(VictoryScore - .Score)) + " " /*
-									// // */ + LocalizeContent('TCMO', User(curUserNode.value).LanguageCode), 0)
-								// call thistype.DisplayDynamicContentAll(LocalizeOnlyNeedsScore)
-							// endif
-						// set curUserNode = curUserNode.next
-						// endloop
-					// set curTeamNode = curTeamNode.next
-					// endloop
+						call thistype.DisplayDynamicContentAll(LocalizeOnlyNeedsScore, this.LastEventUser,  0)
+					endif					
 				endif
 			endif
 			
