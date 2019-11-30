@@ -5,6 +5,7 @@ library Minigame requires SimpleList, Levels, TeamSaveLocation
 	
 	struct Minigame extends array
 		readonly static leaderboard Scores
+		readonly string Name
 		
 		public method TransferAllTeams takes nothing returns nothing
 			local SimpleList_ListNode curTeamNode = Teams_MazingTeam.AllTeams.first
@@ -28,7 +29,7 @@ library Minigame requires SimpleList, Levels, TeamSaveLocation
 			//hide multiboard
 			call MultiboardDisplay(Teams_MazingTeam.PlayerStats, false)
 			//show leaderboard with level name as title
-			call LeaderboardSetLabel(thistype.Scores, Levels_Level(this).Name)
+			call LeaderboardSetLabel(thistype.Scores, this.Name)
 			call LeaderboardDisplay(thistype.Scores, true)
 		endmethod
 		public method ResetAllTeams takes nothing returns nothing
@@ -54,7 +55,9 @@ library Minigame requires SimpleList, Levels, TeamSaveLocation
 		
 		public static method create takes integer levelID, string name, string startFunction, string stopFunction, rect revive, rect vision returns thistype
 			//default parameters in order: rawContinues, rawScore, levelEnd, previousLevel
-			local thistype new = Levels_Level.create(levelID, name, 0, 0, startFunction, stopFunction, revive, vision, null, 0)
+			local thistype new = Levels_Level.create(levelID, 0, 0, startFunction, stopFunction, revive, vision, null, 0)
+			
+			set new.Name = name
 			
 			return new
 		endmethod

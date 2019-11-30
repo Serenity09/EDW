@@ -72,7 +72,7 @@ library Levels requires SimpleList, Teams, GameModesGlobals, LevelIDGlobals, Cin
 	endstruct
     
 	public struct Level extends array //extends IStartable
-        public string      Name            //a levels name
+        // public string      Name            //a levels name
         public integer     RawContinues      //refers to the difficulty of a level
         public integer     RawScore
         
@@ -469,6 +469,8 @@ library Levels requires SimpleList, Teams, GameModesGlobals, LevelIDGlobals, Cin
 		endmethod
 		
 		private static method LocalizeReachedCheckpoint takes User origin, User localizer returns string
+			//TODO string replace placeholder(s) in templateString, returned by: LocalizeContent('LSCP', localizer.LanguageCode), with origin.GetLocalizedPlayerName(localizer)
+			//can i create and destroy a simplelist as part of localplayer block? no
 			return origin.GetLocalizedPlayerName(localizer) + " " + LocalizeContent('LSCP', localizer.LanguageCode)
 		endmethod
 		public method AnimatedSetCheckpointForTeam takes Teams_MazingTeam mt, integer cpID returns nothing
@@ -1100,7 +1102,7 @@ library Levels requires SimpleList, Teams, GameModesGlobals, LevelIDGlobals, Cin
 		
 		
         //creates a level struct
-        static method create takes integer LevelID, string name, integer rawContinues, integer rawScore, string startFunction, string stopFunction, rect startspawn, rect vision, rect levelEnd, Level previouslevel returns Level
+        static method create takes integer LevelID, integer rawContinues, integer rawScore, string startFunction, string stopFunction, rect startspawn, rect vision, rect levelEnd, Level previouslevel returns Level
             local Level new = LevelID
             
             //infer this is a partial level

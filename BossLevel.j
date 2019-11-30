@@ -105,8 +105,8 @@ endglobals
 			
 		endmethod
 		
-		public static method create takes integer bossLevelID, string bossName, integer rawContinues, integer rawScore, string startFunction, string stopFunction, rect startspawn, rect vision, Levels_Level previousLevel returns BossLevel
-			local thistype new = Levels_Level.create(bossLevelID, bossName, rawContinues, rawScore, startFunction, stopFunction, startspawn, vision, null, previousLevel)
+		public static method create takes integer bossLevelID, integer rawContinues, integer rawScore, string startFunction, string stopFunction, rect startspawn, rect vision, Levels_Level previousLevel returns BossLevel
+			local thistype new = Levels_Level.create(bossLevelID, rawContinues, rawScore, startFunction, stopFunction, startspawn, vision, null, previousLevel)
 			
 			return new
 		endmethod
