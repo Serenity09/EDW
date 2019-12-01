@@ -23,11 +23,15 @@ library Minigame requires SimpleList, Levels, TeamSaveLocation
 				
 				//switch to minigame
 				call Teams_MazingTeam(curTeamNode.value).OnLevel.SwitchLevels(this, curTeamNode.value, 0, false)
+			
+				//hide multiboards
+				call Teams_MazingTeam(curTeamNode.value).DisplayMultiboard(false)
 			set curTeamNode = curTeamNode.next
 			endloop
 			
 			//hide multiboard
-			call MultiboardDisplay(Teams_MazingTeam.PlayerStats, false)
+			// call MultiboardDisplay(Teams_MazingTeam.PlayerStats, false)
+			
 			//show leaderboard with level name as title
 			call LeaderboardSetLabel(thistype.Scores, this.Name)
 			call LeaderboardDisplay(thistype.Scores, true)
@@ -43,12 +47,14 @@ library Minigame requires SimpleList, Levels, TeamSaveLocation
 					call save.Restore()
 					
 					call save.destroy()
-				endif				
+				endif
+				
+				call Teams_MazingTeam(curTeamNode.value).DisplayMultiboard(true)
 			set curTeamNode = curTeamNode.next
 			endloop
 			
 			//show multiboard
-			call MultiboardDisplay(Teams_MazingTeam.PlayerStats, true)
+			// call MultiboardDisplay(Teams_MazingTeam.PlayerStats, true)
 			//hide leaderboard
 			call LeaderboardDisplay(thistype.Scores, false)
 		endmethod

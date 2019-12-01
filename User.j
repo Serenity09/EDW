@@ -53,6 +53,8 @@ struct User extends array
 	
 	readonly unit LastCollidedUnit
 	readonly timer LastCollidedUnitTimer
+	
+	private multiboard Statistics
 	   
 	// public real CameraIdleTime //only as accurate as the last sync
 	readonly real AFKPlatformerDeathClock
@@ -238,18 +240,36 @@ struct User extends array
             // call .CinematicPlaying.Activate(this)
         endif
     endmethod
-        
-    public method OnLeave takes nothing returns nothing
-        local SimpleList_ListNode curUserNode = PlayerUtils_FirstPlayer
+       
+	private static method OnLeaveCB takes nothing returns nothing
+		local timer t = GetExpiredTimer()
+		local User u = GetTimerData(t)
 		
+		call u.UpdateMultiboard()
+		
+		call ReleaseTimer(t)
+		set t = null
+	endmethod
+	public method OnLeave takes nothing returns nothing
+        local SimpleList_ListNode curUserNode = PlayerUtils_FirstPlayer
+				
 		call SwitchGameModesDefaultLocation(Teams_GAMEMODE_STANDARD)
         
         set .IsPlaying = false
+		call DisplayTextToPlayer(Player(0), 0, 0, "Player: " + I2S(this) + " playing? " + B2S(.IsPlaying))
 		
 		call .SwitchGameModesDefaultLocation(Teams_GAMEMODE_DYING)
 
         //TODO cleanup any structs
         
+		set .ActiveUnit = null
+        
+        set User.ActivePlayers = User.ActivePlayers - 1
+
+		// call this.UpdateMultiboard()
+		call TimerStart(NewTimerEx(this), 0.01, false, function thistype.OnLeaveCB)
+		
+		// call thistype.DisplayMessageAll(this.GetStylizedPlayerName() + " has left the game!")
         loop
         exitwhen curUserNode == 0
 			if User(curUserNode.value).IsPlaying and GetLocalPlayer() == Player(curUserNode.value) then
@@ -257,14 +277,7 @@ struct User extends array
 			endif
         set curUserNode = curUserNode.next
         endloop
-		
-		// call thistype.DisplayMessageAll(this.GetStylizedPlayerName() + " has left the game!")
-        
-        set .ActiveUnit = null
-        
-        set User.ActivePlayers = User.ActivePlayers - 1
     endmethod
-    
     
     public method ReviveActiveHero takes real x, real y returns nothing
         if .GameMode == Teams_GAMEMODE_STANDARD then
@@ -580,10 +593,12 @@ struct User extends array
 			return ColorMessage(LocalizeContent('USAF', localizer.LanguageCode) + " " + GetPlayerName(Player(this)), hex)
         endif
     endmethod
-    
+	
 	public method UpdateMultiboardPlayerName takes nothing returns nothing
 		local SimpleList_ListNode curTeamNode = Teams_MazingTeam.AllTeams.first
 		local SimpleList_ListNode curUserNode
+		
+		// call DisplayTextToPlayer(Player(0), 0, 0, "Updating player name for: " + I2S(this))
 		
 		loop
 		exitwhen curTeamNode == 0
@@ -591,17 +606,18 @@ struct User extends array
 			
 			loop
 			exitwhen curUserNode == 0
-				if GetLocalPlayer() == Player(curUserNode.value) then
-					if GetPlayerSlotState(Player(this)) == PLAYER_SLOT_STATE_PLAYING then
-						call MultiboardSetItemValue(MultiboardGetItem(.Team.PlayerStats, this + 1, 0), this.Team.GetLocalizedPlayerName(this, curUserNode.value))
-					elseif GetPlayerSlotState(Player(this)) == PLAYER_SLOT_STATE_LEFT then
-						call MultiboardSetItemValue(MultiboardGetItem(.Team.PlayerStats, this + 1, 0), "Left the game")
-					else
-						call MultiboardSetItemValue(MultiboardGetItem(.Team.PlayerStats, this + 1, 0), "Not playing")
-					endif
+				if GetPlayerSlotState(Player(this)) == PLAYER_SLOT_STATE_PLAYING then
+					// call DisplayTextToPlayer(Player(0), 0, 0, "Player slot marked playing")
+					call MultiboardSetItemValue(MultiboardGetItem(User(curUserNode.value).Statistics, this + 1, 0), this.Team.GetLocalizedPlayerName(this, curUserNode.value))
+				elseif GetPlayerSlotState(Player(this)) == PLAYER_SLOT_STATE_LEFT then
+					// call DisplayTextToPlayer(Player(0), 0, 0, "Player slot marked left the game")
+					call MultiboardSetItemValue(MultiboardGetItem(User(curUserNode.value).Statistics, this + 1, 0), "Left the game")
+				else
+					// call DisplayTextToPlayer(Player(0), 0, 0, "Player slot marked not playing")
+					call MultiboardSetItemValue(MultiboardGetItem(User(curUserNode.value).Statistics, this + 1, 0), "Not playing")
 				endif
 				
-				// call MultiboardReleaseItem(MultiboardGetItem(.Team.PlayerStats, this + 1, 0))
+				call MultiboardReleaseItem(MultiboardGetItem(User(curUserNode.value).Statistics, this + 1, 0))
 			set curUserNode = curUserNode.next
 			endloop
 			
@@ -619,17 +635,11 @@ struct User extends array
 			loop
 			exitwhen curUserNode == 0
 				if GetPlayerSlotState(Player(this)) == PLAYER_SLOT_STATE_PLAYING then
-					if GetLocalPlayer() == Player(curUserNode.value) then
-						call MultiboardSetItemValue(MultiboardGetItem(.Team.PlayerStats, this + 1, 1), this.Team.OnLevel.GetLocalizedLevelName(curUserNode.value))
-					endif
-					
-					// call MultiboardReleaseItem(MultiboardGetItem(.Team.PlayerStats, this + 1, 1))
+					call MultiboardSetItemValue(MultiboardGetItem(User(curUserNode.value).Statistics, this + 1, 1), this.Team.OnLevel.GetLocalizedLevelName(curUserNode.value))
+					call MultiboardReleaseItem(MultiboardGetItem(User(curUserNode.value).Statistics, this + 1, 1))
 				elseif GetPlayerSlotState(Player(this)) == PLAYER_SLOT_STATE_LEFT then
-					if GetLocalPlayer() == Player(curUserNode.value) then
-						call MultiboardSetItemValue(MultiboardGetItem(.Team.PlayerStats, this + 1, 1), "Gone")
-					endif
-					
-					// call MultiboardReleaseItem(MultiboardGetItem(.Team.PlayerStats, this + 1, 1))
+					call MultiboardSetItemValue(MultiboardGetItem(User(curUserNode.value).Statistics, this + 1, 1), "Gone")
+					call MultiboardReleaseItem(MultiboardGetItem(User(curUserNode.value).Statistics, this + 1, 1))
 				endif
 			set curUserNode = curUserNode.next
 			endloop
@@ -639,33 +649,75 @@ struct User extends array
 	endmethod
 	
 	public method UpdateMultiboardScore takes nothing returns nothing
-		if GetPlayerSlotState(Player(this)) == PLAYER_SLOT_STATE_PLAYING then
-			call MultiboardSetItemValue(MultiboardGetItem(.Team.PlayerStats, this + 1, 2), I2S(.Team.GetScore()))
-			call MultiboardReleaseItem(MultiboardGetItem(.Team.PlayerStats, this + 1, 2))
-		elseif GetPlayerSlotState(Player(this)) == PLAYER_SLOT_STATE_LEFT then
-			call MultiboardSetItemValue(MultiboardGetItem(.Team.PlayerStats, this + 1, 2), "Negative")
-			call MultiboardReleaseItem(MultiboardGetItem(.Team.PlayerStats, this + 1, 2))
-		endif
+		local SimpleList_ListNode curTeamNode = Teams_MazingTeam.AllTeams.first
+		local SimpleList_ListNode curUserNode
+		
+		loop
+		exitwhen curTeamNode == 0
+			set curUserNode = Teams_MazingTeam(curTeamNode.value).Users.first
+			
+			loop
+			exitwhen curUserNode == 0
+				if GetPlayerSlotState(Player(this)) == PLAYER_SLOT_STATE_PLAYING then
+					call MultiboardSetItemValue(MultiboardGetItem(User(curUserNode.value).Statistics, this + 1, 2), I2S(.Team.GetScore()))
+					call MultiboardReleaseItem(MultiboardGetItem(User(curUserNode.value).Statistics, this + 1, 2))
+				elseif GetPlayerSlotState(Player(this)) == PLAYER_SLOT_STATE_LEFT then
+					call MultiboardSetItemValue(MultiboardGetItem(User(curUserNode.value).Statistics, this + 1, 2), "Negative")
+					call MultiboardReleaseItem(MultiboardGetItem(User(curUserNode.value).Statistics, this + 1, 2))
+				endif
+			set curUserNode = curUserNode.next
+			endloop
+			
+		set curTeamNode = curTeamNode.next
+		endloop
 	endmethod
 	public method UpdateMultiboardContinues takes nothing returns nothing
-		if GetPlayerSlotState(Player(this)) == PLAYER_SLOT_STATE_PLAYING then
-			call MultiboardSetItemValue(MultiboardGetItem(.Team.PlayerStats, this + 1, 3), I2S(.Team.GetContinueCount()))
-			call MultiboardReleaseItem(MultiboardGetItem(.Team.PlayerStats, this + 1, 3))
-		elseif GetPlayerSlotState(Player(this)) == PLAYER_SLOT_STATE_LEFT then
-			call MultiboardSetItemValue(MultiboardGetItem(.Team.PlayerStats, this + 1, 3), "Zilch")
-			call MultiboardReleaseItem(MultiboardGetItem(.Team.PlayerStats, this + 1, 3))
-		endif
+		local SimpleList_ListNode curTeamNode = Teams_MazingTeam.AllTeams.first
+		local SimpleList_ListNode curUserNode
+		
+		loop
+		exitwhen curTeamNode == 0
+			set curUserNode = Teams_MazingTeam(curTeamNode.value).Users.first
+			
+			loop
+			exitwhen curUserNode == 0
+				if GetPlayerSlotState(Player(this)) == PLAYER_SLOT_STATE_PLAYING then
+					call MultiboardSetItemValue(MultiboardGetItem(User(curUserNode.value).Statistics, this + 1, 3), I2S(.Team.GetContinueCount()))
+					call MultiboardReleaseItem(MultiboardGetItem(User(curUserNode.value).Statistics, this + 1, 3))
+				elseif GetPlayerSlotState(Player(this)) == PLAYER_SLOT_STATE_LEFT then
+					call MultiboardSetItemValue(MultiboardGetItem(User(curUserNode.value).Statistics, this + 1, 3), "Zilch")
+					call MultiboardReleaseItem(MultiboardGetItem(User(curUserNode.value).Statistics, this + 1, 3))
+				endif
+			set curUserNode = curUserNode.next
+			endloop
+			
+		set curTeamNode = curTeamNode.next
+		endloop
 	endmethod
 	public method UpdateMultiboardDeaths takes nothing returns nothing
-		if RewardMode == GameModesGlobals_HARD then
-			if GetPlayerSlotState(Player(this)) == PLAYER_SLOT_STATE_PLAYING then
-				call MultiboardSetItemValue(MultiboardGetItem(.Team.PlayerStats, this + 1, 4), I2S(.Deaths))
-				call MultiboardReleaseItem(MultiboardGetItem(.Team.PlayerStats, this + 1, 4))
-			elseif GetPlayerSlotState(Player(this)) == PLAYER_SLOT_STATE_LEFT then
-				call MultiboardSetItemValue(MultiboardGetItem(.Team.PlayerStats, this + 1, 4), "Too many")
-				call MultiboardReleaseItem(MultiboardGetItem(.Team.PlayerStats, this + 1, 4))
-			endif
-		endif
+		local SimpleList_ListNode curTeamNode = Teams_MazingTeam.AllTeams.first
+		local SimpleList_ListNode curUserNode
+		
+		loop
+		exitwhen curTeamNode == 0
+			set curUserNode = Teams_MazingTeam(curTeamNode.value).Users.first
+			
+			loop
+			exitwhen curUserNode == 0
+				if RewardMode == GameModesGlobals_HARD then
+					if GetPlayerSlotState(Player(this)) == PLAYER_SLOT_STATE_PLAYING then
+						call MultiboardSetItemValue(MultiboardGetItem(User(curUserNode.value).Statistics, this + 1, 4), I2S(.Deaths))
+						call MultiboardReleaseItem(MultiboardGetItem(User(curUserNode.value).Statistics, this + 1, 4))
+					elseif GetPlayerSlotState(Player(this)) == PLAYER_SLOT_STATE_LEFT then
+						call MultiboardSetItemValue(MultiboardGetItem(User(curUserNode.value).Statistics, this + 1, 4), "Too many")
+						call MultiboardReleaseItem(MultiboardGetItem(User(curUserNode.value).Statistics, this + 1, 4))
+					endif
+				endif
+			set curUserNode = curUserNode.next
+			endloop
+			
+		set curTeamNode = curTeamNode.next
+		endloop
 	endmethod
 	
     public method PartialUpdateMultiboard takes integer columnID returns nothing
@@ -683,11 +735,115 @@ struct User extends array
     endmethod
 	//will desync if called by more than one localization in a single execution stack
 	public method UpdateMultiboard takes nothing returns nothing
+		// call DisplayTextToPlayer(Player(0), 0, 0, "Update MB for user: " + I2S(this))
 		call .UpdateMultiboardPlayerName()
+		// call DisplayTextToPlayer(Player(0), 0, 0, "Update MB 1")
 		call .UpdateMultiboardOnLevel()
+		// call DisplayTextToPlayer(Player(0), 0, 0, "Update MB 2")
 		call .UpdateMultiboardScore()
 		call .UpdateMultiboardContinues()
 		call .UpdateMultiboardDeaths()
+		// call DisplayTextToPlayer(Player(0), 0, 0, "Update MB 3")
+	endmethod
+	
+	public method MinimizeMultiboard takes boolean flag returns nothing
+		if GetLocalPlayer() == Player(this) then
+			call MultiboardMinimize(.Statistics, flag)
+		endif
+	endmethod
+	public method DisplayMultiboard takes boolean flag returns nothing
+		if GetLocalPlayer() == Player(this) then
+			call MultiboardDisplay(.Statistics, flag)
+		endif
+	endmethod
+	
+	public method InitializeMultiboardDisplay takes nothing returns nothing
+		if GetLocalPlayer() == Player(this) then
+			call MultiboardDisplay(.Statistics, false)
+			call MultiboardDisplay(.Statistics, true)
+			call MultiboardMinimize(.Statistics, true)
+			call MultiboardMinimize(.Statistics, false)
+		// else
+			// call MultiboardDisplay(.Statistics, false)
+		endif
+	endmethod
+	
+	public method InitializeMultiboard takes nothing returns nothing
+		local integer i = 0
+        
+        set .Statistics = CreateMultiboard()
+        
+        call MultiboardSetRowCount(.Statistics, NumberPlayers + 1)
+        // call MultiboardSetTitleText(.Statistics, "Player Stats")
+        call MultiboardDisplay(.Statistics, true)
+        call MultiboardSetItemsWidth(.Statistics, .1)
+		
+		if RewardMode == GameModesGlobals_HARD then
+			call MultiboardSetColumnCount(.Statistics, 5)
+		else
+			call MultiboardSetColumnCount(.Statistics, 4)
+        endif
+        
+		//initialize multiboard column
+        call MultiboardSetItemIcon(MultiboardGetItem(.Statistics, 0, 0), "ReplaceableTextures\\CommandButtons\\BTNPeasant.blp")
+        call MultiboardSetItemIcon(MultiboardGetItem(.Statistics, 0, 1), "ReplaceableTextures\\CommandButtons\\BTNDemonGate.blp")
+        call MultiboardSetItemIcon(MultiboardGetItem(.Statistics, 0, 2), "ReplaceableTextures\\CommandButtons\\BTNGlyph.blp")
+        call MultiboardSetItemIcon(MultiboardGetItem(.Statistics, 0, 3), "ReplaceableTextures\\CommandButtons\\BTNSkillz.tga")
+		if RewardMode == GameModesGlobals_HARD then
+			call MultiboardSetItemIcon(MultiboardGetItem(.Statistics, 0, 4), "ReplaceableTextures\\CommandButtons\\BTNAnkh.blp")
+		endif
+		
+		//init localized column text for multiboard
+		call MultiboardSetTitleText(.Statistics, LocalizeContent('UMPS', .LanguageCode))
+		
+		call MultiboardSetItemValue(MultiboardGetItem(.Statistics, 0, 0), LocalizeContent('UMPN', .LanguageCode))
+		call MultiboardSetItemValue(MultiboardGetItem(.Statistics, 0, 1), LocalizeContent('UMOL', .LanguageCode))
+		call MultiboardSetItemValue(MultiboardGetItem(.Statistics, 0, 2), LocalizeContent('UMSC', .LanguageCode))
+		call MultiboardSetItemValue(MultiboardGetItem(.Statistics, 0, 3), LocalizeContent('UMCC', .LanguageCode))
+		if RewardMode == GameModesGlobals_HARD then
+			call MultiboardSetItemValue(MultiboardGetItem(.Statistics, 0, 4), LocalizeContent('UMDC', .LanguageCode))
+		endif
+		
+		//release columns
+		call MultiboardReleaseItem(MultiboardGetItem(.Statistics, 0, 0))
+        call MultiboardReleaseItem(MultiboardGetItem(.Statistics, 0, 1))
+        call MultiboardReleaseItem(MultiboardGetItem(.Statistics, 0, 2))
+        call MultiboardReleaseItem(MultiboardGetItem(.Statistics, 0, 3))
+		if RewardMode == GameModesGlobals_HARD then
+			call MultiboardReleaseItem(MultiboardGetItem(.Statistics, 0, 4))
+		endif
+		
+		//initialize rows/cells
+        loop
+        exitwhen i >= NumberPlayers
+			//set row icons
+            call MultiboardSetItemIcon(MultiboardGetItem(.Statistics, i + 1, 0), "ReplaceableTextures\\CommandButtons\\BTNPeasant.blp")
+            call MultiboardReleaseItem(MultiboardGetItem(.Statistics, i + 1, 0))
+			
+			call MultiboardSetItemIcon(MultiboardGetItem(.Statistics, i + 1, 1), "ReplaceableTextures\\CommandButtons\\BTNDemonGate.blp")
+            call MultiboardReleaseItem(MultiboardGetItem(.Statistics, i + 1, 1))
+			
+			call MultiboardSetItemIcon(MultiboardGetItem(.Statistics, i + 1, 2), "ReplaceableTextures\\CommandButtons\\BTNGlyph.blp")
+            call MultiboardReleaseItem(MultiboardGetItem(.Statistics, i + 1, 2))
+			
+			call MultiboardSetItemIcon(MultiboardGetItem(.Statistics, i + 1, 3), "ReplaceableTextures\\CommandButtons\\BTNSkillz.tga")
+            call MultiboardReleaseItem(MultiboardGetItem(.Statistics, i + 1, 3))
+			
+			if RewardMode == GameModesGlobals_HARD then
+				call MultiboardSetItemIcon(MultiboardGetItem(.Statistics, i + 1, 4), "ReplaceableTextures\\CommandButtons\\BTNAnkh.blp")
+				call MultiboardReleaseItem(MultiboardGetItem(.Statistics, i + 1, 4))
+			endif
+			
+			//initialize cell values localized for all players
+			//only initialize cells that will not be initialized elsewhere during init (init level will update On Level)
+            // call User(i).PartialUpdateMultiboard(MULTIBOARD_PLAYERNAME)
+			// call User(i).PartialUpdateMultiboard(MULTIBOARD_SCORE)
+			// call User(i).PartialUpdateMultiboard(MULTIBOARD_CONTINUES)
+			// call User(i).PartialUpdateMultiboard(MULTIBOARD_DEATHS)
+			
+            
+            set i = i + 1
+        endloop
 	endmethod
     
     //set game mode should take all players, dead or alive, and make it so the next time they are respawned (naturally or forced) it will be as the correct unit type with all the correct mechanisms enabled
@@ -1268,6 +1424,8 @@ struct User extends array
 		set curUserNode = curUserNode.next
 		endloop
 	endmethod
+	
+	
 	            
 	private static method SyncUserLanguageCode takes SyncRequest request, User user returns integer
 		set user.LanguageCode = request.Data

@@ -36,8 +36,6 @@ library MazerGlobals initializer Init requires GameGlobalConstants, ContinueGlob
         
         boolean array UseTeleportMovement[NumberPlayers]
 		       
-        //keeps track of playername, level, continues and score
-        multiboard PlayerStats
         //number of regular mazers
         integer NumberMazing = 0
         
