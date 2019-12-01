@@ -95,7 +95,8 @@ library EDWVisualVote requires VisualVote, ContinueGlobals, Teams, PlayerUtils, 
 		call TimerStart(GetExpiredTimer(), 3, false, function FadeCBTwo)
 	endfunction
 	private function MultiboardMinimizeCB takes nothing returns nothing
-		call MultiboardMinimize(Teams_MazingTeam.PlayerStats, true)
+		// call MultiboardMinimize(Teams_MazingTeam.PlayerStats, true)
+		call Teams_MazingTeam.MinimizeMultiboardAll(true)
 		
 		call ReleaseTimer(GetExpiredTimer())
 	endfunction
@@ -400,43 +401,40 @@ library EDWVisualVote requires VisualVote, ContinueGlobals, Teams, PlayerUtils, 
 		endif
 	endfunction
     
-	private function SkipMenuCB takes nothing returns nothing
-		if DEBUG_USE_FULL_VISIBILITY then
-				call CreateFogModifierRectBJ(true, Player(0), FOG_OF_WAR_VISIBLE, GetPlayableMapRect())
-			endif
-			
-			call GameModeAllIsOne()
-			//set GameMode = GameModesGlobals_TEAMALL
-            //99 and none
-			set RewardMode = DEBUG_DIFFICULTY_MODE
-            //respawn as soon as you die
-            call InstantRespawnOff()
-			//set RespawnASAPMode = false
-            //currently unimplemented
-            call MinigamesOff()
-			//set MinigamesMode = false
-            
-            call InitializeGameForGlobals()
-			
-			call MultiboardMinimize(Teams_MazingTeam.PlayerStats, true)
-			
-			if GetFirstLevel() != Levels_Level(1) then
-				call TrackGameTime()
-			endif
-		
-		call DestroyTimer(GetExpiredTimer())
-	endfunction
-	
-    //2 stage menu, first choose difficulty and team breakdown -- then specify for final options
-    public function CreateMenu takes nothing returns nothing
+	//TODO depend on an all async->sync loaded deferred instead of fixed duration timer (approximated around when everything should have synced)
+	private function CreateMenuCB takes nothing returns nothing
 		local VisualVote_voteMenu MyMenu
 		local VisualVote_voteColumn col
         local VisualVote_voteContainer con
         local VisualVote_voteOption opt        
-
+		
 		if not ShouldShowSettingVoteMenu() then
 			//TODO replace with awaiting an .All promise for User async property init
-            call TimerStart(CreateTimer(), .5, false, function SkipMenuCB)
+			if DEBUG_USE_FULL_VISIBILITY then
+				call CreateFogModifierRectBJ(true, Player(0), FOG_OF_WAR_VISIBLE, GetPlayableMapRect())
+			endif
+				
+			call GameModeAllIsOne()
+			//set GameMode = GameModesGlobals_TEAMALL
+			//99 and none
+			set RewardMode = DEBUG_DIFFICULTY_MODE
+			//respawn as soon as you die
+			call InstantRespawnOff()
+			//set RespawnASAPMode = false
+			//currently unimplemented
+			call MinigamesOff()
+			//set MinigamesMode = false
+			
+			call InitializeGameForGlobals()
+			
+			call Teams_MazingTeam.MinimizeMultiboardAll(true)
+			// call MultiboardMinimize(Teams_MazingTeam.PlayerStats, true)
+			
+			if GetFirstLevel() != Levels_Level(1) then
+				call TrackGameTime()
+			endif
+			
+			call DestroyTimer(GetExpiredTimer())
 		elseif GetHumanPlayersCount() == 1 then
 			call GameModeSolo()
 			call InstantRespawnOn()
@@ -448,11 +446,14 @@ library EDWVisualVote requires VisualVote, ContinueGlobals, Teams, PlayerUtils, 
 			
 			set col = MyMenu.addColumn(512)
 			
-			set con = col.addContainer("Difficulty")
+			//difficulty
+			set con = col.addContainer('VVDT')
             set con.required = true
-			call con.addOption("Vanilla", "EDWVisualVote_RewardStandard")
-            call con.addOption("Chocolate", "EDWVisualVote_RewardChallenge")
-            set opt = con.addOption("99 and None", "EDWVisualVote_Reward99AndNone")
+			
+			set opt = con.addOption('VVDE', "EDWVisualVote_RewardStandard")
+            call con.addOption('VVDC', "EDWVisualVote_RewardChallenge")
+            call con.addOption('VVD9', "EDWVisualVote_Reward99AndNone")
+			
             set con.defaultOption = opt
 			
 			call MyMenu.render()
@@ -464,47 +465,60 @@ library EDWVisualVote requires VisualVote, ContinueGlobals, Teams, PlayerUtils, 
             //set MyMenu = VisualVote_voteMenu.create(-1600, 7556)
             
             set col = MyMenu.addColumn(512)
-            //
-            set con = col.addContainer("Teams")
+			//teams
+            set con = col.addContainer('VVTT')
             set con.required = true
-            
-            call con.addOption("Solo", "EDWVisualVote_GameModeSolo")
-            set opt = con.addOption("Teams - Mixer", "EDWVisualVote_GameModeRandom")
-            set opt = con.addOption("Teams - One for All", "EDWVisualVote_GameModeAllIsOne")
+			
+            call con.addOption('VVTS', "EDWVisualVote_GameModeSolo")
+            call con.addOption('VVTR', "EDWVisualVote_GameModeRandom")
+            set opt = con.addOption('VVTO', "EDWVisualVote_GameModeAllIsOne")
             set con.defaultOption = opt
 			//debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "Default: " + con.defaultOption.text)
             
-			set con = col.addContainer("Difficulty")
+			//difficulty
+			set con = col.addContainer('VVDT')
             set con.required = true
-            
-            call con.addOption("Vanilla", "EDWVisualVote_RewardStandard")
-            call con.addOption("Chocolate", "EDWVisualVote_RewardChallenge")
-            set opt = con.addOption("99 and None", "EDWVisualVote_Reward99AndNone")
+			
+			set opt = con.addOption('VVDE', "EDWVisualVote_RewardStandard")
+            call con.addOption('VVDC', "EDWVisualVote_RewardChallenge")
+            call con.addOption('VVD9', "EDWVisualVote_Reward99AndNone")
+			
             set con.defaultOption = opt
             //debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "Default: " + con.defaultOption.text)
             
             //debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "Default: " + con.defaultOption.text)
-			if CONFIGURATION_PROFILE != RELEASE then
-				set col = MyMenu.addColumn(512)
+			// if CONFIGURATION_PROFILE != RELEASE then
+				// set col = MyMenu.addColumn(512)
 				
-				set con = col.addContainer("Contests")
-				set con.required = false
-				set con.enabled = false
-				set opt = con.addOption("yea", "EDWVisualVote_MinigamesOn")
-				set opt = con.addOption("nei", "EDWVisualVote_MinigamesOn")
-				call opt.setDefault()
+				// set con = col.addContainer("Contests")
+				// set con.required = false
+				// set con.enabled = false
+				// set opt = con.addOption("yea", "EDWVisualVote_MinigamesOn")
+				// set opt = con.addOption("nei", "EDWVisualVote_MinigamesOn")
+				// call opt.setDefault()
 
-				set con = col.addContainer("RPG Mode")
-				set con.required = false
-				set con.enabled = false
-				set opt = con.addOption("yea", "EDWVisualVote_MinigamesOn")
-				set opt = con.addOption("nei", "EDWVisualVote_MinigamesOn")
-				call opt.setDefault()
-            endif
+				// set con = col.addContainer("RPG Mode")
+				// set con.required = false
+				// set con.enabled = false
+				// set opt = con.addOption("yea", "EDWVisualVote_MinigamesOn")
+				// set opt = con.addOption("nei", "EDWVisualVote_MinigamesOn")
+				// call opt.setDefault()
+            // endif
 			
             call MyMenu.render()
             
             call MyMenu.enforceVoteMode()
         endif
+	endfunction
+	
+    //2 stage menu, first choose difficulty and team breakdown -- then specify for final options
+    public function CreateMenu takes nothing returns nothing
+		call TimerStart(CreateTimer(), .25, false, function CreateMenuCB)
+		
+		
+		
+		
+            
+		
     endfunction
 endlibrary

@@ -42,8 +42,9 @@ library VisualVote requires Vector2, Alloc, Table, PlayerUtils, SimpleList, locu
     public struct voteOption extends array
         public VisualVote_voteContainer parent
         
-        public texttag gameText
-        public string text
+        public texttag gameText 
+        // public string text //deprecate for localized content ID
+		public integer contentID
         public boolean enabled
         public string onVoteWinCallback
         
@@ -56,6 +57,10 @@ library VisualVote requires Vector2, Alloc, Table, PlayerUtils, SimpleList, locu
         
         implement Alloc
         
+		public method getMenu takes nothing returns VisualVote_voteMenu
+			return .parent.parent.parent
+		endmethod
+		
         public static method setColorDisabled takes texttag tt returns nothing
             call SetTextTagColor(tt, 128, 128, 128, 50)
         endmethod
@@ -179,12 +184,14 @@ library VisualVote requires Vector2, Alloc, Table, PlayerUtils, SimpleList, locu
                     call .parent.parent.parent.applyPlayerVote()
                 endif
             else
-                call DisplayTextToPlayer(p, 0, 0, .parent.text + ": " + .text + " is not available yet, check back soon!")
+                call DisplayTextToPlayer(GetLocalPlayer(), 0, 0, LocalizeContent(.parent.contentID, User(pID).LanguageCode) + " - " + LocalizeContent(.contentID, User(pID).LanguageCode) + " is not available yet, check back soon!")
             endif
         endmethod
         
         public method render takes real x, real y returns real
-            set .gameText = CreateTextTag()
+            local SimpleList_ListNode curUserNode = .getMenu().forPlayers.first
+			
+			set .gameText = CreateTextTag()
             
             if voteUnit == null then
                 
@@ -195,7 +202,15 @@ library VisualVote requires Vector2, Alloc, Table, PlayerUtils, SimpleList, locu
                 endif
             endif
             
-            call SetTextTagText(.gameText, .text, TextTagSize2Height(TEXT_OPTION_SIZE))
+			//localize text
+			loop
+			exitwhen curUserNode == 0
+				if GetLocalPlayer() == Player(curUserNode.value) then
+					call SetTextTagText(.gameText, LocalizeContent(.contentID, User(curUserNode.value).LanguageCode), TextTagSize2Height(TEXT_OPTION_SIZE))
+				endif
+			set curUserNode = curUserNode.next
+			endloop
+			
             call SetTextTagPermanent(.gameText, true)
             call SetTextTagPos(.gameText, x, y, TEXT_OFFSET_HEIGHT)
             
@@ -255,15 +270,17 @@ library VisualVote requires Vector2, Alloc, Table, PlayerUtils, SimpleList, locu
 //            endloop
         endmethod
         
-        public static method create takes string text, string callback returns thistype
+        public static method create takes integer contentID, string callback returns thistype
             local thistype new = thistype.allocate()
             
             set new.playerVotes = Table.create()
             set new.playerVotesKeys = SimpleList_List.create()
+			// call DisplayTextToPlayer(Player(0), 0, 0, "Creating option: " + I2S(new))
+			// call DisplayTextToPlayer(Player(0), 0, 0, "votes: " + I2S(new.playerVotesKeys))
             
             set new.enabled = true
             
-            set new.text = text
+            set new.contentID = contentID
             set new.onVoteWinCallback = callback
             
             return new
@@ -276,7 +293,8 @@ library VisualVote requires Vector2, Alloc, Table, PlayerUtils, SimpleList, locu
         public integer optionCount
         
         public texttag gameText
-        public string text
+		// public string text //deprecate for Localization ID
+        public integer contentID
         
         public boolean multipick
         public boolean allowDeselect
@@ -292,16 +310,32 @@ library VisualVote requires Vector2, Alloc, Table, PlayerUtils, SimpleList, locu
         
         implement Alloc
         
+		public method getMenu takes nothing returns VisualVote_voteMenu
+			return .parent.parent
+		endmethod
+		
         public method render takes real x, real y returns real
             local integer iVO = 0
             local voteOption vo
             
             local real curY = y
+			
+			local SimpleList_ListNode curUserNode = .getMenu().forPlayers.first
             
             //display the container header
             set .gameText = CreateTextTag()
             
-            call SetTextTagText(.gameText, .text, TextTagSize2Height(TEXT_HEADER2_SIZE))
+            //localize text
+			loop
+			exitwhen curUserNode == 0
+				if GetLocalPlayer() == Player(curUserNode.value) then
+					// call SetTextTagText(.gameText, .text, TextTagSize2Height(TEXT_HEADER2_SIZE))
+					call SetTextTagText(.gameText, LocalizeContent(.contentID, User(curUserNode.value).LanguageCode), TextTagSize2Height(TEXT_OPTION_SIZE))
+				endif
+			set curUserNode = curUserNode.next
+			endloop
+			
+			
             call SetTextTagPermanent(.gameText, true)
             call SetTextTagPos(.gameText, x, curY, TEXT_OFFSET_HEIGHT)
             
@@ -362,8 +396,8 @@ library VisualVote requires Vector2, Alloc, Table, PlayerUtils, SimpleList, locu
             return 0
         endmethod
                 
-        public method addOption takes string text, string callback returns voteOption
-            local voteOption option = voteOption.create(text, callback)
+        public method addOption takes integer contentID, string callback returns voteOption
+            local voteOption option = voteOption.create(contentID, callback)
             set option.parent = this
             set option.enabled = this.enabled
             
@@ -500,7 +534,7 @@ library VisualVote requires Vector2, Alloc, Table, PlayerUtils, SimpleList, locu
             call this.deallocate()
         endmethod
         
-        public static method create takes string text returns thistype
+        public static method create takes integer contentID returns thistype
             local thistype new = thistype.allocate()
             
             set new.options = Table.create()
@@ -512,7 +546,7 @@ library VisualVote requires Vector2, Alloc, Table, PlayerUtils, SimpleList, locu
             set new.allowDeselect = false
             set new.required = true
             
-            set new.text = text
+            set new.contentID = contentID
             
             return new
         endmethod
@@ -595,8 +629,8 @@ library VisualVote requires Vector2, Alloc, Table, PlayerUtils, SimpleList, locu
             return 0
         endmethod
         
-        public method addContainer takes string containerText returns voteContainer
-            local voteContainer container = voteContainer.create(containerText)
+        public method addContainer takes integer contentID returns voteContainer
+            local voteContainer container = voteContainer.create(contentID)
             set container.parent = this
             
             set voteContainers[voteContainerCount] = container
@@ -979,6 +1013,8 @@ library VisualVote requires Vector2, Alloc, Table, PlayerUtils, SimpleList, locu
             set new.voteColumnCount = 0
             
             set new.forPlayers = SimpleList_List.create()
+			// call DisplayTextToPlayer(Player(0), 0, 0, "Creating menu: " + I2S(new))
+			// call DisplayTextToPlayer(Player(0), 0, 0, "forPlayers: " + I2S(new.forPlayers))
             
             set new.onDestroyFinish = null
             set new.rendered = false
