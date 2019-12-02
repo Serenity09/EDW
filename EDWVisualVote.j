@@ -273,26 +273,26 @@ library EDWVisualVote requires VisualVote, ContinueGlobals, Teams, PlayerUtils, 
         //call firstLevel.Start()
 		
 		if GameMode == GameModesGlobals_SOLO then
-			set cineMsg = CinemaMessage.create(null, ColorMessage("Solo mode", SPEAKER_COLOR) + " selected. Fend for yourselves", DEFAULT_MEDIUM_TEXT_SPEED)
+			set cineMsg = CinemaMessage.createEx(null, null, 'CiTS', DEFAULT_MEDIUM_TEXT_SPEED)
 			set welcomeCineTime = welcomeCineTime + DEFAULT_MEDIUM_TEXT_SPEED
 		elseif GameMode == GameModesGlobals_TEAMALL then
-			set cineMsg = CinemaMessage.create(null, ColorMessage("One team", SPEAKER_COLOR) + " selected. Get cozy", DEFAULT_MEDIUM_TEXT_SPEED)
+			set cineMsg = CinemaMessage.createEx(null, null, 'CiTO', DEFAULT_MEDIUM_TEXT_SPEED)
 			set welcomeCineTime = welcomeCineTime + DEFAULT_MEDIUM_TEXT_SPEED
 		else //TEAMRANDOM
-			set cineMsg = CinemaMessage.create(null, ColorMessage("Random teams", SPEAKER_COLOR) + " selected. Check out the scoreboard for specifics", DEFAULT_MEDIUM_TEXT_SPEED)
+			set cineMsg = CinemaMessage.createEx(null, null, 'CiTR', DEFAULT_MEDIUM_TEXT_SPEED)
 			set welcomeCineTime = welcomeCineTime + DEFAULT_MEDIUM_TEXT_SPEED
 		endif
 		
 		set welcomeCine = Cinematic.create(null, false, true, cineMsg)
 		
 		if RewardMode == GameModesGlobals_EASY then
-			call welcomeCine.AddMessage(null, ColorMessage("Easy mode", SPEAKER_COLOR) + " selected. Gotta start somewhere", DEFAULT_MEDIUM_TEXT_SPEED)
+			call welcomeCine.AddMessage(CinemaMessage.createEx(null, null, 'CiDE', DEFAULT_MEDIUM_TEXT_SPEED))
 			set welcomeCineTime = welcomeCineTime + DEFAULT_MEDIUM_TEXT_SPEED
 		elseif RewardMode == GameModesGlobals_HARD then
-			call welcomeCine.AddMessage(null, ColorMessage("Hard mode", SPEAKER_COLOR) + " selected. Yikes", DEFAULT_MEDIUM_TEXT_SPEED)
+			call welcomeCine.AddMessage(CinemaMessage.createEx(null, null, 'CiDH', DEFAULT_SHORT_TEXT_SPEED))
 			set welcomeCineTime = welcomeCineTime + DEFAULT_MEDIUM_TEXT_SPEED
 		else //CHEAT
-			call welcomeCine.AddMessage(null, ColorMessage("99 and None mode", SPEAKER_COLOR) + " selected. Like " + ColorMessage("easy mode", SPEAKER_COLOR) + ", but cheatier", DEFAULT_LONG_TEXT_SPEED)
+			call welcomeCine.AddMessage(CinemaMessage.createEx(null, null, 'CiDC', DEFAULT_LONG_TEXT_SPEED))
 			set welcomeCineTime = welcomeCineTime + DEFAULT_LONG_TEXT_SPEED
 		endif
 		
@@ -301,9 +301,9 @@ library EDWVisualVote requires VisualVote, ContinueGlobals, Teams, PlayerUtils, 
 		call welcomeCine.SetLastMessageBuffer(1)
 		set welcomeCineTime = welcomeCineTime + 1
 
-		call welcomeCine.AddMessage(null, GetEDWSpeakerMessage(FINAL_BOSS_PRE_REVEAL, "Welcome", DEFAULT_TEXT_COLOR), DEFAULT_TINY_TEXT_SPEED)
-        call welcomeCine.AddMessage(null, GetEDWSpeakerMessage(FINAL_BOSS_PRE_REVEAL, "To", DEFAULT_TEXT_COLOR), DEFAULT_TINY_TEXT_SPEED)
-        call welcomeCine.AddMessage(null, GetEDWSpeakerMessage(FINAL_BOSS_PRE_REVEAL, "Dream World", DEFAULT_TEXT_COLOR), DEFAULT_SHORT_TEXT_SPEED)
+		call welcomeCine.AddMessage(CinemaMessage.createEx(null, FINAL_BOSS_PRE_REVEAL, 'CiW1', DEFAULT_TINY_TEXT_SPEED))
+        call welcomeCine.AddMessage(CinemaMessage.createEx(null, FINAL_BOSS_PRE_REVEAL, 'CiW2', DEFAULT_TINY_TEXT_SPEED))
+        call welcomeCine.AddMessage(CinemaMessage.createEx(null, FINAL_BOSS_PRE_REVEAL, 'CiW3', DEFAULT_SHORT_TEXT_SPEED))
 		
 		set welcomeCineTime = welcomeCineTime + 2 * DEFAULT_TINY_TEXT_SPEED //don't include last message, more dramatic that way
 		
@@ -481,7 +481,7 @@ library EDWVisualVote requires VisualVote, ContinueGlobals, Teams, PlayerUtils, 
 			
 			set opt = con.addOption('VVDE', "EDWVisualVote_RewardStandard")
             call con.addOption('VVDC', "EDWVisualVote_RewardChallenge")
-            call con.addOption('VVD9', "EDWVisualVote_Reward99AndNone")
+            // call con.addOption('VVD9', "EDWVisualVote_Reward99AndNone")
 			
             set con.defaultOption = opt
             //debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "Default: " + con.defaultOption.text)

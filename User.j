@@ -1,4 +1,4 @@
-library User requires UnitDefaultRadius, MazerGlobals, Platformer, TerrainHelpers, Cinema, LocalizationData, MultiboardGlobals
+library User requires UnitDefaultRadius, MazerGlobals, Platformer, TerrainHelpers, Cinema, LocalizationData, MultiboardGlobals, StringFormat
 
 globals
 	User TriggerUser //used with events
@@ -252,6 +252,7 @@ struct User extends array
 	endmethod
 	public method OnLeave takes nothing returns nothing
         local SimpleList_ListNode curUserNode = PlayerUtils_FirstPlayer
+		local string message
 				
 		call SwitchGameModesDefaultLocation(Teams_GAMEMODE_STANDARD)
         
@@ -272,8 +273,12 @@ struct User extends array
 		// call thistype.DisplayMessageAll(this.GetStylizedPlayerName() + " has left the game!")
         loop
         exitwhen curUserNode == 0
-			if User(curUserNode.value).IsPlaying and GetLocalPlayer() == Player(curUserNode.value) then
-				call User(curUserNode.value).DisplayMessage(GetPlayerName(Player(this)) + " " + LocalizeContent('UONL', User(curUserNode.value).LanguageCode), 0)
+			if User(curUserNode.value).IsPlaying then
+				set message = StringFormat1(LocalizeContent('UONL', User(curUserNode.value).LanguageCode), ColorMessage(GetPlayerName(Player(this)), User(curUserNode.value).GetPlayerColorHex()))
+				
+				if GetLocalPlayer() == Player(curUserNode.value) then
+					call User(curUserNode.value).DisplayMessage(message, 0)
+				endif
 			endif
         set curUserNode = curUserNode.next
         endloop
@@ -292,27 +297,29 @@ struct User extends array
     endmethod
     
 	public method ToggleDefaultTracking takes nothing returns nothing
-        set DefaultCameraTracking[this] = not DefaultCameraTracking[this]
+        local string message
+		
+		set DefaultCameraTracking[this] = not DefaultCameraTracking[this]
 		
 		if .GameMode == Teams_GAMEMODE_STANDARD or .GameMode == Teams_GAMEMODE_STANDARD_PAUSED then
-			if GetLocalPlayer() == Player(this) then
-				if DefaultCameraTracking[this] then
+			if DefaultCameraTracking[this] then
+				set message = StringFormat1(LocalizeContent('UCTR', this.LanguageCode), ColorMessage(LocalizeContent('UCTT', this.LanguageCode), TOGGLE_ON_COLOR))
+				
+				if GetLocalPlayer() == Player(this) then
 					//enable
 					call SetCameraTargetController(MazersArray[this], 0, 0, false)
 					
-					// if .CinematicPlaying.Cinematic != thistype.ToggleCameraTrackingTutorial or thistype.ToggleCameraTrackingTutorial == 0 then
-						// call .DisplayMessage("Camera tracking: " + ColorMessage("ON", TOGGLE_ON_COLOR), 1.)
-					// endif
-					call .DisplayMessage(LocalizeContent('UCTR', this.LanguageCode) + " " + ColorMessage(LocalizeContent('UCTT', this.LanguageCode), TOGGLE_ON_COLOR), 1.)
-				else
+					call .DisplayMessage(message, 1.)
+				endif
+			else
+				set message = StringFormat1(LocalizeContent('UCTR', this.LanguageCode), ColorMessage(LocalizeContent('UCTF', this.LanguageCode), TOGGLE_OFF_COLOR))
+				
+				if GetLocalPlayer() == Player(this) then
 					//disable
 					call ResetToGameCamera(0)
 					call CameraSetupApply(DefaultCamera[this], false, false)
 					
-					// if .CinematicPlaying.Cinematic != thistype.ToggleCameraTrackingTutorial or thistype.ToggleCameraTrackingTutorial == 0 then
-						// call .DisplayMessage("Camera tracking: " + ColorMessage("OFF", TOGGLE_OFF_COLOR), 1.)
-					// endif
-					call .DisplayMessage(LocalizeContent('UCTR', this.LanguageCode) + " " + ColorMessage(LocalizeContent('UCTF', this.LanguageCode), TOGGLE_OFF_COLOR), 1.)
+					call .DisplayMessage(message, 1.)
 				endif
 			endif
 			
@@ -583,7 +590,7 @@ struct User extends array
 	public method GetLocalizedPlayerName takes User localizer returns string
         local string hex = .GetPlayerColorHex()
         
-        if GetPlayerSlotState(Player(this)) == PLAYER_SLOT_STATE_PLAYING and GetLocalPlayer() == Player(localizer) then
+        if GetPlayerSlotState(Player(this)) == PLAYER_SLOT_STATE_PLAYING then
 			if .IsAFK then
 				return ColorMessage(LocalizeContent('USAF', localizer.LanguageCode) + " ", DISABLED_COLOR) + ColorMessage(GetPlayerName(Player(this)), hex)
 			else
@@ -1136,6 +1143,7 @@ struct User extends array
 		local timer t = GetExpiredTimer()
 		local User u = GetTimerData(t)
 		local texttag text
+		local string message
 		local SimpleList_ListNode curUserNode = PlayerUtils_FirstPlayer
 		
 		if u.AFKPlatformerDeathClock == AFK_UNPAUSE_BUFFER then
@@ -1143,8 +1151,10 @@ struct User extends array
 			
 			loop
 			exitwhen curUserNode == 0
+				set message = StringFormat1(LocalizeContent('UAIN', User(curUserNode.value).LanguageCode), ColorMessage(LocalizeContent('UAUN', User(curUserNode.value).LanguageCode), u.GetPlayerColorHex()))
+				
 				if GetLocalPlayer() == Player(curUserNode.value) then
-					call SetTextTagText(text, ColorMessage(LocalizeContent('UAUN', User(curUserNode.value).LanguageCode), u.GetPlayerColorHex()) + " " + LocalizeContent('UAIN', User(curUserNode.value).LanguageCode) + " ", SMALL_FONT_SIZE)
+					call SetTextTagText(text, message, SMALL_FONT_SIZE)
 				endif
 			set curUserNode = curUserNode.next
 			endloop
@@ -1198,6 +1208,7 @@ struct User extends array
 		local timer t = GetExpiredTimer()
 		local User u = GetTimerData(t)
 		local texttag text
+		local string message
 		local SimpleList_ListNode curUserNode = PlayerUtils_FirstPlayer
 		
 		if u.IsAFK then
@@ -1207,8 +1218,10 @@ struct User extends array
 					
 					loop
 					exitwhen curUserNode == 0
+						set message = StringFormat1(LocalizeContent('UAIN', User(curUserNode.value).LanguageCode), ColorMessage(LocalizeContent('UADE', User(curUserNode.value).LanguageCode), u.GetPlayerColorHex()))
+						
 						if GetLocalPlayer() == Player(curUserNode.value) then
-							call SetTextTagText(text, ColorMessage(LocalizeContent('UADE', User(curUserNode.value).LanguageCode), u.GetPlayerColorHex()) + " " + LocalizeContent('UAIN', User(curUserNode.value).LanguageCode) + " ", SMALL_FONT_SIZE)
+							call SetTextTagText(text, message, SMALL_FONT_SIZE)
 						endif
 					set curUserNode = curUserNode.next
 					endloop
@@ -1287,14 +1300,17 @@ struct User extends array
 	public method ToggleAFK takes nothing returns nothing
 		local SyncRequest request
 		local SimpleList_ListNode curUserNode = this.Team.FirstUser
+		local string message
 		
 		//this could be more elegant, but applying this logic first lets GetStylizedPlayerName stay simple
 		if not .IsAFK then
 			if DEBUG_AFK or .Team.Users.count > 1 then
 				loop
 				exitwhen curUserNode == 0
+					set message = StringFormat1(LocalizeContent('UAAT', User(curUserNode.value).LanguageCode), .GetLocalizedPlayerName(curUserNode.value))
+					
 					if GetLocalPlayer() == Player(curUserNode.value) then
-						call User(curUserNode.value).DisplayMessage(.GetLocalizedPlayerName(curUserNode.value) + " " + LocalizeContent('UAAT', User(curUserNode.value).LanguageCode), 0)
+						call User(curUserNode.value).DisplayMessage(message, 0)
 					endif
 				set curUserNode = curUserNode.next
 				endloop
@@ -1329,8 +1345,10 @@ struct User extends array
 			if DEBUG_AFK or .Team.Users.count > 1 then
 				loop
 				exitwhen curUserNode == 0
+					set message = StringFormat1(LocalizeContent('UAAF', User(curUserNode.value).LanguageCode), .GetLocalizedPlayerName(curUserNode.value))
+					
 					if GetLocalPlayer() == Player(curUserNode.value) then
-						call User(curUserNode.value).DisplayMessage(.GetLocalizedPlayerName(curUserNode.value) + " " + LocalizeContent('UAAF', User(curUserNode.value).LanguageCode), 0)
+						call User(curUserNode.value).DisplayMessage(message, 0)
 					endif
 				set curUserNode = curUserNode.next
 				endloop
@@ -1527,10 +1545,10 @@ struct User extends array
         //call DisplayTextToPlayer(Player(0), 0, 0, "Registered user cinematic CB")
 		
 		//register camera tracking cinematic
-		set ToggleCameraTrackingTutorial = Cinematic.create(null, false, false, CinemaMessage.create(null, GetEDWSpeakerMessage(PRIMARY_SPEAKER_NAME, "Nice, you've enabled camera tracking!", DEFAULT_TEXT_COLOR), DEFAULT_SHORT_TEXT_SPEED))
-		call ToggleCameraTrackingTutorial.AddMessage(null, GetEDWSpeakerMessage(PRIMARY_SPEAKER_NAME, "Turn tracking on and off by pressing the escape key", DEFAULT_TEXT_COLOR), DEFAULT_LONG_TEXT_SPEED)
-		call ToggleCameraTrackingTutorial.AddMessage(null, GetEDWSpeakerMessage(PRIMARY_SPEAKER_NAME, "Each mode has different advantages and disadvantages", DEFAULT_TEXT_COLOR), DEFAULT_MEDIUM_TEXT_SPEED)
-		call ToggleCameraTrackingTutorial.AddMessage(null, GetEDWSpeakerMessage(PRIMARY_SPEAKER_NAME, "Try getting good at both!", DEFAULT_TEXT_COLOR), DEFAULT_SHORT_TEXT_SPEED)
+		set ToggleCameraTrackingTutorial = Cinematic.create(null, false, false, CinemaMessage.createEx(null, PRIMARY_SPEAKER_NAME, 'CCT1', DEFAULT_SHORT_TEXT_SPEED))
+		call ToggleCameraTrackingTutorial.AddMessage(CinemaMessage.createEx(null, PRIMARY_SPEAKER_NAME, 'CCT2', DEFAULT_LONG_TEXT_SPEED))
+		call ToggleCameraTrackingTutorial.AddMessage(CinemaMessage.createEx(null, PRIMARY_SPEAKER_NAME, 'CCT3', DEFAULT_MEDIUM_TEXT_SPEED))
+		call ToggleCameraTrackingTutorial.AddMessage(CinemaMessage.createEx(null, PRIMARY_SPEAKER_NAME, 'CCT4', DEFAULT_SHORT_TEXT_SPEED))
 		
 		call Cinematic.OnCinemaEnd.register(Condition(function thistype.ToggleCameraTrackingCinematicCleanup))
     endmethod

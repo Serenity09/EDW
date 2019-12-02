@@ -368,7 +368,7 @@ public struct MazingTeam extends array
 		set curTeamNode = curTeamNode.next
 		endloop
 	endmethod
-	    
+		    
     //returns -1 if could not find that player in this.plist
     public method ConvertPlayerID takes integer pID returns User
         local SimpleList_ListNode fp = .FirstUser
@@ -631,27 +631,25 @@ public struct MazingTeam extends array
 	public method GetLocalizedTeamName takes User forUser returns string
 		local string name = ""
 		
-		if GetLocalPlayer() == Player(forUser) then
-			if this == 1 then
-				set name = LocalizeContent('TGRE', forUser.LanguageCode)
-			elseif this == 2 then
-				set name = LocalizeContent('TGBL', forUser.LanguageCode)
-			elseif this == 3 then
-				set name = LocalizeContent('TGTE', forUser.LanguageCode)
-			elseif this == 4 then
-				set name = LocalizeContent('TGPU', forUser.LanguageCode)
-			elseif this == 5 then
-				set name = LocalizeContent('TGYE', forUser.LanguageCode)
-			elseif this == 6 then
-				set name = LocalizeContent('TGOR', forUser.LanguageCode)
-			elseif this == 7 then
-				set name = LocalizeContent('TGRE', forUser.LanguageCode)
-			elseif this == 8 then
-				set name = LocalizeContent('TGPI', forUser.LanguageCode)
-			endif
-		
-			set name = ColorMessage(name, .GetTeamColor())
+		if this == 1 then
+			set name = LocalizeContent('TGRE', forUser.LanguageCode)
+		elseif this == 2 then
+			set name = LocalizeContent('TGBL', forUser.LanguageCode)
+		elseif this == 3 then
+			set name = LocalizeContent('TGTE', forUser.LanguageCode)
+		elseif this == 4 then
+			set name = LocalizeContent('TGPU', forUser.LanguageCode)
+		elseif this == 5 then
+			set name = LocalizeContent('TGYE', forUser.LanguageCode)
+		elseif this == 6 then
+			set name = LocalizeContent('TGOR', forUser.LanguageCode)
+		elseif this == 7 then
+			set name = LocalizeContent('TGRE', forUser.LanguageCode)
+		elseif this == 8 then
+			set name = LocalizeContent('TGPI', forUser.LanguageCode)
 		endif
+	
+		set name = ColorMessage(name, .GetTeamColor())
 		
 		return name
 	endmethod
@@ -680,7 +678,7 @@ public struct MazingTeam extends array
 	public method GetLocalizedPlayerName takes User target, User localizer returns string
         local string hex = this.GetTeamColor()
         
-        if GetPlayerSlotState(Player(target)) == PLAYER_SLOT_STATE_PLAYING and GetLocalPlayer() == Player(localizer) then
+        if GetPlayerSlotState(Player(target)) == PLAYER_SLOT_STATE_PLAYING then
 			if target.IsAFK then
 				return ColorMessage(LocalizeContent('USAF', localizer.LanguageCode) + " ", DISABLED_COLOR) + ColorMessage(GetPlayerName(Player(target)), hex)
 			else
@@ -807,21 +805,22 @@ public struct MazingTeam extends array
 		endif
 	endmethod
 		
-	private method LocalizeNeedsScore takes User origin, User localizer returns string
-		return LocalizeContent('TCTE', localizer.LanguageCode) + " " /*
-			*/ + origin.Team.GetLocalizedTeamName(localizer) + " " /*
-			*/ + LocalizeContent('TCNE', localizer.LanguageCode) + " " /*
-			*/ + ColorValue(I2S(VictoryScore - origin.Team.Score)) + " " /*
-			*/ + LocalizeContent('TCMO', localizer.LanguageCode)
+	private static method LocalizeNeedsScore takes User origin, User localizer returns string
+		return StringFormat2(LocalizeContent('TCTE', localizer.LanguageCode), origin.Team.GetLocalizedTeamName(localizer), ColorValue(I2S(VictoryScore - origin.Team.Score)))
+		// return LocalizeContent('TCTE', localizer.LanguageCode) + " " /*
+			// */ + origin.Team.GetLocalizedTeamName(localizer) + " " /*
+			// */ + LocalizeContent('TCNE', localizer.LanguageCode) + " " /*
+			// */ + ColorValue(I2S(VictoryScore - origin.Team.Score)) + " " /*
+			// */ + LocalizeContent('TCMO', localizer.LanguageCode)
 	endmethod
-	private method LocalizeOnlyNeedsScore takes User origin, User localizer returns string	
-		return LocalizeContent('TCTE', localizer.LanguageCode) + " " /*
-			*/ + origin.Team.GetLocalizedTeamName(localizer) + " " /*
-			*/ + LocalizeContent('TCON', localizer.LanguageCode) + " " /*
-			*/ + ColorValue(I2S(VictoryScore - origin.Team.Score)) + " " /*
-			*/ + LocalizeContent('TCMO', localizer.LanguageCode)
+	private static method LocalizeOnlyNeedsScore takes User origin, User localizer returns string	
+		return StringFormat2(LocalizeContent('TCNE', localizer.LanguageCode), origin.Team.GetLocalizedTeamName(localizer), ColorValue(I2S(VictoryScore - origin.Team.Score)))
+		// return LocalizeContent('TCTE', localizer.LanguageCode) + " " /*
+			// */ + origin.Team.GetLocalizedTeamName(localizer) + " " /*
+			// */ + LocalizeContent('TCON', localizer.LanguageCode) + " " /*
+			// */ + ColorValue(I2S(VictoryScore - origin.Team.Score)) + " " /*
+			// */ + LocalizeContent('TCMO', localizer.LanguageCode)
 	endmethod
-	
 	public method GetScore takes nothing returns integer
 		return .Score
 	endmethod

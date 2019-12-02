@@ -1,4 +1,4 @@
-library EDWGameTime requires Teams, GameMessage
+library EDWGameTime requires Teams, GameMessage, StringFormat
     globals
         private timer t = null
 		private constant integer TIMEOUT = 60
@@ -9,13 +9,22 @@ library EDWGameTime requires Teams, GameMessage
         return TimerGetElapsed(t) + currentTime
     endfunction
 	
+	private function LocalizeMinutesRemaining takes integer remainingTime, User localizer returns string
+		//ColorValue(I2S(R2I(remainingTime))) + " minutes remaining"
+		return StringFormat1(LocalizeContent('TCMR', localizer.LanguageCode), ColorValue(I2S(remainingTime)))
+	endfunction
+	private function LocalizeOnlyMinutesRemaining takes integer remainingTime, User localizer returns string
+		//ColorValue(I2S(R2I(remainingTime))) + " minutes remaining"
+		return StringFormat1(LocalizeContent('TCOR', localizer.LanguageCode), ColorValue(I2S(remainingTime)))
+	endfunction
 	private function CB takes nothing returns nothing
-		local real remainingTime
+		local integer remainingTime
+		
 		set currentTime = currentTime + TIMEOUT
 		
 		//check if theres a time related victory condition
 		if VictoryTime != 0 then
-			set remainingTime = (VictoryTime - currentTime) / 60
+			set remainingTime = R2I((VictoryTime - currentTime) / 60)
 			if remainingTime == 0 then
 				//end the game
 				call Teams_MazingTeam.ApplyEndGameAll(Teams_MazingTeam.GetLeadingScore())
@@ -26,18 +35,21 @@ library EDWGameTime requires Teams, GameMessage
 			elseif remainingTime >= 10 and remainingTime <= 30 then
 				if ModuloInteger(R2I(currentTime), 600) == 0 then
 					//post elapsed time every 10 minutes
-					call Teams_MazingTeam.PrintMessageAll(ColorValue(I2S(R2I(remainingTime))) + " minutes remaining", 0)
+					// call Teams_MazingTeam.PrintMessageAll(ColorValue(I2S(R2I(remainingTime))) + " minutes remaining", 0)
+					call Teams_MazingTeam.DisplayDynamicContentAll(LocalizeMinutesRemaining, remainingTime, 0)
 				endif
 			elseif remainingTime == 5 then
 				//5min warning
-				call Teams_MazingTeam.PrintMessageAll(ColorValue(I2S(R2I(remainingTime))) + " minutes remaining", 0)
+				// call Teams_MazingTeam.PrintMessageAll(ColorValue(I2S(R2I(remainingTime))) + " minutes remaining", 0)
+				call Teams_MazingTeam.DisplayDynamicContentAll(LocalizeMinutesRemaining, remainingTime, 0)
 			elseif remainingTime <= 3 then
 				//post warnings every minute
-				if remainingTime != 1 then
-					call Teams_MazingTeam.PrintMessageAll("Only " + ColorValue(I2S(R2I(remainingTime))) + " minutes " + "remaining!", 0)
-				else
-					call Teams_MazingTeam.PrintMessageAll("Only " + ColorValue(I2S(R2I(remainingTime))) + " minute " + "remaining!", 0)
-				endif
+				// if remainingTime != 1 then
+					// call Teams_MazingTeam.PrintMessageAll("Only " + ColorValue(I2S(R2I(remainingTime))) + " minutes " + "remaining!", 0)
+				// else
+					// call Teams_MazingTeam.PrintMessageAll("Only " + ColorValue(I2S(R2I(remainingTime))) + " minute " + "remaining!", 0)
+				// endif
+				call Teams_MazingTeam.DisplayDynamicContentAll(LocalizeOnlyMinutesRemaining, remainingTime, 0)
 			endif
 		endif
 	endfunction
@@ -58,7 +70,8 @@ library EDWGameTime requires Teams, GameMessage
 			call TimerStart(t, TIMEOUT, true, function CB)
 			
 			if VictoryTime != 0 then
-				call Teams_MazingTeam.PrintMessageAll(ColorValue(I2S(R2I(VictoryTime / 60))) + " minutes remaining", 0)
+				call Teams_MazingTeam.DisplayDynamicContentAll(LocalizeMinutesRemaining, R2I(VictoryTime / 60), 0)
+				// call Teams_MazingTeam.PrintMessageAll(ColorValue(I2S(R2I(VictoryTime / 60))) + " minutes remaining", 0)
 			endif
 		endif
     endfunction

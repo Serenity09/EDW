@@ -57,6 +57,37 @@ library EDWPowerup requires Alloc, MazerGlobals, FilterFuncs, Table, PlayerUtils
             set t = null
         endmethod
         
+		private static method LocalizeTeamInvulnerability takes User origin, User localizer returns string
+			// return origin.GetLocalizedPlayerName(localizer) + " " + LocalizeContent('', localizer.LanguageCode)
+			return StringFormat1(LocalizeContent('PUTI', localizer.LanguageCode), origin.GetLocalizedPlayerName(localizer))
+		endmethod
+		
+		private static method LocalizeContinueGain takes User origin, User localizer returns string
+			// call user.Team.PrintMessage(user.GetStylizedPlayerName() + " gained your team " + I2S(TEAM_ADDCONT_COUNT) + " points")
+			return StringFormat2(LocalizeContent('PUGC', localizer.LanguageCode), origin.GetLocalizedPlayerName(localizer), ColorValue(I2S(TEAM_ADDCONT_COUNT)))
+		endmethod
+		private static method LocalizeContinueStolen takes User origin, User localizer returns string
+			//call team.PrintMessage(user.GetStylizedPlayerName() + " stole " + I2S(TEAM_STEALCONT_COUNT) + " point from your team!")
+			return StringFormat2(LocalizeContent('PUsC', localizer.LanguageCode), origin.GetLocalizedPlayerName(localizer), ColorValue(I2S(TEAM_STEALCONT_COUNT)))
+		endmethod
+		private static method LocalizeContinueStolenFrom takes Teams_MazingTeam origin, User localizer returns string
+			//call user.Team.PrintMessage(user.GetStylizedPlayerName() + " stole " + I2S(TEAM_STEALCONT_COUNT) + " point from team " + team.TeamName + "!")
+			return StringFormat3(LocalizeContent('PUsC', localizer.LanguageCode), origin.LastEventUser.GetLocalizedPlayerName(localizer), ColorValue(I2S(TEAM_STEALCONT_COUNT)), origin.GetLocalizedTeamName(localizer))
+		endmethod
+		
+		private static method LocalizeScoreGain takes User origin, User localizer returns string
+			// call user.Team.PrintMessage(user.GetStylizedPlayerName() + " gained your team " + I2S(TEAM_ADDSCORE_COUNT) + " points")
+			return StringFormat2(LocalizeContent('PUGP', localizer.LanguageCode), origin.GetLocalizedPlayerName(localizer), ColorValue(I2S(TEAM_ADDSCORE_COUNT)))
+		endmethod
+		private static method LocalizeScoreStolen takes User origin, User localizer returns string
+			//call team.PrintMessage(user.GetStylizedPlayerName() + " stole " + I2S(TEAM_STEALSCORE_COUNT) + " point from your team!")
+			return StringFormat2(LocalizeContent('PUsP', localizer.LanguageCode), origin.GetLocalizedPlayerName(localizer), ColorValue(I2S(TEAM_STEALSCORE_COUNT)))
+		endmethod
+		private static method LocalizeScoreStolenFrom takes Teams_MazingTeam origin, User localizer returns string
+			//call user.Team.PrintMessage(user.GetStylizedPlayerName() + " stole " + I2S(TEAM_STEALSCORE_COUNT) + " point from team " + team.TeamName + "!")
+			return StringFormat3(LocalizeContent('PUsP', localizer.LanguageCode), origin.LastEventUser.GetLocalizedPlayerName(localizer), ColorValue(I2S(TEAM_STEALSCORE_COUNT)), origin.GetLocalizedTeamName(localizer))
+		endmethod
+		
         public method OnUserAcquire takes User user returns nothing            
             local SimpleList_ListNode cur
             local Teams_MazingTeam team
@@ -76,9 +107,11 @@ library EDWPowerup requires Alloc, MazerGlobals, FilterFuncs, Table, PlayerUtils
                 
                 set MobImmune[user] = true
                 
+				call user.DisplayLocalizedMessage('PUSI', 0)
                 call TimerStart(NewTimerEx(user), SOLO_INVULN_TIME, false, function thistype.SoloInvulnCB)
             elseif GetUnitTypeId(.Unit) == POWERUP_TEAM_INVULN then
-                call user.Team.PrintMessage(user.GetStylizedPlayerName() + " picked up a team invulnerability powerup")
+                // call user.Team.PrintMessage(user.GetStylizedPlayerName() + " picked up a team invulnerability powerup")
+				call user.Team.DisplayDynamicContent(LocalizeTeamInvulnerability, user)
                 
                 set cur = user.Team.FirstUser
                 
@@ -95,43 +128,57 @@ library EDWPowerup requires Alloc, MazerGlobals, FilterFuncs, Table, PlayerUtils
                 call AddContinueEffect(this, user)
 				
 				call user.Team.ChangeContinueCount(TEAM_ADDCONT_COUNT)
-				call user.Team.PrintMessage(user.GetStylizedPlayerName() + " gained your team " + I2S(TEAM_ADDCONT_COUNT) + " continues")
+				// call user.Team.PrintMessage(user.GetStylizedPlayerName() + " gained your team " + I2S(TEAM_ADDCONT_COUNT) + " continues")
+				call user.Team.DisplayDynamicContent(LocalizeContinueGain, user)
 			elseif GetUnitTypeId(.Unit) == POWERUP_TEAM_STEALCONT then
 				set team = Teams_MazingTeam.GetRandomTeam(user.Team)
 				
 				if team != 0 then
 					call team.ChangeContinueCount(-TEAM_STEALCONT_COUNT)
-					call team.PrintMessage(user.GetStylizedPlayerName() + " stole " + I2S(TEAM_STEALCONT_COUNT) + " continue from your team!")
+					// call team.PrintMessage(user.GetStylizedPlayerName() + " stole " + I2S(TEAM_STEALCONT_COUNT) + " continue from your team!")
+					call team.DisplayDynamicContent(LocalizeContinueStolen, user)
 					
 					call StealContinueEffect(this, user)
 					call user.Team.ChangeContinueCount(TEAM_STEALCONT_COUNT)
-					call user.Team.PrintMessage(user.GetStylizedPlayerName() + " stole " + I2S(TEAM_STEALCONT_COUNT) + " continue from team " + team.TeamName + "!")
+					
+					// call user.Team.PrintMessage(user.GetStylizedPlayerName() + " stole " + I2S(TEAM_STEALCONT_COUNT) + " continue from team " + team.TeamName + "!")
+					set team.LastEventUser = user
+					call user.Team.DisplayDynamicContent(LocalizeContinueStolenFrom, team)
+					set team.LastEventUser = 0
 				else
 					call AddContinueEffect(this, user)
 					
 					call user.Team.ChangeContinueCount(TEAM_ADDCONT_COUNT)
-					call user.Team.PrintMessage(user.GetStylizedPlayerName() + " gained your team " + I2S(TEAM_ADDCONT_COUNT) + " continues")
+					// call user.Team.PrintMessage(user.GetStylizedPlayerName() + " gained your team " + I2S(TEAM_ADDCONT_COUNT) + " continues")
+					call user.Team.DisplayDynamicContent(LocalizeContinueGain, user)
 				endif
 			elseif GetUnitTypeId(.Unit) == POWERUP_TEAM_ADDSCORE then
 				call AddScoreEffect(this, user)
 				
 				call user.Team.ChangeScore(TEAM_ADDSCORE_COUNT)
-				call user.Team.PrintMessage(user.GetStylizedPlayerName() + " gained your team " + I2S(TEAM_ADDSCORE_COUNT) + " points")
+				// call user.Team.PrintMessage(user.GetStylizedPlayerName() + " gained your team " + I2S(TEAM_ADDSCORE_COUNT) + " points")
+				call user.Team.DisplayDynamicContent(LocalizeScoreGain, user)
 			elseif GetUnitTypeId(.Unit) == POWERUP_TEAM_STEALSCORE then
 				set team = Teams_MazingTeam.GetRandomTeam(user.Team)
 				
 				if team != 0 then
 					call team.ChangeScore(-TEAM_STEALSCORE_COUNT)
-					call team.PrintMessage(user.GetStylizedPlayerName() + " stole " + I2S(TEAM_STEALSCORE_COUNT) + " point from your team!")
+					// call team.PrintMessage(user.GetStylizedPlayerName() + " stole " + I2S(TEAM_STEALSCORE_COUNT) + " point from your team!")
+					call team.DisplayDynamicContent(LocalizeScoreStolen, user)
 					
 					call StealScoreEffect(this, user)
 					call user.Team.ChangeScore(TEAM_STEALSCORE_COUNT)
-					call user.Team.PrintMessage(user.GetStylizedPlayerName() + " stole " + I2S(TEAM_STEALSCORE_COUNT) + " point from team " + team.TeamName + "!")
+					
+					// call user.Team.PrintMessage(user.GetStylizedPlayerName() + " stole " + I2S(TEAM_STEALSCORE_COUNT) + " point from team " + team.TeamName + "!")
+					set team.LastEventUser = user
+					call user.Team.DisplayDynamicContent(LocalizeScoreStolenFrom, team)
+					set team.LastEventUser = 0
 				else
 					call AddScoreEffect(this, user)
 					
 					call user.Team.ChangeScore(TEAM_ADDSCORE_COUNT)
-					call user.Team.PrintMessage(user.GetStylizedPlayerName() + " gained your team " + I2S(TEAM_ADDSCORE_COUNT) + " points")
+					// call user.Team.PrintMessage(user.GetStylizedPlayerName() + " gained your team " + I2S(TEAM_ADDSCORE_COUNT) + " points")
+					call user.Team.DisplayDynamicContent(LocalizeScoreGain, user)
 				endif
             endif
             //call ExecuteFunc(.OnAcquireCB)

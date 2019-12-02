@@ -7,8 +7,8 @@ library Levels requires SimpleList, Teams, GameModesGlobals, LevelIDGlobals, Cin
 		public constant real TRANSFER_TIMER_TIMEOUT = .05
         public constant real CINEMATIC_TIMER_TIMEOUT = .5
         
-        public constant real EASY_SCORE_MODIFIER = 1.
-        public constant real HARD_SCORE_MODIFIER = 1.25
+        public constant real EASY_SCORE_MODIFIER = 1.25
+        public constant real HARD_SCORE_MODIFIER = 1.
         public constant real EASY_CONTINUE_MODIFIER = 1.5
         public constant integer EASY_MAX_CONTINUE_ROLLOVER = 3
 		public constant integer HARD_MAX_CONTINUE_ROLLOVER = 1
@@ -471,7 +471,8 @@ library Levels requires SimpleList, Teams, GameModesGlobals, LevelIDGlobals, Cin
 		private static method LocalizeReachedCheckpoint takes User origin, User localizer returns string
 			//TODO string replace placeholder(s) in templateString, returned by: LocalizeContent('LSCP', localizer.LanguageCode), with origin.GetLocalizedPlayerName(localizer)
 			//can i create and destroy a simplelist as part of localplayer block? no
-			return origin.GetLocalizedPlayerName(localizer) + " " + LocalizeContent('LSCP', localizer.LanguageCode)
+			return StringFormat1(LocalizeContent('LSCP', localizer.LanguageCode), origin.GetLocalizedPlayerName(localizer))
+			// return origin.GetLocalizedPlayerName(localizer) + " " + LocalizeContent('LSCP', localizer.LanguageCode)
 		endmethod
 		public method AnimatedSetCheckpointForTeam takes Teams_MazingTeam mt, integer cpID returns nothing
 			local Checkpoint cp = Checkpoint(.Checkpoints.get(cpID).value)
@@ -666,7 +667,8 @@ library Levels requires SimpleList, Teams, GameModesGlobals, LevelIDGlobals, Cin
 			// set t = null
 		// endmethod
 		private static method LocalizeSwitchLevelsNowStarting takes AnimatedLevelTransferData origin, User localizer returns string
-			return LocalizeContent('LS3N', localizer.LanguageCode) + " " + origin.NextLevel.GetLocalizedLevelName(localizer)
+			return StringFormat1(LocalizeContent('LS3N', localizer.LanguageCode), origin.NextLevel.GetLocalizedLevelName(localizer))
+			// return LocalizeContent('LS3N', localizer.LanguageCode) + " " + origin.NextLevel.GetLocalizedLevelName(localizer)
 		endmethod
 		private static method SwitchLevels_Message3 takes nothing returns nothing
 			local timer t = GetExpiredTimer()
@@ -692,7 +694,8 @@ library Levels requires SimpleList, Teams, GameModesGlobals, LevelIDGlobals, Cin
 		endmethod
 		
 		private static method LocalizeSwitchLevelsContinueCount takes Teams_MazingTeam origin, User localizer returns string
-			return ColorValue(I2S(origin.GetContinueCount())) + " " + LocalizeContent('LS2C', localizer.LanguageCode)
+			return StringFormat1(LocalizeContent('LS2C', localizer.LanguageCode), ColorValue(I2S(origin.GetContinueCount())))
+			// return ColorValue(I2S(origin.GetContinueCount())) + " " + LocalizeContent('LS2C', localizer.LanguageCode)
 		endmethod
 		private static method SwitchLevels_Message2 takes nothing returns nothing
 			local timer t = GetExpiredTimer()
@@ -705,16 +708,18 @@ library Levels requires SimpleList, Teams, GameModesGlobals, LevelIDGlobals, Cin
 		endmethod
 		
 		private static method LocalizeSwitchLevelsScore takes Teams_MazingTeam origin, User localizer returns string
-			return LocalizeContent('LS1A', localizer.LanguageCode) /*
-			*/ + " " + ColorValue(I2S(origin.OnLevel.GetWeightedScore())) /*
-			*/ + " " + LocalizeContent('LS1B', localizer.LanguageCode)
+			return StringFormat1(LocalizeContent('LS1A', localizer.LanguageCode), ColorValue(I2S(origin.OnLevel.GetWeightedScore())))
+			// return LocalizeContent('LS1A', localizer.LanguageCode) /*
+			// */ + " " + ColorValue(I2S(origin.OnLevel.GetWeightedScore())) /*
+			// */ + " " + LocalizeContent('LS1B', localizer.LanguageCode)
 		endmethod
 		private static method LocalizeSwitchLevelsScoreTotal takes Teams_MazingTeam origin, User localizer returns string
-			return LocalizeContent('LS1A', localizer.LanguageCode) + " " /*
-				*/ + ColorValue(I2S(origin.OnLevel.GetWeightedScore())) + " " /*
-				*/ + LocalizeContent('LS1B', localizer.LanguageCode) + /*
-				*/ " (" + ColorValue(I2S(origin.GetScore() + origin.OnLevel.GetWeightedScore())) /*
-				*/ + " " + LocalizeContent('LS1C', localizer.LanguageCode) + ")"
+			return StringFormat2(LocalizeContent('LS1B', localizer.LanguageCode), ColorValue(I2S(origin.OnLevel.GetWeightedScore())), ColorValue(I2S(origin.GetScore() + origin.OnLevel.GetWeightedScore())))
+			// return LocalizeContent('LS1A', localizer.LanguageCode) + " " /*
+				// */ + ColorValue(I2S(origin.OnLevel.GetWeightedScore())) + " " /*
+				// */ + LocalizeContent('LS1B', localizer.LanguageCode) + /*
+				// */ " (" + ColorValue(I2S(origin.GetScore() + origin.OnLevel.GetWeightedScore())) /*
+				// */ + " " + LocalizeContent('LS1C', localizer.LanguageCode) + ")"
 		endmethod
 		private static method SwitchLevels_Message1 takes nothing returns nothing
 			local timer t = GetExpiredTimer()
@@ -819,15 +824,18 @@ library Levels requires SimpleList, Teams, GameModesGlobals, LevelIDGlobals, Cin
 		endmethod
 		
 		private static method LocalizeLevelClear takes User origin, User localizer returns string
-			return origin.GetLocalizedPlayerName(localizer) + " " + LocalizeContent('LSAH', localizer.LanguageCode)
+			return StringFormat1(LocalizeContent('LSAH', localizer.LanguageCode), origin.GetLocalizedPlayerName(localizer))
+			// return origin.GetLocalizedPlayerName(localizer) + " " + LocalizeContent('LSAH', localizer.LanguageCode)
 		endmethod
 		private static method LocalizeWorldStartAll takes AnimatedLevelTransferData origin, User localizer returns string
-			return origin.Team.GetLocalizedTeamName(localizer) + " " /*
-				*/ + LocalizeContent('LSAT', localizer.LanguageCode) + " " /*
-				*/ + origin.NextLevel.GetLocalizedWorldString(localizer)
+			return StringFormat2(LocalizeContent('LSAT', localizer.LanguageCode), origin.Team.GetLocalizedTeamName(localizer), origin.NextLevel.GetLocalizedWorldString(localizer))
+			// return origin.Team.GetLocalizedTeamName(localizer) + " " /*
+				// */ + LocalizeContent('LSAT', localizer.LanguageCode) + " " /*
+				// */ + origin.NextLevel.GetLocalizedWorldString(localizer)
 		endmethod
 		private static method LocalizeWorldStartTeam takes AnimatedLevelTransferData origin, User localizer returns string
-			return LocalizeContent('LSAE', localizer.LanguageCode) + " " + origin.NextLevel.GetLocalizedWorldString(localizer)
+			return StringFormat1(LocalizeContent('LSAE', localizer.LanguageCode), origin.NextLevel.GetLocalizedWorldString(localizer))
+			// return LocalizeContent('LSAE', localizer.LanguageCode) + " " + origin.NextLevel.GetLocalizedWorldString(localizer)
 		endmethod
 		public method SwitchLevelsAnimated takes Teams_MazingTeam mt, Level nextLevel, boolean updateProgress returns nothing
 			local AnimatedLevelTransferData transferData = AnimatedLevelTransferData.allocate()
