@@ -241,6 +241,7 @@ library InGameCommands initializer init requires MazerGlobals, Platformer, Relay
 		local integer i = 0
 		local integer strLength = StringLength(msg)
 		local string cmd
+		local string strVal
 		local real val
 		local integer intVal
 		local User u = User(pID)
@@ -265,7 +266,8 @@ library InGameCommands initializer init requires MazerGlobals, Platformer, Relay
 		
 		//check if string contains a value
 		if strLength >= i + 1 then
-			set val = S2R(SubString(msg, i + 1, strLength))
+			set strVal = SubString(msg, i + 1, strLength)
+			set val = S2R(strVal)
 			set intVal = R2I(val)
 		endif
 		
@@ -359,8 +361,16 @@ library InGameCommands initializer init requires MazerGlobals, Platformer, Relay
 				endif
 			elseif cmd == "language" or cmd == "lang" then
 				call DisplayTextToPlayer(Player(u), 0, 0, "Current language: " + u.LanguageCode)
+				
+				// if strVal != null and StringLength(strVal) == 2 then
+					// set u.LanguageCode = strVal
+				// endif
 			elseif cmd == "quests" then
 				call LocalizeAllQuestsForPlayer(u)
+			elseif cmd == "localize" then
+				if GetLocalPlayer() == Player(u) then
+					call DisplayTextToPlayer(Player(u), 0, 0, "Localized: " + LocalizeContent(intVal, u.LanguageCode))
+				endif
 			elseif cmd == "a" or cmd == "animate" then
 				set unitgroup = CreateGroup()
 				call GroupEnumUnitsSelected(unitgroup, Player(pID), null)

@@ -166,7 +166,7 @@ library EDWLevelContent requires LevelIDGlobals, EDWLevels, SimpleList, Teams, L
 		
         //LEVEL 2
         set l = Levels_Level(PW2_LEVEL_ID)
-                        
+		
         call l.AddStartable(MortarNTarget.create(SMLMORT, SMLTARG, Player(8), gg_rct_PW2_Mortar , gg_rct_PW2_Target))
         call l.AddStartable(MortarNTarget.create(SMLMORT, SMLTARG, Player(8), gg_rct_PW2_Mortar , gg_rct_PW2_Target))
         call l.AddStartable(MortarNTarget.create(SMLMORT, SMLTARG, Player(8), gg_rct_PW2_Mortar , gg_rct_PW2_Target))
@@ -231,7 +231,9 @@ library EDWLevelContent requires LevelIDGlobals, EDWLevels, SimpleList, Teams, L
         //debug call rg.DrawTurns()
         
         call l.AddStartable(rg)
-        		
+        
+		call l.AddStartable(PlatformerAutoAFK.create(gg_rct_SargeOcean_1))
+		
         //LEVEL 3
         set l = Levels_Level(PW3_LEVEL_ID)
         
