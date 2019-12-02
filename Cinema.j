@@ -58,8 +58,14 @@ struct CinemaCallbackModel extends array
 endstruct
 
 struct CinemaMessage extends array
-    public unit Source
+    //TODO transmission style interaction when cinematic pauses, or just flash the units selection circle if unpaused
+	public unit Source
+	
+	//represents either the full text or just the colorized speaker text (not localized)
     public string Text
+	//represents content that will be localized based on who it's being displayed to
+	public integer ContentID
+	
     public real MessageTime
 	public real NextMessageBuffer
         
@@ -72,6 +78,25 @@ struct CinemaMessage extends array
         call .deallocate()
     endmethod
     
+	public static method createEx takes unit source, string speaker, integer contentID, real time returns thistype
+		local thistype new = thistype.allocate()
+        
+        set new.Source = source
+        set new.ContentID = contentID
+        set new.MessageTime = time
+		
+		if speaker != null then
+			set new.Text = ColorValue(speaker)
+		else
+			set new.Text = null
+		endif
+		
+		//defaults
+		set new.NextMessageBuffer = 0
+        
+		
+        return new
+	endmethod
     public static method create takes unit source, string text, real time returns thistype
         local thistype new = thistype.allocate()
         
@@ -79,8 +104,10 @@ struct CinemaMessage extends array
         set new.Text = text
         set new.MessageTime = time
 		
+		//defaults
 		set new.NextMessageBuffer = 0
-        
+        set new.ContentID = 0
+		
         return new
     endmethod
 endstruct
@@ -141,18 +168,17 @@ struct Cinematic extends array
 		call .SetLastMessageBuffer(DEFAULT_CONVERSATION_BUFFER)
 	endmethod
 	
-    public method AddMessage takes unit u, string text, real timeout returns nothing
-        call .CinemaMessages.addEnd(CinemaMessage.create(u, text, timeout))
+    public method AddMessage takes CinemaMessage message returns nothing
+        call .CinemaMessages.addEnd(message)
     endmethod
-	public method AddMessageCustom takes CinemaMessage message returns nothing
-		call .CinemaMessages.addEnd(message)
-	endmethod
     
     private static method PlayMessageCallback takes nothing returns nothing
         local timer t = GetExpiredTimer()
         local CinemaCallbackModel cinemaCBModel = GetTimerData(t)
         local real time
         local SimpleList_ListNode curEndCB
+		
+		local string fullMessage
         
 		//it would be safer to just store the timer and release it as part of EndCallbackStack
 		if cinemaCBModel.CurrentMessage == 0 then
@@ -161,7 +187,19 @@ struct Cinematic extends array
 		else
 			set time = CinemaMessage(cinemaCBModel.CurrentMessage.value).MessageTime
 			//add MESSAGE_ALIVE_BUFFER here instead of in the message's buffer because it's specifically for dealing with the DisplayMessage API adding in a default buffer
-			call cinemaCBModel.User.DisplayMessage(CinemaMessage(cinemaCBModel.CurrentMessage.value).Text, time + MESSAGE_ALIVE_BUFFER)
+			if CinemaMessage(cinemaCBModel.CurrentMessage.value).ContentID != 0 then
+				if CinemaMessage(cinemaCBModel.CurrentMessage.value).Text != null then
+					set fullMessage = CinemaMessage(cinemaCBModel.CurrentMessage.value).Text + ": " + LocalizeContent(CinemaMessage(cinemaCBModel.CurrentMessage.value).ContentID, cinemaCBModel.User.LanguageCode)
+					
+					if GetLocalPlayer() == Player(cinemaCBModel.User) then
+						call cinemaCBModel.User.DisplayMessage(fullMessage, time + MESSAGE_ALIVE_BUFFER)
+					endif
+				else
+					call cinemaCBModel.User.DisplayLocalizedMessage(CinemaMessage(cinemaCBModel.CurrentMessage.value).ContentID, time + MESSAGE_ALIVE_BUFFER)
+				endif
+			else
+				call cinemaCBModel.User.DisplayMessage(CinemaMessage(cinemaCBModel.CurrentMessage.value).Text, time + MESSAGE_ALIVE_BUFFER)
+			endif
 			
 			//add the message's display time to the buffer time between this message and the next
 			//allows cinematics to show more than one message at once, while still controlling their display time
