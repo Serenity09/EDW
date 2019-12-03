@@ -782,7 +782,8 @@ library VisualVote requires Vector2, Alloc, Table, PlayerUtils, SimpleList, locu
                         call TimerDialogDisplay(.td, true)
 						
                         call SetCameraBounds(topLeft.x, topLeft.y, topLeft.x, botRight.y, botRight.x, botRight.y, botRight.x, topLeft.y)
-                        call PanCameraToTimed((topLeft.x + botRight.x) / 2, (topLeft.y + botRight.y) / 2, 0.01)
+                        call User(fp.value).PanCamera((topLeft.x + botRight.x) / 2, (topLeft.y + botRight.y) / 2, 0.01)
+						// call PanCameraToTimed((topLeft.x + botRight.x) / 2, (topLeft.y + botRight.y) / 2, 0.01)
                         
                         //pivot camera to top down view
                         //static if Library_Platformer then

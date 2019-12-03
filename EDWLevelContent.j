@@ -232,7 +232,7 @@ library EDWLevelContent requires LevelIDGlobals, EDWLevels, SimpleList, Teams, L
         
         call l.AddStartable(rg)
         
-		call l.AddStartable(PlatformerAutoAFK.create(gg_rct_SargeOcean_1))
+		call l.AddStartable(PlatformerAutoStable.create(gg_rct_SargeOcean_1))
 		
         //LEVEL 3
         set l = Levels_Level(PW3_LEVEL_ID)

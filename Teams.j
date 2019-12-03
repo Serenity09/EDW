@@ -1015,6 +1015,42 @@ public struct MazingTeam extends array
 		return leastTime
 	endmethod
 	
+	public method IsTeamAwaitingAFK takes nothing returns boolean
+		local SimpleList_ListNode curUserNode = .FirstUser
+		
+		local integer aliveAndActive = 0
+		local integer deadAndActive = 0
+		
+		loop
+		exitwhen curUserNode == 0
+			if not User(curUserNode.value).IsAFK then
+				if User(curUserNode.value).IsAlive then
+					set aliveAndActive = aliveAndActive + 1
+				else
+					set deadAndActive = deadAndActive + 1
+				endif
+			endif
+		set curUserNode = curUserNode.next
+		endloop
+		
+		return aliveAndActive == 0 and deadAndActive > 0
+	endmethod
+	public method ApplyAwaitingAFKState takes nothing returns nothing
+		local SimpleList_ListNode curUserNode = .FirstUser
+		
+		loop
+		exitwhen curUserNode == 0
+			call User(curUserNode.value).ApplyAwaitingAFKState()
+		set curUserNode = curUserNode.next
+		endloop
+	endmethod
+	
+	public method UpdateAwaitingAFKState takes nothing returns nothing
+		if .IsTeamAwaitingAFK() then
+			call .ApplyAwaitingAFKState()
+		endif
+	endmethod
+	
 	public method DiscoverQuestForTeam takes quest q returns nothing
 		local SimpleList_ListNode curPlayerNode = .FirstUser
 		
@@ -1061,19 +1097,7 @@ public struct MazingTeam extends array
 		
 		loop
 		exitwhen curPlayerNode == 0
-			if GetLocalPlayer() == Player(curPlayerNode.value) then
-				if User(curPlayerNode.value).IsAFK then
-					call SetCameraPosition(x, y)
-					
-					//these don't return the updated value until a timeout of 0 for some reason
-					// set User.LocalCameraTargetPosition.x = GetCameraTargetPositionX()
-					// set User.LocalCameraTargetPosition.y = GetCameraTargetPositionY()
-					set User.LocalCameraTargetPosition.x = x
-					set User.LocalCameraTargetPosition.y = y
-				else
-					call PanCameraToTimed(x, y, duration)
-				endif
-			endif
+			call User(curPlayerNode.value).PanCamera(x, y, duration)
 		set curPlayerNode = curPlayerNode.next
 		endloop
 	endmethod

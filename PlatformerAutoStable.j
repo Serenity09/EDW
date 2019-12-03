@@ -1,8 +1,8 @@
-library PlatformerAutoAFK requires User, SimpleList, IStartable
+library PlatformerAutoStable requires User, SimpleList, IStartable
 	globals
 		private constant real TIMEOUT = 1.
 	endglobals
-	struct PlatformerAutoAFK extends IStartable
+	struct PlatformerAutoStable extends IStartable
 		public rect Area
 		
 		private static SimpleList_List Active
@@ -11,32 +11,35 @@ library PlatformerAutoAFK requires User, SimpleList, IStartable
 		private static method Periodic takes nothing returns nothing
 			local SimpleList_ListNode curActiveAutoAFK = thistype.Active.first
 			
-			local group inAreaGroup = NewGroup()
-			local unit inAreaUnit
-			local User inAreaUser
+			local SimpleList_ListNode curTeamNode
+			local SimpleList_ListNode curUserNode
+			
+			//TODO enum users.ActiveUnit on level rather than units in rect
+			local User user
 			
 			loop
 			exitwhen curActiveAutoAFK == 0
-				call GroupEnumUnitsInRect(inAreaGroup, thistype(curActiveAutoAFK.value).Area, null)
+				set curTeamNode = thistype(curActiveAutoAFK.value).ParentLevel.ActiveTeams.first
 				
 				loop
-				set inAreaUnit = FirstOfGroup(inAreaGroup)
-				exitwhen inAreaUnit == null
-					if GetUnitTypeId(inAreaUnit) == PLATFORMERWISP then
-						set inAreaUser = GetPlayerId(GetOwningPlayer(inAreaUnit))
-						
-						if inAreaUser.IsAFK and inAreaUser.Team.Users.count > 1 then
-							call inAreaUser.SwitchGameModesDefaultLocation(Teams_GAMEMODE_DYING)
-						endif
-					endif
+				exitwhen curTeamNode == 0
+					set curUserNode = Teams_MazingTeam(curTeamNode.value).Users.first
 					
-				call GroupRemoveUnit(inAreaGroup, inAreaUnit)
+					loop
+					exitwhen curUserNode == 0
+						set user = User(curUserNode.value)
+						
+						if user.GameMode == Teams_GAMEMODE_PLATFORMING and RectContainsCoords(thistype(curActiveAutoAFK.value).Area, GetUnitX(user.ActiveUnit), GetUnitY(user.ActiveUnit)) then
+							set user.PlatformerStartStable = true
+						endif
+					set curUserNode = curUserNode.next
+					endloop
+					
+				set curTeamNode = curTeamNode.next
 				endloop
+				
 			set curActiveAutoAFK = curActiveAutoAFK.next
-			endloop
-			
-			call ReleaseGroup(inAreaGroup)
-			set inAreaGroup = null
+			endloop			
 		endmethod
 		
 		public method Start takes nothing returns nothing

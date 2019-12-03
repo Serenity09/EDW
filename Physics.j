@@ -3232,6 +3232,8 @@ endglobals
 					set User.LocalCameraTargetPosition.y = GetUnitY(.Unit)
 				endif
             endif
+			
+			call User(.PID).RegisterSystemCameraTransition(0.)
         endmethod
 		private static method ApplyAllCameras takes nothing returns nothing
 			local SimpleList_ListNode p = thistype.ActivePlatformers.first

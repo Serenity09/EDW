@@ -3,8 +3,8 @@ library User requires UnitDefaultRadius, MazerGlobals, Platformer, TerrainHelper
 globals
 	User TriggerUser //used with events
 	
-	private constant boolean DEBUG_AFK = false
 	private constant real CAMERA_TARGET_POSITION_FLEX = 50.
+	private constant real AUTO_TRANSITION_BUFFER = .1
 	
 	private constant real CAMERA_TARGET_POSITION_PAUSE_X_FLEX = 8.5 * TERRAIN_TILE_SIZE
 	private constant real CAMERA_TARGET_POSITION_PAUSE_Y_FLEX = 5.5 * TERRAIN_TILE_SIZE
@@ -12,9 +12,9 @@ globals
 	private constant real CAMERA_TARGET_POSITION_PAUSE_Y_BOTTOM_FLEX = CAMERA_TARGET_POSITION_PAUSE_Y_FLEX - 1.
 	
 	private constant real AFK_CAMERA_CHECK_TIMEOUT = 1.
-	private constant real AFK_CAMERA_DEBUG_TIMEOUT = 5.
+	private constant real AFK_CAMERA_DEBUG_TIMEOUT = 10.
 	private constant real AFK_CAMERA_MAX_TIMEOUT = 120.
-	private constant real AFK_CAMERA_MIN_TIMEOUT = 15.
+	private constant real AFK_CAMERA_MIN_TIMEOUT = 30.
 	private constant real AFK_CAMERA_DELTA_TIMEOUT = .75
 	
 	private constant real AFK_PAN_CAMERA_DURATION = 2.
@@ -33,11 +33,15 @@ globals
 	private constant boolean DEBUG_GAMEMODE_CHANGE = false
 	private constant boolean DEBUG_ACTIVE_EFFECT_CHANGE = false
 	private constant boolean DEBUG_CAMERA = false
+	
+	private constant boolean DEBUG_AFK = false
 endglobals
 
 struct User extends array
     public boolean IsPlaying
     public boolean IsAlive
+	readonly boolean IsTransitioning
+	readonly timer TransitioningTimer
 	readonly boolean IsAFK
     readonly integer Deaths
     public unit ActiveUnit
@@ -50,7 +54,7 @@ struct User extends array
     public SimpleList_List CinematicQueue //FiFo
 	public effect ActiveEffect
 	private timer UnpauseTimer
-	
+		
 	readonly unit LastCollidedUnit
 	readonly timer LastCollidedUnitTimer
 	
@@ -71,7 +75,7 @@ struct User extends array
 	readonly static vector2 LocalCameraTargetPosition
 	private static real LocalCameraIdleTime
 	private static real LocalAFKThreshold
-	private boolean PlatformerStartStable
+	public boolean PlatformerStartStable
 	// public static trigger AFKMouseEvent
 	// public static vector2 LocalUserMousePosition
 	
@@ -295,7 +299,33 @@ struct User extends array
             call Platformer.StartPlatforming(x, y)
         endif
     endmethod
-    
+	
+	public method CancelSystemCameraTransition takes nothing returns nothing
+		if .IsTransitioning then
+			set .IsTransitioning = false
+			call ReleaseTimer(.TransitioningTimer)
+			set .TransitioningTimer = null
+		endif
+	endmethod
+	private static method SystemCameraTransitionCB takes nothing returns nothing
+		local User u = User(GetTimerData(GetExpiredTimer()))
+		
+		call u.CancelSystemCameraTransition()
+		
+		if GetLocalPlayer() == Player(u) then
+			set thistype.LocalCameraTargetPosition.x = GetCameraTargetPositionX()
+			set thistype.LocalCameraTargetPosition.y = GetCameraTargetPositionY()
+		endif
+	endmethod
+	public method RegisterSystemCameraTransition takes real duration returns nothing
+		call .CancelSystemCameraTransition()
+		
+		set .IsTransitioning = true
+		set .TransitioningTimer = NewTimerEx(this)
+		call TimerStart(.TransitioningTimer, duration + AUTO_TRANSITION_BUFFER, false, function thistype.SystemCameraTransitionCB)
+	endmethod
+	
+	
 	public method ToggleDefaultTracking takes nothing returns nothing
         local string message
 		
@@ -330,6 +360,22 @@ struct User extends array
 			endif
 		endif
     endmethod
+	
+	public method PanCamera takes real x, real y, real duration returns nothing
+		if .IsAFK then
+			if GetLocalPlayer() == Player(this) then
+				call SetCameraPosition(x, y)
+			endif
+			
+			call .RegisterSystemCameraTransition(0.)
+		else
+			if GetLocalPlayer() == Player(this) then
+				call PanCameraToTimed(x, y, duration)
+			endif
+			
+			call .RegisterSystemCameraTransition(duration)
+		endif
+	endmethod
     public method ApplyDefaultCameras takes real time returns nothing
         static if DEBUG_CAMERA then
 			if GetLocalPlayer() == Player(0) then
@@ -342,22 +388,20 @@ struct User extends array
         elseif .GameMode == Teams_GAMEMODE_STANDARD or .GameMode == Teams_GAMEMODE_STANDARD_PAUSED then
             if GetLocalPlayer() == Player(this) then
                 call CameraSetupApply(DefaultCamera[this], false, false)
-                if .IsAFK then
-					call SetCameraPosition(GetUnitX(.ActiveUnit), GetUnitY(.ActiveUnit))
-					
-					//these don't return the updated value until a timeout of 0 for some reason
-					// set thistype.LocalCameraTargetPosition.x = GetCameraTargetPositionX()
-					// set thistype.LocalCameraTargetPosition.y = GetCameraTargetPositionY()
-					set thistype.LocalCameraTargetPosition.x = GetUnitX(.ActiveUnit)
-					set thistype.LocalCameraTargetPosition.y = GetUnitY(.ActiveUnit)
-				else
-					call PanCameraToTimed(GetUnitX(.ActiveUnit), GetUnitY(.ActiveUnit), time)
-				endif
+            endif
 				
+			// if .IsAFK then
+				// call SetCameraPosition(GetUnitX(.ActiveUnit), GetUnitY(.ActiveUnit))
+			// else
+				// call PanCameraToTimed(GetUnitX(.ActiveUnit), GetUnitY(.ActiveUnit), time)
+			// endif
+			call .PanCamera(GetUnitX(.ActiveUnit), GetUnitY(.ActiveUnit), time)
+			
+			if GetLocalPlayer() == Player(this) then
                 if DefaultCameraTracking[this] then
                     call SetCameraTargetController(.ActiveUnit, 0, 0, false)
-                endif				
-            endif
+                endif
+			endif
         endif
 		
 		static if DEBUG_CAMERA then
@@ -381,6 +425,8 @@ struct User extends array
 				call CameraSetupApply(DefaultCamera[this], false, false)
 			endif
         endif
+		
+		call .RegisterSystemCameraTransition(0.)
 		
 		static if DEBUG_CAMERA then
 			if GetLocalPlayer() == Player(0) then
@@ -905,6 +951,8 @@ struct User extends array
             
             call respawnPoint.destroy()
         endif
+		
+		call .Team.UpdateAwaitingAFKState()
     endmethod
     
     private static method ApplyRootsCB takes nothing returns nothing
@@ -988,15 +1036,15 @@ struct User extends array
 				//no actions removing dying gamemode
             elseif curGameMode == Teams_GAMEMODE_DEAD then
                 //revive the mazing unit
-                call ReviveHero(MazersArray[this], MazerGlobals_SAFE_X, MazerGlobals_SAFE_Y, false)
+                call ReviveHero(MazersArray[this], x, y, false)
                 call ShowUnit(MazersArray[this], false)
                 call IssueImmediateOrder(MazersArray[this], "stop")
                 //call PauseUnit(MazersArray[this], true)
                 //call PauseUnit(MazersArray[this], false)
                 
                 //move the respawn circle
-                call SetUnitPosition(PlayerReviveCircles[this], MazerGlobals_REVIVE_CIRCLE_SAFE_X, MazerGlobals_REVIVE_CIRCLE_SAFE_Y)
                 call ShowUnit(PlayerReviveCircles[this], false)
+				call SetUnitPosition(PlayerReviveCircles[this], MazerGlobals_REVIVE_CIRCLE_SAFE_X, MazerGlobals_REVIVE_CIRCLE_SAFE_Y)
             endif
             
             //set the new game mode
@@ -1030,9 +1078,9 @@ struct User extends array
 				// endif
 				set .PlatformerStartStable = false
 				
-				if .IsAFK then
-					call .ApplyAFKPlatformer()
-				endif
+				// if .IsAFK then
+					// call .ApplyAFKPlatformer()
+				// endif
             elseif newGameMode == Teams_GAMEMODE_STANDARD_PAUSED then
                 call SetUnitPosition(MazersArray[this], x, y)
                 //set movespeed 0 instead of pausing unit so player can pivot to face a better direction
@@ -1204,6 +1252,8 @@ struct User extends array
 		call TimerStart(GetExpiredTimer(), 1., true, function thistype.UnpauseAFKCB)
 	endmethod
 	
+	
+	
 	private static method ApplyAFKPlatformerCB takes nothing returns nothing
 		local timer t = GetExpiredTimer()
 		local User u = GetTimerData(t)
@@ -1211,7 +1261,7 @@ struct User extends array
 		local string message
 		local SimpleList_ListNode curUserNode = PlayerUtils_FirstPlayer
 		
-		if u.IsAFK then
+		if u.IsAFK and u.IsAlive then
 			if u.PlatformerStartStable then
 				if u.AFKPlatformerDeathClock == AFK_PLATFORMER_DEATH_CLOCK_START then
 					set text = CreateTextTag()
@@ -1296,17 +1346,39 @@ struct User extends array
 		return 0
 	endmethod
 	
+	public method ApplyAwaitingAFKState takes nothing returns nothing
+		if .GameMode == Teams_GAMEMODE_STANDARD or .GameMode == Teams_GAMEMODE_STANDARD_PAUSED then
+			call .Team.SetSharedControlForTeam(this, true)
+			
+			//disable default camera tracking so as to not interact with shared control
+			if DefaultCameraTracking[this] then
+				call .ToggleDefaultTracking()
+			endif
+		elseif .GameMode == Teams_GAMEMODE_PLATFORMING or .GameMode == Teams_GAMEMODE_PLATFORMING_PAUSED then
+			call .ApplyAFKPlatformer()
+		endif
+		
+		if GetLocalPlayer() == Player(this) and AFK_CAMERA_DELTA_TIMEOUT * thistype.LocalAFKThreshold >= AFK_CAMERA_MIN_TIMEOUT then
+			set thistype.LocalAFKThreshold = AFK_CAMERA_DELTA_TIMEOUT * thistype.LocalAFKThreshold
+			
+			//TODO sync callback for user's threshold
+			//if first threshold then warn player about exiling
+			//if second threshold then inform team about exiling
+		endif
+	endmethod
+	
 	//User AFK synced event callback and async logic for checking/tracking idle state
 	public method ToggleAFK takes nothing returns nothing
 		local SyncRequest request
 		local SimpleList_ListNode curUserNode = this.Team.FirstUser
 		local string message
-		
-		//this could be more elegant, but applying this logic first lets GetStylizedPlayerName stay simple
+				
+		//this could be more elegant, but applying this logic first lets GetLocalizedPlayerName stay simplish by not including the localized "(AFK) " prefix in the player's name
 		if not .IsAFK then
 			if DEBUG_AFK or .Team.Users.count > 1 then
 				loop
 				exitwhen curUserNode == 0
+					// call .Team.PrintMessage(.GetStylizedPlayerName() + " " + "is now AFK!")
 					set message = StringFormat1(LocalizeContent('UAAT', User(curUserNode.value).LanguageCode), .GetLocalizedPlayerName(curUserNode.value))
 					
 					if GetLocalPlayer() == Player(curUserNode.value) then
@@ -1314,50 +1386,33 @@ struct User extends array
 					endif
 				set curUserNode = curUserNode.next
 				endloop
-				// call .Team.PrintMessage(.GetStylizedPlayerName() + " " + "is now AFK!")
 			endif
 		endif
 		
 		set .IsAFK = not .IsAFK
 		
 		if .IsAFK then
-			if DEBUG_AFK or .Team.Users.count > 1 then
-				if .GameMode == Teams_GAMEMODE_STANDARD or .GameMode == Teams_GAMEMODE_STANDARD_PAUSED then
-					call .Team.SetSharedControlForTeam(this, true)
-				elseif .GameMode == Teams_GAMEMODE_PLATFORMING or .GameMode == Teams_GAMEMODE_PLATFORMING_PAUSED then
-					call .ApplyAFKPlatformer()
-				endif
-				
-				//disable default camera tracking so as to not interact with shared control
-				if DefaultCameraTracking[this] then
-					call .ToggleDefaultTracking()
-				endif
-				
-				if GetLocalPlayer() == Player(this) and AFK_CAMERA_DELTA_TIMEOUT * thistype.LocalAFKThreshold >= AFK_CAMERA_MIN_TIMEOUT then
-					set thistype.LocalAFKThreshold = AFK_CAMERA_DELTA_TIMEOUT * thistype.LocalAFKThreshold
-					
-					//TODO sync callback for user's threshold
-					//if first threshold then warn player about exiling
-					//if second threshold then inform team about exiling
-				endif
-			endif
+			call .Team.UpdateAwaitingAFKState()
 		else
 			if DEBUG_AFK or .Team.Users.count > 1 then
 				loop
 				exitwhen curUserNode == 0
-					set message = StringFormat1(LocalizeContent('UAAF', User(curUserNode.value).LanguageCode), .GetLocalizedPlayerName(curUserNode.value))
-					
-					if GetLocalPlayer() == Player(curUserNode.value) then
-						call User(curUserNode.value).DisplayMessage(message, 0)
+					if this != curUserNode.value then
+						// call .Team.PrintMessage(.GetStylizedPlayerName() + " " + "is no longer AFK")
+						set message = StringFormat1(LocalizeContent('UAAF', User(curUserNode.value).LanguageCode), .GetLocalizedPlayerName(curUserNode.value))
+						
+						if GetLocalPlayer() == Player(curUserNode.value) then
+							call User(curUserNode.value).DisplayMessage(message, 0)
+						endif
 					endif
 				set curUserNode = curUserNode.next
 				endloop
-				// call .Team.PrintMessage(.GetStylizedPlayerName() + " " + "is no longer AFK")
 				
 				call .Team.SetSharedControlForTeam(this, false)
 				
 				if .GameMode == Teams_GAMEMODE_STANDARD then
-					//why does this need to happen here? couldn't it just happen in the original async check?
+					//when a standard mazer is unpaused it always causes a pause in flow while the unit is literally paused, the camera panned to it, and then the unpause countdown fully executed
+					//it's better for gameplay if the unit is paused and then unpaused (with no camera pan or a much faster pan)
 					//check that unit is not near owner's camera bounds as well
 					
 					//this is saying only go through with removing AFK status if the user's active unit is far from its original position
@@ -1390,45 +1445,48 @@ struct User extends array
 	endmethod
 		
 	private method CheckAFKPlayer takes real timeElapsed returns nothing
-		//call sync AFK logic
-		if this.GameMode == Teams_GAMEMODE_PLATFORMING and not this.PlatformerStartStable and ((this.Platformer.PushedAgainstVector != 0 and this.Platformer.YVelocity == 0.) or this.Platformer.HorizontalAxisState != 0) then
-			set this.PlatformerStartStable = true
-			
-			//special case where the local player's camera target should be reset on PlatformerStartStable -> true
-			if GetLocalPlayer() == Player(this) and this.Platformer.HorizontalAxisState == 0 then
-				set thistype.LocalCameraTargetPosition.x = GetCameraTargetPositionX()
-				set thistype.LocalCameraTargetPosition.y = GetCameraTargetPositionY()
-			endif
-		endif
-		
-		//call async AFK logic
-		if GetLocalPlayer() == Player(this) then
-			if this.GameMode == Teams_GAMEMODE_PLATFORMING or this.GameMode == Teams_GAMEMODE_PLATFORMING_PAUSED then				
-				if this.Platformer.HorizontalAxisState != 0 or (this.PlatformerStartStable and (GetCameraTargetPositionX() != LocalCameraTargetPosition.x or GetCameraTargetPositionY() != LocalCameraTargetPosition.y)) then
-					set thistype.LocalCameraIdleTime = 0
-					
+		//only check AFK state when a player is not transitioning
+		if not this.IsTransitioning then
+			//call sync AFK logic
+			if this.GameMode == Teams_GAMEMODE_PLATFORMING and not this.PlatformerStartStable and ((this.Platformer.PushedAgainstVector != 0 and this.Platformer.YVelocity == 0.) or this.Platformer.HorizontalAxisState != 0) then
+				set this.PlatformerStartStable = true
+				
+				//special case where the local player's camera target should be reset on PlatformerStartStable -> true
+				if GetLocalPlayer() == Player(this) and this.Platformer.HorizontalAxisState == 0 then
 					set thistype.LocalCameraTargetPosition.x = GetCameraTargetPositionX()
 					set thistype.LocalCameraTargetPosition.y = GetCameraTargetPositionY()
-				else
-					set thistype.LocalCameraIdleTime = thistype.LocalCameraIdleTime + timeElapsed
-				endif
-			else
-				//TODO check mouse position, if that ever gets an async API
-				if RAbsBJ(GetCameraTargetPositionX() - LocalCameraTargetPosition.x) > CAMERA_TARGET_POSITION_FLEX or RAbsBJ(GetCameraTargetPositionY() - LocalCameraTargetPosition.y) > CAMERA_TARGET_POSITION_FLEX then
-					// call DisplayTextToPlayer(GetLocalPlayer(), 0, 0, "Difference for camera destination x: " + R2S(RAbsBJ(GetCameraTargetPositionX() - LocalCameraTargetPosition.x)) + ", y: " + R2S(RAbsBJ(GetCameraTargetPositionY() - LocalCameraTargetPosition.y)))
-					
-					set thistype.LocalCameraIdleTime = 0
-					
-					set thistype.LocalCameraTargetPosition.x = GetCameraTargetPositionX()
-					set thistype.LocalCameraTargetPosition.y = GetCameraTargetPositionY()
-				else
-					set thistype.LocalCameraIdleTime = thistype.LocalCameraIdleTime + timeElapsed
 				endif
 			endif
 			
-			if (this.IsAFK and thistype.LocalCameraIdleTime < thistype.LocalAFKThreshold) or (not this.IsAFK and thistype.LocalCameraIdleTime >= thistype.LocalAFKThreshold) then
-				// call DisplayTextToPlayer(GetLocalPlayer(), 0, 0, "On sync event, idle time: " + R2S(thistype.LocalCameraIdleTime))
-				call BlzSendSyncData(AFK_SYNC_EVENT_PREFIX, I2S(this))
+			//call async AFK logic
+			if GetLocalPlayer() == Player(this) then
+				if this.GameMode == Teams_GAMEMODE_PLATFORMING or this.GameMode == Teams_GAMEMODE_PLATFORMING_PAUSED then				
+					if this.Platformer.HorizontalAxisState != 0 then
+						set thistype.LocalCameraIdleTime = 0
+						
+						set thistype.LocalCameraTargetPosition.x = GetCameraTargetPositionX()
+						set thistype.LocalCameraTargetPosition.y = GetCameraTargetPositionY()
+					else
+						set thistype.LocalCameraIdleTime = thistype.LocalCameraIdleTime + timeElapsed
+					endif
+				else
+					//TODO check mouse position, if that ever gets an async API
+					if RAbsBJ(GetCameraTargetPositionX() - LocalCameraTargetPosition.x) > CAMERA_TARGET_POSITION_FLEX or RAbsBJ(GetCameraTargetPositionY() - LocalCameraTargetPosition.y) > CAMERA_TARGET_POSITION_FLEX then
+						// call DisplayTextToPlayer(GetLocalPlayer(), 0, 0, "Difference for camera destination x: " + R2S(RAbsBJ(GetCameraTargetPositionX() - LocalCameraTargetPosition.x)) + ", y: " + R2S(RAbsBJ(GetCameraTargetPositionY() - LocalCameraTargetPosition.y)))
+						
+						set thistype.LocalCameraIdleTime = 0
+						
+						set thistype.LocalCameraTargetPosition.x = GetCameraTargetPositionX()
+						set thistype.LocalCameraTargetPosition.y = GetCameraTargetPositionY()
+					else
+						set thistype.LocalCameraIdleTime = thistype.LocalCameraIdleTime + timeElapsed
+					endif
+				endif
+				
+				if (this.IsAFK and thistype.LocalCameraIdleTime < thistype.LocalAFKThreshold) or (not this.IsAFK and thistype.LocalCameraIdleTime >= thistype.LocalAFKThreshold) then
+					// call DisplayTextToPlayer(GetLocalPlayer(), 0, 0, "On sync event, idle time: " + R2S(thistype.LocalCameraIdleTime))
+					call BlzSendSyncData(AFK_SYNC_EVENT_PREFIX, I2S(this))
+				endif
 			endif
 		endif
 	endmethod
@@ -1443,8 +1501,6 @@ struct User extends array
 		endloop
 	endmethod
 	
-	
-	            
 	private static method SyncUserLanguageCode takes SyncRequest request, User user returns integer
 		set user.LanguageCode = request.Data
 		// call DisplayTextToPlayer(Player(user), 0, 0, request.Data)
@@ -1465,6 +1521,7 @@ struct User extends array
         set new.Team = 0
         set new.Deaths = 0
         set new.IsAlive = true
+		set new.IsTransitioning = true
 		
 		set new.IsAFK = false
 		call BlzTriggerRegisterPlayerSyncEvent(thistype.AFKSyncEvent, Player(new), AFK_SYNC_EVENT_PREFIX, false)
