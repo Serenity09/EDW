@@ -923,6 +923,8 @@ public struct MazingTeam extends array
 		local SimpleList_ListNode curTeamNode = thistype.AllTeams.first
 		local SimpleList_ListNode curUserNode
 		
+		local integer sortIndex = 1
+		
 		//init localized column text for multiboard
 		loop
 		exitwhen curTeamNode == 0
@@ -930,6 +932,9 @@ public struct MazingTeam extends array
 			
 			loop
 			exitwhen curUserNode == 0
+				set User(curUserNode.value).StatisticsSortIndex = sortIndex
+				set sortIndex = sortIndex + 1
+				
 				call User(curUserNode.value).InitializeMultiboard()
 			set curUserNode = curUserNode.next
 			endloop
@@ -944,6 +949,7 @@ public struct MazingTeam extends array
 			
 			loop
 			exitwhen curUserNode == 0
+				call User(curUserNode.value).InitializeMultiboardValues()
 				call User(curUserNode.value).UpdateMultiboard()
 				
 				call User(curUserNode.value).InitializeMultiboardDisplay()
@@ -1033,8 +1039,8 @@ public struct MazingTeam extends array
 		
 		loop
 		exitwhen curUserNode == 0
-			if not User(curUserNode.value).IsAFK then
-				if User(curUserNode.value).IsAlive then
+			if not User(curUserNode.value).IsAFK and User(curUserNode.value).IsPlaying then
+				if User(curUserNode.value).IsAlive and User(curUserNode.value).GameMode != GAMEMODE_DYING then
 					set aliveAndActive = aliveAndActive + 1
 				else
 					set deadAndActive = deadAndActive + 1
