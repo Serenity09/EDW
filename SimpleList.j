@@ -219,6 +219,8 @@ library SimpleList requires Alloc, Table
             
             return -1
         endmethod
+		
+		
         
         public method checkCircular takes nothing returns boolean
             local ListNode cur 
@@ -271,6 +273,18 @@ library SimpleList requires Alloc, Table
             
             return new
         endmethod
+		public method clone takes nothing returns thistype
+			local thistype new = thistype.create()
+			local ListNode cur = .first
+            
+            loop
+            exitwhen cur == 0
+                call new.addEnd(cur.value)
+            set cur = cur.next
+            endloop
+            			
+			return new
+		endmethod
     endstruct
 	
 	

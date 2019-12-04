@@ -67,13 +67,16 @@ public struct MazingTeam extends array
 	public SimpleList_List AllWorldProgress
     //public integer DefaultGameMode
     
-    // public static multiboard PlayerStats
-    
+    // public static multiboard PlayerStats    
     readonly static integer NumberTeams = 0
 	
 	readonly static SimpleList_List AllTeams
     
 	implement Alloc
+	
+	method operator < takes thistype other returns boolean
+		return R2I(I2R(this)) < R2I(I2R(other))
+	endmethod
 	
     public method MoveRevive takes rect newlocation returns nothing
         call MoveRectTo(.Revive, GetRectCenterX(newlocation), GetRectCenterY(newlocation))
@@ -501,6 +504,11 @@ public struct MazingTeam extends array
 		endif
 	endmethod
     
+	private static method PlayerLeavesCB takes nothing returns nothing
+		call Teams_MazingTeam.MultiboardUpdateSort()
+		
+		call ReleaseTimer(GetExpiredTimer())
+	endmethod
     public static method PlayerLeaves takes nothing returns nothing
         local player p = GetTriggerPlayer()
         local integer pID = GetPlayerId(p)
@@ -515,13 +523,6 @@ public struct MazingTeam extends array
         //call mt.Users.remove(u)
         call u.OnLeave()
         
-        //update team comparison weights and give the team that just lost a player ~1 more continue
-        call mt.ComputeTeamWeights()
-        set mt.ContinueCount = mt.ContinueCount + R2I(1 * mt.Weight + .5)
-        
-        // call mt.UpdateMultiboard()
-		call mt.PartialUpdateMultiboard(MULTIBOARD_CONTINUES)
-		
 		loop
         exitwhen curUserNode == 0 or anyActive
 			if User(curUserNode.value).IsPlaying then
@@ -532,6 +533,18 @@ public struct MazingTeam extends array
 		
 		if not anyActive then
 			set mt.IsTeamPlaying = false
+			
+			//zero out score
+			call mt.ChangeScore(-mt.Score)
+		else
+			//update team comparison weights and give the team that just lost a player ~1 more continue
+			call mt.ComputeTeamWeights()
+			set mt.ContinueCount = mt.ContinueCount + R2I(1 * mt.Weight + .5)
+			
+			// call mt.UpdateMultiboard()
+			// call mt.PartialUpdateMultiboard(MULTIBOARD_CONTINUES)
+			// call Teams_MazingTeam.MultiboardUpdateSort()
+			call TimerStart(NewTimer(), 0.01, false, function thistype.PlayerLeavesCB)
 		endif
         //set MazersArray[pID] = null
     endmethod
@@ -655,24 +668,24 @@ public struct MazingTeam extends array
 	endmethod
 	public method GetTeamNameContentID takes nothing returns integer
 		if this == 1 then
-				return 'TGRE'
-			elseif this == 2 then
-				return 'TGBL'
-			elseif this == 3 then
-				return 'TGTE'
-			elseif this == 4 then
-				return 'TGPU'
-			elseif this == 5 then
-				return 'TGYE'
-			elseif this == 6 then
-				return 'TGOR'
-			elseif this == 7 then
-				return 'TGRE'
-			elseif this == 8 then
-				return 'TGPI'
-			else
-				return 0
-			endif
+			return 'TGRE'
+		elseif this == 2 then
+			return 'TGBL'
+		elseif this == 3 then
+			return 'TGTE'
+		elseif this == 4 then
+			return 'TGPU'
+		elseif this == 5 then
+			return 'TGYE'
+		elseif this == 6 then
+			return 'TGOR'
+		elseif this == 7 then
+			return 'TGRE'
+		elseif this == 8 then
+			return 'TGPI'
+		else
+			return 0
+		endif
 	endmethod
 	
 	public method GetLocalizedPlayerName takes User target, User localizer returns string
@@ -846,6 +859,7 @@ public struct MazingTeam extends array
 			endif
 			
 			//TODO order multiboard by score, user ID
+			call MultiboardUpdateSort()
 			call .PartialUpdateMultiboard(MULTIBOARD_SCORE)
 		endif
 	endmethod
@@ -917,8 +931,80 @@ public struct MazingTeam extends array
 		endloop
 	endmethod
 	
-    //intended to be run after initial team setup
-	//TODO deprecate loop from implementing row logic to calling user's row logic
+	//basic bubble sort based on score < team < user
+	private static method MultiboardSortUser takes SimpleList_List sortOrder, User u returns nothing
+		local SimpleList_ListNode curSortOrderNode = sortOrder.first
+		local integer sortIndex = 0
+		local boolean foundSortIndex = false
+		
+		loop
+		exitwhen curSortOrderNode == 0
+			if User(curSortOrderNode.value).Team.Score < u.Team.Score then
+				set foundSortIndex = true
+			elseif User(curSortOrderNode.value).Team.Score == u.Team.Score then
+				if User(curSortOrderNode.value).Team > u.Team then
+					set foundSortIndex = true
+				elseif User(curSortOrderNode.value).Team == u.Team then
+					if (u.IsPlaying and User(curSortOrderNode.value).IsPlaying) or (not u.IsPlaying and not User(curSortOrderNode.value).IsPlaying) then
+						if User(curSortOrderNode.value) > u then
+							set foundSortIndex = true
+						endif
+					elseif u.IsPlaying then
+						set foundSortIndex = true
+					// elseif User(curSortOrderNode.value).IsPlaying then
+						
+					endif
+					
+					// if User(curSortOrderNode.value) > u then
+						// set foundSortIndex = true
+					// endif
+				endif
+			endif
+		
+			exitwhen foundSortIndex
+		
+		set curSortOrderNode = curSortOrderNode.next
+		set sortIndex = sortIndex + 1
+		endloop
+		
+		call sortOrder.insert(u, sortIndex)
+	endmethod
+	public static method MultiboardUpdateSort takes nothing returns nothing
+		local SimpleList_List sortOrder = SimpleList_List.create()
+		
+		local SimpleList_ListNode curTeamNode = thistype.AllTeams.first
+		local SimpleList_ListNode curUserNode
+		
+		local integer sortIndex = 1
+		
+		loop
+		exitwhen curTeamNode == 0
+			set curUserNode = Teams_MazingTeam(curTeamNode.value).Users.first
+			
+			loop
+			exitwhen curUserNode == 0
+				call MultiboardSortUser(sortOrder, curUserNode.value)
+			set curUserNode = curUserNode.next
+			endloop
+		set curTeamNode = curTeamNode.next
+		endloop
+		
+		// call sortOrder.print(0)
+		
+		set curUserNode = sortOrder.first
+		loop
+		exitwhen curUserNode == 0
+			if User(curUserNode.value).StatisticsSortIndex != sortIndex then
+				set User(curUserNode.value).StatisticsSortIndex = sortIndex
+				call User(curUserNode.value).UpdateMultiboard()
+			endif
+		set sortIndex = sortIndex + 1
+		set curUserNode = curUserNode.next
+		endloop
+				
+		call sortOrder.destroy()
+	endmethod
+	
     public static method MultiboardSetupInit takes nothing returns nothing
 		local SimpleList_ListNode curTeamNode = thistype.AllTeams.first
 		local SimpleList_ListNode curUserNode
@@ -932,14 +1018,18 @@ public struct MazingTeam extends array
 			
 			loop
 			exitwhen curUserNode == 0
-				set User(curUserNode.value).StatisticsSortIndex = sortIndex
-				set sortIndex = sortIndex + 1
+				// //TODO assumes player order matches team assignment, which it won't for random teams mode
+				// set User(curUserNode.value).StatisticsSortIndex = sortIndex
+				// set sortIndex = sortIndex + 1
 				
 				call User(curUserNode.value).InitializeMultiboard()
 			set curUserNode = curUserNode.next
 			endloop
 		set curTeamNode = curTeamNode.next
 		endloop
+		
+		//init multiboard sort order
+		call MultiboardUpdateSort()
 		
 		//update all multiboards
 		set curTeamNode = thistype.AllTeams.first
@@ -949,7 +1039,7 @@ public struct MazingTeam extends array
 			
 			loop
 			exitwhen curUserNode == 0
-				call User(curUserNode.value).InitializeMultiboardValues()
+				call User(curUserNode.value).InitializeMultiboardIcons()
 				call User(curUserNode.value).UpdateMultiboard()
 				
 				call User(curUserNode.value).InitializeMultiboardDisplay()
@@ -1049,6 +1139,8 @@ public struct MazingTeam extends array
 		set curUserNode = curUserNode.next
 		endloop
 		
+		// call DisplayTextToPlayer(Player(.Users.last.value), 0, 0, "A&A: " + I2S(aliveAndActive) + ", D&A: " + I2S(deadAndActive))
+		
 		return aliveAndActive == 0 and deadAndActive > 0
 	endmethod
 	public method ApplyAwaitingAFKState takes nothing returns nothing
@@ -1063,6 +1155,7 @@ public struct MazingTeam extends array
 	
 	public method UpdateAwaitingAFKState takes nothing returns nothing
 		if .IsTeamAwaitingAFK() then
+			// call DisplayTextToPlayer(Player(.Users.last.value), 0, 0, "applying afk platformer")
 			call .ApplyAwaitingAFKState()
 		endif
 	endmethod

@@ -40,7 +40,7 @@ endglobals
 struct User extends array
     public boolean IsPlaying
     public boolean IsAlive
-	readonly boolean IsTransitioning
+	private boolean IsTransitioning //not 100% reliable for some reason, but it doesn't need to be for its current needs. should fix before depending on for other functionality
 	readonly timer TransitioningTimer
 	readonly boolean IsAFK
     readonly integer Deaths
@@ -60,8 +60,9 @@ struct User extends array
 	
 	private multiboard Statistics
 	public integer StatisticsSortIndex
-	   
+	
 	// public real CameraIdleTime //only as accurate as the last sync
+	readonly timer AFKPlatformerDeathTimer
 	readonly real AFKPlatformerDeathClock
 	
 	//consider syncing this at game start so it can be depended on / changed in game without desyncing
@@ -83,6 +84,10 @@ struct User extends array
 	
 	private static Cinematic ToggleCameraTrackingTutorial
     
+	method operator < takes thistype other returns boolean
+		return R2I(I2R(this)) < R2I(I2R(other))
+	endmethod
+	
 	public method SetActiveEffect takes string strEffect, string attachPoint returns nothing
 		if .ActiveEffect != null then
 			static if DEBUG_ACTIVE_EFFECT_CHANGE then
@@ -249,15 +254,15 @@ struct User extends array
         endif
     endmethod
        
-	private static method OnLeaveCB takes nothing returns nothing
-		local timer t = GetExpiredTimer()
-		local User u = GetTimerData(t)
+	// private static method OnLeaveCB takes nothing returns nothing
+		// local timer t = GetExpiredTimer()
+		// local User u = GetTimerData(t)
 		
-		call u.UpdateMultiboard()
+		// call u.UpdateMultiboard()
 		
-		call ReleaseTimer(t)
-		set t = null
-	endmethod
+		// call ReleaseTimer(t)
+		// set t = null
+	// endmethod
 	public method OnLeave takes nothing returns nothing
         local SimpleList_ListNode curUserNode = PlayerUtils_FirstPlayer
 		local string message
@@ -278,7 +283,7 @@ struct User extends array
         set User.ActivePlayers = User.ActivePlayers - 1
 
 		// call this.UpdateMultiboard()
-		call TimerStart(NewTimerEx(this), 0.01, false, function thistype.OnLeaveCB)
+		// call TimerStart(NewTimerEx(this), 0.01, false, function thistype.OnLeaveCB)
 		
 		// call thistype.DisplayMessageAll(this.GetStylizedPlayerName() + " has left the game!")
         loop
@@ -292,6 +297,8 @@ struct User extends array
 			endif
         set curUserNode = curUserNode.next
         endloop
+		
+		
     endmethod
     
     public method ReviveActiveHero takes real x, real y returns nothing
@@ -309,8 +316,8 @@ struct User extends array
 	public method CancelSystemCameraTransition takes nothing returns nothing
 		if .IsTransitioning then
 			set .IsTransitioning = false
-			call ReleaseTimer(.TransitioningTimer)
-			set .TransitioningTimer = null
+			call PauseTimer(.TransitioningTimer)
+			// set .TransitioningTimer = null
 		endif
 	endmethod
 	private static method SystemCameraTransitionCB takes nothing returns nothing
@@ -327,7 +334,7 @@ struct User extends array
 		call .CancelSystemCameraTransition()
 		
 		set .IsTransitioning = true
-		set .TransitioningTimer = NewTimerEx(this)
+		// set .TransitioningTimer = NewTimerEx(this)
 		call TimerStart(.TransitioningTimer, duration + AUTO_TRANSITION_BUFFER, false, function thistype.SystemCameraTransitionCB)
 	endmethod
 	
@@ -877,8 +884,10 @@ struct User extends array
 	public method UpdateMultiboard takes nothing returns nothing
 		// call DisplayTextToPlayer(Player(0), 0, 0, "Update MB for user: " + I2S(this))
 		call .UpdateMultiboardPlayerName()
+		call .UpdateMultiboardPlayerIcon()
 		// call DisplayTextToPlayer(Player(0), 0, 0, "Update MB 1")
 		call .UpdateMultiboardLevelName()
+		call .UpdateMultiboardLevelIcon()
 		// call DisplayTextToPlayer(Player(0), 0, 0, "Update MB 2")
 		call .UpdateMultiboardScore()
 		call .UpdateMultiboardContinues()
@@ -908,7 +917,7 @@ struct User extends array
 		endif
 	endmethod
 	
-	public method InitializeMultiboardValues takes nothing returns nothing
+	public method InitializeMultiboardIcons takes nothing returns nothing
 		local SimpleList_ListNode curTeamNode = Teams_MazingTeam.AllTeams.first
 		local SimpleList_ListNode curUserNode
 		
@@ -983,64 +992,7 @@ struct User extends array
         call MultiboardReleaseItem(MultiboardGetItem(.Statistics, 0, 3))
 		if RewardMode == GameModesGlobals_HARD then
 			call MultiboardReleaseItem(MultiboardGetItem(.Statistics, 0, 4))
-		endif
-		
-		//initialize rows/cells
-        // loop
-        // exitwhen i >= NumberPlayers
-			// //set row icons
-            // call MultiboardSetItemIcon(MultiboardGetItem(.Statistics, i + 1, 0), "ReplaceableTextures\\CommandButtons\\BTNPeasant.blp")
-            // call MultiboardReleaseItem(MultiboardGetItem(.Statistics, i + 1, 0))
-			
-			// call MultiboardSetItemIcon(MultiboardGetItem(.Statistics, i + 1, 1), "ReplaceableTextures\\CommandButtons\\BTNDemonGate.blp")
-            // call MultiboardReleaseItem(MultiboardGetItem(.Statistics, i + 1, 1))
-			
-			// call MultiboardSetItemIcon(MultiboardGetItem(.Statistics, i + 1, 2), "ReplaceableTextures\\CommandButtons\\BTNGlyph.blp")
-            // call MultiboardReleaseItem(MultiboardGetItem(.Statistics, i + 1, 2))
-			
-			// call MultiboardSetItemIcon(MultiboardGetItem(.Statistics, i + 1, 3), "ReplaceableTextures\\CommandButtons\\BTNSkillz.tga")
-            // call MultiboardReleaseItem(MultiboardGetItem(.Statistics, i + 1, 3))
-			
-			// if RewardMode == GameModesGlobals_HARD then
-				// call MultiboardSetItemIcon(MultiboardGetItem(.Statistics, i + 1, 4), "ReplaceableTextures\\CommandButtons\\BTNAnkh.blp")
-				// call MultiboardReleaseItem(MultiboardGetItem(.Statistics, i + 1, 4))
-			// endif
-			
-			// //initialize cell values localized for all players
-			// //only initialize cells that will not be initialized elsewhere during init (init level will update On Level)
-            // // call User(i).PartialUpdateMultiboard(MULTIBOARD_PLAYERNAME)
-			// // call User(i).PartialUpdateMultiboard(MULTIBOARD_SCORE)
-			// // call User(i).PartialUpdateMultiboard(MULTIBOARD_CONTINUES)
-			// // call User(i).PartialUpdateMultiboard(MULTIBOARD_DEATHS)
-			
-            
-            // set i = i + 1
-        // endloop
-		
-		// call MultiboardSetItemIcon(MultiboardGetItem(.Statistics, i + 1, 0), "ReplaceableTextures\\CommandButtons\\BTNPeasant.blp")
-		// call MultiboardReleaseItem(MultiboardGetItem(.Statistics, i + 1, 0))
-		
-		// call MultiboardSetItemIcon(MultiboardGetItem(.Statistics, i + 1, 1), "ReplaceableTextures\\CommandButtons\\BTNDemonGate.blp")
-		// call MultiboardReleaseItem(MultiboardGetItem(.Statistics, i + 1, 1))
-		
-		// call MultiboardSetItemIcon(MultiboardGetItem(.Statistics, i + 1, 2), "ReplaceableTextures\\CommandButtons\\BTNGlyph.blp")
-		// call MultiboardReleaseItem(MultiboardGetItem(.Statistics, i + 1, 2))
-		
-		// call MultiboardSetItemIcon(MultiboardGetItem(.Statistics, i + 1, 3), "ReplaceableTextures\\CommandButtons\\BTNSkillz.tga")
-		// call MultiboardReleaseItem(MultiboardGetItem(.Statistics, i + 1, 3))
-		
-		// if RewardMode == GameModesGlobals_HARD then
-			// call MultiboardSetItemIcon(MultiboardGetItem(.Statistics, i + 1, 4), "ReplaceableTextures\\CommandButtons\\BTNAnkh.blp")
-			// call MultiboardReleaseItem(MultiboardGetItem(.Statistics, i + 1, 4))
-		// endif
-		
-		// //initialize cell values localized for all players
-		// //only initialize cells that will not be initialized elsewhere during init (init level will update On Level)
-		// // call User(i).PartialUpdateMultiboard(MULTIBOARD_PLAYERNAME)
-		// // call User(i).PartialUpdateMultiboard(MULTIBOARD_SCORE)
-		// // call User(i).PartialUpdateMultiboard(MULTIBOARD_CONTINUES)
-		// // call User(i).PartialUpdateMultiboard(MULTIBOARD_DEATHS)
-		
+		endif		
 	endmethod
     
     //set game mode should take all players, dead or alive, and make it so the next time they are respawned (naturally or forced) it will be as the correct unit type with all the correct mechanisms enabled
@@ -1096,6 +1048,7 @@ struct User extends array
             call respawnPoint.destroy()
         endif
 		
+		// call DisplayTextToPlayer(Player(this), 0, 0, "Death mode updating AFK await state")
 		call .Team.UpdateAwaitingAFKState()
     endmethod
     
@@ -1221,10 +1174,6 @@ struct User extends array
 					// set .PlatformerStartStable = false
 				// endif
 				set .PlatformerStartStable = false
-				
-				if .IsAFK then
-					call .Team.UpdateAwaitingAFKState()
-				endif
             elseif newGameMode == Teams_GAMEMODE_STANDARD_PAUSED then
                 call SetUnitPosition(MazersArray[this], x, y)
                 //set movespeed 0 instead of pausing unit so player can pivot to face a better direction
@@ -1398,14 +1347,13 @@ struct User extends array
 		call TimerStart(GetExpiredTimer(), 1., true, function thistype.UnpauseAFKCB)
 	endmethod
 	
-	
-	
 	private static method ApplyAFKPlatformerCB takes nothing returns nothing
-		local timer t = GetExpiredTimer()
-		local User u = GetTimerData(t)
+		local User u = GetTimerData(GetExpiredTimer())
 		local texttag text
 		local string message
 		local SimpleList_ListNode curUserNode = PlayerUtils_FirstPlayer
+		
+		// call DisplayTextToPlayer(Player(u), 0, 0, "applying afk platformer")
 		
 		if u.IsAFK and u.IsAlive then
 			if u.PlatformerStartStable then
@@ -1458,21 +1406,21 @@ struct User extends array
 				else
 					call u.SwitchGameModesDefaultLocation(Teams_GAMEMODE_DYING)
 					
-					call ReleaseTimer(t)
+					// call ReleaseTimer(t)
+					call PauseTimer(u.AFKPlatformerDeathTimer)
 				endif
 			endif
 		else
 			//no longer AFK, immediately desist
-			call ReleaseTimer(t)
-		endif
-		
-		set t = null
+			// call ReleaseTimer(t)
+			call PauseTimer(u.AFKPlatformerDeathTimer)
+		endif		
 	endmethod
 	public method ApplyAFKPlatformer takes nothing returns nothing	
 		//no way to support sharing control via keyboard actions
 		//show texttag countdown before killing
 		set .AFKPlatformerDeathClock = AFK_PLATFORMER_DEATH_CLOCK_START
-		call TimerStart(NewTimerEx(this), AFK_PLATFORMER_CLOCK, true, function thistype.ApplyAFKPlatformerCB)
+		call TimerStart(.AFKPlatformerDeathTimer, AFK_PLATFORMER_CLOCK, true, function thistype.ApplyAFKPlatformerCB)
 	endmethod
 	
 	private static method OnUnapplyAFKStandard takes SyncRequest request, User user returns integer
@@ -1591,19 +1539,21 @@ struct User extends array
 	endmethod
 		
 	private method CheckAFKPlayer takes real timeElapsed returns nothing
+		//call sync AFK logic
+		// if this.GameMode == Teams_GAMEMODE_PLATFORMING and not this.PlatformerStartStable and ((this.Platformer.PushedAgainstVector != 0 and RAbsBJ(this.Platformer.YVelocity) <= .5) or this.Platformer.HorizontalAxisState != 0) then
+		// call DisplayTextToPlayer(Player(this), 0, 0, "Pushed against: " + I2S(this.Platformer.PushedAgainstVector) + ", y velocity: " + R2S(this.Platformer.YVelocity))
+		if this.GameMode == Teams_GAMEMODE_PLATFORMING and not this.PlatformerStartStable and ((this.Platformer.PushedAgainstVector != 0 and this.Platformer.YVelocity == 0.) or this.Platformer.HorizontalAxisState != 0) then
+			set this.PlatformerStartStable = true
+			
+			//special case where the local player's camera target should be reset on PlatformerStartStable -> true
+			if GetLocalPlayer() == Player(this) and this.Platformer.HorizontalAxisState == 0 then
+				set thistype.LocalCameraTargetPosition.x = GetCameraTargetPositionX()
+				set thistype.LocalCameraTargetPosition.y = GetCameraTargetPositionY()
+			endif
+		endif
+		
 		//only check AFK state when a player is not transitioning
 		if not this.IsTransitioning then
-			//call sync AFK logic
-			if this.GameMode == Teams_GAMEMODE_PLATFORMING and not this.PlatformerStartStable and ((this.Platformer.PushedAgainstVector != 0 and this.Platformer.YVelocity == 0.) or this.Platformer.HorizontalAxisState != 0) then
-				set this.PlatformerStartStable = true
-				
-				//special case where the local player's camera target should be reset on PlatformerStartStable -> true
-				if GetLocalPlayer() == Player(this) and this.Platformer.HorizontalAxisState == 0 then
-					set thistype.LocalCameraTargetPosition.x = GetCameraTargetPositionX()
-					set thistype.LocalCameraTargetPosition.y = GetCameraTargetPositionY()
-				endif
-			endif
-			
 			//call async AFK logic
 			if GetLocalPlayer() == Player(this) then
 				if this.GameMode == Teams_GAMEMODE_PLATFORMING or this.GameMode == Teams_GAMEMODE_PLATFORMING_PAUSED then				
@@ -1667,10 +1617,13 @@ struct User extends array
         set new.Team = 0
         set new.Deaths = 0
         set new.IsAlive = true
+		
 		set new.IsTransitioning = true
+		set new.TransitioningTimer = NewTimerEx(new)
 		
 		set new.IsAFK = false
 		call BlzTriggerRegisterPlayerSyncEvent(thistype.AFKSyncEvent, Player(new), AFK_SYNC_EVENT_PREFIX, false)
+		set new.AFKPlatformerDeathTimer = NewTimerEx(new)
 		
 		// set new.CameraIdleTime = 0.
 		// call BlzTriggerRegisterPlayerSyncEvent(thistype.AFKLocalCameraTimeSyncEvent, Player(new), LOCAL_CAMERA_IDLE_TIME_EVENT_PREFIX, false)

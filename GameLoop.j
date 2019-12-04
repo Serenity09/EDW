@@ -368,6 +368,10 @@ function GameLoop takes nothing returns nothing
 					call DestroyEffect(AddSpecialEffect(PLATFORMING_FX, GetUnitX(user.ActiveUnit), GetUnitY(user.ActiveUnit)))
 					
 					call user.SwitchGameModesDefaultLocation(Teams_GAMEMODE_PLATFORMING)
+					
+					if user.IsAFK then
+						call user.Team.UpdateAwaitingAFKState()
+					endif
 				elseif basicterrain == ROAD then
 					call SetUnitMoveSpeed(u, RoadSpeed)
 				endif
