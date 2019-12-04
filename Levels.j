@@ -630,6 +630,7 @@ library Levels requires SimpleList, Teams, GameModesGlobals, LevelIDGlobals, Cin
             call this.SetCheckpointForTeam(mt, 0)
 			
 			call mt.PartialUpdateMultiboard(MULTIBOARD_LEVELNAME)
+			call mt.UpdateMultiboardLevelIcon()
 		endmethod
 		
         //update level continuously or discontinuously from one to the next. IE lvl 1 -> 2 -> 3 -> 4 OR 1 -> 4 -> 2 etc

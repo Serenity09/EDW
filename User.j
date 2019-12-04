@@ -680,7 +680,40 @@ struct User extends array
 		set curTeamNode = curTeamNode.next
 		endloop
 	endmethod
-	public method UpdateMultiboardOnLevel takes nothing returns nothing
+	public method UpdateMultiboardPlayerIcon takes nothing returns nothing
+		local SimpleList_ListNode curTeamNode = Teams_MazingTeam.AllTeams.first
+		local SimpleList_ListNode curUserNode
+		
+		local string iconPath = null
+		
+		if this.GameMode == Teams_GAMEMODE_STANDARD_PAUSED or this.GameMode == Teams_GAMEMODE_STANDARD then
+			set iconPath = "ReplaceableTextures\\CommandButtons\\BTNHeroDemonHunter.tga"
+		elseif this.GameMode == Teams_GAMEMODE_PLATFORMING_PAUSED or this.GameMode == Teams_GAMEMODE_PLATFORMING then
+			set iconPath = "ReplaceableTextures\\CommandButtons\\BTNWisp.tga"
+		elseif this.GameMode == Teams_GAMEMODE_DEAD then
+			set iconPath = "ReplaceableTextures\\CommandButtons\\BTNAnimateDead.tga"
+		endif
+		
+		// call DisplayTextToPlayer(Player(0), 0, 0, "Updating player icon for: " + I2S(this))
+		
+		if iconPath != null then
+			loop
+			exitwhen curTeamNode == 0
+				set curUserNode = Teams_MazingTeam(curTeamNode.value).Users.first
+				
+				loop
+				exitwhen curUserNode == 0
+					call MultiboardSetItemIcon(MultiboardGetItem(User(curUserNode.value).Statistics, this + 1, 0), iconPath)
+					call MultiboardReleaseItem(MultiboardGetItem(User(curUserNode.value).Statistics, this + 1, 0))
+				set curUserNode = curUserNode.next
+				endloop
+				
+			set curTeamNode = curTeamNode.next
+			endloop
+		endif
+	endmethod
+	
+	public method UpdateMultiboardLevelName takes nothing returns nothing
 		local SimpleList_ListNode curTeamNode = Teams_MazingTeam.AllTeams.first
 		local SimpleList_ListNode curUserNode
 		
@@ -702,6 +735,54 @@ struct User extends array
 			
 		set curTeamNode = curTeamNode.next
 		endloop
+	endmethod
+	public method UpdateMultiboardLevelIcon takes nothing returns nothing
+		local SimpleList_ListNode curTeamNode = Teams_MazingTeam.AllTeams.first
+		local SimpleList_ListNode curUserNode
+		
+		local integer worldID
+		local string iconPath = null
+		
+		if this.Team.OnLevel == INTRO_LEVEL_ID or this.Team.OnLevel == DOORS_LEVEL_ID then
+			set iconPath = "ReplaceableTextures\\CommandButtons\\BTNDemonGate.blp"
+		else
+			set worldID = this.Team.OnLevel.GetWorldID()
+			
+			if worldID == 1 then
+				//hard ice
+				set iconPath = "ReplaceableTextures\\CommandButtons\\BTNGlacier.tga"
+			elseif worldID == 2 then
+				//easy ice
+				set iconPath = "ReplaceableTextures\\CommandButtons\\BTNGlacier.tga"
+			elseif worldID == 3 then
+				//landlubber
+				set iconPath = "ReplaceableTextures\\PassiveButtons\\PASBTNCommand.tga"
+			elseif worldID == 6 then
+				//four seasons
+				set iconPath = "ReplaceableTextures\\CommandButtons\\BTNStormEarth&Fire.tga"
+			elseif worldID == 7 then
+				//platforming
+				set iconPath = "ReplaceableTextures\\PassiveButtons\\PASBTNScatterRockets.tga"
+			endif
+		endif
+		
+		// call DisplayTextToPlayer(Player(0), 0, 0, "Updating player icon for: " + I2S(this))
+		
+		if iconPath != null then
+			loop
+			exitwhen curTeamNode == 0
+				set curUserNode = Teams_MazingTeam(curTeamNode.value).Users.first
+				
+				loop
+				exitwhen curUserNode == 0
+					call MultiboardSetItemIcon(MultiboardGetItem(User(curUserNode.value).Statistics, this + 1, 1), iconPath)
+					call MultiboardReleaseItem(MultiboardGetItem(User(curUserNode.value).Statistics, this + 1, 1))
+				set curUserNode = curUserNode.next
+				endloop
+				
+			set curTeamNode = curTeamNode.next
+			endloop
+		endif
 	endmethod
 	
 	public method UpdateMultiboardScore takes nothing returns nothing
@@ -780,7 +861,7 @@ struct User extends array
 		if columnID == MULTIBOARD_PLAYERNAME then
 			call .UpdateMultiboardPlayerName()
 		elseif columnID == MULTIBOARD_LEVELNAME then
-			call .UpdateMultiboardOnLevel()
+			call .UpdateMultiboardLevelName()
 		elseif columnID == MULTIBOARD_SCORE then
 			call .UpdateMultiboardScore()
 		elseif columnID == MULTIBOARD_CONTINUES then
@@ -794,7 +875,7 @@ struct User extends array
 		// call DisplayTextToPlayer(Player(0), 0, 0, "Update MB for user: " + I2S(this))
 		call .UpdateMultiboardPlayerName()
 		// call DisplayTextToPlayer(Player(0), 0, 0, "Update MB 1")
-		call .UpdateMultiboardOnLevel()
+		call .UpdateMultiboardLevelName()
 		// call DisplayTextToPlayer(Player(0), 0, 0, "Update MB 2")
 		call .UpdateMultiboardScore()
 		call .UpdateMultiboardContinues()
@@ -842,7 +923,7 @@ struct User extends array
         
 		//initialize multiboard column
         call MultiboardSetItemIcon(MultiboardGetItem(.Statistics, 0, 0), "ReplaceableTextures\\CommandButtons\\BTNPeasant.blp")
-        call MultiboardSetItemIcon(MultiboardGetItem(.Statistics, 0, 1), "ReplaceableTextures\\CommandButtons\\BTNDemonGate.blp")
+        call MultiboardSetItemIcon(MultiboardGetItem(.Statistics, 0, 1), "ReplaceableTextures\\CommandButtons\\BTNSpy.tga")
         call MultiboardSetItemIcon(MultiboardGetItem(.Statistics, 0, 2), "ReplaceableTextures\\CommandButtons\\BTNGlyph.blp")
         call MultiboardSetItemIcon(MultiboardGetItem(.Statistics, 0, 3), "ReplaceableTextures\\CommandButtons\\BTNSkillz.tga")
 		if RewardMode == GameModesGlobals_HARD then
@@ -1081,9 +1162,9 @@ struct User extends array
 				// endif
 				set .PlatformerStartStable = false
 				
-				// if .IsAFK then
-					// call .ApplyAFKPlatformer()
-				// endif
+				if .IsAFK then
+					call .Team.UpdateAwaitingAFKState()
+				endif
             elseif newGameMode == Teams_GAMEMODE_STANDARD_PAUSED then
                 call SetUnitPosition(MazersArray[this], x, y)
                 //set movespeed 0 instead of pausing unit so player can pivot to face a better direction
@@ -1166,6 +1247,8 @@ struct User extends array
 			elseif newGameMode == Teams_GAMEMODE_HIDDEN then
 				set .ActiveUnit = null
             endif
+			
+			call .UpdateMultiboardPlayerIcon()
         endif
     endmethod
     

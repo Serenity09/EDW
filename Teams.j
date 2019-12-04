@@ -850,6 +850,16 @@ public struct MazingTeam extends array
 		endif
 	endmethod
 	
+	public method UpdateMultiboardLevelIcon takes nothing returns nothing
+		local SimpleList_ListNode curUserNode = .FirstUser
+        
+        loop
+        exitwhen curUserNode == 0
+            call User(curUserNode.value).UpdateMultiboardLevelIcon()
+        set curUserNode = curUserNode.next
+        endloop
+	endmethod
+	
 	public method UpdateMultiboard takes nothing returns nothing
         local SimpleList_ListNode curUserNode = .FirstUser
         
