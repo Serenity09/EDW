@@ -273,7 +273,7 @@ struct Cinematic extends array
         //if all players start watching the same cinematic, the first player to finish it will destroy the cine for everyone (since previous viewers includes current viewers)
         //could either move logic to check user cine queue + make prev viewers refer to those that have finished
         //OR just assume no cinematic will take longer than X seconds, and have a callback to destroy this cinematic then
-        if cinema.PreviousViewers.count == User.ActivePlayers then
+        if cinema.PreviousViewers.count == User.OriginalPlayerCount then
             static if DEBUG_DESTROY then
 				call DisplayTextToForce(bj_FORCE_PLAYER[0], "All players have watched, so destroying cinema " + I2S(cinema))
             endif

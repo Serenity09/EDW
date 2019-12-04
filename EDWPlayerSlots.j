@@ -55,6 +55,8 @@ library EDWPlayerSlots requires MazerGlobals, User, PlayerUtils, VisualVote, Tea
                 set MazersArray[i] = null
 			endif
 		set i = i + 1
-		endloop		
+		endloop
+		
+		set User.OriginalPlayerCount = User.ActivePlayers
 	endfunction
 endlibrary

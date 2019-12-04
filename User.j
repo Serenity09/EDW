@@ -66,6 +66,7 @@ struct User extends array
 	//consider syncing this at game start so it can be depended on / changed in game without desyncing
 	readonly string LanguageCode
 	
+	public static integer OriginalPlayerCount
     public static integer ActivePlayers
 	
 	// private static trigger AFKLocalCameraTimeSyncEvent
@@ -177,8 +178,10 @@ struct User extends array
 	endmethod
 	
     public static method OnCinemaEndCB takes nothing returns boolean       
-        set EventUser.CinematicPlaying = 0
-        call EventUser.CheckCinematicQueue()
+        if EventUser.IsPlaying then
+			set EventUser.CinematicPlaying = 0
+			call EventUser.CheckCinematicQueue()
+		endif
 		
         return false
     endmethod
@@ -261,7 +264,7 @@ struct User extends array
 		call SwitchGameModesDefaultLocation(Teams_GAMEMODE_STANDARD)
         
         set .IsPlaying = false
-		call DisplayTextToPlayer(Player(0), 0, 0, "Player: " + I2S(this) + " playing? " + B2S(.IsPlaying))
+		// call DisplayTextToPlayer(Player(0), 0, 0, "Player: " + I2S(this) + " playing? " + B2S(.IsPlaying))
 		
 		call .SwitchGameModesDefaultLocation(Teams_GAMEMODE_DYING)
 
