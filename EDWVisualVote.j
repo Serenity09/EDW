@@ -6,6 +6,8 @@ library EDWVisualVote requires VisualVote, ContinueGlobals, Teams, PlayerUtils, 
 		private constant real VOTE_TIME_ROUND_TWO = 10
 		
 		private constant integer DEBUG_DIFFICULTY_MODE = GameModesGlobals_HARD
+		private constant integer DEBUG_TEAM_MODE = GameModesGlobals_SOLO
+		
 		private constant boolean DEBUG_USE_FULL_VISIBILITY = true
     endglobals
     	
@@ -414,9 +416,7 @@ library EDWVisualVote requires VisualVote, ContinueGlobals, Teams, PlayerUtils, 
 				call CreateFogModifierRectBJ(true, Player(0), FOG_OF_WAR_VISIBLE, GetPlayableMapRect())
 			endif
 				
-			call GameModeAllIsOne()
-			//set GameMode = GameModesGlobals_TEAMALL
-			//99 and none
+			set GameMode = DEBUG_TEAM_MODE
 			set RewardMode = DEBUG_DIFFICULTY_MODE
 			//respawn as soon as you die
 			call InstantRespawnOff()
@@ -470,7 +470,9 @@ library EDWVisualVote requires VisualVote, ContinueGlobals, Teams, PlayerUtils, 
             set con.required = true
 			
             call con.addOption('VVTS', "EDWVisualVote_GameModeSolo")
-            call con.addOption('VVTR', "EDWVisualVote_GameModeRandom")
+			if User.ActivePlayers > 3 then
+				call con.addOption('VVTR', "EDWVisualVote_GameModeRandom")
+			endif
             set opt = con.addOption('VVTO', "EDWVisualVote_GameModeAllIsOne")
             set con.defaultOption = opt
 			//debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "Default: " + con.defaultOption.text)
@@ -514,11 +516,5 @@ library EDWVisualVote requires VisualVote, ContinueGlobals, Teams, PlayerUtils, 
     //2 stage menu, first choose difficulty and team breakdown -- then specify for final options
     public function CreateMenu takes nothing returns nothing
 		call TimerStart(CreateTimer(), .25, false, function CreateMenuCB)
-		
-		
-		
-		
-            
-		
     endfunction
 endlibrary

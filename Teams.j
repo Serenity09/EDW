@@ -20,6 +20,8 @@ globals
     public constant real MULTIBOARD_HIDE_DELAY = 2.
 	
 	Teams_MazingTeam TriggerTeam //used with events
+	
+	private constant boolean DEBUG_FORCE_TEAM_VS_TEAM = false
 endglobals
 
 function interface LocalizeContentFunc takes integer origin, User localizer returns string
@@ -85,7 +87,7 @@ public struct MazingTeam extends array
     public method MoveReviveToDoors takes nothing returns nothing
         call MoveRectTo(.Revive, GetRectCenterX(gg_rct_HubWorld_R), GetRectCenterY(gg_rct_HubWorld_R))
     endmethod
-    
+	
     public method CreateMenu takes real time, string optionCB returns nothing
         local real x = VOTE_TOP_LEFT_X + R2I((this + 1) / 4)
         local real y = VOTE_TOP_LEFT_Y + R2I((this + 1) / 2)
@@ -505,24 +507,15 @@ public struct MazingTeam extends array
 	endmethod
     
 	private static method PlayerLeavesCB takes nothing returns nothing
-		call Teams_MazingTeam.MultiboardUpdateSort()
-		
-		call ReleaseTimer(GetExpiredTimer())
-	endmethod
-    public static method PlayerLeaves takes nothing returns nothing
-        local player p = GetTriggerPlayer()
-        local integer pID = GetPlayerId(p)
-        local User u = User(pID)
-        local thistype mt = u.Team
+		local timer t = GetExpiredTimer()
+		local User u = GetTimerData(t)
+		local thistype mt = u.Team
 		
 		local SimpleList_ListNode curUserNode = mt.Users.first
 		local boolean anyActive = false
-        
-		call DisplayTextToPlayer(Player(u), 0, 0, "Teams - On player leaves " + I2S(pID))
 		
-        //call mt.Users.remove(u)
-        call u.OnLeave()
-        
+		local integer originalSortIndex = u.StatisticsSortIndex
+		
 		loop
         exitwhen curUserNode == 0 or anyActive
 			if User(curUserNode.value).IsPlaying then
@@ -541,12 +534,23 @@ public struct MazingTeam extends array
 			call mt.ComputeTeamWeights()
 			set mt.ContinueCount = mt.ContinueCount + R2I(1 * mt.Weight + .5)
 			
-			// call mt.UpdateMultiboard()
-			// call mt.PartialUpdateMultiboard(MULTIBOARD_CONTINUES)
-			// call Teams_MazingTeam.MultiboardUpdateSort()
-			call TimerStart(NewTimer(), 0.01, false, function thistype.PlayerLeavesCB)
+			call Teams_MazingTeam.MultiboardUpdateSort()
 		endif
-        //set MazersArray[pID] = null
+		
+		if u.StatisticsSortIndex == originalSortIndex then
+			call u.UpdateMultiboard()
+		endif
+		
+		call ReleaseTimer(t)
+		set t = null
+	endmethod
+    public static method PlayerLeaves takes nothing returns nothing
+        local integer pID = GetPlayerId(GetTriggerPlayer())
+        local User u = User(pID)
+				
+        call u.OnLeave()
+        
+		call TimerStart(NewTimerEx(u), 0.01, false, function thistype.PlayerLeavesCB)		
     endmethod
     
     public method AddPlayer takes integer pID returns nothing
@@ -589,76 +593,60 @@ public struct MazingTeam extends array
         //debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "Player count of team " + I2S(this) + ", is now: " + I2S(.PlayerCount))
     endmethod
     
-    
-    
 	public method GetTeamColor takes nothing returns string
 		local string hex
         
-        if this == 1 then
-            set hex = "FF0000"
-        elseif this == 2 then
-            set hex = "0000FF"
-        elseif this == 3 then
-            set hex = "00FFCC"
-        elseif this == 4 then
-            set hex = "FF66CC"
-        elseif this == 5 then
-            set hex = "FFFF66"
-        elseif this == 6 then
-            set hex = "FF9933"
-        elseif this == 7 then
-            set hex = "00CC00"
-        elseif this == 8 then
-            set hex = "FF66CC"
-        else
-            set hex = ""
-        endif
+		if GameMode == GameModesGlobals_SOLO then
+			set hex = User(.FirstUser.value).GetPlayerColorHex()
+		else
+			if this == 1 then
+				set hex = "FF0000"
+			elseif this == 2 then
+				set hex = "0000FF"
+			elseif this == 3 then
+				set hex = "00FFCC"
+			elseif this == 4 then
+				set hex = "FF66CC"
+			elseif this == 5 then
+				set hex = "FFFF66"
+			elseif this == 6 then
+				set hex = "FF9933"
+			elseif this == 7 then
+				set hex = "00CC00"
+			elseif this == 8 then
+				set hex = "FF66CC"
+			else
+				set hex = ""
+			endif
+		endif
 		
 		return hex
 	endmethod
-	public method GetDefaultTeamName takes nothing returns string
-		local string name
-		
-		if this == 1 then
-			set name = "Red"
-		elseif this == 2 then
-			set name = "Blue"
-		elseif this == 3 then
-			set name = "Teal"
-		elseif this == 4 then
-			set name = "Purple"
-		elseif this == 5 then
-			set name = "Yellow"
-		elseif this == 6 then
-			set name = "Orange"
-		elseif this == 7 then
-			set name = "Green"
-		elseif this == 8 then
-			set name = "Pink"
-		else
-			set name = ""
-		endif
-		
-		return ColorMessage(name, .GetTeamColor())
-	endmethod
 	public method GetLocalizedTeamName takes User forUser returns string
 		local string name = ""
+		local integer id
 		
-		if this == 1 then
+		if GameMode == GameModesGlobals_SOLO then
+			set id = .FirstUser.value + 1
+		else
+			set id = this
+		endif
+		
+		if id == 1 then
 			set name = LocalizeContent('TGRE', forUser.LanguageCode)
-		elseif this == 2 then
+		elseif id == 2 then
 			set name = LocalizeContent('TGBL', forUser.LanguageCode)
-		elseif this == 3 then
+		elseif id == 3 then
 			set name = LocalizeContent('TGTE', forUser.LanguageCode)
-		elseif this == 4 then
+		elseif id == 4 then
 			set name = LocalizeContent('TGPU', forUser.LanguageCode)
-		elseif this == 5 then
+		elseif id == 5 then
 			set name = LocalizeContent('TGYE', forUser.LanguageCode)
-		elseif this == 6 then
+		elseif id == 6 then
 			set name = LocalizeContent('TGOR', forUser.LanguageCode)
-		elseif this == 7 then
+		elseif id == 7 then
 			set name = LocalizeContent('TGRE', forUser.LanguageCode)
-		elseif this == 8 then
+		elseif id == 8 then
 			set name = LocalizeContent('TGPI', forUser.LanguageCode)
 		endif
 	
@@ -687,7 +675,28 @@ public struct MazingTeam extends array
 			return 0
 		endif
 	endmethod
-	
+	public method GetTeamColorIconPath takes nothing returns string
+		if this == 1 then
+			return "war3mapImported\\PC_Red.tga"
+		elseif this == 2 then
+			return "war3mapImported\\PC_Blue.tga"
+		elseif this == 3 then
+			return "war3mapImported\\PC_Teal.tga"
+		elseif this == 4 then
+			return "war3mapImported\\PC_Purple.tga"
+		elseif this == 5 then
+			return "war3mapImported\\PC_Yellow.tga"
+		elseif this == 6 then
+			return "war3mapImported\\PC_Orange.tga"
+		elseif this == 7 then
+			return "war3mapImported\\PC_Green.tga"
+		elseif this == 8 then
+			return "war3mapImported\\PC_Pink.tga"
+		else
+			return null
+		endif
+	endmethod
+
 	public method GetLocalizedPlayerName takes User target, User localizer returns string
         local string hex = this.GetTeamColor()
         
@@ -737,15 +746,13 @@ public struct MazingTeam extends array
     endmethod
 	
 	public static method GetRandomTeam takes MazingTeam filter returns MazingTeam
-		local integer rand = GetRandomInt(0, NumberTeams - 1)
+		local integer rand
 		
 		if NumberTeams != 1 or filter == 0 then
-			if filter != 0 then
-				loop
-				exitwhen rand != filter
-				set rand = GetRandomInt(0, NumberTeams - 1)
-				endloop
-			endif
+			loop
+			set rand = GetRandomInt(0, NumberTeams - 1)
+			exitwhen rand + 1 != filter
+			endloop
 			
 			return AllTeams.get(rand).value
 		else
@@ -818,16 +825,16 @@ public struct MazingTeam extends array
 		endif
 	endmethod
 		
-	private static method LocalizeNeedsScore takes User origin, User localizer returns string
-		return StringFormat2(LocalizeContent('TCTE', localizer.LanguageCode), origin.Team.GetLocalizedTeamName(localizer), ColorValue(I2S(VictoryScore - origin.Team.Score)))
+	private static method LocalizeNeedsScore takes MazingTeam team, User localizer returns string
+		return StringFormat2(LocalizeContent('TCTE', localizer.LanguageCode), team.GetLocalizedTeamName(localizer), ColorValue(I2S(VictoryScore - team.Score)))
 		// return LocalizeContent('TCTE', localizer.LanguageCode) + " " /*
 			// */ + origin.Team.GetLocalizedTeamName(localizer) + " " /*
 			// */ + LocalizeContent('TCNE', localizer.LanguageCode) + " " /*
 			// */ + ColorValue(I2S(VictoryScore - origin.Team.Score)) + " " /*
 			// */ + LocalizeContent('TCMO', localizer.LanguageCode)
 	endmethod
-	private static method LocalizeOnlyNeedsScore takes User origin, User localizer returns string	
-		return StringFormat2(LocalizeContent('TCNE', localizer.LanguageCode), origin.Team.GetLocalizedTeamName(localizer), ColorValue(I2S(VictoryScore - origin.Team.Score)))
+	private static method LocalizeOnlyNeedsScore takes MazingTeam team, User localizer returns string	
+		return StringFormat2(LocalizeContent('TCNE', localizer.LanguageCode), team.GetLocalizedTeamName(localizer), ColorValue(I2S(VictoryScore - team.Score)))
 		// return LocalizeContent('TCTE', localizer.LanguageCode) + " " /*
 			// */ + origin.Team.GetLocalizedTeamName(localizer) + " " /*
 			// */ + LocalizeContent('TCON', localizer.LanguageCode) + " " /*
@@ -851,16 +858,30 @@ public struct MazingTeam extends array
 					call MazingTeam.ApplyEndGameAll(this)
 				else
 					if (VictoryScore - .Score <= 10 and ogScore > 10) or (VictoryScore - .Score <= 5 and ogScore > 5) then
-						call thistype.DisplayDynamicContentAll(LocalizeNeedsScore, this.LastEventUser, 0)
+						call thistype.DisplayDynamicContentAll(LocalizeNeedsScore, this, 0)
 					elseif VictoryScore - .Score <= 3 and ogScore > 3 then
-						call thistype.DisplayDynamicContentAll(LocalizeOnlyNeedsScore, this.LastEventUser,  0)
+						call thistype.DisplayDynamicContentAll(LocalizeOnlyNeedsScore, this,  0)
 					endif
 				endif
 			endif
 			
-			//TODO order multiboard by score, user ID
 			call MultiboardUpdateSort()
 			call .PartialUpdateMultiboard(MULTIBOARD_SCORE)
+		endif
+	endmethod
+	
+	public static method IsTeamVersusTeam takes nothing returns boolean
+		static if DEBUG_FORCE_TEAM_VS_TEAM then
+			return true
+		else
+			return thistype.AllTeams.count > 1 and GameMode != GameModesGlobals_SOLO
+		endif
+	endmethod
+	public static method GetPlayerNameColumn takes nothing returns integer
+		if thistype.IsTeamVersusTeam() then
+			return 1
+		else
+			return 0
 		endif
 	endmethod
 	

@@ -14,7 +14,6 @@ library PlatformerAutoStable requires User, SimpleList, IStartable
 			local SimpleList_ListNode curTeamNode
 			local SimpleList_ListNode curUserNode
 			
-			//TODO enum users.ActiveUnit on level rather than units in rect
 			local User user
 			
 			loop

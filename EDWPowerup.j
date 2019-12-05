@@ -72,7 +72,7 @@ library EDWPowerup requires Alloc, MazerGlobals, FilterFuncs, Table, PlayerUtils
 		endmethod
 		private static method LocalizeContinueStolenFrom takes Teams_MazingTeam origin, User localizer returns string
 			//call user.Team.PrintMessage(user.GetStylizedPlayerName() + " stole " + I2S(TEAM_STEALCONT_COUNT) + " point from team " + team.TeamName + "!")
-			return StringFormat3(LocalizeContent('PUsC', localizer.LanguageCode), origin.LastEventUser.GetLocalizedPlayerName(localizer), ColorValue(I2S(TEAM_STEALCONT_COUNT)), origin.GetLocalizedTeamName(localizer))
+			return StringFormat3(LocalizeContent('PUSC', localizer.LanguageCode), origin.LastEventUser.GetLocalizedPlayerName(localizer), ColorValue(I2S(TEAM_STEALCONT_COUNT)), origin.GetLocalizedTeamName(localizer))
 		endmethod
 		
 		private static method LocalizeScoreGain takes User origin, User localizer returns string
@@ -85,7 +85,7 @@ library EDWPowerup requires Alloc, MazerGlobals, FilterFuncs, Table, PlayerUtils
 		endmethod
 		private static method LocalizeScoreStolenFrom takes Teams_MazingTeam origin, User localizer returns string
 			//call user.Team.PrintMessage(user.GetStylizedPlayerName() + " stole " + I2S(TEAM_STEALSCORE_COUNT) + " point from team " + team.TeamName + "!")
-			return StringFormat3(LocalizeContent('PUsP', localizer.LanguageCode), origin.LastEventUser.GetLocalizedPlayerName(localizer), ColorValue(I2S(TEAM_STEALSCORE_COUNT)), origin.GetLocalizedTeamName(localizer))
+			return StringFormat3(LocalizeContent('PUSP', localizer.LanguageCode), origin.LastEventUser.GetLocalizedPlayerName(localizer), ColorValue(I2S(TEAM_STEALSCORE_COUNT)), origin.GetLocalizedTeamName(localizer))
 		endmethod
 		
         public method OnUserAcquire takes User user returns nothing            
