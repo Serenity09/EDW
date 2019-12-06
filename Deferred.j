@@ -93,7 +93,7 @@ library Deferred requires Alloc, SimpleList
 				endloop
 			static if LIBRARY_ErrorMessage then
 			else
-				call ThrowError(false, "Deferred", "Resolve", null, 0, "Deferred " + I2S(this) + " has already been resolved!")
+				call ThrowError(true, "Deferred", "Resolve", null, 0, "Deferred " + I2S(this) + " has already been resolved!")
 			endif
 			endif
 		endmethod
@@ -153,7 +153,7 @@ library Deferred requires Alloc, SimpleList
 			set curAwaiterNode = this.Waiting.pop()
 			exitwhen curAwaiterNode == 0
 				if not this.Resolved and this.Cancel != 0 then
-					call this.Cancel.evaluate(this.Result, DeferredAwaiter(curAwaiterNode.value).CallbackData)
+					call this.Cancel.evaluate(this, DeferredAwaiter(curAwaiterNode.value).CallbackData)
 				endif
 				
 				call DeferredAwaiter(curAwaiterNode.value).destroy()

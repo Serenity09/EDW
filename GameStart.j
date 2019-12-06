@@ -1,4 +1,4 @@
-library EDWGameStart initializer Init requires TimerUtils, Levels, EDWVisualVote, UnitGlobals, MazerGlobals, GameMessage, EDWLevelContent, EDWCinematicContent, Recycle
+library EDWGameStart initializer Init requires TimerUtils, Levels, EDWVisualVote, UnitGlobals, MazerGlobals, GameMessage, EDWLevelContent, EDWCinematicContent, Recycle, AsyncInit
     globals
         constant real GAME_INIT_TIME_INITIAL = 0.01 //how long into the game before we start
         //constant real GAME_INIT_TIME_STEP = .5
@@ -6,26 +6,11 @@ library EDWGameStart initializer Init requires TimerUtils, Levels, EDWVisualVote
 		private boolean FinishedPreLoad = false
 		private boolean FinishedPostLoad = false
 		
-		private constant boolean DEBUG_PRELOAD = true
+		private constant boolean DEBUG_PRELOAD = false
 		private constant boolean DEBUG_PRELOAD_FULL = false
-		private constant boolean DEBUG_POSTLOAD = true
+		private constant boolean DEBUG_POSTLOAD = false
     endglobals
-    
-    private function PlayerInit takes nothing returns nothing
-        local SimpleList_ListNode fp = PlayerUtils_FirstPlayer
-        local User u
-        
-        loop
-        exitwhen fp == 0
-            set u = fp.value
-            
-            if u.IsPlaying then
-                set u.ActiveUnit = MazersArray[u]
-            endif
-        set fp = fp.next
-        endloop
-    endfunction
-                    
+                       
     private function PreplacedUnitInit takes nothing returns nothing
         local unit u
         local integer uID
@@ -58,7 +43,7 @@ library EDWGameStart initializer Init requires TimerUtils, Levels, EDWVisualVote
 			//elseif GetPlayerId(GetOwningPlayer(u)) == 11 and (uID == BFIRE or uID == BKEY or uID == RFIRE or uID == RKEY or uID == GFIRE or uID == GKEY or uID == KEYR or uID == REGRET or uID == LMEMORY or uID == GUILT or uID == GRAVITY or uID == BOUNCER or uID == SUPERSPEED) then
 			else
 				call IndexedUnit.create(u)
-            endif            
+            endif
         call GroupRemoveUnit(TempGroup, u)
         endloop
         
@@ -85,6 +70,13 @@ library EDWGameStart initializer Init requires TimerUtils, Levels, EDWVisualVote
 			endif
 		endfunction
 	endif
+	
+	private function OnAsyncInit takes Deferred lastAsyncInit, Deferred allAsyncInit returns integer
+		// call DisplayTextToPlayer(GetLocalPlayer(), 0, 0, "All async init finished")
+		call EDWVisualVote_CreateMenu()
+				
+		return 0
+	endfunction
             
     private function First takes nothing returns nothing
         //INITIALIZE MAP SETTINGS
@@ -101,7 +93,9 @@ library EDWGameStart initializer Init requires TimerUtils, Levels, EDWVisualVote
         //GAME MODE INIT
         //Menu should happen after level creation so that it doesn't mess with the number of players on the intro world
         //use single players when in debug mode, now that menu is functional
-        call EDWVisualVote_CreateMenu()
+        // call EDWVisualVote_CreateMenu()
+		// call DisplayTextToPlayer(GetLocalPlayer(), 0, 0, "GameStart registering async callback for: " + I2S(OnAsyncInit))
+		call RegisterAsyncCallback(OnAsyncInit)
         
 		//theres no way to detect the game paused / resumed event, so all other events cannot be unhooked during that state
 		//some of those events, such as platforming arrow keys, can be abused

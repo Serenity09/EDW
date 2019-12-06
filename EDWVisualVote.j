@@ -403,8 +403,7 @@ library EDWVisualVote requires VisualVote, ContinueGlobals, Teams, PlayerUtils, 
 		endif
 	endfunction
     
-	//TODO depend on an all async->sync loaded deferred instead of fixed duration timer (approximated around when everything should have synced)
-	private function CreateMenuCB takes nothing returns nothing
+	public function CreateMenu takes nothing returns nothing
 		local VisualVote_voteMenu MyMenu
 		local VisualVote_voteColumn col
         local VisualVote_voteContainer con
@@ -514,7 +513,7 @@ library EDWVisualVote requires VisualVote, ContinueGlobals, Teams, PlayerUtils, 
 	endfunction
 	
     //2 stage menu, first choose difficulty and team breakdown -- then specify for final options
-    public function CreateMenu takes nothing returns nothing
-		call TimerStart(CreateTimer(), .25, false, function CreateMenuCB)
-    endfunction
+    // public function CreateMenu takes nothing returns nothing
+		// call TimerStart(CreateTimer(), .25, false, function CreateMenuCB)
+    // endfunction
 endlibrary

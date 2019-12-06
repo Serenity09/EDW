@@ -1,4 +1,4 @@
-library User requires UnitDefaultRadius, MazerGlobals, Platformer, TerrainHelpers, Cinema, LocalizationData, MultiboardGlobals, StringFormat
+library User requires UnitDefaultRadius, MazerGlobals, Platformer, TerrainHelpers, Cinema, LocalizationData, MultiboardGlobals, StringFormat, AsyncInit
 
 globals
 	User TriggerUser //used with events
@@ -631,30 +631,17 @@ struct User extends array
 		call .PartialUpdateMultiboard(MULTIBOARD_DEATHS)
 	endmethod
 	
-	public method GetStylizedPlayerName takes nothing returns string
-        local string hex = .GetPlayerColorHex()
-        
-        if GetPlayerSlotState(Player(this)) == PLAYER_SLOT_STATE_PLAYING then
-			if .IsAFK then
-				return ColorMessage("(AFK)" + " ", DISABLED_COLOR) + ColorMessage(GetPlayerName(Player(this)), hex)
-			else
-				return ColorMessage(GetPlayerName(Player(this)), hex)
-			endif
-        else
-			return ColorMessage("(Left)" + " " + GetPlayerName(Player(this)), hex)
-        endif
-    endmethod
 	public method GetLocalizedPlayerName takes User localizer returns string
         local string hex = .GetPlayerColorHex()
         
         if GetPlayerSlotState(Player(this)) == PLAYER_SLOT_STATE_PLAYING then
 			if .IsAFK then
-				return ColorMessage(LocalizeContent('USAF', localizer.LanguageCode) + " ", DISABLED_COLOR) + ColorMessage(GetPlayerName(Player(this)), hex)
+				return ColorMessage("(" + StringCase(LocalizeContent('CAFK', localizer.LanguageCode), true) + ") ", DISABLED_COLOR) + ColorMessage(GetPlayerName(Player(this)), hex)
 			else
 				return ColorMessage(GetPlayerName(Player(this)), hex)
 			endif
         else
-			return ColorMessage(LocalizeContent('USAF', localizer.LanguageCode) + " " + GetPlayerName(Player(this)), hex)
+			return ColorMessage(LocalizeContent('USLE', localizer.LanguageCode) + " " + GetPlayerName(Player(this)), hex)
         endif
     endmethod
 	
@@ -704,11 +691,11 @@ struct User extends array
 					// call DisplayTextToPlayer(Player(0), 0, 0, "Player slot marked playing")
 					call MultiboardSetItemValue(MultiboardGetItem(User(curUserNode.value).Statistics, this.StatisticsSortIndex, 0 + Teams_MazingTeam.GetPlayerNameColumn()), this.GetLocalizedPlayerName(curUserNode.value))
 				elseif GetPlayerSlotState(Player(this)) == PLAYER_SLOT_STATE_LEFT then
-					// call DisplayTextToPlayer(Player(0), 0, 0, "Player slot marked left the game")
-					call MultiboardSetItemValue(MultiboardGetItem(User(curUserNode.value).Statistics, this.StatisticsSortIndex, 0 + Teams_MazingTeam.GetPlayerNameColumn()), "Left the game")
+					// call DisplayTextToPlayer(Player(0), 0, 0, "Player slot marked left")
+					call MultiboardSetItemValue(MultiboardGetItem(User(curUserNode.value).Statistics, this.StatisticsSortIndex, 0 + Teams_MazingTeam.GetPlayerNameColumn()), LocalizeContent('UMLG', User(curUserNode.value).LanguageCode))
 				else
 					// call DisplayTextToPlayer(Player(0), 0, 0, "Player slot marked not playing")
-					call MultiboardSetItemValue(MultiboardGetItem(User(curUserNode.value).Statistics, this.StatisticsSortIndex, 0 + Teams_MazingTeam.GetPlayerNameColumn()), "Not playing")
+					call MultiboardSetItemValue(MultiboardGetItem(User(curUserNode.value).Statistics, this.StatisticsSortIndex, 0 + Teams_MazingTeam.GetPlayerNameColumn()), LocalizeContent('UMNP', User(curUserNode.value).LanguageCode))
 				endif
 				
 				call MultiboardReleaseItem(MultiboardGetItem(User(curUserNode.value).Statistics, this.StatisticsSortIndex, 0 + Teams_MazingTeam.GetPlayerNameColumn()))
@@ -765,7 +752,7 @@ struct User extends array
 					call MultiboardSetItemValue(MultiboardGetItem(User(curUserNode.value).Statistics, this.StatisticsSortIndex, 1 + Teams_MazingTeam.GetPlayerNameColumn()), this.Team.OnLevel.GetLocalizedLevelName(curUserNode.value))
 					call MultiboardReleaseItem(MultiboardGetItem(User(curUserNode.value).Statistics, this.StatisticsSortIndex, 1 + Teams_MazingTeam.GetPlayerNameColumn()))
 				elseif GetPlayerSlotState(Player(this)) == PLAYER_SLOT_STATE_LEFT then
-					call MultiboardSetItemValue(MultiboardGetItem(User(curUserNode.value).Statistics, this.StatisticsSortIndex, 1 + Teams_MazingTeam.GetPlayerNameColumn()), "Gone")
+					call MultiboardSetItemValue(MultiboardGetItem(User(curUserNode.value).Statistics, this.StatisticsSortIndex, 1 + Teams_MazingTeam.GetPlayerNameColumn()), LocalizeContent('UMGN', User(curUserNode.value).LanguageCode))
 					call MultiboardReleaseItem(MultiboardGetItem(User(curUserNode.value).Statistics, this.StatisticsSortIndex, 1 + Teams_MazingTeam.GetPlayerNameColumn()))
 				endif
 			set curUserNode = curUserNode.next
@@ -837,7 +824,7 @@ struct User extends array
 					call MultiboardSetItemValue(MultiboardGetItem(User(curUserNode.value).Statistics, this.StatisticsSortIndex, 2 + Teams_MazingTeam.GetPlayerNameColumn()), I2S(.Team.GetScore()))
 					call MultiboardReleaseItem(MultiboardGetItem(User(curUserNode.value).Statistics, this.StatisticsSortIndex, 2 + Teams_MazingTeam.GetPlayerNameColumn()))
 				elseif GetPlayerSlotState(Player(this)) == PLAYER_SLOT_STATE_LEFT then
-					call MultiboardSetItemValue(MultiboardGetItem(User(curUserNode.value).Statistics, this.StatisticsSortIndex, 2 + Teams_MazingTeam.GetPlayerNameColumn()), "Negative")
+					call MultiboardSetItemValue(MultiboardGetItem(User(curUserNode.value).Statistics, this.StatisticsSortIndex, 2 + Teams_MazingTeam.GetPlayerNameColumn()), LocalizeContent('UMNE', User(curUserNode.value).LanguageCode))
 					call MultiboardReleaseItem(MultiboardGetItem(User(curUserNode.value).Statistics, this.StatisticsSortIndex, 2 + Teams_MazingTeam.GetPlayerNameColumn()))
 				endif
 			set curUserNode = curUserNode.next
@@ -860,7 +847,7 @@ struct User extends array
 					call MultiboardSetItemValue(MultiboardGetItem(User(curUserNode.value).Statistics, this.StatisticsSortIndex, 3 + Teams_MazingTeam.GetPlayerNameColumn()), I2S(.Team.GetContinueCount()))
 					call MultiboardReleaseItem(MultiboardGetItem(User(curUserNode.value).Statistics, this.StatisticsSortIndex, 3 + Teams_MazingTeam.GetPlayerNameColumn()))
 				elseif GetPlayerSlotState(Player(this)) == PLAYER_SLOT_STATE_LEFT then
-					call MultiboardSetItemValue(MultiboardGetItem(User(curUserNode.value).Statistics, this.StatisticsSortIndex, 3 + Teams_MazingTeam.GetPlayerNameColumn()), "Zilch")
+					call MultiboardSetItemValue(MultiboardGetItem(User(curUserNode.value).Statistics, this.StatisticsSortIndex, 3 + Teams_MazingTeam.GetPlayerNameColumn()), LocalizeContent('UMZE', User(curUserNode.value).LanguageCode))
 					call MultiboardReleaseItem(MultiboardGetItem(User(curUserNode.value).Statistics, this.StatisticsSortIndex, 3 + Teams_MazingTeam.GetPlayerNameColumn()))
 				endif
 			set curUserNode = curUserNode.next
@@ -884,7 +871,7 @@ struct User extends array
 						call MultiboardSetItemValue(MultiboardGetItem(User(curUserNode.value).Statistics, this.StatisticsSortIndex, 4 + Teams_MazingTeam.GetPlayerNameColumn()), I2S(.Deaths))
 						call MultiboardReleaseItem(MultiboardGetItem(User(curUserNode.value).Statistics, this.StatisticsSortIndex, 4 + Teams_MazingTeam.GetPlayerNameColumn()))
 					elseif GetPlayerSlotState(Player(this)) == PLAYER_SLOT_STATE_LEFT then
-						call MultiboardSetItemValue(MultiboardGetItem(User(curUserNode.value).Statistics, this.StatisticsSortIndex, 4 + Teams_MazingTeam.GetPlayerNameColumn()), "Too many")
+						call MultiboardSetItemValue(MultiboardGetItem(User(curUserNode.value).Statistics, this.StatisticsSortIndex, 4 + Teams_MazingTeam.GetPlayerNameColumn()), LocalizeContent('UMTM', User(curUserNode.value).LanguageCode))
 						call MultiboardReleaseItem(MultiboardGetItem(User(curUserNode.value).Statistics, this.StatisticsSortIndex, 4 + Teams_MazingTeam.GetPlayerNameColumn()))
 					endif
 				endif
@@ -1512,75 +1499,91 @@ struct User extends array
 	endmethod
 	
 	//User AFK synced event callback and async logic for checking/tracking idle state
-	public method ToggleAFK takes nothing returns nothing
+	public method SetAFK takes boolean flag returns nothing
 		local SyncRequest request
-		local SimpleList_ListNode curUserNode = this.Team.FirstUser
+		local SimpleList_ListNode curUserNode
 		local string message
-				
-		//this could be more elegant, but applying this logic first lets GetLocalizedPlayerName stay simplish by not including the localized "(AFK) " prefix in the player's name
-		if not .IsAFK then
-			if DEBUG_AFK or .Team.Users.count > 1 then
-				loop
-				exitwhen curUserNode == 0
-					// call .Team.PrintMessage(.GetStylizedPlayerName() + " " + "is now AFK!")
-					set message = StringFormat1(LocalizeContent('UAAT', User(curUserNode.value).LanguageCode), .GetLocalizedPlayerName(curUserNode.value))
-					
-					if GetLocalPlayer() == Player(curUserNode.value) then
-						call User(curUserNode.value).DisplayMessage(message, 0)
-					endif
-				set curUserNode = curUserNode.next
-				endloop
-			endif
-		endif
 		
-		set .IsAFK = not .IsAFK
-		
-		if .IsAFK then
-			call .Team.UpdateAwaitingAFKState()
-		else
-			if DEBUG_AFK or .Team.Users.count > 1 then
-				loop
-				exitwhen curUserNode == 0
-					if this != curUserNode.value then
-						// call .Team.PrintMessage(.GetStylizedPlayerName() + " " + "is no longer AFK")
-						set message = StringFormat1(LocalizeContent('UAAF', User(curUserNode.value).LanguageCode), .GetLocalizedPlayerName(curUserNode.value))
+		if .IsAFK != flag then
+			set curUserNode = this.Team.FirstUser
+			
+			//this could be more elegant, but applying this logic first lets GetLocalizedPlayerName stay simplish by not including the localized "(AFK) " prefix in the player's name
+			if flag then
+				if DEBUG_AFK or .Team.Users.count > 1 then
+					loop
+					exitwhen curUserNode == 0
+						// call .Team.PrintMessage(.GetStylizedPlayerName() + " " + "is now AFK!")
+						set message = StringFormat1(LocalizeContent('UAAT', User(curUserNode.value).LanguageCode), .GetLocalizedPlayerName(curUserNode.value))
 						
 						if GetLocalPlayer() == Player(curUserNode.value) then
 							call User(curUserNode.value).DisplayMessage(message, 0)
 						endif
-					endif
-				set curUserNode = curUserNode.next
-				endloop
-				
-				call .Team.SetSharedControlForTeam(this, false)
-				
-				if .GameMode == Teams_GAMEMODE_STANDARD then
-					//when a standard mazer is unpaused it always causes a pause in flow while the unit is literally paused, the camera panned to it, and then the unpause countdown fully executed
-					//it's better for gameplay if the unit is paused and then unpaused (with no camera pan or a much faster pan)
-					//check that unit is not near owner's camera bounds as well
-					
-					//this is saying only go through with removing AFK status if the user's active unit is far from its original position
-					//checking this here requires an additional sync, is there ANY reason not to just check this during the original toggle?
-					//is there any reason to check this at all?
-					// set request = SyncRequest.create(OnUnapplyAFKStandard, this)
-					
-					// if GetLocalPlayer() == Player(this) then
-						// call request.Sync(B2S(RAbsBJ(GetCameraTargetPositionX() - GetUnitX(.ActiveUnit)) >= CAMERA_TARGET_POSITION_PAUSE_X_FLEX or (GetCameraTargetPositionY() >= GetUnitY(.ActiveUnit) and GetCameraTargetPositionY() - GetUnitY(.ActiveUnit) >= CAMERA_TARGET_POSITION_PAUSE_Y_BOTTOM_FLEX) or (GetCameraTargetPositionY() < GetUnitY(.ActiveUnit) and GetUnitY(.ActiveUnit) - GetCameraTargetPositionY()  >= CAMERA_TARGET_POSITION_PAUSE_Y_TOP_FLEX)))
-						
-						// // call DisplayTextToPlayer(GetLocalPlayer(), 0, 0, "Unpause AFK, pt 1: " + B2S(RAbsBJ(GetCameraTargetPositionX() - GetUnitX(.ActiveUnit)) >= CAMERA_TARGET_POSITION_PAUSE_X_FLEX) + ", pt 2: " + B2S(GetCameraTargetPositionY() >= GetUnitY(.ActiveUnit) and GetCameraTargetPositionY() - GetUnitY(.ActiveUnit) >= CAMERA_TARGET_POSITION_PAUSE_Y_BOTTOM_FLEX) + ", pt 3: " + B2S(GetCameraTargetPositionY() < GetUnitY(.ActiveUnit) and GetUnitY(.ActiveUnit) - GetCameraTargetPositionY()  >= CAMERA_TARGET_POSITION_PAUSE_Y_TOP_FLEX))
-					// endif
-					set .AFKPlatformerDeathClock = AFK_UNPAUSE_BUFFER
-					call .Pause(true)
-					call .ApplyDefaultCameras(AFK_PAN_CAMERA_DURATION)
-					call .ApplyDefaultSelections()
-					
-					call TimerStart(NewTimerEx(this), AFK_PAN_CAMERA_DURATION, false, function thistype.PanAFKCameraCB)
+					set curUserNode = curUserNode.next
+					endloop
 				endif
 			endif
+			
+			set .IsAFK = flag
+			
+			//any change in .IsAFK should trigger a check on overall team AFK state
+			call .Team.UpdateAwaitingAFKState()
+			
+			if flag then
+				if GetLocalPlayer() == Player(this) then 
+					set thistype.LocalCameraIdleTime = thistype.LocalAFKThreshold
+				endif
+			else
+				if DEBUG_AFK or .Team.Users.count > 1 then
+					loop
+					exitwhen curUserNode == 0
+						if this != curUserNode.value then
+							// call .Team.PrintMessage(.GetStylizedPlayerName() + " " + "is no longer AFK")
+							set message = StringFormat1(LocalizeContent('UAAF', User(curUserNode.value).LanguageCode), .GetLocalizedPlayerName(curUserNode.value))
+							
+							if GetLocalPlayer() == Player(curUserNode.value) then
+								call User(curUserNode.value).DisplayMessage(message, 0)
+							endif
+						endif
+					set curUserNode = curUserNode.next
+					endloop
+					
+					call .Team.SetSharedControlForTeam(this, false)
+					
+					if .GameMode == Teams_GAMEMODE_STANDARD then
+						//when a standard mazer is unpaused it always causes a pause in flow while the unit is literally paused, the camera panned to it, and then the unpause countdown fully executed
+						//it's better for gameplay if the unit is paused and then unpaused (with no camera pan or a much faster pan)
+						//check that unit is not near owner's camera bounds as well
+						
+						//this is saying only go through with removing AFK status if the user's active unit is far from its original position
+						//checking this here requires an additional sync, is there ANY reason not to just check this during the original toggle?
+						//is there any reason to check this at all?
+						//could instead check this and then unpause player without the countdown and all that, for a more fluid experience when the transition isn't necessary based on cam location vs active unit
+						
+						// set request = SyncRequest.create(OnUnapplyAFKStandard, this)
+						
+						// if GetLocalPlayer() == Player(this) then
+							// call request.Sync(B2S(RAbsBJ(GetCameraTargetPositionX() - GetUnitX(.ActiveUnit)) >= CAMERA_TARGET_POSITION_PAUSE_X_FLEX or (GetCameraTargetPositionY() >= GetUnitY(.ActiveUnit) and GetCameraTargetPositionY() - GetUnitY(.ActiveUnit) >= CAMERA_TARGET_POSITION_PAUSE_Y_BOTTOM_FLEX) or (GetCameraTargetPositionY() < GetUnitY(.ActiveUnit) and GetUnitY(.ActiveUnit) - GetCameraTargetPositionY()  >= CAMERA_TARGET_POSITION_PAUSE_Y_TOP_FLEX)))
+							
+							// // call DisplayTextToPlayer(GetLocalPlayer(), 0, 0, "Unpause AFK, pt 1: " + B2S(RAbsBJ(GetCameraTargetPositionX() - GetUnitX(.ActiveUnit)) >= CAMERA_TARGET_POSITION_PAUSE_X_FLEX) + ", pt 2: " + B2S(GetCameraTargetPositionY() >= GetUnitY(.ActiveUnit) and GetCameraTargetPositionY() - GetUnitY(.ActiveUnit) >= CAMERA_TARGET_POSITION_PAUSE_Y_BOTTOM_FLEX) + ", pt 3: " + B2S(GetCameraTargetPositionY() < GetUnitY(.ActiveUnit) and GetUnitY(.ActiveUnit) - GetCameraTargetPositionY()  >= CAMERA_TARGET_POSITION_PAUSE_Y_TOP_FLEX))
+						// endif
+						
+						set .AFKPlatformerDeathClock = AFK_UNPAUSE_BUFFER
+						call .Pause(true)
+						call .ApplyDefaultCameras(AFK_PAN_CAMERA_DURATION)
+						call .ApplyDefaultSelections()
+						
+						call TimerStart(NewTimerEx(this), AFK_PAN_CAMERA_DURATION, false, function thistype.PanAFKCameraCB)
+					endif
+				endif
+			endif
+			
+			//either prepend or reset player's name in multiboard
+			call .UpdateMultiboardPlayerName()
 		endif
-		
-		//either prepend or reset player's name in multiboard
-		call .UpdateMultiboardPlayerName()
+	endmethod
+	
+	public method ToggleAFK takes nothing returns nothing
+		call .SetAFK(not .IsAFK)
 	endmethod
 	private static method ToggleAFKCallback takes nothing returns boolean
 		call User(S2I(BlzGetTriggerSyncData())).ToggleAFK()
@@ -1647,11 +1650,19 @@ struct User extends array
 		endloop
 	endmethod
 	
+	public method SetLanguageCode takes string languageCode returns nothing
+		if .LanguageCode != languageCode and GetIDForLanguageCode(languageCode) != 0 then
+			set .LanguageCode = languageCode
+			
+			//TODO refresh multiboard
+		endif
+	endmethod
+	
 	private static method SyncUserLanguageCode takes SyncRequest request, User user returns integer
 		set user.LanguageCode = request.Data
 		// call DisplayTextToPlayer(Player(user), 0, 0, request.Data)
 		
-		call request.destroy()
+		// call request.destroy()
 		
 		return 0
 	endmethod
@@ -1687,14 +1698,18 @@ struct User extends array
         //set new.ActiveUnit = MazersArray[new]
         
         //set new.Platformer = Platformer.AllPlatformers[new]
-        set new.Platformer = Platformer.create(new)
-		
-		set new.LastCollidedUnit = null
-		set new.LastCollidedUnitTimer = NewTimerEx(new)
-		
-		set request = SyncRequest.create(thistype.SyncUserLanguageCode, new)
-		if GetLocalPlayer() == Player(new) then
-			call request.Sync(SubString(BlzGetLocale(), 0, 2))
+		if GetPlayerSlotState(Player(new)) == PLAYER_SLOT_STATE_PLAYING then
+			set new.Platformer = Platformer.create(new)
+			
+			set new.LastCollidedUnit = null
+			set new.LastCollidedUnitTimer = NewTimerEx(new)
+			
+			set request = SyncRequest.create(thistype.SyncUserLanguageCode, new)
+			call RegisterAsyncInit(Deferred(request))
+			
+			if GetLocalPlayer() == Player(new) then
+				call request.Sync(SubString(BlzGetLocale(), 0, 2))
+			endif
 		endif
 		
         return new
