@@ -726,8 +726,8 @@ library VisualVote requires Vector2, Alloc, Table, PlayerUtils, SimpleList, locu
             local voteColumn vc
 			
 			if .rendered then
-				//TODO localize
-				call TimerDialogSetTitle(.td, "Game Mode Selection:")
+				//TODO localize - except timer dialogs localize really weirdly, maybe just leave default "Remaining" which gets localized OOTB
+				// call TimerDialogSetTitle(.td, "Game Mode Selection:")
 				// if GetLocalPlayer() == Player(forUser) then
 					// call TimerDialogSetTitle(.td, LocalizeContent('VVTD', forUser.LanguageCode))
 				// endif
@@ -816,6 +816,7 @@ library VisualVote requires Vector2, Alloc, Table, PlayerUtils, SimpleList, locu
                 call TimerStart(t, .initialTime, false, function thistype.onTimerExpire)
                 
                 set .td = CreateTimerDialog(t)
+				// call TimerDialogSetTitle(.td, "Game Mode Selection:")
                 
                 loop
                 exitwhen fp == 0

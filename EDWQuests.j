@@ -1,4 +1,4 @@
-library EDWQuests initializer init requires LocalizationData, User, SimpleList, PlayerUtils
+library EDWQuests initializer init requires LocalizationData, SimpleList, PlayerUtils
 	globals
 		public quest OBSTACLE
 		public quest FIRE

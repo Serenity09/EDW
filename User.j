@@ -119,14 +119,11 @@ struct User extends array
 	endmethod
 	public method SetVoteMenu takes VisualVote_voteMenu menu returns nothing
 		call .ClearVoteMenu()
-		call DisplayTextToPlayer(Player(this), 0, 0, "cleared")
 		
-		call DisplayTextToPlayer(Player(this), 0, 0, "setting menu to: " + I2S(menu))
 		set .VoteMenu = menu
 		call menu.forPlayers.addEnd(this)
 		
 		if menu.rendered then
-			call DisplayTextToPlayer(Player(this), 0, 0, "refreshing menu on set")
 			call menu.refresh(this)
 		endif
 	endmethod
@@ -1022,6 +1019,63 @@ struct User extends array
 		set curTeamNode = curTeamNode.next
 		endloop
 	endmethod
+	
+	public method LocalizeMultiboard takes nothing returns nothing
+		local SimpleList_ListNode curTeamNode = Teams_MazingTeam.AllTeams.first
+		local SimpleList_ListNode curUserNode
+		
+		local integer playerNameColumn = Teams_MazingTeam.GetPlayerNameColumn()
+		
+		//init localized column text for multiboard
+		call MultiboardSetTitleText(.Statistics, LocalizeContent('UMPS', .LanguageCode))
+		
+		call MultiboardSetItemValue(MultiboardGetItem(.Statistics, 0, 0 + playerNameColumn), LocalizeContent('UMPN', .LanguageCode))
+		call MultiboardSetItemValue(MultiboardGetItem(.Statistics, 0, 1 + playerNameColumn), LocalizeContent('UMOL', .LanguageCode))
+		call MultiboardSetItemValue(MultiboardGetItem(.Statistics, 0, 2 + playerNameColumn), LocalizeContent('UMSC', .LanguageCode))
+		call MultiboardSetItemValue(MultiboardGetItem(.Statistics, 0, 3 + playerNameColumn), LocalizeContent('UMCC', .LanguageCode))
+		if RewardMode == GameModesGlobals_HARD then
+			call MultiboardSetItemValue(MultiboardGetItem(.Statistics, 0, 4 + playerNameColumn), LocalizeContent('UMDC', .LanguageCode))
+		endif
+		
+		//release columns
+		call MultiboardReleaseItem(MultiboardGetItem(.Statistics, 0, 0 + playerNameColumn))
+        call MultiboardReleaseItem(MultiboardGetItem(.Statistics, 0, 1 + playerNameColumn))
+        call MultiboardReleaseItem(MultiboardGetItem(.Statistics, 0, 2 + playerNameColumn))
+        call MultiboardReleaseItem(MultiboardGetItem(.Statistics, 0, 3 + playerNameColumn))
+		if RewardMode == GameModesGlobals_HARD then
+			call MultiboardReleaseItem(MultiboardGetItem(.Statistics, 0, 4 + playerNameColumn))
+		endif
+		
+		//iterate rows
+		loop
+		exitwhen curTeamNode == 0
+			set curUserNode = Teams_MazingTeam(curTeamNode.value).Users.first
+			
+			loop
+			exitwhen curUserNode == 0				
+				if GetPlayerSlotState(Player(this)) == PLAYER_SLOT_STATE_PLAYING then
+					call MultiboardSetItemValue(MultiboardGetItem(this.Statistics, User(curUserNode.value).StatisticsSortIndex, 0 + playerNameColumn), User(curUserNode.value).GetLocalizedPlayerName(this))
+				elseif GetPlayerSlotState(Player(this)) == PLAYER_SLOT_STATE_LEFT then
+					call MultiboardSetItemValue(MultiboardGetItem(this.Statistics, User(curUserNode.value).StatisticsSortIndex, 0 + playerNameColumn), LocalizeContent('UMLG', User(this).LanguageCode))
+				else
+					call MultiboardSetItemValue(MultiboardGetItem(this.Statistics, User(curUserNode.value).StatisticsSortIndex, 0 + playerNameColumn), LocalizeContent('UMNP', User(this).LanguageCode))
+				endif
+				call MultiboardReleaseItem(MultiboardGetItem(this.Statistics, User(curUserNode.value).StatisticsSortIndex, 0 + playerNameColumn))
+				
+				if GetPlayerSlotState(Player(this)) == PLAYER_SLOT_STATE_PLAYING then
+					call MultiboardSetItemValue(MultiboardGetItem(this.Statistics, User(curUserNode.value).StatisticsSortIndex, 1 + playerNameColumn), User(curUserNode.value).Team.OnLevel.GetLocalizedLevelName(this))
+					call MultiboardReleaseItem(MultiboardGetItem(this.Statistics, User(curUserNode.value).StatisticsSortIndex, 1 + playerNameColumn))
+				elseif GetPlayerSlotState(Player(this)) == PLAYER_SLOT_STATE_LEFT then
+					call MultiboardSetItemValue(MultiboardGetItem(this.Statistics, User(curUserNode.value).StatisticsSortIndex, 1 + playerNameColumn), LocalizeContent('UMGN', this.LanguageCode))
+					call MultiboardReleaseItem(MultiboardGetItem(this.Statistics, User(curUserNode.value).StatisticsSortIndex, 1 + playerNameColumn))
+				endif
+			set curUserNode = curUserNode.next
+			endloop
+			
+		set curTeamNode = curTeamNode.next
+		endloop
+	endmethod
+	
 	public method InitializeMultiboard takes nothing returns nothing
 		local integer i = 0
 		local integer columnCount = 4
@@ -1081,7 +1135,7 @@ struct User extends array
         call MultiboardReleaseItem(MultiboardGetItem(.Statistics, 0, 3 + playerNameColumn))
 		if RewardMode == GameModesGlobals_HARD then
 			call MultiboardReleaseItem(MultiboardGetItem(.Statistics, 0, 4 + playerNameColumn))
-		endif		
+		endif
 	endmethod
     
     //set game mode should take all players, dead or alive, and make it so the next time they are respawned (naturally or forced) it will be as the correct unit type with all the correct mechanisms enabled
@@ -1706,9 +1760,13 @@ struct User extends array
 		if .LanguageCode != languageCode and GetIDForLanguageCode(languageCode) != 0 then
 			set .LanguageCode = languageCode
 			
-			//TODO refresh multiboard
+			//refresh multiboard (if its available)
+			if .Statistics != null then
+				call .LocalizeMultiboard()
+			endif
 			
-			//TODO refresh quests
+			//refresh quests
+			call LocalizeAllQuestsForPlayer(this)
 			
 			//refresh visual vote menu (if any active)
 			if .VoteMenu != 0 then
@@ -1752,6 +1810,7 @@ struct User extends array
         set new.CinematicPlaying = 0
         set new.CinematicQueue = SimpleList_List.create()
 		
+		set new.Statistics = null
 		set new.VoteMenu = 0
         
         set new.GameMode = Teams_GAMEMODE_STANDARD //regular mazing
