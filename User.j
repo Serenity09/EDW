@@ -6,18 +6,17 @@ globals
 	private constant real CAMERA_TARGET_POSITION_FLEX = 50.
 	private constant real AUTO_TRANSITION_BUFFER = .1
 	
-	private constant real CAMERA_TARGET_POSITION_PAUSE_X_FLEX = 8.5 * TERRAIN_TILE_SIZE
-	private constant real CAMERA_TARGET_POSITION_PAUSE_Y_FLEX = 5.5 * TERRAIN_TILE_SIZE
-	private constant real CAMERA_TARGET_POSITION_PAUSE_Y_TOP_FLEX = CAMERA_TARGET_POSITION_PAUSE_Y_FLEX + 1.
-	private constant real CAMERA_TARGET_POSITION_PAUSE_Y_BOTTOM_FLEX = CAMERA_TARGET_POSITION_PAUSE_Y_FLEX - 1.
+	private constant real CAMERA_TARGET_POSITION_UNPAUSE_TRANSITION_THRESHOLD = 7. * TERRAIN_TILE_SIZE
+	private constant real AFK_TIMER_UNPAUSE_TRANSITION_THRESHOLD = 10.
 	
 	private constant real AFK_CAMERA_CHECK_TIMEOUT = 1.
-	private constant real AFK_CAMERA_DEBUG_TIMEOUT = 10.
+	
 	private constant real AFK_CAMERA_MAX_TIMEOUT = 120.
 	private constant real AFK_CAMERA_MIN_TIMEOUT = 30.
 	private constant real AFK_CAMERA_DELTA_TIMEOUT = .75
 	
 	private constant real AFK_PAN_CAMERA_DURATION = 2.
+	
 	private constant real AFK_UNPAUSE_BUFFER = 3.
 	
 	private constant real AFK_MANUAL_CHECK_FACTOR = .75
@@ -35,6 +34,7 @@ globals
 	private constant boolean DEBUG_CAMERA = false
 	
 	private constant boolean DEBUG_AFK = false
+	private constant real AFK_CAMERA_DEBUG_TIMEOUT = AFK_CAMERA_MIN_TIMEOUT
 endglobals
 
 struct User extends array
@@ -1490,6 +1490,31 @@ struct User extends array
 		call TimerStart(GetExpiredTimer(), 1., true, function thistype.UnpauseAFKCB)
 	endmethod
 	
+	private static method OnUnapplyAFKStandard takes SyncRequest request, User user returns integer
+		// local boolean needsPause = S2B(request.RequestData)
+		local string message
+		
+		//only pause, pan camera, and set immunity if the User says they need it (via request.RequestData)
+		if S2B(request.RequestData) then
+			set user.AFKPlatformerDeathClock = AFK_UNPAUSE_BUFFER
+			call user.Pause(true)
+			call user.ApplyDefaultCameras(AFK_PAN_CAMERA_DURATION)
+			call user.ApplyDefaultSelections()
+			
+			call TimerStart(NewTimerEx(user), AFK_PAN_CAMERA_DURATION, false, function thistype.PanAFKCameraCB)
+			
+			set message = StringFormat1(LocalizeContent('UAAF', user.LanguageCode), user.GetLocalizedPlayerName(user))
+			
+			if GetLocalPlayer() == Player(user) then
+				call user.DisplayMessage(message, 0)
+			endif
+		endif
+		
+		call request.destroy()
+		
+		return 0
+	endmethod
+	
 	private static method ApplyAFKPlatformerCB takes nothing returns nothing
 		local User u = GetTimerData(GetExpiredTimer())
 		local texttag text
@@ -1566,23 +1591,6 @@ struct User extends array
 		call TimerStart(.AFKPlatformerDeathTimer, AFK_PLATFORMER_CLOCK, true, function thistype.ApplyAFKPlatformerCB)
 	endmethod
 	
-	private static method OnUnapplyAFKStandard takes SyncRequest request, User user returns integer
-		// local boolean needsPause = S2B(request.RequestData)
-		
-		if S2B(request.RequestData) then
-			set user.AFKPlatformerDeathClock = AFK_UNPAUSE_BUFFER
-			call user.Pause(true)
-			call user.ApplyDefaultCameras(AFK_PAN_CAMERA_DURATION)
-			call user.ApplyDefaultSelections()
-			
-			call TimerStart(NewTimerEx(user), AFK_PAN_CAMERA_DURATION, false, function thistype.PanAFKCameraCB)
-		endif
-		
-		call request.destroy()
-		
-		return 0
-	endmethod
-	
 	public method ApplyAwaitingAFKState takes nothing returns nothing
 		if .GameMode == Teams_GAMEMODE_STANDARD or .GameMode == Teams_GAMEMODE_STANDARD_PAUSED then
 			call .Team.SetSharedControlForTeam(this, true)
@@ -1606,9 +1614,12 @@ struct User extends array
 	
 	//User AFK synced event callback and async logic for checking/tracking idle state
 	public method SetAFK takes boolean flag returns nothing
-		local SyncRequest request
 		local SimpleList_ListNode curUserNode
 		local string message
+		
+		local SyncRequest request
+		local real x
+		local real y
 		
 		if .IsAFK != flag then
 			set curUserNode = this.Team.FirstUser
@@ -1661,25 +1672,38 @@ struct User extends array
 						//check that unit is not near owner's camera bounds as well
 						
 						//this is saying only go through with removing AFK status if the user's active unit is far from its original position
-						//checking this here requires an additional sync, is there ANY reason not to just check this during the original toggle?
-						//is there any reason to check this at all?
-						//could instead check this and then unpause player without the countdown and all that, for a more fluid experience when the transition isn't necessary based on cam location vs active unit
+						//checking this here requires an additional sync, is there ANY reason not to just check this during the original toggle? yes, to set .IsAFK first, then decide to do something about it second
 						
-						// set request = SyncRequest.create(OnUnapplyAFKStandard, this)
+						set request = SyncRequest.create(OnUnapplyAFKStandard, this)
 						
-						// if GetLocalPlayer() == Player(this) then
-							// call request.Sync(B2S(RAbsBJ(GetCameraTargetPositionX() - GetUnitX(.ActiveUnit)) >= CAMERA_TARGET_POSITION_PAUSE_X_FLEX or (GetCameraTargetPositionY() >= GetUnitY(.ActiveUnit) and GetCameraTargetPositionY() - GetUnitY(.ActiveUnit) >= CAMERA_TARGET_POSITION_PAUSE_Y_BOTTOM_FLEX) or (GetCameraTargetPositionY() < GetUnitY(.ActiveUnit) and GetUnitY(.ActiveUnit) - GetCameraTargetPositionY()  >= CAMERA_TARGET_POSITION_PAUSE_Y_TOP_FLEX)))
+						if GetLocalPlayer() == Player(this) then
+							set x = GetCameraTargetPositionX() - GetUnitX(.ActiveUnit)
+							set x = x*x
 							
-							// // call DisplayTextToPlayer(GetLocalPlayer(), 0, 0, "Unpause AFK, pt 1: " + B2S(RAbsBJ(GetCameraTargetPositionX() - GetUnitX(.ActiveUnit)) >= CAMERA_TARGET_POSITION_PAUSE_X_FLEX) + ", pt 2: " + B2S(GetCameraTargetPositionY() >= GetUnitY(.ActiveUnit) and GetCameraTargetPositionY() - GetUnitY(.ActiveUnit) >= CAMERA_TARGET_POSITION_PAUSE_Y_BOTTOM_FLEX) + ", pt 3: " + B2S(GetCameraTargetPositionY() < GetUnitY(.ActiveUnit) and GetUnitY(.ActiveUnit) - GetCameraTargetPositionY()  >= CAMERA_TARGET_POSITION_PAUSE_Y_TOP_FLEX))
-						// endif
+							set y = GetCameraTargetPositionY() - GetUnitY(.ActiveUnit)
+							set y = y*y
+							
+							//check that the user's camera is a specified distance away from their active unit, and that they've been AFK for at least a specified time
+							call request.Sync(B2S((SquareRoot(x + y) >= CAMERA_TARGET_POSITION_UNPAUSE_TRANSITION_THRESHOLD) and (thistype.LocalCameraIdleTime - thistype.LocalAFKThreshold >= AFK_TIMER_UNPAUSE_TRANSITION_THRESHOLD)))
+							
+							// call DisplayTextToPlayer(GetLocalPlayer(), 0, 0, "Unpause AFK, pt 1: " + B2S(RAbsBJ(GetCameraTargetPositionX() - GetUnitX(.ActiveUnit)) >= CAMERA_TARGET_POSITION_PAUSE_X_FLEX) + ", pt 2: " + B2S(GetCameraTargetPositionY() >= GetUnitY(.ActiveUnit) and GetCameraTargetPositionY() - GetUnitY(.ActiveUnit) >= CAMERA_TARGET_POSITION_PAUSE_Y_BOTTOM_FLEX) + ", pt 3: " + B2S(GetCameraTargetPositionY() < GetUnitY(.ActiveUnit) and GetUnitY(.ActiveUnit) - GetCameraTargetPositionY()  >= CAMERA_TARGET_POSITION_PAUSE_Y_TOP_FLEX))
+						endif
 						
-						set .AFKPlatformerDeathClock = AFK_UNPAUSE_BUFFER
-						call .Pause(true)
-						call .ApplyDefaultCameras(AFK_PAN_CAMERA_DURATION)
-						call .ApplyDefaultSelections()
+						// set .AFKPlatformerDeathClock = AFK_UNPAUSE_BUFFER
+						// call .Pause(true)
+						// call .ApplyDefaultCameras(AFK_PAN_CAMERA_DURATION)
+						// call .ApplyDefaultSelections()
 						
-						call TimerStart(NewTimerEx(this), AFK_PAN_CAMERA_DURATION, false, function thistype.PanAFKCameraCB)
+						// call TimerStart(NewTimerEx(this), AFK_PAN_CAMERA_DURATION, false, function thistype.PanAFKCameraCB)
 					endif
+				endif
+				
+				//clear idle time and reset camera target position
+				if GetLocalPlayer() == Player(this) then
+					set thistype.LocalCameraIdleTime = 0
+					
+					set thistype.LocalCameraTargetPosition.x = GetCameraTargetPositionX()
+					set thistype.LocalCameraTargetPosition.y = GetCameraTargetPositionY()
 				endif
 			endif
 			
@@ -1698,6 +1722,11 @@ struct User extends array
 	endmethod
 		
 	private method CheckAFKPlayer takes real timeElapsed returns nothing
+		local real x
+		local real y
+		
+		local real newTime
+		
 		//call sync AFK logic
 		// if this.GameMode == Teams_GAMEMODE_PLATFORMING and not this.PlatformerStartStable and ((this.Platformer.PushedAgainstVector != 0 and RAbsBJ(this.Platformer.YVelocity) <= .5) or this.Platformer.HorizontalAxisState != 0) then
 		// call DisplayTextToPlayer(Player(this), 0, 0, "Pushed against: " + I2S(this.Platformer.PushedAgainstVector) + ", y velocity: " + R2S(this.Platformer.YVelocity))
@@ -1717,30 +1746,41 @@ struct User extends array
 			if GetLocalPlayer() == Player(this) then
 				if this.GameMode == Teams_GAMEMODE_PLATFORMING or this.GameMode == Teams_GAMEMODE_PLATFORMING_PAUSED then				
 					if this.Platformer.HorizontalAxisState != 0 then
-						set thistype.LocalCameraIdleTime = 0
-						
-						set thistype.LocalCameraTargetPosition.x = GetCameraTargetPositionX()
-						set thistype.LocalCameraTargetPosition.y = GetCameraTargetPositionY()
+						set newTime = 0
 					else
-						set thistype.LocalCameraIdleTime = thistype.LocalCameraIdleTime + timeElapsed
+						set newTime = thistype.LocalCameraIdleTime + timeElapsed
 					endif
 				else
-					//TODO check mouse position, if that ever gets an async API
-					if RAbsBJ(GetCameraTargetPositionX() - LocalCameraTargetPosition.x) > CAMERA_TARGET_POSITION_FLEX or RAbsBJ(GetCameraTargetPositionY() - LocalCameraTargetPosition.y) > CAMERA_TARGET_POSITION_FLEX then
+					//check if the user's camera has moved a specified distance away from its original position
+					set x = GetCameraTargetPositionX() - LocalCameraTargetPosition.x
+					set x = x*x
+					
+					set y = GetCameraTargetPositionY() - LocalCameraTargetPosition.y
+					set y = y*y
+										
+					//TODO also check mouse position, if that ever gets an async API
+					if SquareRoot(x + y) >= CAMERA_TARGET_POSITION_FLEX then
+						set newTime = 0
+					else
 						// call DisplayTextToPlayer(GetLocalPlayer(), 0, 0, "Difference for camera destination x: " + R2S(RAbsBJ(GetCameraTargetPositionX() - LocalCameraTargetPosition.x)) + ", y: " + R2S(RAbsBJ(GetCameraTargetPositionY() - LocalCameraTargetPosition.y)))
-						
+						set newTime = thistype.LocalCameraIdleTime + timeElapsed
+					endif
+				endif
+								
+				if (this.IsAFK and newTime < thistype.LocalAFKThreshold) or (not this.IsAFK and newTime >= thistype.LocalAFKThreshold) then
+					// call DisplayTextToPlayer(GetLocalPlayer(), 0, 0, "On sync event, idle time: " + R2S(thistype.LocalCameraIdleTime))
+					call BlzSendSyncData(AFK_SYNC_EVENT_PREFIX, I2S(this))
+				//only update local values when not syncing a change in AFK state
+				//leave updating LocalCameraIdleTime and TargetPosition to the sync event, so it can reference their current values
+				else
+					if newTime != 0 then
+						set thistype.LocalCameraIdleTime = newTime
+					else
 						set thistype.LocalCameraIdleTime = 0
 						
 						set thistype.LocalCameraTargetPosition.x = GetCameraTargetPositionX()
 						set thistype.LocalCameraTargetPosition.y = GetCameraTargetPositionY()
-					else
-						set thistype.LocalCameraIdleTime = thistype.LocalCameraIdleTime + timeElapsed
 					endif
-				endif
-				
-				if (this.IsAFK and thistype.LocalCameraIdleTime < thistype.LocalAFKThreshold) or (not this.IsAFK and thistype.LocalCameraIdleTime >= thistype.LocalAFKThreshold) then
-					// call DisplayTextToPlayer(GetLocalPlayer(), 0, 0, "On sync event, idle time: " + R2S(thistype.LocalCameraIdleTime))
-					call BlzSendSyncData(AFK_SYNC_EVENT_PREFIX, I2S(this))
 				endif
 			endif
 		endif
