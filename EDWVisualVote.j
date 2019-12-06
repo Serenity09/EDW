@@ -129,6 +129,13 @@ library EDWVisualVote requires VisualVote, ContinueGlobals, Teams, PlayerUtils, 
 		//now that difficulty is set, we can initialize all startable content
 		call EDWLevelContent_Initialize()
 		
+		//hard mode victory score is equal to the raw score total of all vanilla levels
+		//initialize after level content, in case that content ever modifies its level's score
+		if RewardMode == GameModesGlobals_HARD then
+			set VictoryScore = Levels_Level.GetTotalRawScore()
+			set VictoryTime = 30 * 60
+		endif
+		
         if GameMode == 0 then
             //create a team for each player
             set i = 0

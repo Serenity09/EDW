@@ -8,7 +8,7 @@ library Levels requires SimpleList, Teams, GameModesGlobals, LevelIDGlobals, Cin
         public constant real CINEMATIC_TIMER_TIMEOUT = .5
         
         public constant real EASY_SCORE_MODIFIER = 1.25
-        public constant real HARD_SCORE_MODIFIER = 1.
+        // public constant real HARD_SCORE_MODIFIER = 1.
         public constant real EASY_CONTINUE_MODIFIER = 1.5
         public constant integer EASY_MAX_CONTINUE_ROLLOVER = 3
 		public constant integer HARD_MAX_CONTINUE_ROLLOVER = 1
@@ -524,7 +524,7 @@ library Levels requires SimpleList, Teams, GameModesGlobals, LevelIDGlobals, Cin
 			if RewardMode == GameModesGlobals_EASY or RewardMode == GameModesGlobals_CHEAT then
 				set score = R2I(.RawScore*EASY_SCORE_MODIFIER + .5)
 			elseif RewardMode == GameModesGlobals_HARD then
-				set score = R2I(.RawScore*HARD_SCORE_MODIFIER + .5)
+				set score = .RawScore
 			else
 				set score = .RawScore
 			endif
@@ -1109,6 +1109,27 @@ library Levels requires SimpleList, Teams, GameModesGlobals, LevelIDGlobals, Cin
 			call .OnCheckpointChange.register(cb)
 		endmethod
 		
+		private static method GetRawScoreForWorld takes thistype firstLevel returns integer
+			local integer score = 0
+			local Level curLevel = firstLevel
+			
+			loop
+			exitwhen curLevel == 0
+				set score = score + curLevel.RawScore
+			set curLevel = curLevel.NextLevel
+			endloop
+			
+			return score
+		endmethod
+		public static method GetTotalRawScore takes nothing returns integer
+			local integer score = 0
+			
+			set score = score + thistype.GetRawScoreForWorld(thistype(IW1_LEVEL_ID))
+			set score = score + thistype.GetRawScoreForWorld(thistype(LW1_LEVEL_ID))
+			set score = score + thistype.GetRawScoreForWorld(thistype(PW1_LEVEL_ID))
+			
+			return score
+		endmethod
 		
         //creates a level struct
         static method create takes integer LevelID, integer rawContinues, integer rawScore, string startFunction, string stopFunction, rect startspawn, rect vision, rect levelEnd, Level previouslevel returns Level

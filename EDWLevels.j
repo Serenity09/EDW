@@ -27,7 +27,7 @@ library EDWLevels requires LevelIDGlobals, Levels, PW4
         call l.AddCheckpoint(gg_rct_IWCP_2_2, gg_rct_IWR_2_3)
 		
 		//LEVEL 3
-        set l = Levels_Level.create(IW3_LEVEL_ID, 6, 6, "IW3Start", "IW3Stop", gg_rct_IWR_3_1, gg_rct_IW3_Vision, gg_rct_IW3_End, l)
+        set l = Levels_Level.create(IW3_LEVEL_ID, 6, 4, "IW3Start", "IW3Stop", gg_rct_IWR_3_1, gg_rct_IW3_Vision, gg_rct_IW3_End, l)
         call l.AddCheckpoint(gg_rct_IWCP_3_1, gg_rct_IWR_3_2)
         call l.AddCheckpoint(gg_rct_IWCP_3_2, gg_rct_IWR_3_3)
         call l.AddCheckpoint(gg_rct_IWCP_3_3, gg_rct_IWR_3_4)
@@ -71,7 +71,7 @@ library EDWLevels requires LevelIDGlobals, Levels, PW4
 		set cp.RequiresSameGameMode = true
 		
 		//LEVEL 2
-        set l = Levels_Level.create(PW2_LEVEL_ID, 5, 5, "PW2Start", "PW2Stop", gg_rct_PWR_2_1, gg_rct_PW2_Vision, gg_rct_PW2_End, l) //gg_rct_PW1_Vision
+        set l = Levels_Level.create(PW2_LEVEL_ID, 5, 3, "PW2Start", "PW2Stop", gg_rct_PWR_2_1, gg_rct_PW2_Vision, gg_rct_PW2_End, l) //gg_rct_PW1_Vision
 		//set cpID = l.AddCheckpoint(gg_rct_PWCP_2_1, gg_rct_PWR_2_2)
         call l.AddCheckpoint(gg_rct_PWCP_2_2, gg_rct_PWR_2_3)
         
