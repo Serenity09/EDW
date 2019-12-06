@@ -398,9 +398,15 @@ library InGameCommands initializer init requires MazerGlobals, Platformer, Relay
 		if Localization.Equals(cmd, 'CAFK', true) then
 			call u.SetAFK(true)
 		// elseif cmd == "language" then
-		elseif Localization.Equals(cmd, 'LTIT', true) then			
+		elseif Localization.Equals(cmd, 'LTIT', true) or Localization.Equals(cmd, 'LNAM', true) then			
 			if strVal == null or StringLength(strVal) == 0 then
-				call u.SetLanguageCode(ConvertLanguageToLanguageCode(cmd))
+				set strVal = ConvertLanguageToLanguageCode(cmd)
+				
+				if strVal == null then
+					set strVal = ConvertInputToLanguageCode('LNAM', cmd)
+				endif
+								
+				call u.SetLanguageCode(strVal)
 			else
 				call u.SetLanguageCode(strVal)
 			endif
