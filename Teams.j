@@ -64,7 +64,6 @@ public struct MazingTeam extends array
     private integer Score
     public real Weight
     public integer DefaultGameMode
-    public VisualVote_voteMenu VoteMenu
     
 	public SimpleList_List AllWorldProgress
     //public integer DefaultGameMode
@@ -88,27 +87,24 @@ public struct MazingTeam extends array
         call MoveRectTo(.Revive, GetRectCenterX(gg_rct_HubWorld_R), GetRectCenterY(gg_rct_HubWorld_R))
     endmethod
 	
-    public method CreateMenu takes real time, string optionCB returns nothing
-        local real x = VOTE_TOP_LEFT_X + R2I((this + 1) / 4)
-        local real y = VOTE_TOP_LEFT_Y + R2I((this + 1) / 2)
-        local SimpleList_ListNode cur = .FirstUser
-                
-        set .VoteMenu = VisualVote_voteMenu.create(x, y, time, optionCB)
+    public method ClearVoteMenu takes nothing returns nothing
+		local SimpleList_ListNode curUserNode = .FirstUser
         
-        //register team to menu
         loop
-        exitwhen cur == 0
-            //pause their active unit
-            if User(cur.value).GameMode == GAMEMODE_STANDARD then
-                call User(cur.value).SwitchGameModesDefaultLocation(GAMEMODE_STANDARD_PAUSED)
-            elseif User(cur.value).GameMode == GAMEMODE_PLATFORMING then
-                call User(cur.value).SwitchGameModesDefaultLocation(GAMEMODE_PLATFORMING_PAUSED)
-            endif
-            
-            call .VoteMenu.forPlayers.addEnd(cur.value)
-        set cur = cur.next
+        exitwhen curUserNode == 0
+            call User(curUserNode.value).ClearVoteMenu()
+        set curUserNode = curUserNode.next
         endloop
-    endmethod
+	endmethod
+	public method SetVoteMenu takes VisualVote_voteMenu menu returns nothing
+		local SimpleList_ListNode curUserNode = .FirstUser
+        
+        loop
+        exitwhen curUserNode == 0
+            call User(curUserNode.value).SetVoteMenu(menu)
+        set curUserNode = curUserNode.next
+        endloop
+	endmethod
     
     public method IsTeamDead takes nothing returns boolean
         local SimpleList_ListNode fp = .FirstUser
@@ -702,12 +698,12 @@ public struct MazingTeam extends array
         
         if GetPlayerSlotState(Player(target)) == PLAYER_SLOT_STATE_PLAYING then
 			if target.IsAFK then
-				return ColorMessage(LocalizeContent('USAF', localizer.LanguageCode) + " ", DISABLED_COLOR) + ColorMessage(GetPlayerName(Player(target)), hex)
+				return ColorMessage("(" + StringCase(LocalizeContent('CAFK', localizer.LanguageCode), true) + ") ", DISABLED_COLOR) + ColorMessage(GetPlayerName(Player(target)), hex)
 			else
 				return ColorMessage(GetPlayerName(Player(target)), hex)
 			endif
         else
-			return ColorMessage(LocalizeContent('USAF', localizer.LanguageCode) + " " + GetPlayerName(Player(target)), hex)
+			return ColorMessage(LocalizeContent('USLE', localizer.LanguageCode) + " " + GetPlayerName(Player(target)), hex)
         endif
     endmethod
 	   

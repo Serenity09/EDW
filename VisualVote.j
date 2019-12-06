@@ -54,7 +54,7 @@ library VisualVote requires Vector2, Alloc, Table, PlayerUtils, SimpleList, locu
         //public UnitStack playerVoteUnits
         
         public unit voteUnit
-        
+		        
         implement Alloc
         
 		public method getMenu takes nothing returns VisualVote_voteMenu
@@ -188,6 +188,12 @@ library VisualVote requires Vector2, Alloc, Table, PlayerUtils, SimpleList, locu
             endif
         endmethod
         
+		public method refresh takes User forUser returns nothing
+			if GetLocalPlayer() == Player(forUser) then
+				call SetTextTagText(.gameText, LocalizeContent(.contentID, forUser.LanguageCode), TextTagSize2Height(TEXT_OPTION_SIZE))
+			endif
+		endmethod
+		
         public method render takes real x, real y returns real
             local SimpleList_ListNode curUserNode = .getMenu().forPlayers.first
 			
@@ -202,15 +208,6 @@ library VisualVote requires Vector2, Alloc, Table, PlayerUtils, SimpleList, locu
                 endif
             endif
             
-			//localize text
-			loop
-			exitwhen curUserNode == 0
-				if GetLocalPlayer() == Player(curUserNode.value) then
-					call SetTextTagText(.gameText, LocalizeContent(.contentID, User(curUserNode.value).LanguageCode), TextTagSize2Height(TEXT_OPTION_SIZE))
-				endif
-			set curUserNode = curUserNode.next
-			endloop
-			
             call SetTextTagPermanent(.gameText, true)
             call SetTextTagPos(.gameText, x, y, TEXT_OFFSET_HEIGHT)
             
@@ -314,28 +311,33 @@ library VisualVote requires Vector2, Alloc, Table, PlayerUtils, SimpleList, locu
 			return .parent.parent
 		endmethod
 		
+		public method refresh takes User forUser returns nothing
+			local integer iVO = 0
+            local voteOption vo
+			
+			if GetLocalPlayer() == Player(forUser) then
+				// call SetTextTagText(.gameText, .text, TextTagSize2Height(TEXT_HEADER2_SIZE))
+				call SetTextTagText(.gameText, LocalizeContent(.contentID, forUser.LanguageCode), TextTagSize2Height(TEXT_OPTION_SIZE))
+			endif
+			
+			loop
+            exitwhen iVO >= .optionCount
+                set vo = .options[iVO]
+                
+                call vo.refresh(forUser)
+            set iVO = iVO + 1
+            endloop
+		endmethod
+		
         public method render takes real x, real y returns real
             local integer iVO = 0
             local voteOption vo
             
             local real curY = y
-			
-			local SimpleList_ListNode curUserNode = .getMenu().forPlayers.first
-            
+			            
             //display the container header
             set .gameText = CreateTextTag()
-            
-            //localize text
-			loop
-			exitwhen curUserNode == 0
-				if GetLocalPlayer() == Player(curUserNode.value) then
-					// call SetTextTagText(.gameText, .text, TextTagSize2Height(TEXT_HEADER2_SIZE))
-					call SetTextTagText(.gameText, LocalizeContent(.contentID, User(curUserNode.value).LanguageCode), TextTagSize2Height(TEXT_OPTION_SIZE))
-				endif
-			set curUserNode = curUserNode.next
-			endloop
-			
-			
+            			
             call SetTextTagPermanent(.gameText, true)
             call SetTextTagPos(.gameText, x, curY, TEXT_OFFSET_HEIGHT)
             
@@ -567,6 +569,19 @@ library VisualVote requires Vector2, Alloc, Table, PlayerUtils, SimpleList, locu
         
         implement Alloc
         
+		public method refresh takes User forUser returns nothing
+            local integer iVC = 0
+            local voteContainer vc
+                        
+            loop
+            exitwhen iVC >= voteContainerCount
+                set vc = voteContainers[iVC]
+                
+                //call DisplayTextToForce(bj_FORCE_PLAYER[0], "rendering container: " + I2S(iVC))
+                call vc.refresh(forUser)
+            set iVC = iVC + 1
+            endloop
+        endmethod
         public method render takes vector2 topLeft returns vector2
             local integer iVC = 0
             local voteContainer vc
@@ -706,6 +721,27 @@ library VisualVote requires Vector2, Alloc, Table, PlayerUtils, SimpleList, locu
         //implement Alloc
         implement List
         
+		public method refresh takes User forUser returns nothing
+			local integer iVC = 0
+            local voteColumn vc
+			
+			if .rendered then
+				//TODO localize
+				call TimerDialogSetTitle(.td, "Game Mode Selection:")
+				// if GetLocalPlayer() == Player(forUser) then
+					// call TimerDialogSetTitle(.td, LocalizeContent('VVTD', forUser.LanguageCode))
+				// endif
+				
+				loop
+                exitwhen iVC >= voteColumnCount
+                    set vc = voteColumns[iVC]
+                    
+					call vc.refresh(forUser)
+                set iVC = iVC + 1
+                endloop
+			endif
+		endmethod
+		
         public method render takes nothing returns nothing
             local integer iVC = 0
             local voteColumn vc
@@ -713,6 +749,8 @@ library VisualVote requires Vector2, Alloc, Table, PlayerUtils, SimpleList, locu
             local real curX = topLeft.x
             local vector2 colBotRight
             
+			local SimpleList_ListNode curUserNode
+			
             if not .rendered then
                 set .rendered = true
                 
@@ -741,6 +779,14 @@ library VisualVote requires Vector2, Alloc, Table, PlayerUtils, SimpleList, locu
                 
                 //menu should be usable after rendering (by default)
                 set .enabled = true
+				
+				//localize text for all players
+				set curUserNode = .forPlayers.first
+				loop
+				exitwhen curUserNode == 0
+					call .refresh(curUserNode.value)
+				set curUserNode = curUserNode.next
+				endloop
             endif
         endmethod
         
@@ -770,7 +816,6 @@ library VisualVote requires Vector2, Alloc, Table, PlayerUtils, SimpleList, locu
                 call TimerStart(t, .initialTime, false, function thistype.onTimerExpire)
                 
                 set .td = CreateTimerDialog(t)
-                call TimerDialogSetTitle(.td, "Game Mode Selection:")
                 
                 loop
                 exitwhen fp == 0
@@ -885,16 +930,19 @@ library VisualVote requires Vector2, Alloc, Table, PlayerUtils, SimpleList, locu
             return false
         endmethod
         
+		//TODO deprecate
         public method addAllPlayersToMenu takes nothing returns nothing
-            local SimpleList_ListNode fp = PlayerUtils_FirstPlayer
+            // local SimpleList_ListNode fp = PlayerUtils_FirstPlayer
             
-            call forPlayers.clear()
+            // call forPlayers.clear()
             
-            loop
-            exitwhen fp == 0
-                call forPlayers.addEnd(fp.value)
-            set fp = fp.next
-            endloop
+            // loop
+            // exitwhen fp == 0
+                // call forPlayers.addEnd(fp.value)
+            // set fp = fp.next
+            // endloop
+			
+			call User.SetVoteMenuAll(this)
         endmethod
         
         public method getVoteOptionFromSelectedUnit takes unit selectedUnit returns voteOption
@@ -957,7 +1005,7 @@ library VisualVote requires Vector2, Alloc, Table, PlayerUtils, SimpleList, locu
             endloop
         endmethod
         endif
-		
+				
 		public static method filterVisualVoteSelection takes nothing returns boolean
 			return GetUnitTypeId(GetFilterUnit()) == VOTE_UNIT_ID
 		endmethod
@@ -980,6 +1028,8 @@ library VisualVote requires Vector2, Alloc, Table, PlayerUtils, SimpleList, locu
             local integer iVC = 0
             local voteColumn vc
             
+			local SimpleList_ListNode curUserNode
+			
             call .listRemove()
             
             loop
@@ -990,6 +1040,12 @@ library VisualVote requires Vector2, Alloc, Table, PlayerUtils, SimpleList, locu
             set iVC = iVC + 1
             endloop
             
+			loop
+			set curUserNode = .forPlayers.pop()
+			exitwhen curUserNode == 0
+				call User(curUserNode.value).ClearVoteMenu()
+			endloop
+			
             call DestroyTimerDialog(.td)
             set .td = null
             

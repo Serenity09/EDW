@@ -269,8 +269,12 @@ library InGameCommands initializer init requires MazerGlobals, Platformer, Relay
 			set strVal = SubString(msg, i + 1, strLength)
 			set val = S2R(strVal)
 			set intVal = R2I(val)
+		else
+			set strVal = null
+			set val = 0.
+			set intVal = 0
 		endif
-		
+				
 		// if cmd == "afk" then
 			// set async = User.SyncLocalCameraIdleTime()
 			// call async.Then(OnAllCameraSync, 0, async)
@@ -359,12 +363,6 @@ library InGameCommands initializer init requires MazerGlobals, Platformer, Relay
 				elseif u.GameMode == Teams_GAMEMODE_STANDARD_PAUSED or u.GameMode == Teams_GAMEMODE_PLATFORMING_PAUSED then
 					call u.Pause(false)
 				endif
-			elseif cmd == "language" or cmd == "lang" then
-				call DisplayTextToPlayer(Player(u), 0, 0, "Current language: " + u.LanguageCode)
-				
-				// if strVal != null and StringLength(strVal) == 2 then
-					// set u.LanguageCode = strVal
-				// endif
 			elseif cmd == "quests" then
 				call LocalizeAllQuestsForPlayer(u)
 			elseif cmd == "localize" then
@@ -393,7 +391,20 @@ library InGameCommands initializer init requires MazerGlobals, Platformer, Relay
 				// call async.Then(OnAllCameraSync, 0, async)
 			// endif
 			endif
-		endif		
+		endif
+		
+		//commands available to any release mode
+		//TODO localize command value via Localization.Equals(cmd, 'CAFK', true)
+		if Localization.Equals(cmd, 'CAFK', true) then
+			call u.SetAFK(true)
+		// elseif cmd == "language" then
+		elseif Localization.Equals(cmd, 'LTIT', true) then			
+			if strVal == null or StringLength(strVal) == 0 then
+				call u.SetLanguageCode(ConvertLanguageToLanguageCode(cmd))
+			else
+				call u.SetLanguageCode(strVal)
+			endif
+		endif
 	endfunction
 	
 

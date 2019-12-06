@@ -65,8 +65,10 @@ struct User extends array
 	readonly timer AFKPlatformerDeathTimer
 	readonly real AFKPlatformerDeathClock
 	
-	//consider syncing this at game start so it can be depended on / changed in game without desyncing
+	//synced at game start so that it can be used outside of local player blocks
 	readonly string LanguageCode
+	
+	readonly VisualVote_voteMenu VoteMenu
 	
 	public static integer OriginalPlayerCount
     public static integer ActivePlayers
@@ -86,6 +88,56 @@ struct User extends array
     
 	method operator < takes thistype other returns boolean
 		return R2I(I2R(this)) < R2I(I2R(other))
+	endmethod
+	
+	// public method CreateMenu takes real time, string optionCB returns nothing
+        // local real x = VOTE_TOP_LEFT_X + R2I((this + 1) / 4)
+        // local real y = VOTE_TOP_LEFT_Y + R2I((this + 1) / 2)
+        // local SimpleList_ListNode cur = .FirstUser
+                
+        // set .VoteMenu = VisualVote_voteMenu.create(x, y, time, optionCB)
+        
+        // //register team to menu
+        // loop
+        // exitwhen cur == 0
+            // //pause their active unit
+            // if User(cur.value).GameMode == GAMEMODE_STANDARD then
+                // call User(cur.value).SwitchGameModesDefaultLocation(GAMEMODE_STANDARD_PAUSED)
+            // elseif User(cur.value).GameMode == GAMEMODE_PLATFORMING then
+                // call User(cur.value).SwitchGameModesDefaultLocation(GAMEMODE_PLATFORMING_PAUSED)
+            // endif
+            
+            // call .VoteMenu.forPlayers.addEnd(cur.value)
+        // set cur = cur.next
+        // endloop
+    // endmethod
+	public method ClearVoteMenu takes nothing returns nothing
+		if .VoteMenu != 0 then
+			call .VoteMenu.forPlayers.remove(this)
+			set .VoteMenu = 0
+		endif
+	endmethod
+	public method SetVoteMenu takes VisualVote_voteMenu menu returns nothing
+		call .ClearVoteMenu()
+		call DisplayTextToPlayer(Player(this), 0, 0, "cleared")
+		
+		call DisplayTextToPlayer(Player(this), 0, 0, "setting menu to: " + I2S(menu))
+		set .VoteMenu = menu
+		call menu.forPlayers.addEnd(this)
+		
+		if menu.rendered then
+			call DisplayTextToPlayer(Player(this), 0, 0, "refreshing menu on set")
+			call menu.refresh(this)
+		endif
+	endmethod
+	public static method SetVoteMenuAll takes VisualVote_voteMenu menu returns nothing
+		local SimpleList_ListNode curUserNode = PlayerUtils_FirstPlayer
+		
+		loop
+		exitwhen curUserNode == 0
+			call User(curUserNode.value).SetVoteMenu(menu)
+		set curUserNode = curUserNode.next
+		endloop
 	endmethod
 	
 	public method SetActiveEffect takes string strEffect, string attachPoint returns nothing
@@ -1655,6 +1707,13 @@ struct User extends array
 			set .LanguageCode = languageCode
 			
 			//TODO refresh multiboard
+			
+			//TODO refresh quests
+			
+			//refresh visual vote menu (if any active)
+			if .VoteMenu != 0 then
+				call .VoteMenu.refresh(this)
+			endif
 		endif
 	endmethod
 	
@@ -1692,6 +1751,8 @@ struct User extends array
         
         set new.CinematicPlaying = 0
         set new.CinematicQueue = SimpleList_List.create()
+		
+		set new.VoteMenu = 0
         
         set new.GameMode = Teams_GAMEMODE_STANDARD //regular mazing
         //FOR SOME REASON THIS IS RETURNING NULL, SO WE NEED TO SET ACTIVE UNIT AFTER MAP INIT
