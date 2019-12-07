@@ -419,19 +419,19 @@ library InGameCommands initializer init requires MazerGlobals, Platformer, Relay
 		local integer i = 0
 		local trigger t
 		
-		if CONFIGURATION_PROFILE != RELEASE then
-			set t = CreateTrigger()
-			
-			loop
-				call TriggerRegisterPlayerChatEvent(t, Player(i), "-", false )
-				//call TriggerRegisterPlayerChatEvent( t, Player(i), "!", false )
-			set i = i + 1
-			exitwhen i >= 8
-			endloop
-			
-			call TriggerAddAction(t, function ParseCommand)
-			
-			set t = null
-		endif
+		// if CONFIGURATION_PROFILE != RELEASE then
+		set t = CreateTrigger()
+		
+		loop
+			call TriggerRegisterPlayerChatEvent(t, Player(i), "-", false )
+			//call TriggerRegisterPlayerChatEvent( t, Player(i), "!", false )
+		set i = i + 1
+		exitwhen i >= 8
+		endloop
+		
+		call TriggerAddAction(t, function ParseCommand)
+		
+		set t = null
+		// endif
 	endfunction
 endlibrary
