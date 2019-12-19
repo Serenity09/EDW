@@ -9,7 +9,7 @@
 [b][color=#000000]Stay away from the dark[/color][/b]
 
 
-
+[color=#e1c492]
 A game to play, with friend and foe
 Run fast first, but now so slow
 Skate on ice, skate on snow
@@ -18,11 +18,21 @@ Easy now, what will show?
 
 [Left]
 [Tabs]
+[Tab=Worlds]Learn how the basics of the game in a easy-does-it tutorial level. While on the tutorial level you'll have unlimited continues, your deaths won't be counted, and you'll even instantly come back to life! What a deal!
+
+Past the intro you'll find the Doors to different worlds. Each world has a different theme, mostly meaning the types of terrain and obstacles. The game is shipping with three worlds initially. A full game for new players will probably only see part of one world.
+
+[otablei][tr][td][img]https://i.imgur.com/4mryzQm.png[/img][/td][td]The land world is about optimal movement, but also being able to pause for a second when necessary. It's probably the most beginner friendly world, focusing on fun elements while keeping the gameplay familiar[/td][/tr]
+[tr][td][img]https://i.imgur.com/x6aLro7.png[/img][/td][td]The Ice world focuses on movement mechanics. It's meant to highlight your understanding and dexterity of movement. This world is pretty hard to start, and then picks up drastically from Level 3 onward[/td][/tr]
+[tr][td][img]https://i.imgur.com/nfFNnyP.png[/img][/td][td]The 2.5D world focuses on changing perspective. It's meant to highlight how the same experience can play out so many different ways. This world isn't easy, but fun is definitely prioritized over difficulty[/td][/tr][/otablei]
+
+As you advance through a world, you'll gain and lose continues, and (hopefully) gain in score. Run out of continues, though, and you'll be booted back to the Doors, where you can start another world. Want to retry a world? Go again and you'll be sent back to the last level you started. Your team cannot replay a world that they have already fully finished.
+[/Tab]
 [Tab=Game Modes]
 [hidden=Teams]
 [otablei]
 [tr][td]Solo[/td][td]Everyones on their own team![/td][/tr]
-[tr][td]Teams - Mixer[/td][td]Hope you remember how to talk to people![/td][/tr]
+[tr][td]Teams - Mixer*[/td][td]Hope you remember how to talk to people! (only available with 4+ players)[/td][/tr]
 [tr][td]Teams - One for All[/td][td]Everyone, get in here![/td][/tr]
 [/otablei]
 
@@ -32,37 +42,9 @@ When playing in a team mode, dying will leave a revive circle in your wake. [b]A
 [otablei]
 [tr][td]Vanilla[/td][td]More continues, more checkpoints, fewer enemies, basic glory[/td][/tr]
 [tr][td]Chocolate[/td][td]Fewer continues, fewer checkpoints, more enemies, advance glory[/td][/tr]
-[tr][td]99 and None[/td][td]Like Vanilla difficulty, except you start with 99 continues and never get anymore. Meant to be a more wholesome alternative to save/loading and memory editing. Still only comes in Vanilla, because you're clearly too basic for Chocolate[/td][/tr]
+[tr][td]99 and None*[/td][td]Like Vanilla difficulty, except you start with 99 continues and never get anymore. Meant to be a more wholesome alternative to save/loading and memory editing. Still only comes in Vanilla, because you're clearly too basic for Chocolate (only available when there's 1 player)[/td][/tr]
 [/otablei]
 [/hidden]
-
-Some settings have been intentionally left out of the options menus. I want to leave them preset for now, but let's play with their values based on feedback. The best candidates for feedback are: Time-limit is fixed to 45min (up from 30min) -- after which the team with the leading score will win -- and score to win immediately is fixed at 20. 
-[/Tab]
-[Tab=Worlds][Center]Choices, choices, everywhere; and not a one for me
-I hope when I wake up that I'll know where to be.
-
-Winter seems so cold and lonely,
-But at least there I can relate.
-
-Summer is too hot for me,
-I think I'll probably suffocate.
-
-Spring then is the place to be,
-But alas it never was.
-
-Fall's just around the corner then,
-That's the place for Oz.[/Center]
-
-
-Learn how the basics of the game in a easy-does-it tutorial level. While on the tutorial level you'll have unlimited continues, your deaths won't be counted, and you'll even instantly come back to life! What a deal!
-
-Past the intro you'll find the Doors to different worlds. Each world has a different theme, mostly focusing on the types of terrain and enemies. The game is shipping with three worlds initially. A full game for new players will probably only see part of one world.
-
-The land world is about optimal movement, but also being able to pause for a second when necessary. It's probably the most beginner friendly world, focusing on fun elements while keeping the gameplay familiar
-The Ice world focuses on movement mechanics. It's meant to highlight your understanding and dexterity of movement. This world is pretty hard to start, and then picks up drastically from Level 3 onward
-The 2.5D world focuses on changing perspective. It's meant to highlight how the same experience can play out so many different ways. This world isn't easy, but fun is definitely prioritized over difficulty
-
-As you advance through a world, you'll gain and lose continues, and (hopefully) gain in score. Run out of continues, though, and you'll be booted back to the Doors, where you can start another world. Want to retry a world? Go again and you'll be sent back to the last level you started. Your team cannot replay a world that they have already fully finished.
 [/Tab]
 [Tab=Terrain Types]
 [hidden=3D]
@@ -79,7 +61,7 @@ As you advance through a world, you'll gain and lose continues, and (hopefully) 
 [tr][td]Sand[/td][td]Causes "velocity running" effect[/td][/tr]
 [tr][td]Compass Tile[/td][td]Enables willful teleportation in 4 cardinal compass directions[/td][/tr]
 [tr][td]Mossy Bricks[/td][td]Switch between 3D and 2D[/td][/tr]
-[tr][td]The Road[/td][td]The inky asphalt of the soul. No really, it's just visual[/td][/tr]
+[tr][td]The Road[/td][td]The inky asphalt of the soul. Really, it's just visual[/td][/tr]
 [/otablei]
 [/hidden]
 
@@ -134,14 +116,14 @@ As you advance through a world, you'll gain and lose continues, and (hopefully) 
 [/otablei]
 [/hidden]
 
-[hidden=Consistently placed on levels with many enemies]
+[hidden=Available on levels with many enemies]
 [otablei]
 [tr][td]Solo Invulnerability[/td][td]Long-duration invulnerability from [b]just[/b] moving enemy units. Applies to just you[/td][/tr]
 [tr][td]Team Invulnerability[/td][td]Short-duration invulnerability from [b]just[/b] moving enemy units. Applies to your full team[/td][/tr]
 [/otablei]
 [/hidden]
 
-[hidden=Screenshots][h3]Powerup models may change to be more clear[/h3]
+[hidden=Screenshots][h3]Powerup models may change in the future to be more clear[/h3]
 [otablei]
 [tr][td]Continues[/td][td][img]https://i.imgur.com/shjfcIS.png[/img][/td][/tr]
 [tr][td]Score[/td][td][img]https://i.imgur.com/4PLJNsT.png[/img][/td][/tr]
@@ -149,40 +131,39 @@ As you advance through a world, you'll gain and lose continues, and (hopefully) 
 [/otablei]
 [/hidden]
 [/Tab]
-[Tab=Screenshots]Submit your screenshots to this thread or via PM!
-[hidden=Ice World]
-[img]https://i.imgur.com/8oy8jsV.jpg[/img]
-[img]https://imgur.com/IskZqCH.jpg[/img]
-[img]https://imgur.com/GNKiJMs.jpg[/img]
-[img]https://imgur.com/gbhil16.jpg[/img]
-[img]https://imgur.com/lQPkkfg.jpg[/img]
-[img]https://imgur.com/Q641Eir.jpg[/img]
-[img]https://imgur.com/CUcebJ0.jpg[/img]
-[img]https://imgur.com/r37OCR8.jpg[/img]
-[/hidden]
+[Tab=Languages]
+Escape Dream World natively supports the following 9 languages:
+English
+中文
+français
+Deutsche
+italiano
+한국어
+Polskie
+русский
+Español
 
-[hidden=2.5D world]
-[img]https://imgur.com/9QlhEMg.jpg[/img]
-[img]https://imgur.com/urkK2P6.jpg[/img]
-[img]https://imgur.com/5aXxRFM.jpg[/img]
-[img]https://imgur.com/HAIEjSc.jpg[/img]
-[img]https://imgur.com/r7UTAwZ.jpg[/img]
-[img]https://imgur.com/Jy6u1cm.jpg[/img]
-[img]https://imgur.com/TrcAd3C.jpg[/img]
-[img]https://imgur.com/jEpbO7v.jpg[/img]
-[img]https://imgur.com/aTVHqut.jpg[/img]
-[img]https://imgur.com/hIdHROT.jpg[/img]
-[/hidden]
+The language you installed with will be auto-detected as your default language shortly after the game begins, but you can always change during the game (see commands)
+
+Please visit https://docs.google.com/spreadsheets/d/1ENzdwF7Wejor-wKC4IyFGPAUnudymTFKjxlcKBTrSKU/edit?usp=sharing to contribute to the translation effort for your language! Make your contributions directly in the Tracking spreadsheet (replace the auto-translation Google provides) and then color the cell red. (PM me directly if you make any updates, as I don't regularly check the spreadsheet unless notified)
+It is easy to add **basic** support for a new language, so feel free to request your language in this thread if it was left out! Just be aware that **basic** means **bad** translations
+[/Tab]
+[Tab=Commands]Enter any command by typing "-" and then the command in game chat! All commands can be entered in any language
+[otablei]
+[tr][td]-afk[/td][td]Immediately set your status to AFK. Setting your status this way has no long-term penalty[/td][/tr]
+[tr][td]-english / -language[/td][td]Switch your language to any other language already supported by EDW. For example, type -English or -Français[/td][/tr][/otablei]
+
+You can also enable / disable "Camera Tracking" by pressing the escape key! This mode is useful if you have a hard time with ice in general. 
+*Pro Tip* You can also use "Camera Tracking" to reset your camera zoom level if you mess it up in game (ex. by accidentally scrolling)
+[/Tab]
+[Tab=Screenshots]Submit your screenshots to this thread or via PM!
+[img]https://i.imgur.com/G0lAMXp.jpg[/img]
+[img]https://i.imgur.com/adlW3Nx.png[/img]
+[img]https://i.imgur.com/71HSz19.jpg[/img]
 [/Tab]
 [Tab=Videos]Submit links to your videos to this thread or via PM!
-Demo of square and diamond 2d geometry shapes: https://www.youtube.com/watch?v=qql13Uy7qbg&feature=youtu.be
-Demo of Ice world: 
-Demo of 2.5D world: 
 [/Tab]
-[Tab=Changelog]Full development log can be found at https://trello.com/b/L5ajt18j/edw
-[2018-12-28] (v15.11) Third online alpha test
-[2018-12-27] (v15.6) Second online alpha test
-[2018-12-24] (v15.0) First online alpha test
+[Tab=Changelog][2019-12-7] (v1.0.0) First release!
 [/Tab]
 [Tab=Credits]Thanks to my partner, who's endured this map's development.
 
@@ -245,23 +226,24 @@ Raen7 - WC3 playercolors to hex codes (https://docs.google.com/spreadsheets/d/1w
 Rufus - Map Description guide & templates (https://www.hiveworkshop.com/threads/description-guide-maps.287829/)
 
 Help:
-Pat1487 - Too many small answers to list all (original source no longer exists)
+Pat1487 - Too many answers to list all (original source no longer exists)
 Anitarf, PurgeandFire111, Bannar - Questions about globals (http://www.wc3c.net/showthread.php?p=1134646#post1134646) 
 Anitarf, PurgeandFire111, BBQ, Fledermaus - Questions about structs (http://www.wc3c.net/showthread.php?p=1132076#post1132076)
 Anitarf, BBQ, Bribe - Wisp Wheel (http://www.wc3c.net/showthread.php?p=1131278#post1131278)
-Dr Super Good - Too many small answers to list all, but among which are tips to generating random points (https://www.hiveworkshop.com/threads/get-evenly-weighted-random-point-in-rectangle.294547/), and unit rotation mechanics (https://www.hiveworkshop.com/threads/unit-turning-mechanics.300224/)
+Dr Super Good - Too many answers to list all, but among which are tips to generating random points (https://www.hiveworkshop.com/threads/get-evenly-weighted-random-point-in-rectangle.294547/), unit rotation mechanics (https://www.hiveworkshop.com/threads/unit-turning-mechanics.300224/), MPQ localization (https://www.hiveworkshop.com/threads/data-storage-in-mpq.320370/) and general smugness about things I could have if only I used Starcraft 2's engine or, more recently, Lua
 -Manuel- - Fix to setting unit immobile/mobile (https://www.hiveworkshop.com/threads/prevent-movement.312061/#post-3321807)
 Pyrogasm & Wrda - Approach to making units locally visible/invisible (https://www.hiveworkshop.com/threads/make-units-locally-visible.310326/)
 wc3neverdies - A fix for selecting terrain in the World Editor (https://www.hiveworkshop.com/threads/world-editor-crash.320150/#post-3384554)
+Lep, Drake53, Pyrogasm, DSG, Tasyen - WC localization/language storage & auto-detection (https://www.hiveworkshop.com/threads/data-storage-in-mpq.320370/#post-3386304)
+TriggerHappy - Additional help on WC localization/language auto-detection via PM (primarily referencing https://www.hiveworkshop.com/threads/how-to-localize-map.304594/)
 [/Tab]
 [Tab=Future releases]The V1 release includes what I consider a fully playable game. To be fair, I think there's often too much going on, and occassionally too little. There's a lot more that I want to add, but I think its time to get some outside feedback. Here are my current priorities, in something like an order
-Language Localizations (German, French, etc) -- start with all major languages for important tutorial dialogues, but add in all dialogues as able. will need to look into if WC3 offers any extendable solution. since WC3 1.30+ games will often include multiple languages among its user list, the solution will need to run in the game instance, targetting local player, rather than be set at compile time
 
 Minigames -- every so often a random arcade game will be held between all teams. Progress for all teams in their current level will be fully saved (and paused while the minigame happens). Minigames should be short-scale games (around 5min duration) with a focus on fun, ala Mario Party. Each world should have 2 minigames in its theme. The winning team gets a choice between a boosted powerup (eg 5 additional continues, stealing 2 continues from a specific team, stealing 3 points from a random team). More interesting rewards should trickle down from Powerup scope enhancements
 
 The first Boss -- for either hard ice or platforming. will include checkpoint-based behaviors capable of handling 1+ teams. behaviors will be largely limited to teams on same CP, mostly to prevent FU moments from out of nowhere. Whatever the players use to hurt the boss, they can also use to snipe other teams' members
 
-The fourth platforming level -- the moon, focused on jumping between geometric planes
+The fourth platforming level -- Pluto, focused on jumping between geometric planes with low gravity
 
 Another world -- probably an easy ice world with lower scores, OR a world focused purely on platforming
 
@@ -283,13 +265,13 @@ Q: can you explain a mechanic more properly in game? trying to figure it out rea
 A: yes! Please let me know which ones need it. That said, I try to explain less than more, while keeping the penalty for failure small initially. I really like the idea of the player discovering the different terrain effects and then exploring how it effects their gameplay / how they can use them situationally
 
 Q: its hard to see the ice sometimes because of the trees!
-A: true again! But you have to admit the trees add a lot more of a vibe to those levels than leaving them empty, and i can assure you that trees cannot kill people in my game. You should always be utterly confident of the fact that any time you die, it was me personally who killed you, and i don't do that about trees. The only exception to this rule are mortars teams, who are, by nature, single-mindedly murderous. But this is splitting hairs, and there is something to your original point: you can still find trees not fun to deal with. Let me know the when/where/why that's the case and i'll remember your feelings (may not do anything about em, but they'll be there). Also, try those levels again with the wc3 occlusion setting enabled, and let me know how that is for you
+A: true again! But you have to admit the trees add a lot more of a vibe to those levels than leaving them empty, and i can assure you that trees cannot kill people in my game. You should always be utterly confident of the fact that any time you die, it was me personally who killed you, and i don't do that about trees. The only exception to this rule are mortars teams, who are, by nature, single-mindedly murderous. 
+But this is splitting hairs, and there is something to your original point: you can still find trees not fun to deal with. Let me know the when/where/why that's the case and i'll remember your feelings (may not do anything about em, but they'll be there). Also, try those levels again with the wc3 occlusion setting enabled, and let me know how that is for you
 
 Q: can I leave feedback directly?
 A: yes! Thank you for taking the time to share. PM me directly here, or reply to the thread here
 [/Tab]
-[Tab=Bugs]Only showstoppers will be shown on the forum. For the full up-to-date list, check https://trello.com/b/L5ajt18j/edw
-1. Desync issue when multiple users play together and meet an unknown set of conditions. The set is not always met, and so desync is not always problematic. This looks to be ultimately on Blizzard to fix, but it also appears that not every map is desyncing, so a WE side fix might also be possible.
-[/Tab]
+[Tab=Bugs]Only showstopper issues will be updated here.[/Tab]
 [/Tabs]
 [/Left]
+[/color]
