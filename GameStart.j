@@ -86,6 +86,7 @@ library EDWGameStart initializer Init requires TimerUtils, Levels, EDWVisualVote
         
         //ADD LOCUST TO ALL OF BROWNS UNITS
         call AddLocustAll()
+		call EnablePreSelect(true, false)
         
         //CALL OTHER INITS
         call EDWPlayerSlotsInit()

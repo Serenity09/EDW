@@ -390,6 +390,8 @@ library InGameCommands initializer init requires MazerGlobals, Platformer, Relay
 				// set async = User.SyncLocalCameraIdleTime()
 				// call async.Then(OnAllCameraSync, 0, async)
 			// endif
+			elseif cmd == "error" or cmd == "err" then
+				call ThrowError(true, "InGameCommands", "ParseCommand", "error", 0, "User forced an error!")
 			endif
 		endif
 		

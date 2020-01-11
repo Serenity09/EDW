@@ -123,9 +123,10 @@ struct User extends array
 		set .VoteMenu = menu
 		call menu.forPlayers.addEnd(this)
 		
-		if menu.rendered then
-			call menu.refresh(this)
-		endif
+		// current approach to this causes desync issues
+		// if menu.rendered then
+			// call menu.refresh(this)
+		// endif
 	endmethod
 	public static method SetVoteMenuAll takes VisualVote_voteMenu menu returns nothing
 		local SimpleList_ListNode curUserNode = PlayerUtils_FirstPlayer
@@ -1796,6 +1797,19 @@ struct User extends array
 		endloop
 	endmethod
 	
+	public method AppreciateTranslator takes nothing returns nothing	
+		local string source = LocalizeContent('TRSO', this.LanguageCode)
+		
+		//check if language has custom translations in general
+		if source != null and source != "" then
+			//get the specific translator for the specific language			
+			call DisplayTextToPlayer(Player(this), 0, 0, StringFormat2(LocalizeContent('TYTR', this.LanguageCode), ColorValue(source), LocalizeContent('LNAM', this.LanguageCode)))
+		//check if the language is auto translated. no appreciation for original English
+		elseif .LanguageCode != "en" then
+			call DisplayTextToPlayer(Player(this), 0, 0, LocalizeContent('TYGO', this.LanguageCode))
+		endif
+	endmethod
+	
 	public method SetLanguageCode takes string languageCode returns nothing
 		if .LanguageCode != languageCode and GetIDForLanguageCode(languageCode) != 0 then
 			set .LanguageCode = languageCode
@@ -1808,15 +1822,20 @@ struct User extends array
 			//refresh quests
 			call LocalizeAllQuestsForPlayer(this)
 			
+			//current approach to this causes desync
 			//refresh visual vote menu (if any active)
-			if .VoteMenu != 0 then
-				call .VoteMenu.refresh(this)
-			endif
+			// if .VoteMenu != 0 then
+				// call .VoteMenu.refresh(this)
+			// endif
+			
+			call .AppreciateTranslator()
 		endif
 	endmethod
 	
 	private static method SyncUserLanguageCode takes SyncRequest request, User user returns integer
 		set user.LanguageCode = request.Data
+		
+		call user.AppreciateTranslator()
 		// call DisplayTextToPlayer(Player(user), 0, 0, request.Data)
 		
 		// call request.destroy()
@@ -1824,14 +1843,10 @@ struct User extends array
 		return 0
 	endmethod
     public static method create takes integer playerID returns thistype
-        local thistype new
+        local thistype new = playerID
 		local SyncRequest request
-        
-        set new = playerID
-        
+                
         //debug call DisplayTextToPlayer(Player(0), 0, 0, "Creating User: " + I2S(new))
-        
-        //set new.PlayerID = new
         set new.Team = 0
         set new.Deaths = 0
         set new.IsAlive = true
@@ -1893,10 +1908,7 @@ struct User extends array
 			set User.LocalAFKThreshold = AFK_CAMERA_MAX_TIMEOUT
 		endif
 		
-		// set User.AFKLocalCameraTimeSyncEvent = CreateTrigger()
-		// set User.AFKSyncLocalCameraTimePromises = SimpleList_List.create()
-		// call TriggerAddCondition(User.AFKLocalCameraTimeSyncEvent, Condition(function thistype.OnSyncLocal))
-		
+		//initialize static properties
 		set User.AFKSyncEvent = CreateTrigger()
 		call TriggerAddCondition(thistype.AFKSyncEvent, Condition(function thistype.ToggleAFKCallback))
 		set User.LocalCameraIdleTime = 0.

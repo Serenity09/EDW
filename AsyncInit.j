@@ -44,15 +44,18 @@ library AsyncInit requires SimpleList, Deferred, All optional ErrorMessage
 	
 	private function InitErrorCheck takes nothing returns nothing
 		if AsyncInit == 0 then
-			call DisplayTextToPlayer(GetLocalPlayer(), 0, 0, "A critical error occured during initialization. Please email segal35@gmail.com for assistance")
+			call DisplayTextToPlayer(GetLocalPlayer(), 0, 0, "A critical error occured during initialization. Please email wcescapedreamworld@gmail.com for assistance")
 		
 			static if LIBRARY_ErrorMessage then
 				call ThrowError(true, "AsyncInit", "InitErrorCheck", null, 0, "A critical error occured during initialization")
 			endif
 		else
 			if not AsyncInit.Resolved then
-				static if LIBRARY_ErrorMessage then
-					call ThrowError(true, "AsyncInit", "InitErrorCheck", null, 0, "Failed to fully resolve!")
+				// static if LIBRARY_ErrorMessage then
+					// call ThrowError(true, "AsyncInit", "InitErrorCheck", null, 0, "Failed to fully resolve!")
+				// endif
+				if CONFIGURATION_PROFILE != RELEASE then
+					call DisplayTextToPlayer(GetLocalPlayer(), 0, 0, "Async init failed to resolve on its own (likely due to a player disconnect during load). Attempting to resolve it manually")
 				endif
 				
 				call AsyncInit.Resolve(0)

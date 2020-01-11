@@ -22,7 +22,7 @@ library StringFormat
 		exitwhen iSource > sourceLength
 			if iSource == sourceLength then
 				return format + SubString(source, iFormat, iSource)
-			elseif SubString(source, iSource, iSource + 1) == PLACEHOLDER_START_DELIMITER then
+			elseif SubString(source, iSource, iSource + 1) == PLACEHOLDER_START_DELIMITER and SubString(source, iSource, iSource + PLACEHOLDER_LENGTH) == PLACEHOLDER_1 then
 				set format = format + SubString(source, iFormat, iSource) + arg1
 				
 				set iSource = iSource + PLACEHOLDER_LENGTH
@@ -41,6 +41,8 @@ library StringFormat
 		local integer iFormat = 0
 		local string format = ""
 		
+		local string curPlaceholderValue
+		
 		//iterate source string until end of string or encounter a placeholder
 		//add source string up to that point to format
 		loop
@@ -48,9 +50,11 @@ library StringFormat
 			if iSource == sourceLength then
 				return format + SubString(source, iFormat, iSource)
 			elseif SubString(source, iSource, iSource + 1) == PLACEHOLDER_START_DELIMITER then
-				if SubString(source, iSource, iSource + PLACEHOLDER_LENGTH) == PLACEHOLDER_1 then
+				set curPlaceholderValue = SubString(source, iSource, iSource + PLACEHOLDER_LENGTH)
+				
+				if curPlaceholderValue == PLACEHOLDER_1 then
 					set format = format + SubString(source, iFormat, iSource) + arg1
-				else
+				elseif curPlaceholderValue == PLACEHOLDER_2 then
 					set format = format + SubString(source, iFormat, iSource) + arg2
 				endif
 				
@@ -70,6 +74,8 @@ library StringFormat
 		local integer iFormat = 0
 		local string format = ""
 		
+		local string curPlaceholderValue
+		
 		//iterate source string until end of string or encounter a placeholder
 		//add source string up to that point to format
 		loop
@@ -77,11 +83,13 @@ library StringFormat
 			if iSource == sourceLength then
 				return format + SubString(source, iFormat, iSource)
 			elseif SubString(source, iSource, iSource + 1) == PLACEHOLDER_START_DELIMITER then
-				if SubString(source, iSource, iSource + PLACEHOLDER_LENGTH) == PLACEHOLDER_1 then
+				set curPlaceholderValue = SubString(source, iSource, iSource + PLACEHOLDER_LENGTH)
+				
+				if curPlaceholderValue == PLACEHOLDER_1 then
 					set format = format + SubString(source, iFormat, iSource) + arg1
-				elseif SubString(source, iSource, iSource + PLACEHOLDER_LENGTH) == PLACEHOLDER_2 then
+				elseif curPlaceholderValue == PLACEHOLDER_2 then
 					set format = format + SubString(source, iFormat, iSource) + arg2
-				else
+				elseif curPlaceholderValue == PLACEHOLDER_3 then
 					set format = format + SubString(source, iFormat, iSource) + arg3
 				endif
 				

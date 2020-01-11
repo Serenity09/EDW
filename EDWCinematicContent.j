@@ -46,6 +46,10 @@ library EDWCinematicContent requires EDWLevelContent, Cinema, EDWGameTime
         return user.GameMode == Teams_GAMEMODE_DYING or user.GameMode == Teams_GAMEMODE_DEAD
     endfunction
 	
+	private function IsUserRedAndFree takes User user returns boolean
+        return IsUserRed(user) and IsUserNotInCinema(user)
+    endfunction
+	
 	public function Initialize takes nothing returns nothing
 		local Cinematic cine
         local CinemaMessage cineMsg
@@ -106,7 +110,7 @@ library EDWCinematicContent requires EDWLevelContent, Cinema, EDWGameTime
 		
         set cineMsg = CinemaMessage.createEx(null, PRIMARY_SPEAKER_NAME, 'CiRd', DEFAULT_SHORT_TEXT_SPEED)
         set cine = Cinematic.create(gg_rct_SargeBeatRed, true, false, cineMsg)
-        set cine.ActivationCondition = IsUserRed
+        set cine.ActivationCondition = IsUserRedAndFree
         call cine.SetLastMessageDefaults()
 		call Levels_Level(1).AddCinematic(cine)
         

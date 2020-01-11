@@ -1,12 +1,12 @@
 [Center]
-[SIZE=6][B]
+[SIZE=6]
 [color=#9AD5CA]E[/color][color=#91CCC6]s[/color][color=#89C4C2]c[/color][color=#80BCBF]a[/color][color=#78B4BB]p[/color][color=#70ACB7]e[/color] [color=#5F9CB0]D[/color][color=#5794AD]r[/color][color=#4F8BA9]e[/color][color=#4683A5]a[/color][color=#3E7BA2]m[/color] [color=#2D6B9B]W[/color][color=#256397]o[/color][color=#1C5B93]r[/color][color=#145390]l[/color][color=#0C4B8C]d[/color]
-[/B][/SIZE]
+[/SIZE]
 [color=#F4F4F9]Pick your friends[/color]
 [color=#B8DBD9]Mind your surroundings[/color]
 [color=#586F7C]Avoid strangers[/color]
 [color=#2F4550]Face your inner demons[/color]
-[b][color=#000000]Stay away from the dark[/color][/b]
+[color=#000000][b]Stay away from the dark[/b][/color]
 
 
 [color=#e1c492]
@@ -14,17 +14,17 @@ A game to play, with friend and foe
 Run fast first, but now so slow
 Skate on ice, skate on snow
 Easy now, what will show?
-[/Center]
+[/color][/Center][color=#e1c492]
 
-[Left]
+
 [Tabs]
 [Tab=Worlds]Learn how the basics of the game in a easy-does-it tutorial level. While on the tutorial level you'll have unlimited continues, your deaths won't be counted, and you'll even instantly come back to life! What a deal!
 
 Past the intro you'll find the Doors to different worlds. Each world has a different theme, mostly meaning the types of terrain and obstacles. The game is shipping with three worlds initially. A full game for new players will probably only see part of one world.
 
-[otablei][tr][td][img]https://i.imgur.com/4mryzQm.png[/img][/td][td]The land world is about optimal movement, but also being able to pause for a second when necessary. It's probably the most beginner friendly world, focusing on fun elements while keeping the gameplay familiar[/td][/tr]
-[tr][td][img]https://i.imgur.com/x6aLro7.png[/img][/td][td]The Ice world focuses on movement mechanics. It's meant to highlight your understanding and dexterity of movement. This world is pretty hard to start, and then picks up drastically from Level 3 onward[/td][/tr]
-[tr][td][img]https://i.imgur.com/nfFNnyP.png[/img][/td][td]The 2.5D world focuses on changing perspective. It's meant to highlight how the same experience can play out so many different ways. This world isn't easy, but fun is definitely prioritized over difficulty[/td][/tr][/otablei]
+[otablei][tr][td][/td][td]The land world is about optimal movement, but also being able to pause for a second when necessary. It's probably the most beginner friendly world, focusing on fun elements while keeping the gameplay familiar[/td][/tr]
+[tr][td][/td][td]The Ice world focuses on movement mechanics. It's meant to highlight your understanding and dexterity of movement. This world is pretty hard to start, and then picks up drastically from Level 3 onward[/td][/tr]
+[tr][td][/td][td]The 2.5D world focuses on changing perspective. It's meant to highlight how the same experience can play out so many different ways. This world isn't easy, but fun is definitely prioritized over difficulty[/td][/tr][/otablei]
 
 As you advance through a world, you'll gain and lose continues, and (hopefully) gain in score. Run out of continues, though, and you'll be booted back to the Doors, where you can start another world. Want to retry a world? Go again and you'll be sent back to the last level you started. Your team cannot replay a world that they have already fully finished.
 [/Tab]
@@ -36,7 +36,7 @@ As you advance through a world, you'll gain and lose continues, and (hopefully) 
 [tr][td]Teams - One for All[/td][td]Everyone, get in here![/td][/tr]
 [/otablei]
 
-When playing in a team mode, dying will leave a revive circle in your wake. [b]Any[/b] player, not just their teammates, can revive a dead player.[/hidden]
+When playing in a team mode, dying will leave a revive circle in your wake. Any player, not just their teammates, can revive a dead player.[/hidden]
 
 [hidden=Difficulty]
 [otablei]
@@ -87,22 +87,22 @@ When playing in a team mode, dying will leave a revive circle in your wake. [b]A
 [hidden=Screenshots]
 [otablei]
 [tr][titletd]Terrain Type[/titletd][titletd]Screenshot[/titletd][/tr]
-[tr][td]Abyss[/td][td][img]https://imgur.com/cGWgkwc.png[/img][/td][/tr]
-[tr][td]Lava[/td][td][img]https://imgur.com/HyPOw5E.png[/img][/td][/tr]
-[tr][td]Vines[/td][td][img]https://imgur.com/AdgoppI.png[/img][/td][/tr]
-[tr][td]Lumpy Grass[/td][td][img]https://imgur.com/zJSDoMg.png[/img][/td][/tr]
-[tr][td]Light Grass[/td][td][img]https://imgur.com/Xs9Sf57.png[/img][/td][/tr]
-[tr][td]Dark Grass[/td][td][img]https://imgur.com/9dXMtZN.png[/img][/td][/tr]
-[tr][td]Leaves[/td][td][img]https://imgur.com/wmBLvqc.png[/img][/td][/tr]
-[tr][td]Light Ice[/td][td][img]https://imgur.com/GsmKSoD.png[/img][/td][/tr]
-[tr][td]Medium Ice[/td][td][img]https://imgur.com/EO4zllf.png[/img][/td][/tr]
-[tr][td]Dark Ice[/td][td][img]https://imgur.com/45p0MCI.png[/img][/td][/tr]
-[tr][td]Snow[/td][td][img]https://imgur.com/gV6wAWP.png[/img][/td][/tr]
-[tr][td]Rocky Snow[/td][td][img]https://imgur.com/HlJwY8B.png[/img][/td][/tr]
-[tr][td]Sand[/td][td][img]https://imgur.com/VEtQd3p.png[/img][/td][/tr]
-[tr][td]Diamond Tile[/td][td][img]https://imgur.com/tXETNdR.png[/img][/td][/tr]
-[tr][td]Mossy Bricks[/td][td][img]https://imgur.com/TOnqU2G.png[/img][/td][/tr]
-[tr][td]The Road[/td][td][img]https://i.imgur.com/zTVDcxc.png[/img][/td][/tr]
+[tr][td]Abyss[/td][td][/td][/tr]
+[tr][td]Lava[/td][td][/td][/tr]
+[tr][td]Vines[/td][td][/td][/tr]
+[tr][td]Lumpy Grass[/td][td][/td][/tr]
+[tr][td]Light Grass[/td][td][/td][/tr]
+[tr][td]Dark Grass[/td][td][/td][/tr]
+[tr][td]Leaves[/td][td][/td][/tr]
+[tr][td]Light Ice[/td][td][/td][/tr]
+[tr][td]Medium Ice[/td][td][/td][/tr]
+[tr][td]Dark Ice[/td][td][/td][/tr]
+[tr][td]Snow[/td][td][/td][/tr]
+[tr][td]Rocky Snow[/td][td][/td][/tr]
+[tr][td]Sand[/td][td][/td][/tr]
+[tr][td]Diamond Tile[/td][td][/td][/tr]
+[tr][td]Mossy Bricks[/td][td][/td][/tr]
+[tr][td]The Road[/td][td][/td][/tr]
 [/otablei]
 [/hidden]
 [/Tab]
@@ -118,16 +118,16 @@ When playing in a team mode, dying will leave a revive circle in your wake. [b]A
 
 [hidden=Available on levels with many enemies]
 [otablei]
-[tr][td]Solo Invulnerability[/td][td]Long-duration invulnerability from [b]just[/b] moving enemy units. Applies to just you[/td][/tr]
-[tr][td]Team Invulnerability[/td][td]Short-duration invulnerability from [b]just[/b] moving enemy units. Applies to your full team[/td][/tr]
+[tr][td]Solo Invulnerability[/td][td]Long-duration invulnerability from just moving enemy units. Applies to just you[/td][/tr]
+[tr][td]Team Invulnerability[/td][td]Short-duration invulnerability from just moving enemy units. Applies to your full team[/td][/tr]
 [/otablei]
 [/hidden]
 
 [hidden=Screenshots][h3]Powerup models may change in the future to be more clear[/h3]
 [otablei]
-[tr][td]Continues[/td][td][img]https://i.imgur.com/shjfcIS.png[/img][/td][/tr]
-[tr][td]Score[/td][td][img]https://i.imgur.com/4PLJNsT.png[/img][/td][/tr]
-[tr][td]Invulnerability[/td][td][img]https://i.imgur.com/s5Edy62.png[/img][/td][/tr]
+[tr][td]Continues[/td][td][/td][/tr]
+[tr][td]Score[/td][td][/td][/tr]
+[tr][td]Invulnerability[/td][td][/td][/tr]
 [/otablei]
 [/hidden]
 [/Tab]
@@ -145,7 +145,7 @@ Español
 
 The language you installed with will be auto-detected as your default language shortly after the game begins, but you can always change during the game (see commands)
 
-Please visit https://docs.google.com/spreadsheets/d/1ENzdwF7Wejor-wKC4IyFGPAUnudymTFKjxlcKBTrSKU/edit?usp=sharing to contribute to the translation effort for your language! Make your contributions directly in the Tracking spreadsheet (replace the auto-translation Google provides) and then color the cell red. (PM me directly if you make any updates, as I don't regularly check the spreadsheet unless notified)
+Please visit EDW Placeholder Translation to contribute to the translation effort for your language! Make your contributions directly in the Tracking spreadsheet (replace the auto-translation Google provides) and then color the cell red. (PM me directly if you make any updates, as I don't regularly check the spreadsheet unless notified)
 It is easy to add **basic** support for a new language, so feel free to request your language in this thread if it was left out! Just be aware that **basic** means **bad** translations
 [/Tab]
 [Tab=Commands]Enter any command by typing "-" and then the command in game chat! All commands can be entered in any language
@@ -153,13 +153,13 @@ It is easy to add **basic** support for a new language, so feel free to request 
 [tr][td]-afk[/td][td]Immediately set your status to AFK. Setting your status this way has no long-term penalty[/td][/tr]
 [tr][td]-english / -language[/td][td]Switch your language to any other language already supported by EDW. For example, type -English or -Français[/td][/tr][/otablei]
 
-You can also enable / disable "Camera Tracking" by pressing the escape key! This mode is useful if you have a hard time with ice in general. 
+You can also enable / disable "Camera Tracking" by pressing the escape key! This mode is useful if you have a hard time with ice in general.
 *Pro Tip* You can also use "Camera Tracking" to reset your camera zoom level if you mess it up in game (ex. by accidentally scrolling)
 [/Tab]
 [Tab=Screenshots]Submit your screenshots to this thread or via PM!
-[img]https://i.imgur.com/G0lAMXp.jpg[/img]
-[img]https://i.imgur.com/adlW3Nx.png[/img]
-[img]https://i.imgur.com/71HSz19.jpg[/img]
+
+
+
 [/Tab]
 [Tab=Videos]Submit links to your videos to this thread or via PM!
 [/Tab]
@@ -167,45 +167,49 @@ You can also enable / disable "Camera Tracking" by pressing the escape key! This
 [/Tab]
 [Tab=Credits]Thanks to my partner, who's endured this map's development.
 
-Shout out to the old WC3 crew: Pat1487, Achilles.42, Mazemasta77, Amazin[G], FFSlayer, Olonavy, hlw_rocer, popartica., Eat_Bacon_Daily, marksoccer, monkeys-forever, DoughnutMuffin, God[A]nt69, Makshak
+Shout out to the old WC3 crew: Pat1487, Achilles.42, Mazemasta77, Amazin[G], FFSlayer, Olonavy, Bandalar, hlw_rocer, KevKevQaz, KnightOfGods, BackseatDriver, popartica., Eat_Bacon_Daily, marksoccer, monkeys-forever, DoughnutMuffin, God[A]nt69, Makshak, 13phoenix
 To Pat1487 and Anitarf for level ideas and more coding guidance than anyone should reasonably expect
+
+Translations:
+Otherknownoise - Simplified Chinese
 
 Code:
 Pat1487 - OG locust trick
-Vexorian - TimerUtils (http://www.wc3c.net/showthread.php?t=101322)
-Anitarf - vector3 (http://www.wc3c.net/showthread.php?t=87027)
-Bribe - Table (https://www.hiveworkshop.com/threads/snippet-new-table.188084/)
+Vexorian - TimerUtils (Chromatic TimerUtils 2.0 [for 1.24b+] - Wc3C.net)
+Anitarf - vector3 (Vector - Wc3C.net)
+Bribe - Table ([Snippet] New Table)
 Alain.Mark - PlayerUtils
-Nestheasarus - Alloc, DummyCaster, Event, Order IDs (https://github.com/nestharus/JASS/tree/master/jass but, realistically, https://github.com/nestharus/JASS/tree/master/lua/wc3%20project/Sample/mapname/src/imports)
-TriggerHappy - PreventSave (https://www.hiveworkshop.com/threads/snippet-preventsave.158048/)
+Nestheasarus - Alloc, DummyCaster, Event, Order IDs (nestharus/JASS but, realistically, nestharus/JASS)
+TriggerHappy - PreventSave ([Snippet] PreventSave)
 
 Terrain Art:
-MassiveMaster - Road (https://www.hiveworkshop.com/threads/north_rock-blp.143827/)
+MassiveMaster - Road (North_rock.blp)
 
 3D Models & Textures:
-MC ! - Blackhole (https://www.hiveworkshop.com/threads/blackhole.48038/#resource-20933)
-Ket - Soviet Truck (https://www.hiveworkshop.com/threads/soviet-truck.220028/), Soviet Car (https://www.hiveworkshop.com/threads/soviet-car.219538/#resource-33052)
-skrab - Firetruck (https://www.hiveworkshop.com/threads/firetruck.112949/#resource-26401), Ambulance (https://www.hiveworkshop.com/threads/ambulance.112740/#resource-26389), Police Car (https://www.hiveworkshop.com/threads/police-car.112571/)
-SD_Ryoko - Corvette (https://www.hiveworkshop.com/threads/vette.47681/#resource-20459)
-Illidan(Evil)X - Jeep (https://www.hiveworkshop.com/threads/jeep.50462/#resource-23707)
-vile - SlidingDustWith(out)Rocks (https://www.hiveworkshop.com/threads/slidingdustwithrocks.49097/#resource-22244)
-Firelord213 - Walk Sign (https://www.hiveworkshop.com/threads/walkpole.93195/#resource-25495)
-3rgytr54 - Nowhere/Lost, Stop, and Do Not Enter signs (https://www.hiveworkshop.com/threads/street-name-sign.121171/, https://www.hiveworkshop.com/threads/stop-sign.121175/#resource-26814, https://www.hiveworkshop.com/threads/do-not-enter-sign.121169/)
-Blood Raven - Snow Pile (https://www.hiveworkshop.com/threads/frozen-cliff-snow-pile.245486/#resource-35326)
+MC ! - Blackhole (blackhole)
+Ket - Soviet Truck (Soviet truck), Soviet Car (Soviet car)
+skrab - Firetruck (Firetruck), Ambulance (Ambulance), Police Car (Police car)
+SD_Ryoko - Corvette (Vette)
+Illidan(Evil)X - Jeep (Jeep)
+vile - SlidingDustWith(out)Rocks (SlidingDustWithRocks)
+Firelord213 - Walk Sign (Walkpole)
+3rgytr54 - Nowhere/Lost, Stop, and Do Not Enter signs (Street Name Sign, Stop Sign, Do Not Enter Sign)
+Blood Raven - Snow Pile (Frozen Cliff + Snow Pile)
 
 2D Textures:
-Anonymous author - Anime Sunset loadscreen art (https://www.wallpapervortex.com/wallpaper-38651_anime_scenery_anime_sunset.html)
+Anonymous author - Anime Sunset loadscreen art (Anime Sunset HD Wallpaper | 1920x1080 | ID:38651  - WallpaperVortex.com)
 
 Sound Effects:
 Hasbro - Frogger Victory
 
-Warcraft 3 Tools:
-Vexorian - vJASS compiler (http://www.wc3c.net/vexorian/jasshelpermanual.html)
+Tools:
+Vexorian - vJASS compiler (JassHelper 0.A.0.0)
 PipeDream, Vecorian, Cohadar, UMSWE team, Pitzermike, SFilip, Van Damm, Risc, ScorpioT1000, Mc!, Moyack, PurgeAndFire - JNGP World Editor v2.0
 MindWorx & the above - SharpCraft World Editor Extended
 Blizzard - Vanilla World Editor (Reforged)
-sumneko, actboy168, other authors? - w3x2lni (https://github.com/sumneko/w3x2lni/blob/master/docs/en-us/insider.md)
-Shadow Daemon - BLP Lab (https://www.hiveworkshop.com/threads/blp-lab-v0-5-0.137599/)
+sumneko, actboy168, other authors? - w3x2lni (sumneko/w3x2lni)
+Shadow Daemon - BLP Lab (BLP Lab v0.5.0)
+Google - Google Translate
 
 Influences:
 gameslayer001 - Platform Escape (influenced Platform/2D game mode and levels)
@@ -215,7 +219,7 @@ adamt - Maze (influenced land level design)
 Hasbro - Frogger (influenced land level designs)
 
 Guides:
-aznricepuff - My favorite guide to understanding vJASS's OOP design and intended usage (https://www.hiveworkshop.com/threads/vjass-oop-lesson.128236/#13)
+aznricepuff - My favorite guide to understanding vJASS's OOP design and intended usage (vJASS OOP Lesson)
 Nestheasarus - A guide to optimizing vJASS's syntactic sugar (where did you go)
 Codemonkey11 - A guide to scaling group enums in WC3's engine (https://www.hiveworkshop.com/threads/vjass-optimization-using-a-first-of-group-loop-for-enumeration.223140/)
 BloodRaven - A guide to WE doodads & terrain (https://www.hiveworkshop.com/threads/advanced-terraining-tutorial.203428/)
@@ -227,7 +231,7 @@ Rufus - Map Description guide & templates (https://www.hiveworkshop.com/threads/
 
 Help:
 Pat1487 - Too many answers to list all (original source no longer exists)
-Anitarf, PurgeandFire111, Bannar - Questions about globals (http://www.wc3c.net/showthread.php?p=1134646#post1134646) 
+Anitarf, PurgeandFire111, Bannar - Questions about globals (http://www.wc3c.net/showthread.php?p=1134646#post1134646)
 Anitarf, PurgeandFire111, BBQ, Fledermaus - Questions about structs (http://www.wc3c.net/showthread.php?p=1132076#post1132076)
 Anitarf, BBQ, Bribe - Wisp Wheel (http://www.wc3c.net/showthread.php?p=1131278#post1131278)
 Dr Super Good - Too many answers to list all, but among which are tips to generating random points (https://www.hiveworkshop.com/threads/get-evenly-weighted-random-point-in-rectangle.294547/), unit rotation mechanics (https://www.hiveworkshop.com/threads/unit-turning-mechanics.300224/), MPQ localization (https://www.hiveworkshop.com/threads/data-storage-in-mpq.320370/) and general smugness about things I could have if only I used Starcraft 2's engine or, more recently, Lua
@@ -236,7 +240,16 @@ Pyrogasm & Wrda - Approach to making units locally visible/invisible (https://ww
 wc3neverdies - A fix for selecting terrain in the World Editor (https://www.hiveworkshop.com/threads/world-editor-crash.320150/#post-3384554)
 Lep, Drake53, Pyrogasm, DSG, Tasyen - WC localization/language storage & auto-detection (https://www.hiveworkshop.com/threads/data-storage-in-mpq.320370/#post-3386304)
 TriggerHappy - Additional help on WC localization/language auto-detection via PM (primarily referencing https://www.hiveworkshop.com/threads/how-to-localize-map.304594/)
-[/Tab]
+deepstrasz, wolfman, x3GlikE - Hiding unit health bars (https://www.hiveworkshop.com/threads/hide-health-bar.193287/)
+Otherknownoise - bug reports for Respawning Gateways MUI, player dropped during gameload
+
+Feedback:
+Thank you everyone again for taking time to consider my game and giving feedback and/or suggestions!
+
+tough_zai - v1.0 car feedback
+Otherknownoise - v1.0 difficulty feedback
+deepstrasz - health bar feedback/suggestion, camera feedback/suggestion, snow feedback
+Eat_Bacon_Daily - victory condition (and how its related to player) feedback/suggestion[/Tab]
 [Tab=Future releases]The V1 release includes what I consider a fully playable game. To be fair, I think there's often too much going on, and occassionally too little. There's a lot more that I want to add, but I think its time to get some outside feedback. Here are my current priorities, in something like an order
 
 Minigames -- every so often a random arcade game will be held between all teams. Progress for all teams in their current level will be fully saved (and paused while the minigame happens). Minigames should be short-scale games (around 5min duration) with a focus on fun, ala Mario Party. Each world should have 2 minigames in its theme. The winning team gets a choice between a boosted powerup (eg 5 additional continues, stealing 2 continues from a specific team, stealing 3 points from a random team). More interesting rewards should trickle down from Powerup scope enhancements
@@ -265,7 +278,7 @@ Q: can you explain a mechanic more properly in game? trying to figure it out rea
 A: yes! Please let me know which ones need it. That said, I try to explain less than more, while keeping the penalty for failure small initially. I really like the idea of the player discovering the different terrain effects and then exploring how it effects their gameplay / how they can use them situationally
 
 Q: its hard to see the ice sometimes because of the trees!
-A: true again! But you have to admit the trees add a lot more of a vibe to those levels than leaving them empty, and i can assure you that trees cannot kill people in my game. You should always be utterly confident of the fact that any time you die, it was me personally who killed you, and i don't do that about trees. The only exception to this rule are mortars teams, who are, by nature, single-mindedly murderous. 
+A: true again! But you have to admit the trees add a lot more of a vibe to those levels than leaving them empty, and i can assure you that trees cannot kill people in my game. You should always be utterly confident of the fact that any time you die, it was me personally who killed you, and i don't do that about trees. The only exception to this rule are mortars teams, who are, by nature, single-mindedly murderous.
 But this is splitting hairs, and there is something to your original point: you can still find trees not fun to deal with. Let me know the when/where/why that's the case and i'll remember your feelings (may not do anything about em, but they'll be there). Also, try those levels again with the wc3 occlusion setting enabled, and let me know how that is for you
 
 Q: can I leave feedback directly?
@@ -273,5 +286,5 @@ A: yes! Thank you for taking the time to share. PM me directly here, or reply to
 [/Tab]
 [Tab=Bugs]Only showstopper issues will be updated here.[/Tab]
 [/Tabs]
-[/Left]
+
 [/color]
