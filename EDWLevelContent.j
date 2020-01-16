@@ -6,6 +6,7 @@ library EDWLevelContent requires LevelIDGlobals, EDWLevels, SimpleList, Teams, L
 		call Levels_Level.CBTeam.DiscoverQuestForTeam(EDWQuests_FIRE)
 		call Levels_Level.CBTeam.DiscoverQuestForTeam(EDWQuests_SKATING)
 		call Levels_Level.CBTeam.DiscoverQuestForTeam(EDWQuests_PLATFORMING)
+		call Levels_Level.CBTeam.DiscoverQuestForTeam(EDWQuests_COMMANDS)
 	endfunction
 		
 	public function Initialize takes nothing returns nothing

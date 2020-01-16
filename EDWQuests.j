@@ -4,6 +4,7 @@ library EDWQuests initializer init requires LocalizationData, SimpleList, Player
 		public quest FIRE
 		public quest SKATING
 		public quest PLATFORMING
+		public quest COMMANDS
 		
 		private constant boolean DEBUG_QUESTS = false
 	endglobals
@@ -35,12 +36,20 @@ library EDWQuests initializer init requires LocalizationData, SimpleList, Player
 		call LocalizeQuestDescription(Player(user), PLATFORMING, LocalizeContent('TQ4A', user.LanguageCode) /*
 		*/ + "\n\n" + LocalizeContent('TQ4B', user.LanguageCode) /*
 		*/ + "\n" + LocalizeContent('TQ4C', user.LanguageCode))
+		
+		call LocalizeQuestDescription(Player(user), COMMANDS, LocalizeContent('TQ5A', user.LanguageCode) /*
+		*/ + "\n\n" + StringFormat1("-{0}", LocalizeContent('CAFK', user.LanguageCode)) /*
+		*/ + "\n" + LocalizeContent('TQ5B', user.LanguageCode) /*
+		*/ + "\n\n" + StringFormat1("-{0}", LocalizeContent('LTIT', user.LanguageCode)) /*
+		*/ + "\n" + LocalizeContent('TQ5C', user.LanguageCode) /*
+		*/ + "\n\n" + LocalizeContent('TQ5D', user.LanguageCode))
 			
 		if GetLocalPlayer() == Player(user) then
 			call QuestSetTitle(OBSTACLE, LocalizeContent('TQ10', user.LanguageCode))
 			call QuestSetTitle(FIRE, LocalizeContent('TQ20', user.LanguageCode))
 			call QuestSetTitle(SKATING, LocalizeContent('TQ30', user.LanguageCode))
 			call QuestSetTitle(PLATFORMING, LocalizeContent('TQ40', user.LanguageCode))
+			call QuestSetTitle(COMMANDS, LocalizeContent('TQ50', user.LanguageCode))
 		endif
 	endfunction
 	function LocalizeAllQuestsForAllPlayers takes nothing returns nothing
@@ -68,7 +77,7 @@ library EDWQuests initializer init requires LocalizationData, SimpleList, Player
 		call QuestSetTitle(q, "Credits")
 		call QuestSetDescription(q, "Thanks to my partner, who's endured this map's development." /*
 		*/ + "\n\nShout out to the old WC3 crew, whose names will be forever ideal: Pat1487, Achilles.42, Mazemasta77, Amazin[G], FFSlayer, Olonavy, hlw_rocer, popartica., Eat_Bacon_Daily, marksoccer, monkeys-forever, DoughnutMuffin, God[A]nt69, Makshak" /*
-		*/ + "\n\nFull credits for the map can be found at: ")
+		*/ + "\n\nFull credits for the map can be found at https://www.hiveworkshop.com/")
 		call QuestSetIconPath(q, "ReplaceableTextures\\CommandButtons\\BTNBookOfTheDead.blp")
 		call QuestSetRequired(q, true)
 		call QuestSetDiscovered(q, true)
@@ -112,6 +121,12 @@ library EDWQuests initializer init requires LocalizationData, SimpleList, Player
 		call QuestSetRequired(PLATFORMING, false)
 		call QuestSetDiscovered(PLATFORMING, DEBUG_QUESTS)
 		call QuestSetCompleted(PLATFORMING, false)
+		
+		set COMMANDS = CreateQuest()
+		call QuestSetIconPath(COMMANDS, "ReplaceableTextures\\CommandButtons\\BTNSnazzyScroll.tga")
+		call QuestSetRequired(COMMANDS, false)
+		call QuestSetDiscovered(COMMANDS, DEBUG_QUESTS)
+		call QuestSetCompleted(COMMANDS, false)
 		
 		// call DisplayTextToPlayer(Player(0), 0, 0, LocalizeContent('TQ1A', User(curUserNode.value).LanguageCode))
 		//localize all quest descriptions for all players
