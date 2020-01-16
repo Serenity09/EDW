@@ -3,6 +3,10 @@ library User requires UnitDefaultRadius, MazerGlobals, Platformer, TerrainHelper
 globals
 	User TriggerUser //used with events
 	
+	private constant real CAMERA_SETTINGS_AUTO_CHECK_TIMEOUT = .5
+	private constant real CAMERA_SETTINGS_AUTO_CHECK_BUFFER = 10.
+	private constant real CAMERA_SETTINGS_AUTO_FIX_DURATION = .5
+	
 	private constant real CAMERA_TARGET_POSITION_FLEX = 50.
 	private constant real AUTO_TRANSITION_BUFFER = .1
 	
@@ -1797,6 +1801,33 @@ struct User extends array
 		endloop
 	endmethod
 	
+	public method CheckDefaultCameraZoom takes nothing returns nothing
+		// call DisplayTextToPlayer(Player(this), 0, 0, "Current distance: " + R2S(GetCameraField(CAMERA_FIELD_TARGET_DISTANCE)) + ", AoA: " + R2S(GetCameraField(CAMERA_FIELD_ANGLE_OF_ATTACK)))
+		// call DisplayTextToPlayer(Player(this), 0, 0, "Default distance: " + R2S(CameraSetupGetField(DefaultCamera[this], CAMERA_FIELD_TARGET_DISTANCE)) + ", AoA: " + R2S(CameraSetupGetField(DefaultCamera[this], CAMERA_FIELD_ANGLE_OF_ATTACK)))
+		// call DisplayTextToPlayer(Player(this), 0, 0, "GameMode: " + I2S(.GameMode))
+		
+		if GetLocalPlayer() == Player(this) /*
+		*/ and .IsAlive and (.GameMode == Teams_GAMEMODE_STANDARD or .GameMode == Teams_GAMEMODE_STANDARD_PAUSED) /*
+		*/ and RAbsBJ(GetCameraField(CAMERA_FIELD_TARGET_DISTANCE) - CameraSetupGetField(DefaultCamera[this], CAMERA_FIELD_TARGET_DISTANCE)) >= CAMERA_SETTINGS_AUTO_CHECK_BUFFER then
+		// */ and (GetCameraField(CAMERA_FIELD_TARGET_DISTANCE) != CameraSetupGetField(DefaultCamera[this], CAMERA_FIELD_TARGET_DISTANCE) or GetCameraField(CAMERA_FIELD_ANGLE_OF_ATTACK) != CameraSetupGetField(DefaultCamera[this], CAMERA_FIELD_ANGLE_OF_ATTACK)) then
+			// call DisplayTextToPlayer(Player(this), 0, 0, "Resetting camera to default!")
+			
+			call SetCameraField(CAMERA_FIELD_TARGET_DISTANCE, CameraSetupGetField(DefaultCamera[this], CAMERA_FIELD_TARGET_DISTANCE), CAMERA_SETTINGS_AUTO_FIX_DURATION)
+			call SetCameraField(CAMERA_FIELD_ANGLE_OF_ATTACK, CameraSetupGetField(DefaultCamera[this], CAMERA_FIELD_ANGLE_OF_ATTACK), CAMERA_SETTINGS_AUTO_FIX_DURATION)
+		endif
+	endmethod
+	public static method CheckDefaultCameraZooms takes nothing returns nothing
+		local SimpleList_ListNode curUserNode = PlayerUtils_FirstPlayer
+		
+		loop
+		exitwhen curUserNode == 0
+			call User(curUserNode.value).CheckDefaultCameraZoom()
+		set curUserNode = curUserNode.next
+		endloop
+		
+		// call User(GetPlayerId(GetLocalPlayer())).CheckDefaultCameraZoom()
+	endmethod
+	
 	public method AppreciateTranslator takes nothing returns nothing	
 		local string source = LocalizeContent('TRSO', this.LanguageCode)
 		
@@ -1809,7 +1840,6 @@ struct User extends array
 			call DisplayTextToPlayer(Player(this), 0, 0, LocalizeContent('TYGO', this.LanguageCode))
 		endif
 	endmethod
-	
 	public method SetLanguageCode takes string languageCode returns nothing
 		if .LanguageCode != languageCode and GetIDForLanguageCode(languageCode) != 0 then
 			set .LanguageCode = languageCode
@@ -1831,7 +1861,6 @@ struct User extends array
 			call .AppreciateTranslator()
 		endif
 	endmethod
-	
 	private static method SyncUserLanguageCode takes SyncRequest request, User user returns integer
 		set user.LanguageCode = request.Data
 		
@@ -1842,6 +1871,7 @@ struct User extends array
 		
 		return 0
 	endmethod
+	
     public static method create takes integer playerID returns thistype
         local thistype new = playerID
 		local SyncRequest request
@@ -1868,7 +1898,8 @@ struct User extends array
 		set new.Statistics = null
 		set new.VoteMenu = 0
         
-        set new.GameMode = Teams_GAMEMODE_STANDARD //regular mazing
+        // set new.GameMode = Teams_GAMEMODE_STANDARD //regular mazing
+		set new.GameMode = Teams_GAMEMODE_HIDDEN
         //FOR SOME REASON THIS IS RETURNING NULL, SO WE NEED TO SET ACTIVE UNIT AFTER MAP INIT
         //set new.ActiveUnit = MazersArray[new]
         
@@ -1902,6 +1933,10 @@ struct User extends array
         local integer n = 0
         set User.ActivePlayers = 0
         
+		//auto check that player's camera doesn't get messed up
+		call TimerStart(CreateTimer(), CAMERA_SETTINGS_AUTO_CHECK_TIMEOUT, true, function thistype.CheckDefaultCameraZooms)
+		
+		//AFK infrastructure
 		static if DEBUG_AFK then
 			set User.LocalAFKThreshold = AFK_CAMERA_DEBUG_TIMEOUT
 		else
@@ -1941,7 +1976,7 @@ struct User extends array
 		set ToggleCameraTrackingTutorial = Cinematic.create(null, false, false, CinemaMessage.createEx(null, PRIMARY_SPEAKER_NAME, 'CCT1', DEFAULT_SHORT_TEXT_SPEED))
 		call ToggleCameraTrackingTutorial.AddMessage(CinemaMessage.createEx(null, PRIMARY_SPEAKER_NAME, 'CCT2', DEFAULT_LONG_TEXT_SPEED))
 		call ToggleCameraTrackingTutorial.AddMessage(CinemaMessage.createEx(null, PRIMARY_SPEAKER_NAME, 'CCT3', DEFAULT_MEDIUM_TEXT_SPEED))
-		call ToggleCameraTrackingTutorial.AddMessage(CinemaMessage.createEx(null, PRIMARY_SPEAKER_NAME, 'CCT4', DEFAULT_SHORT_TEXT_SPEED))
+		// call ToggleCameraTrackingTutorial.AddMessage(CinemaMessage.createEx(null, PRIMARY_SPEAKER_NAME, 'CCT4', DEFAULT_SHORT_TEXT_SPEED))
 		
 		call Cinematic.OnCinemaEnd.register(Condition(function thistype.ToggleCameraTrackingCinematicCleanup))
     endmethod
