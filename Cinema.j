@@ -201,6 +201,11 @@ struct Cinematic extends array
 				call cinemaCBModel.User.DisplayMessage(CinemaMessage(cinemaCBModel.CurrentMessage.value).Text, time + MESSAGE_ALIVE_BUFFER)
 			endif
 			
+			//flash unit speaker indicator for local player
+			if CinemaMessage(cinemaCBModel.CurrentMessage.value).Source != null and GetLocalPlayer() == Player(cinemaCBModel.User) then
+				call UnitAddIndicator(CinemaMessage(cinemaCBModel.CurrentMessage.value).Source, 0, 255, 0, 255)
+			endif
+			
 			//add the message's display time to the buffer time between this message and the next
 			//allows cinematics to show more than one message at once, while still controlling their display time
 			set time = time + CinemaMessage(cinemaCBModel.CurrentMessage.value).NextMessageBuffer
@@ -219,7 +224,7 @@ struct Cinematic extends array
     endmethod
     
     public method CanUserActivate takes User user returns boolean
-        return not .HasUserViewed(user) and user.IsActiveUnitInRect(.ActivationArea) and (.ActivationCondition == 0 or .ActivationCondition.evaluate(user))
+        return not .HasUserViewed(user) and not user.IsAFK and user.IsActiveUnitInRect(.ActivationArea) and (.ActivationCondition == 0 or .ActivationCondition.evaluate(user))
     endmethod
     
     public method Activate takes User user returns CinemaCallbackModel
