@@ -1,14 +1,4 @@
 library EDWLevelContent requires LevelIDGlobals, EDWLevels, SimpleList, Teams, Levels, EDWPatternSpawnDefinitions, Collectible, FastLoad
-	private function FinishedIntro takes nothing returns nothing
-		call TrackGameTime()
-		
-		call Levels_Level.CBTeam.DiscoverQuestForTeam(EDWQuests_OBSTACLE)
-		call Levels_Level.CBTeam.DiscoverQuestForTeam(EDWQuests_FIRE)
-		call Levels_Level.CBTeam.DiscoverQuestForTeam(EDWQuests_SKATING)
-		call Levels_Level.CBTeam.DiscoverQuestForTeam(EDWQuests_PLATFORMING)
-		call Levels_Level.CBTeam.DiscoverQuestForTeam(EDWQuests_COMMANDS)
-	endfunction
-		
 	public function Initialize takes nothing returns nothing
 		local Levels_Level l
 		local Checkpoint cp
@@ -35,7 +25,6 @@ library EDWLevelContent requires LevelIDGlobals, EDWLevels, SimpleList, Teams, L
 				
 		//FIRST LEVEL INITS HARD CODED
         set l = Levels_Level(INTRO_LEVEL_ID)
-		call l.AddLevelStopCB(Condition(function FinishedIntro))
 		
 		call IntroWorld_InitializeStartableContent()
 		

@@ -1,6 +1,7 @@
 library IntroWorld requires Recycle, Levels
 	public function InitializeStartableContent takes nothing returns nothing
 		local Levels_Level l = Levels_Level(INTRO_LEVEL_ID)
+		local Checkpoint cp
 		
 		local PatternSpawn pattern
 		local SimpleGenerator sg
@@ -9,6 +10,13 @@ library IntroWorld requires Recycle, Levels
 		
 		local SynchronizedGroup nsync
 		local SynchronizedUnit jtimber
+		
+		local integer rand
+		
+		// if RewardMode == GameModesGlobals_EASY or RewardMode == GameModesGlobals_CHEAT then
+			// set cp = l.InsertCheckpoint(gg_rct_IntroWorldCP_1_1a, gg_rct_IntroWorld_R2a, 1)
+			// call cp.InitGate(bj_PI, 1.25)
+		// endif
 		
 		set nsync = SynchronizedGroup.create()
 		call l.AddStartable(nsync)
@@ -25,24 +33,31 @@ library IntroWorld requires Recycle, Levels
 		
 		set pattern = LinePatternSpawn.createFromRect(IntroPatternSpawn, 1, gg_rct_Rect_052, TERRAIN_TILE_SIZE)
 		if RewardMode == GameModesGlobals_HARD then
-			set sg = SimpleGenerator.create(pattern, .75, 270, 14)
-			call sg.SetMoveSpeed(200.)
+			set sg = SimpleGenerator.create(pattern, l.GetWeightedRandomReal(.65, .85), 270, 14)
+			call sg.SetMoveSpeed(l.GetWeightedRandomReal(200, 250))
 		else
-			set sg = SimpleGenerator.create(pattern, 1., 270, 14)
-			call sg.SetMoveSpeed(175.)
+			set sg = SimpleGenerator.create(pattern, l.GetWeightedRandomReal(.9, 1.2), 270, 14)
+			call sg.SetMoveSpeed(l.GetWeightedRandomReal(150, 200))
 		endif
         call l.AddStartable(sg)
 		
         set boundedSpoke = BoundedSpoke.create(11970, 14465)
-        set boundedSpoke.InitialOffset = 2.25*TERRAIN_TILE_SIZE
-        set boundedSpoke.LayerOffset = 2.25*TERRAIN_QUADRANT_SIZE
-        set boundedSpoke.CurrentRotationSpeed = bj_PI / 6. * BoundedSpoke_TIMESTEP
-        call boundedSpoke.AddUnits('e00A', 3)
-        // call boundedSpoke.SetAngleBounds(bj_PI/4, bj_PI*3./4.)
-		call boundedSpoke.SetAngleBounds(55./180.*bj_PI, 125./180.*bj_PI)
-        
+        call boundedSpoke.SetAngleBounds(55./180.*bj_PI, 125./180.*bj_PI)
+		if RewardMode == GameModesGlobals_HARD then
+			set boundedSpoke.InitialOffset = 2.25*TERRAIN_TILE_SIZE
+			set boundedSpoke.LayerOffset = 2.25*TERRAIN_QUADRANT_SIZE
+			call boundedSpoke.AddUnits('e00A', 3)
+			
+			set boundedSpoke.CurrentRotationSpeed = bj_PI / l.GetWeightedRandomReal(6., 8.) * BoundedSpoke_TIMESTEP
+		else
+			set boundedSpoke.InitialOffset = 2.5*TERRAIN_TILE_SIZE
+			set boundedSpoke.LayerOffset = 3.25*TERRAIN_QUADRANT_SIZE
+			call boundedSpoke.AddUnits('e00A', 2)
+			
+			set boundedSpoke.CurrentRotationSpeed = bj_PI / 8. * BoundedSpoke_TIMESTEP
+		endif
 		call l.AddStartable(boundedSpoke)
-		
+				
 		if RewardMode == GameModesGlobals_HARD then
 			set nsync = SynchronizedGroup.create()
 			call l.AddStartable(nsync)
@@ -56,12 +71,25 @@ library IntroWorld requires Recycle, Levels
 			call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_Rect_031))
 			call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_Rect_032))
 			set jtimber.AllOrders.last.next = jtimber.AllOrders.first
-		
+			
+			set rand = l.GetWeightedRandomInt(0, 2)
+			
 			call l.AddStartable(MortarNTarget.create(SMLMORT, SMLTARG, Player(8), gg_rct_IntroWorld_Mortar1 , gg_rct_IntroWorld_Target1))
 		else
+			set rand = l.GetWeightedRandomInt(1, 3)
+			
 			call SetTerrainType(GetRectCenterX(gg_rct_IntroWorld_TC1), GetRectCenterY(gg_rct_IntroWorld_TC1), ABYSS, 0, 1, 0)
 		endif
 		
+		if rand > 0 then
+			call SetTerrainType(GetRectCenterX(gg_rct_IntroWorld_TC0B), GetRectCenterY(gg_rct_IntroWorld_TC0B), SLOWICE, 0, 1, 0)
+		endif
+		if rand > 1 then
+			call SetTerrainType(GetRectCenterX(gg_rct_IntroWorld_TC0A), GetRectCenterY(gg_rct_IntroWorld_TC0A), SLOWICE, 0, 1, 0)
+		endif
+		if rand > 2 then
+			call SetTerrainType(GetRectCenterX(gg_rct_IntroWorld_TC0C), GetRectCenterY(gg_rct_IntroWorld_TC0C), SLOWICE, 0, 1, 0)
+		endif
 		
 		// set nsync = SynchronizedGroup.create()
 		// call l.AddStartable(nsync)
@@ -76,7 +104,7 @@ library IntroWorld requires Recycle, Levels
 		// call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_Rect_274))
 		// set jtimber.AllOrders.last.next = jtimber.AllOrders.first
 		
-		call l.AddStartable(DrunkWalker_DrunkWalkerSpawn.create(gg_rct_IntroWorld_Drunks, 10, ICETROLL, 30))
+		call l.AddStartable(DrunkWalker_DrunkWalkerSpawn.create(gg_rct_IntroWorld_Drunks, 15, ICETROLL, 30))
 	endfunction
 	
 	function IntroWorldLevelStart takes nothing returns nothing

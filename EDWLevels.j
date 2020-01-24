@@ -1,11 +1,22 @@
 library EDWLevels requires LevelIDGlobals, Levels, PW4
+	private function FinishedIntro takes nothing returns nothing
+		call TrackGameTime()
+		
+		call Levels_Level.CBTeam.DiscoverQuestForTeam(EDWQuests_OBSTACLE)
+		call Levels_Level.CBTeam.DiscoverQuestForTeam(EDWQuests_FIRE)
+		call Levels_Level.CBTeam.DiscoverQuestForTeam(EDWQuests_SKATING)
+		call Levels_Level.CBTeam.DiscoverQuestForTeam(EDWQuests_PLATFORMING)
+		call Levels_Level.CBTeam.DiscoverQuestForTeam(EDWQuests_COMMANDS)
+	endfunction
+	
 	public function Initialize takes nothing returns nothing
 		local Levels_Level l
 		local Checkpoint cp
 		
 		//FIRST LEVEL INITS HARD CODED
         set l = Levels_Level.create(INTRO_LEVEL_ID, 0, 0, "IntroWorldLevelStart", "IntroWorldLevelStop", gg_rct_IntroWorld_R1, gg_rct_IntroWorld_Vision, gg_rct_IntroWorld_End, 0)
-        call l.AddCheckpoint(gg_rct_IntroWorldCP_1_1, gg_rct_IntroWorld_R2)
+        call l.AddLevelStopCB(Condition(function FinishedIntro))
+		call l.AddCheckpoint(gg_rct_IntroWorldCP_1_1, gg_rct_IntroWorld_R2)
         call l.AddCheckpoint(gg_rct_IntroWorldCP_1_2a, gg_rct_IntroWorld_R3a)
         call l.AddCheckpoint(gg_rct_IntroWorldCP_1_2, gg_rct_IntroWorld_R3)
 		
@@ -52,7 +63,7 @@ library EDWLevels requires LevelIDGlobals, Levels, PW4
 		//LAND WORLD A
 		//LEVEL 1
 		set l = Levels_Level.create(LW1_LEVEL_ID, 3, 3, "LW1Start", "LW1Stop", gg_rct_LWR_1_1, gg_rct_LW1_Vision, gg_rct_LW1_End, 0)
-		call l.AddCheckpoint(gg_rct_LWCP_1_1, gg_rct_LWR_1_2)		
+		call l.AddCheckpoint(gg_rct_LWCP_1_1, gg_rct_LWR_1_2)
 		
 		//LEVEL 2
 		set l = Levels_Level.create(LW2_LEVEL_ID, 3, 3, "LW2Start", "LW2Stop", gg_rct_LWR_2_1, gg_rct_LW2_Vision, gg_rct_LW2_End, l)
