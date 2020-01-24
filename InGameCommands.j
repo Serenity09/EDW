@@ -249,6 +249,7 @@ library InGameCommands initializer init requires MazerGlobals, Platformer, Relay
 		local Teams_MazingTeam team = User(pID).Team
 		local group unitgroup
 		local unit gunit
+		// local unit selectedUnit = FirstOfGroup(GetUnitsSelectedAll(Player(pID)))
 		
 		local Deferred async
 		
@@ -291,7 +292,22 @@ library InGameCommands initializer init requires MazerGlobals, Platformer, Relay
 			elseif cmd == "yf" then
 				set p.YFalloff = val
 			elseif cmd == "ms" then
-				set p.MoveSpeed = val
+				set unitgroup = GetUnitsSelectedAll(Player(pID))
+				set gunit = FirstOfGroup(unitgroup)
+				
+				if val != 0 then
+					set p.MoveSpeed = val
+				elseif gunit != null then
+					if GetUnitUserData(gunit) == 0 and IndexedUnit[gunit].MoveSpeed != -1 then
+						call DisplayTextToPlayer(Player(pID), 0, 0, "Not indexed or overriden: " + R2S(GetUnitMoveSpeed(gunit)))
+					else
+						call DisplayTextToPlayer(Player(pID), 0, 0, "Indexed: " + R2S(IndexedUnit[gunit].GetMoveSpeed()))
+					endif
+				endif
+				
+				call DestroyGroup(unitgroup)
+				set unitgroup = null
+				set gunit = null
 			elseif cmd == "msoff" then
 				set p.MoveSpeedVelOffset = val
 			elseif cmd == "ga" then

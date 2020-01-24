@@ -1,7 +1,10 @@
-library MovementSpeedHelpers requires UnitGlobals, IndexedUnit, Alloc
+library MovementSpeedHelpers requires UnitGlobals
 	//only so many units so not worth making these dynamically read a unit for values. might not even be possible for animation index
 	function IsUnitAnimated takes integer unitID returns boolean
 		return unitID == LGUARD or unitID == GUARD or unitID == ICETROLL or unitID == SPIRITWALKER or unitID == CLAWMAN or unitID == MAZER or unitID == CORVETTE or unitID == POLICECAR or unitID == FIRETRUCK or unitID == JEEP or unitID == PASSENGERCAR or unitID == TRUCK
+	endfunction
+	function GetStandAnimationIndex takes integer unitID returns integer
+		return 0
 	endfunction
 	function GetWalkAnimationIndex takes integer unitID returns integer
 		if unitID == LGUARD or unitID == GUARD then

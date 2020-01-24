@@ -196,7 +196,13 @@ library Recycle requires UnitGlobals, DisposableUnit
 				// if GetUnitMoveSpeed(u) != GetDefaultMoveSpeed(GetUnitTypeId(u)) then
 					// call SetUnitMoveSpeed(u, GetDefaultMoveSpeed(GetUnitTypeId(u)))
 				// endif
-				call SetUnitMoveSpeed(u, GetUnitDefaultMoveSpeed(u))
+				if GetDefaultMoveSpeed(GetUnitTypeId(u)) != 0 then
+					call IndexedUnit[u].SetMoveSpeed(GetDefaultMoveSpeed(GetUnitTypeId(u)))
+				else
+					call IndexedUnit[u].SetMoveSpeed(GetUnitDefaultMoveSpeed(u))
+				endif
+				
+				call SetUnitAnimationByIndex(u, GetStandAnimationIndex(GetUnitTypeId(u)))
 				call IssueImmediateOrder(u, "stop")
 				//moving/hiding units via these functions results in buggy recycles
                 //call SetUnitX(u, SAFE_X + r.count)

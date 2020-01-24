@@ -104,9 +104,9 @@ struct SimpleGenerator extends IStartable
 				call SetUnitAnimationByIndex(u, GetWalkAnimationIndex(GetUnitTypeId(u)))
 				
 				if generator.SpawnMoveSpeed == 0 then
-					call SetUnitTimeScale(u, IndexedUnit(GetUnitUserData(u)).GetMoveSpeed() / GetUnitDefaultMoveSpeed(u))
+					call SetUnitTimeScale(u, IndexedUnit(GetUnitUserData(u)).GetMoveSpeed() / GetDefaultMoveSpeed(GetUnitTypeId(u)))
 				else
-					call SetUnitTimeScale(u, generator.SpawnMoveSpeed / MOVEMENT_UPDATE_TIMESTEP / GetUnitDefaultMoveSpeed(u))
+					call SetUnitTimeScale(u, generator.SpawnMoveSpeed / MOVEMENT_UPDATE_TIMESTEP / GetDefaultMoveSpeed(GetUnitTypeId(u)))
 				endif
 			endif
 		call GroupAddUnit(generator.SpawnedUnits, u)

@@ -1,4 +1,4 @@
-library IndexedUnit requires UnitDefaultRadius
+library IndexedUnit requires UnitDefaultRadius, MovementSpeedHelpers
 	struct IndexedUnit extends array
 		public unit Unit
 		//replace the UnitUserData property that was taken
@@ -114,11 +114,8 @@ library IndexedUnit requires UnitDefaultRadius
 			if this.MoveSpeed != -1 then
 				return this.MoveSpeed
 			else
-				return GetUnitDefaultMoveSpeed(this.Unit)
+				return GetDefaultMoveSpeed(GetUnitTypeId(this.Unit))
 			endif
-		endmethod
-		public method UpdateMoveSpeed takes nothing returns nothing
-			set this.MoveSpeed = GetUnitMoveSpeed(this.Unit)
 		endmethod
 		public method SetMoveSpeed takes real movespeed returns nothing
 			set this.MoveSpeed = movespeed
