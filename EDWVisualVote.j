@@ -299,7 +299,7 @@ library EDWVisualVote requires VisualVote, ContinueGlobals, Teams, PlayerUtils, 
 			set welcomeCineTime = welcomeCineTime + DEFAULT_MEDIUM_TEXT_SPEED
 		elseif RewardMode == GameModesGlobals_HARD then
 			call welcomeCine.AddMessage(CinemaMessage.createEx(null, null, 'CiDH', DEFAULT_SHORT_TEXT_SPEED))
-			set welcomeCineTime = welcomeCineTime + DEFAULT_MEDIUM_TEXT_SPEED
+			set welcomeCineTime = welcomeCineTime + DEFAULT_SHORT_TEXT_SPEED
 		else //CHEAT
 			call welcomeCine.AddMessage(CinemaMessage.createEx(null, null, 'CiDC', DEFAULT_LONG_TEXT_SPEED))
 			set welcomeCineTime = welcomeCineTime + DEFAULT_LONG_TEXT_SPEED

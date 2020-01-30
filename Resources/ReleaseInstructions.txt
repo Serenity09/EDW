@@ -1,0 +1,19 @@
+Release Instructions:
+
+In World Editor:
+1. Disable all debug messages
+2. Set ConfigurationMode => RELEASE
+3. Update Scenario Name (increment version #)
+4. Surface Test Map (at least loads intro)
+
+In Vexorian's Map Optimizer
+1. Browse to v1.26mpq
+2. Disable all options and tweaks
+3. Enable "Remove as much WE-only data as possible"
+4. Save Optimized As... "_prot.w3x"
+
+On forum:
+1. Update map file
+2. Update version log
+3. Update active bug newsfeed
+4. Create new post with just notes for new version	
