@@ -406,6 +406,22 @@ library InGameCommands initializer init requires MazerGlobals, Platformer, Relay
 				// set async = User.SyncLocalCameraIdleTime()
 				// call async.Then(OnAllCameraSync, 0, async)
 			// endif
+			elseif cmd == "cam" or cmd == "camera" then
+				if GetLocalPlayer() == Player(pID) then
+					call DisplayTextToPlayer(Player(pID), 0, 0, "Camera distance: " + R2S(GetCameraField(CAMERA_FIELD_TARGET_DISTANCE)))
+					call DisplayTextToPlayer(Player(pID), 0, 0, "Camera AoA: " + R2S(GetCameraField(CAMERA_FIELD_ANGLE_OF_ATTACK)))
+					
+					call DisplayTextToPlayer(Player(pID), 0, 0, "Camera Far Z: " + R2S(GetCameraField(CAMERA_FIELD_FARZ)))
+					call DisplayTextToPlayer(Player(pID), 0, 0, "Camera FoV: " + R2S(GetCameraField(CAMERA_FIELD_FIELD_OF_VIEW)))
+					call DisplayTextToPlayer(Player(pID), 0, 0, "Camera Roll: " + R2S(GetCameraField(CAMERA_FIELD_ROLL)))
+					call DisplayTextToPlayer(Player(pID), 0, 0, "Camera Rotation: " + R2S(GetCameraField(CAMERA_FIELD_ROTATION)))
+					call DisplayTextToPlayer(Player(pID), 0, 0, "Camera Z Offset: " + R2S(GetCameraField(CAMERA_FIELD_ZOFFSET)))
+					
+					call DisplayTextToPlayer(Player(pID), 0, 0, "Camera Near Z: " + R2S(GetCameraField(CAMERA_FIELD_NEARZ)))
+					call DisplayTextToPlayer(Player(pID), 0, 0, "Camera L-Pitch: " + R2S(GetCameraField(CAMERA_FIELD_LOCAL_PITCH)))
+					call DisplayTextToPlayer(Player(pID), 0, 0, "Camera L-Yaw: " + R2S(GetCameraField(CAMERA_FIELD_LOCAL_YAW)))
+					call DisplayTextToPlayer(Player(pID), 0, 0, "Camera L-Roll: " + R2S(GetCameraField(CAMERA_FIELD_LOCAL_ROLL)))
+				endif
 			elseif cmd == "error" or cmd == "err" then
 				call ThrowError(true, "InGameCommands", "ParseCommand", "error", 0, "User forced an error!")
 			endif

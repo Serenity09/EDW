@@ -29,10 +29,10 @@ library EDWPlayerSlots requires MazerGlobals, User, PlayerUtils, VisualVote, Tea
 				call IndexedUnit.create(PlayerReviveCircles[i])
 				call ShowUnit(PlayerReviveCircles[i], false)
                 
-                //(integer camOwner, unit camUnit, boolean altDir, boolean rotASAP, boolean PauseResets, real minSpd, real maxSpd, integer minTck, integer maxTck)
+				//create default camera for standard mazing
                 set DefaultCamera[i] = CreateCameraSetup()
                 
-                call CameraSetupSetField(DefaultCamera[i], CAMERA_FIELD_TARGET_DISTANCE, 1800, 0)
+                call CameraSetupSetField(DefaultCamera[i], CAMERA_FIELD_TARGET_DISTANCE, 1850, 0)
                 call CameraSetupSetField(DefaultCamera[i], CAMERA_FIELD_FARZ, 5000, 0)
                 call CameraSetupSetField(DefaultCamera[i], CAMERA_FIELD_ANGLE_OF_ATTACK, 304, 0)
                 call CameraSetupSetField(DefaultCamera[i], CAMERA_FIELD_FIELD_OF_VIEW, 70, 0)

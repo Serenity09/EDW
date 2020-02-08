@@ -5,7 +5,7 @@ globals
 	
 	private constant real CAMERA_SETTINGS_AUTO_CHECK_TIMEOUT = .5
 	private constant real CAMERA_SETTINGS_AUTO_CHECK_BUFFER = 10.
-	private constant real CAMERA_SETTINGS_AUTO_FIX_DURATION = .5
+	private constant real CAMERA_SETTINGS_AUTO_FIX_DURATION = .75
 	
 	private constant real CAMERA_TARGET_POSITION_FLEX = 50.
 	private constant real AUTO_TRANSITION_BUFFER = .1
@@ -79,6 +79,8 @@ struct User extends array
 	
 	// private static trigger AFKLocalCameraTimeSyncEvent
 	// private static SimpleList_List AFKSyncLocalCameraTimePromises
+	
+	private static real LocalCameraTargetDistance
 	
 	private static trigger AFKSyncEvent
 	readonly static vector2 LocalCameraTargetPosition
@@ -1810,22 +1812,29 @@ struct User extends array
 		*/ and .IsAlive and (.GameMode == Teams_GAMEMODE_STANDARD or .GameMode == Teams_GAMEMODE_STANDARD_PAUSED) /*
 		*/ and RAbsBJ(GetCameraField(CAMERA_FIELD_TARGET_DISTANCE) - CameraSetupGetField(DefaultCamera[this], CAMERA_FIELD_TARGET_DISTANCE)) >= CAMERA_SETTINGS_AUTO_CHECK_BUFFER then
 		// */ and (GetCameraField(CAMERA_FIELD_TARGET_DISTANCE) != CameraSetupGetField(DefaultCamera[this], CAMERA_FIELD_TARGET_DISTANCE) or GetCameraField(CAMERA_FIELD_ANGLE_OF_ATTACK) != CameraSetupGetField(DefaultCamera[this], CAMERA_FIELD_ANGLE_OF_ATTACK)) then
-			// call DisplayTextToPlayer(Player(this), 0, 0, "Resetting camera to default!")
+
+			if thistype.LocalCameraTargetDistance == GetCameraField(CAMERA_FIELD_TARGET_DISTANCE) then
+				// call DisplayTextToPlayer(Player(this), 0, 0, "Resetting camera to default!")
+				// call SetCameraField(CAMERA_FIELD_TARGET_DISTANCE, CameraSetupGetField(DefaultCamera[this], CAMERA_FIELD_TARGET_DISTANCE), CAMERA_SETTINGS_AUTO_FIX_DURATION)
+				// call SetCameraField(CAMERA_FIELD_ANGLE_OF_ATTACK, CameraSetupGetField(DefaultCamera[this], CAMERA_FIELD_ANGLE_OF_ATTACK), CAMERA_SETTINGS_AUTO_FIX_DURATION)
 			
-			call SetCameraField(CAMERA_FIELD_TARGET_DISTANCE, CameraSetupGetField(DefaultCamera[this], CAMERA_FIELD_TARGET_DISTANCE), CAMERA_SETTINGS_AUTO_FIX_DURATION)
-			call SetCameraField(CAMERA_FIELD_ANGLE_OF_ATTACK, CameraSetupGetField(DefaultCamera[this], CAMERA_FIELD_ANGLE_OF_ATTACK), CAMERA_SETTINGS_AUTO_FIX_DURATION)
+				call CameraSetupApplyForceDuration(DefaultCamera[this], false, CAMERA_SETTINGS_AUTO_FIX_DURATION)
+			else
+				set thistype.LocalCameraTargetDistance = GetCameraField(CAMERA_FIELD_TARGET_DISTANCE)
+			endif
 		endif
 	endmethod
 	public static method CheckDefaultCameraZooms takes nothing returns nothing
-		local SimpleList_ListNode curUserNode = PlayerUtils_FirstPlayer
+		// local SimpleList_ListNode curUserNode = PlayerUtils_FirstPlayer
 		
-		loop
-		exitwhen curUserNode == 0
-			call User(curUserNode.value).CheckDefaultCameraZoom()
-		set curUserNode = curUserNode.next
-		endloop
+		// loop
+		// exitwhen curUserNode == 0
+			// call User(curUserNode.value).CheckDefaultCameraZoom()
+		// set curUserNode = curUserNode.next
+		// endloop
 		
-		// call User(GetPlayerId(GetLocalPlayer())).CheckDefaultCameraZoom()
+		//do i really want to regression test desync issues again? the check/reset is constant computation, and theres only 8 players max
+		call User(GetPlayerId(GetLocalPlayer())).CheckDefaultCameraZoom()
 	endmethod
 	
 	public method AppreciateTranslator takes nothing returns nothing	
@@ -1953,8 +1962,10 @@ struct User extends array
 		// call TriggerAddCondition(thistype.AFKMouseEvent, Condition(function thistype.CheckAFKMouseEventCallback))
 		// set User.LocalUserMousePosition = vector2.create(0., 0.)
 		
-		call TimerStart(CreateTimer(), AFK_CAMERA_CHECK_TIMEOUT, true, function thistype.CheckAFKPlayers)
+		set User.LocalCameraTargetDistance = 0.
 		
+		call TimerStart(CreateTimer(), AFK_CAMERA_CHECK_TIMEOUT, true, function thistype.CheckAFKPlayers)
+				
         loop
         exitwhen n>=NumberPlayers
             //debug call DisplayTextToPlayer(Player(0), 0, 0, "Creating User: " + I2S(n))
