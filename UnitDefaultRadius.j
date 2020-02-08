@@ -1,7 +1,7 @@
 library UnitDefaultRadius
 	function GetUnitDefaultRadius takes integer unitTypeID returns real
 		if unitTypeID == MAZER then
-			return 18.
+			return 22.
 		elseif unitTypeID == PLATFORMERWISP then
 			return 14.
 		elseif unitTypeID == TEAM_REVIVE_UNIT_ID then
@@ -50,7 +50,7 @@ library UnitDefaultRadius
 		elseif unitTypeID == GRAVITY then
 			return 45.
 		elseif unitTypeID == BOUNCER then
-			return 40.
+			return 44.
 		elseif unitTypeID == UBOUNCE or unitTypeID == DBOUNCE or unitTypeID == RBOUNCE or unitTypeID == LBOUNCE then
 			return 35.
 		elseif unitTypeID == SUPERSPEED then
