@@ -219,8 +219,6 @@ function GameLoopRemoveTerrainAction takes unit u, integer i, integer oldterrain
         //call DisplayTextToForce(bj_FORCE_PLAYER[i], "Y: " + R2S(VelocityY[i]))
     elseif oldterrain == LAVA then
         call LavaDamage.Remove(i)
-		
-		call User(i).ClearActiveEffect()
     elseif oldterrain == LEAVES then
         call SuperFastMovement.Remove(i)
         
@@ -358,8 +356,6 @@ function GameLoop takes nothing returns nothing
 				elseif basicterrain == LAVA then
 					//call DisplayTextToForce(bj_FORCE_PLAYER[user], "Lava")
 					call LavaDamage.Add(user)
-					
-					call user.SetActiveEffect(LAVA_MOVEMENT_FX, "origin")
 				elseif basicterrain == LEAVES then        
 					call SetUnitMoveSpeed(u, FastGrassSpeed)
 					

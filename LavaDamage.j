@@ -4,6 +4,7 @@ library LavaDamage requires TimerUtils, GroupUtils, SimpleList, SpecialEffect
 		private constant real LAVARATE = 350 * TIMESTEP //~1.8 seconds till death
 		
 		private constant string DEATH_FX = "Abilities\\Spells\\Human\\MarkOfChaos\\MarkOfChaosTarget.mdl"
+		private constant string LAVA_MOVEMENT_FX = "Abilities\\Spells\\Orc\\LiquidFire\\Liquidfire.mdl"
 		
 		private constant boolean DEBUG_DELTA = false
 	endglobals
@@ -41,6 +42,9 @@ library LavaDamage requires TimerUtils, GroupUtils, SimpleList, SpecialEffect
 			//update mazer life
 			call SetUnitState(MazersArray[pID], UNIT_STATE_LIFE, damagedHP)
 			
+			//TODO better for HD only (add for HD only)
+			call BlzSetSpecialEffectScale(CreateTimedSpecialEffect(LAVA_MOVEMENT_FX, GetUnitX(MazersArray[pID]), GetUnitY(MazersArray[pID]), Player(pID), TIMESTEP * GetRandomReal(1.5, 2.)), GetRandomReal(.6, .8))
+			
 			if damagedHP == 0 then
 				call CreateInstantSpecialEffect(DEATH_FX, GetUnitX(MazersArray[pID]), GetUnitY(MazersArray[pID]), Player(pID))
 			endif
@@ -71,10 +75,16 @@ library LavaDamage requires TimerUtils, GroupUtils, SimpleList, SpecialEffect
 			endif
 			
 			call thistype.players.add(pID)
+			
+			//TODO better for SD only (add for SD only)
+			// call User(pID).SetActiveEffect(LAVA_MOVEMENT_FX, "origin")
 		endmethod
 		
 		public static method Remove takes integer pID returns nothing
 			call thistype.players.remove(pID)
+			
+			//TODO better for SD only (add for SD only)
+			// call User(pID).ClearActiveEffect()
 			
 			if thistype.players.count == 0 then
 				call ReleaseTimer(.t)
