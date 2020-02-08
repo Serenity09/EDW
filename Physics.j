@@ -3162,12 +3162,15 @@ endglobals
 					call terrainCenter.destroy()
 					
 					call User(.PID).SwitchGameModes(Teams_GAMEMODE_STANDARD, x, y)
-					call User(.PID).ApplyDefaultCameras(1.)
+					//called by .StopPlatforming()
+					// call User(.PID).ApplyDefaultCameras(1.)
                     // call SetDefaultCameraForPlayer(.PID, .5)
+					
+					//need to call after .StopPlatforming(), GameMode -> Standard
+					call User(.PID).ApplyCameraTracking()
+					
 					set PreviousTerrainTypedx[.PID] = PLATFORMING
 					call DestroyEffect(AddSpecialEffect(TERRAIN_STANDARD_FX, x, y))
-					
-                    return
                 endif
 			elseif .TerrainDX == BOOST then
 				//this is too inconsistent inside this loop, will need to move it out to its own timer after all...
@@ -3224,7 +3227,8 @@ endglobals
         
         public method ApplyCamera takes nothing returns nothing
 			if GetLocalPlayer() == Player(.PID) and GetCameraField(CAMERA_FIELD_ANGLE_OF_ATTACK) != 270 then
-                call CameraSetupApply(thistype.PlatformingCamera, true, true) //orients the camera to face down from above
+				call CameraSetupApplyForceDuration(thistype.PlatformingCamera, true, 0.)
+                // call CameraSetupApply(thistype.PlatformingCamera, true, true) //orients the camera to face down from above
 				call SetCameraTargetController(.Unit, 0, 0, false) //fixes the camera to platforming unit
 				
 				if User(.PID).IsAFK then
@@ -3328,7 +3332,8 @@ endglobals
 					endif
                 endif
 				
-				call User(.PID).ResetDefaultCamera(0.)
+				call User(.PID).ResetDefaultCamera(.75)
+				// call User(.PID).ApplyDefaultCameras(.75)
 				
 				call ShowUnit(.Unit, false)
 				//call SetUnitPosition(.Unit, PlatformerGlobals_SAFE_X, PlatformerGlobals_SAFE_Y)

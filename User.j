@@ -443,6 +443,13 @@ struct User extends array
 			call .RegisterSystemCameraTransition(duration)
 		endif
 	endmethod
+	public method ApplyCameraTracking takes nothing returns nothing
+		if GetLocalPlayer() == Player(this) then
+			if DefaultCameraTracking[this] then
+				call SetCameraTargetController(.ActiveUnit, 0, 0, false)
+			endif
+		endif
+	endmethod
     public method ApplyDefaultCameras takes real time returns nothing
         static if DEBUG_CAMERA then
 			if GetLocalPlayer() == Player(0) then
@@ -454,7 +461,11 @@ struct User extends array
             call .Platformer.ApplyCamera()
         elseif .GameMode == Teams_GAMEMODE_STANDARD or .GameMode == Teams_GAMEMODE_STANDARD_PAUSED then
             if GetLocalPlayer() == Player(this) then
-                call CameraSetupApply(DefaultCamera[this], false, false)
+				if time == 0 then
+					call CameraSetupApply(DefaultCamera[this], false, false)
+				else
+					call CameraSetupApplyForceDuration(DefaultCamera[this], false, time)
+				endif
             endif
 				
 			// if .IsAFK then
@@ -464,11 +475,7 @@ struct User extends array
 			// endif
 			call .PanCamera(GetUnitX(.ActiveUnit), GetUnitY(.ActiveUnit), time)
 			
-			if GetLocalPlayer() == Player(this) then
-                if DefaultCameraTracking[this] then
-                    call SetCameraTargetController(.ActiveUnit, 0, 0, false)
-                endif
-			endif
+			call .ApplyCameraTracking()
         endif
 		
 		static if DEBUG_CAMERA then
@@ -486,8 +493,10 @@ struct User extends array
 		
 		if (GetLocalPlayer() == Player(this)) then
             call ResetToGameCamera(duration)
+			
 			if duration > 0 then
-				call CameraSetupApply(DefaultCamera[this], false, false)
+				// call CameraSetupApply(DefaultCamera[this], false, false)
+				call CameraSetupApplyForceDuration(DefaultCamera[this], false, duration)
 			else
 				call CameraSetupApply(DefaultCamera[this], false, false)
 			endif
