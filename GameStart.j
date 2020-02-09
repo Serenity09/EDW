@@ -13,6 +13,7 @@ library EDWGameStart initializer Init requires TimerUtils, Levels, EDWVisualVote
                        
     private function PreplacedUnitInit takes nothing returns nothing
         local unit u
+		local unit extra
         local integer uID
                 
         call GroupEnumUnitsInRect(TempGroup, bj_mapInitialPlayableArea, null)
@@ -22,27 +23,44 @@ library EDWGameStart initializer Init requires TimerUtils, Levels, EDWVisualVote
         exitwhen u == null
             set uID = GetUnitTypeId(u)
             
+			//check for replace unit IDs - this lets content be defined primarily within the World Editor
+			//only supports objects with parameterless constructors - no Startables
             if uID == POWERUP_MARKER or InWorldPowerup.IsPowerupUnit(uID) then
 				call InWorldPowerup.CreateFromUnit(u)
             elseif uID == UBOUNCE then
-                //call AddUnitLocust(CreateUnit(Player(11), UBOUNCE, GetUnitX(u), GetUnitY(u), 90))
 				call Recycle_MakeUnit(UBOUNCE, GetUnitX(u), GetUnitY(u))
                 call RemoveUnit(u)
             elseif uID == LBOUNCE then
-                //call AddUnitLocust(CreateUnit(Player(11), LBOUNCE, GetUnitX(u), GetUnitY(u), 180))
 				call Recycle_MakeUnit(LBOUNCE, GetUnitX(u), GetUnitY(u))
                 call RemoveUnit(u)
             elseif uID == DBOUNCE then
-                // call AddUnitLocust(CreateUnit(Player(11), DBOUNCE, GetUnitX(u), GetUnitY(u), 270))
 				call Recycle_MakeUnit(DBOUNCE, GetUnitX(u), GetUnitY(u))
                 call RemoveUnit(u)
             elseif uID == RBOUNCE then
-                // call AddUnitLocust(CreateUnit(Player(11), RBOUNCE, GetUnitX(u), GetUnitY(u), 0))
 				call Recycle_MakeUnit(RBOUNCE, GetUnitX(u), GetUnitY(u))
                 call RemoveUnit(u)
-			//elseif GetPlayerId(GetOwningPlayer(u)) == 11 and (uID == BFIRE or uID == BKEY or uID == RFIRE or uID == RKEY or uID == GFIRE or uID == GKEY or uID == KEYR or uID == REGRET or uID == LMEMORY or uID == GUILT or uID == GRAVITY or uID == BOUNCER or uID == SUPERSPEED) then
 			else
+				//important to index all units on game start - EDW expects all units to be indexed unless they are specifically accounted for by their own functionality
 				call IndexedUnit.create(u)
+				
+				//check for unit IDs that need additional support or to be given to a certain player
+				if uID == RKEY or uID == BKEY or uID == GKEY then
+					call SetUnitOwner(u, Player(9), true)
+					
+					//create an extra unit to improve compatibility between SD and HD. one of the two should be easily visible
+					set extra = CreateUnit(Player(9), 'eVIZ', GetUnitX(u), GetUnitY(u), GetRandomReal(0, 360))
+					call UnitAddAbility(extra, 'Aloc')
+					
+					if uID == RKEY then
+						call SetUnitVertexColor(extra, 255, 150, 150, 200)
+					elseif uID == BKEY then
+						call SetUnitVertexColor(extra, 255, 255, 255, 200)
+					elseif uID == GKEY then
+						call SetUnitVertexColor(extra, 150, 255, 150, 200)
+					endif
+					
+					set extra = null
+				endif
             endif
         call GroupRemoveUnit(TempGroup, u)
         endloop
