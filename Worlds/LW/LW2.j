@@ -280,7 +280,7 @@ library LW2 requires Recycle, Levels, EDWCollectibleResolveHandlers
 		endif
 		loop
 		exitwhen i == 0
-			call l.AddStartable(MortarNTarget.create(SMLMORT, SMLTARG, Player(8), gg_rct_LW2_Mortar1 , gg_rct_LW2_Target1))
+			call l.AddStartable(MortarNTarget.create(SMLMORT, SMLTARG, gg_rct_LW2_Mortar1 , gg_rct_LW2_Target1))
 		set i = i - 1
 		endloop
 		
@@ -292,7 +292,7 @@ library LW2 requires Recycle, Levels, EDWCollectibleResolveHandlers
 		endif
 		loop
 		exitwhen i == 0
-			call l.AddStartable(MortarNTarget.create(SMLMORT, SMLTARG, Player(8), gg_rct_LW2_Mortar2 , gg_rct_LW2_Target2))
+			call l.AddStartable(MortarNTarget.create(SMLMORT, SMLTARG, gg_rct_LW2_Mortar2 , gg_rct_LW2_Target2))
 		set i = i - 1
 		endloop
 		
@@ -304,7 +304,7 @@ library LW2 requires Recycle, Levels, EDWCollectibleResolveHandlers
 		endif
 		loop
 		exitwhen i == 0
-			call l.AddStartable(MortarNTarget.create(SMLMORT, SMLTARG, Player(8), gg_rct_LW2_Mortar3 , gg_rct_LW2_Target3))
+			call l.AddStartable(MortarNTarget.create(SMLMORT, SMLTARG, gg_rct_LW2_Mortar3 , gg_rct_LW2_Target3))
 		set i = i - 1
 		endloop
 	endfunction

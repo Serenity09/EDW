@@ -11,6 +11,9 @@ globals
     private constant integer IllegalTerrainType = ABYSS
 	
 	private constant boolean DEBUG_VALID_TARGET = false
+	
+	private constant player MORTAR_OWNER = Player(11)
+	private constant player TARGET_OWNER = Player(11)
 endglobals
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -149,14 +152,14 @@ struct MortarNTarget extends IStartable
         set Target = null
     endmethod
     
-    static method create takes integer mortarID, integer targetID, player playerID, rect mortarloc, rect targetrect returns MortarNTarget
+    static method create takes integer mortarID, integer targetID, rect mortarloc, rect targetrect returns MortarNTarget
         //allocate memory for the mortar and target
         local MortarNTarget new = MortarNTarget.allocate()
         //create the mortar and target
-        set new.Mortar = CreateUnit(playerID, mortarID, GetRectCenterX(mortarloc), GetRectCenterY(mortarloc), 0)
+        set new.Mortar = CreateUnit(MORTAR_OWNER, mortarID, GetRectCenterX(mortarloc), GetRectCenterY(mortarloc), 0)
         call PauseUnit(new.Mortar, true)
 		
-		set new.Target = CreateUnit(playerID, targetID, GetRectCenterX(targetrect), GetRectCenterY(targetrect), 0)
+		set new.Target = CreateUnit(TARGET_OWNER, targetID, GetRectCenterX(targetrect), GetRectCenterY(targetrect), 0)
 		call SetUnitColor(new.Target, PLAYER_COLOR_AQUA)
         
         call AddUnitLocust(new.Mortar)

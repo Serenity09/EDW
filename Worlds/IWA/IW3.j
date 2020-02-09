@@ -27,14 +27,14 @@ library IW3 requires Recycle, Levels
 			set i = l.GetWeightedRandomInt(3, 7)
 			loop
 			exitwhen i == 0
-				call l.AddStartable(MortarNTarget.create(SMLMORT, SMLTARG, Player(8), gg_rct_IW3_Mortar1 , gg_rct_IW3_Target2))
+				call l.AddStartable(MortarNTarget.create(SMLMORT, SMLTARG, gg_rct_IW3_Mortar1 , gg_rct_IW3_Target2))
 			set i = i - 1
 			endloop
 			
 			set i = l.GetWeightedRandomInt(3, 7)
 			loop
 			exitwhen i == 0
-				call l.AddStartable(MortarNTarget.create(SMLMORT, SMLTARG, Player(8), gg_rct_IW3_Mortar1 , gg_rct_IW3_Target3))
+				call l.AddStartable(MortarNTarget.create(SMLMORT, SMLTARG, gg_rct_IW3_Mortar1 , gg_rct_IW3_Target3))
 			set i = i - 1
 			endloop
 			
@@ -44,7 +44,7 @@ library IW3 requires Recycle, Levels
 		endif
 		loop
 		exitwhen i == 0
-			call l.AddStartable(MortarNTarget.create(SMLMORT, SMLTARG, Player(8), gg_rct_IW3_Mortar1 , gg_rct_IW3_Target1))
+			call l.AddStartable(MortarNTarget.create(SMLMORT, SMLTARG, gg_rct_IW3_Mortar1 , gg_rct_IW3_Target1))
 		set i = i - 1
 		endloop
 		

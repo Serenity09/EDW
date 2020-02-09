@@ -74,7 +74,7 @@ library IntroWorld requires Recycle, Levels
 			
 			set rand = l.GetWeightedRandomInt(0, 2)
 			
-			call l.AddStartable(MortarNTarget.create(SMLMORT, SMLTARG, Player(8), gg_rct_IntroWorld_Mortar1 , gg_rct_IntroWorld_Target1))
+			call l.AddStartable(MortarNTarget.create(SMLMORT, SMLTARG, gg_rct_IntroWorld_Mortar1 , gg_rct_IntroWorld_Target1))
 		else
 			set rand = l.GetWeightedRandomInt(1, 3)
 			

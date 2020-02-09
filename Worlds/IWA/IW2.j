@@ -21,10 +21,10 @@ library IW2 requires Recycle, Levels
 		endif
 		loop
 			exitwhen i == 0
-			call l.AddStartable(MortarNTarget.create(SMLMORT, SMLTARG, Player(8), gg_rct_IW2_Mortar1 , gg_rct_IW2_Target1))
-			call l.AddStartable(MortarNTarget.create(SMLMORT, SMLTARG, Player(8), gg_rct_IW2_Mortar1 , gg_rct_IW2_Target3))
-			call l.AddStartable(MortarNTarget.create(SMLMORT, SMLTARG, Player(8), gg_rct_IW2_Mortar2 , gg_rct_IW2_Target2))
-			call l.AddStartable(MortarNTarget.create(SMLMORT, SMLTARG, Player(8), gg_rct_IW2_Mortar2 , gg_rct_IW2_Target4))
+			call l.AddStartable(MortarNTarget.create(SMLMORT, SMLTARG, gg_rct_IW2_Mortar1 , gg_rct_IW2_Target1))
+			call l.AddStartable(MortarNTarget.create(SMLMORT, SMLTARG, gg_rct_IW2_Mortar1 , gg_rct_IW2_Target3))
+			call l.AddStartable(MortarNTarget.create(SMLMORT, SMLTARG, gg_rct_IW2_Mortar2 , gg_rct_IW2_Target2))
+			call l.AddStartable(MortarNTarget.create(SMLMORT, SMLTARG, gg_rct_IW2_Mortar2 , gg_rct_IW2_Target4))
 		set i = i - 1
 		endloop
 		

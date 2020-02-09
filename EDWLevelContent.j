@@ -149,20 +149,20 @@ library EDWLevelContent requires LevelIDGlobals, EDWLevels, SimpleList, Teams, L
         //LEVEL 1
         set l = Levels_Level(PW1_LEVEL_ID)
                 
-        call l.AddStartable(MortarNTarget.create(SMLMORT, SMLTARG, Player(8), gg_rct_Rect_340 , gg_rct_Rect_339))
-        call l.AddStartable(MortarNTarget.create(SMLMORT, SMLTARG, Player(8), gg_rct_Rect_340 , gg_rct_Rect_339))
+        call l.AddStartable(MortarNTarget.create(SMLMORT, SMLTARG, gg_rct_Rect_340 , gg_rct_Rect_339))
+        call l.AddStartable(MortarNTarget.create(SMLMORT, SMLTARG, gg_rct_Rect_340 , gg_rct_Rect_339))
         
-        call l.AddStartable(MortarNTarget.create(SMLMORT, SMLTARG, Player(8), gg_rct_Rect_352 , gg_rct_Rect_351))
+        call l.AddStartable(MortarNTarget.create(SMLMORT, SMLTARG, gg_rct_Rect_352 , gg_rct_Rect_351))
 		
         //LEVEL 2
         set l = Levels_Level(PW2_LEVEL_ID)
 		
-        call l.AddStartable(MortarNTarget.create(SMLMORT, SMLTARG, Player(8), gg_rct_PW2_Mortar , gg_rct_PW2_Target))
-        call l.AddStartable(MortarNTarget.create(SMLMORT, SMLTARG, Player(8), gg_rct_PW2_Mortar , gg_rct_PW2_Target))
-        call l.AddStartable(MortarNTarget.create(SMLMORT, SMLTARG, Player(8), gg_rct_PW2_Mortar , gg_rct_PW2_Target))
-        call l.AddStartable(MortarNTarget.create(SMLMORT, SMLTARG, Player(8), gg_rct_PW2_Mortar , gg_rct_PW2_Target))
-        call l.AddStartable(MortarNTarget.create(SMLMORT, SMLTARG, Player(8), gg_rct_PW2_Mortar , gg_rct_PW2_Target))
-        call l.AddStartable(MortarNTarget.create(SMLMORT, SMLTARG, Player(8), gg_rct_PW2_Mortar , gg_rct_PW2_Target))
+        call l.AddStartable(MortarNTarget.create(SMLMORT, SMLTARG, gg_rct_PW2_Mortar , gg_rct_PW2_Target))
+        call l.AddStartable(MortarNTarget.create(SMLMORT, SMLTARG, gg_rct_PW2_Mortar , gg_rct_PW2_Target))
+        call l.AddStartable(MortarNTarget.create(SMLMORT, SMLTARG, gg_rct_PW2_Mortar , gg_rct_PW2_Target))
+        call l.AddStartable(MortarNTarget.create(SMLMORT, SMLTARG, gg_rct_PW2_Mortar , gg_rct_PW2_Target))
+        call l.AddStartable(MortarNTarget.create(SMLMORT, SMLTARG, gg_rct_PW2_Mortar , gg_rct_PW2_Target))
+        call l.AddStartable(MortarNTarget.create(SMLMORT, SMLTARG, gg_rct_PW2_Mortar , gg_rct_PW2_Target))
         
         //public static method create takes rect spawn, real spawntimeout, real walktimeout, integer uid, real lifespan returns thistype
         call l.AddStartable(DrunkWalker_DrunkWalkerSpawn.create(gg_rct_PW2_Drunks_1, 6, LGUARD, 14))

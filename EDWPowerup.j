@@ -1,6 +1,6 @@
 library EDWPowerup requires Alloc, MazerGlobals, FilterFuncs, Table, PlayerUtils, DummyCaster
     globals
-        constant player POWERUP_PLAYER = Player(11)
+        constant player POWERUP_PLAYER = Player(9)
         
         
         constant integer POWERUP_MARKER = 'pMRK'
@@ -249,6 +249,7 @@ library EDWPowerup requires Alloc, MazerGlobals, FilterFuncs, Table, PlayerUtils
 				call UnitAddAbility(new.Unit, 'Aloc')
 				call ShowUnit(new.Unit, false)
 				call ShowUnit(new.Unit, true)
+				call SetUnitOwner(new.Unit, POWERUP_PLAYER, true)
 				
 				set AllPowerups[GetHandleId(new.Unit)] = new
 			else

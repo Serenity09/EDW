@@ -1294,8 +1294,28 @@ public struct MazingTeam extends array
 		endloop
 	endmethod
 	
+	//sets all members of a team to a certain alliance setting towards the target player
+	public method SetTeamAlliance takes player target, alliancetype field, boolean flag returns nothing
+		local SimpleList_ListNode curPlayerNode = .FirstUser
+		
+		loop
+		exitwhen curPlayerNode == 0
+			if curPlayerNode.value != GetPlayerId(target) then
+				call SetPlayerAlliance(Player(curPlayerNode.value), target, field, flag)
+			endif
+		set curPlayerNode = curPlayerNode.next
+		endloop
+	endmethod
+	//sets all members of a user's team to share control (status = flag) of that user's active unit
 	public method SetSharedControlForTeam takes User user, boolean flag returns nothing
 		local SimpleList_ListNode curPlayerNode = .FirstUser
+		
+		//TODO API should prevent this, either refactor this method to be static and use user.Team or refactor this method to the User implementation
+		if CONFIGURATION_PROFILE != RELEASE then
+			if user.Team != this then
+				call DisplayTextToPlayer(GetLocalPlayer(), 0, 0, "Setting shared control for user not via the wrong team!")
+			endif
+		endif
 		
 		loop
 		exitwhen curPlayerNode == 0
