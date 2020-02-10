@@ -251,27 +251,27 @@ private function CollisionIteration takes nothing returns nothing
 									call User(curUserNode.value).InitializeAfterCollisionCB(cu, COLLISION_TIME)
 									//debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "Finished colliding")
 									//keys
-								elseif cuTypeID == RKEY then
+								elseif cuTypeID == RKEY and MazerColor[curUserNode.value] != KEY_RED then
 									call RShieldEffect(User(curUserNode.value).ActiveUnit)
 									call User(curUserNode.value).SetKeyColor(KEY_RED)
 									// set MazerColor[curUserNode.value] = KEY_RED
 									// call SetUnitVertexColor(MazersArray[curUserNode.value], 255, 0, 0, 255)
 									
-									call User(curUserNode.value).InitializeAfterCollisionCB(cu, COLLISION_TIME)
-								elseif cuTypeID == BKEY then
+									// call User(curUserNode.value).InitializeAfterCollisionCB(cu, COLLISION_TIME)
+								elseif cuTypeID == BKEY and MazerColor[curUserNode.value] != KEY_BLUE then
 									call BShieldEffect(User(curUserNode.value).ActiveUnit)
 									call User(curUserNode.value).SetKeyColor(KEY_BLUE)
 									// set MazerColor[curUserNode.value] = KEY_BLUE
 									// call SetUnitVertexColor(MazersArray[curUserNode.value], 0, 0, 255, 255)
 									
-									call User(curUserNode.value).InitializeAfterCollisionCB(cu, COLLISION_TIME)
-								elseif cuTypeID == GKEY then
+									// call User(curUserNode.value).InitializeAfterCollisionCB(cu, COLLISION_TIME)
+								elseif cuTypeID == GKEY and MazerColor[curUserNode.value] != KEY_GREEN then
 									call GShieldEffect(User(curUserNode.value).ActiveUnit)
 									call User(curUserNode.value).SetKeyColor(KEY_GREEN)
 									// set MazerColor[curUserNode.value] = KEY_GREEN
 									// call SetUnitVertexColor(MazersArray[curUserNode.value], 0, 255, 0, 255)
 									
-									call User(curUserNode.value).InitializeAfterCollisionCB(cu, COLLISION_TIME)
+									// call User(curUserNode.value).InitializeAfterCollisionCB(cu, COLLISION_TIME)
 								elseif cuTypeID == TEAM_REVIVE_UNIT_ID then
 									//currently you will revive anyone whose circle you hit, this may change how you play
 									if CanReviveOthers[curUserNode.value] then
@@ -287,11 +287,11 @@ private function CollisionIteration takes nothing returns nothing
 										
 										call TimerStart(NewTimerEx(GetPlayerId(GetOwningPlayer(cu))), P2P_REVIVE_PAUSE_TIME, false, function AfterMazerReviveCB)
 									endif
-								elseif cuTypeID == KEYR then									
+								elseif cuTypeID == KEYR and MazerColor[curUserNode.value] != KEY_NONE then									
 									call ShieldRemoveEffect(User(curUserNode.value).ActiveUnit)
 									call User(curUserNode.value).SetKeyColor(KEY_NONE)
 									
-									call User(curUserNode.value).InitializeAfterCollisionCB(cu, COLLISION_TIME)
+									// call User(curUserNode.value).InitializeAfterCollisionCB(cu, COLLISION_TIME)
 								elseif cuTypeID == TELEPORT then
 									call TeleportEffect(cu, curUserNode.value)
 									

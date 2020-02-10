@@ -8,9 +8,12 @@ library EDWEffects requires SpecialEffect
 		call CreateInstantSpecialEffect("Abilities\\Spells\\Human\\Flare\\FlareTarget.mdl", GetUnitX(target), GetUnitY(target), GetOwningPlayer(target))
 		
 		if sourceTypeID == LGUARD or sourceTypeID == GUARD or sourceTypeID == WWWISP or sourceTypeID == WWSKUL then
-			call CreateTimedSpecialEffectTarget("Abilities\\Weapons\\Bolt\\BoltImpact.mdl", target, SpecialEffect_CHEST, GetOwningPlayer(target), 2.)
+			//TODO periodically check if this is working as Reforged updates
+			// call CreateTimedSpecialEffectTarget("Abilities\\Weapons\\Bolt\\BoltImpact.mdl", target, SpecialEffect_CHEST, GetOwningPlayer(target), 2.)
+			// call CreateInstantSpecialEffectTarget("Abilities\\Weapons\\Bolt\\BoltImpact.mdl", target, SpecialEffect_CHEST, GetOwningPlayer(target))
 		elseif sourceTypeID == REGRET or sourceTypeID == LMEMORY or sourceTypeID == GUILT then
-			call CreateTimedSpecialEffect("Abilities\\Spells\\Other\\HowlOfTerror\\HowlTarget.mdl", GetUnitX(target), GetUnitY(target), GetOwningPlayer(target), 2.)
+			// call CreateTimedSpecialEffect("Abilities\\Spells\\Other\\HowlOfTerror\\HowlTarget.mdl", GetUnitX(target), GetUnitY(target), GetOwningPlayer(target), 2.)
+			call CreateInstantSpecialEffect("Abilities\\Spells\\Other\\HowlOfTerror\\HowlTarget.mdl", GetUnitX(target), GetUnitY(target), GetOwningPlayer(target))
 		elseif sourceTypeID == ICETROLL or sourceTypeID == SPIRITWALKER or sourceTypeID == CLAWMAN or IndexedUnit(GetUnitUserData(source)).RectangularGeometry then
 			//TODO reduce scale
 			call CreateInstantSpecialEffect("Abilities\\Spells\\Human\\Thunderclap\\ThunderClapCaster.mdl", GetUnitX(target), GetUnitY(target), GetOwningPlayer(target))

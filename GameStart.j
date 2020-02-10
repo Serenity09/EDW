@@ -44,7 +44,7 @@ library EDWGameStart initializer Init requires TimerUtils, Levels, EDWVisualVote
 				call IndexedUnit.create(u)
 				
 				//check for unit IDs that need additional support or to be given to a certain player
-				if uID == RKEY or uID == BKEY or uID == GKEY then
+				if uID == RKEY or uID == BKEY or uID == GKEY or uID == KEYR then
 					call SetUnitOwner(u, Player(9), true)
 					
 					//create an extra unit to improve compatibility between SD and HD. one of the two should be easily visible
