@@ -8,10 +8,12 @@ library PlatformerTerrainEffectGlobals requires PlatformerGlobals, TerrainGlobal
         
         constant real SAND_FALLOFF = 3
         
-        constant real GRASS_MS = 1.25
-        constant real GRASS_TVY = .25
-        constant real DGRASS_MS = 1.5
-        constant real DGRASS_TVY = .4
+		constant real MS_FAST_FACTOR = 1.1
+		constant real MS_FASTER_FACTOR = 1.25
+		// constant real MS_FASTEST_FACTOR = 1.5
+				
+        constant real GRASS_TVY = .1
+        constant real DGRASS_TVY = .2
 
         //TODO make constant once default jump is finalized
         real JUMPHEIGHTINOCEAN = 440 * PlatformerGlobals_GAMELOOP_TIMESTEP

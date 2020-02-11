@@ -21,11 +21,11 @@ library StandardGameLoop initializer init requires EDWEffects, LavaDamage, IceMo
 		set $TPriority$ = 0
 	elseif $TType$ == LAVA then
 		set $TPriority$ = 1
-	elseif $TType$ == NOEFFECT then
+	elseif $TType$ == GRASS then
 		set $TPriority$ = 3
-	elseif $TType$ == GRASS or $TType$ == SNOW then
+	elseif $TType$ == D_GRASS or $TType$ == SNOW then
 		set $TPriority$ = 4
-	elseif $TType$ == D_GRASS or $TType$ == SLOWICE then
+	elseif $TType$ == LUMPYGRASS or $TType$ == SLOWICE then
 		set $TPriority$ = 5
 	elseif $TType$ == LEAVES or $TType$ == MEDIUMICE then
 		set $TPriority$ = 6
@@ -166,7 +166,7 @@ function GameLoopRemoveTerrainAction takes unit u, integer i, integer oldterrain
             set VelocityX[i] = 0
             set VelocityY[i] = 0
         endif
-    elseif oldterrain == GRASS or oldterrain == D_GRASS or oldterrain == ROAD then
+    elseif oldterrain == GRASS or oldterrain == D_GRASS or oldterrain == LUMPYGRASS or oldterrain == ROAD then
         call SetUnitMoveSpeed(u, DefaultMoveSpeed)
 	elseif oldterrain == VINES then
 		call SetUnitMoveSpeed(u, DefaultMoveSpeed)
@@ -302,8 +302,11 @@ function GameLoop takes nothing returns nothing
 					
 					call user.SetActiveEffect(VINES_MOVEMENT_FX, "origin")
 				elseif (basicterrain == GRASS) then
-					call SetUnitMoveSpeed(u, MediumGrassSpeed)
+					// call SetUnitMoveSpeed(u, MediumGrassSpeed)
 				elseif (basicterrain == D_GRASS) then
+					// call SetUnitMoveSpeed(u, FastGrassSpeed)
+					call SetUnitMoveSpeed(u, MediumGrassSpeed)
+				elseif basicterrain == LUMPYGRASS then
 					call SetUnitMoveSpeed(u, FastGrassSpeed)
 				elseif (basicterrain == RTILE) then
 					//call DisplayTextToForce(bj_FORCE_PLAYER[user], "R Tiles")

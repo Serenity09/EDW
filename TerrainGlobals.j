@@ -16,12 +16,13 @@ library TerrainGlobals initializer initTerrainGlobals requires GameGlobalConstan
         constant integer D_GRASS = 'Lgrd' //lordaron summer dark grass : fast speed boost
         constant integer GRASS = 'cLc1' //lordaeron summer grass (non-cliff) : medium speed boost
 		constant integer ROAD = 'Nrck' //Northrend Rock (non-cliff): same as no effect, but is visually different
+		constant integer LUMPYGRASS = 'Agrd' //Ashenvale Lumpy Grass
         
-        constant integer NOEFFECT = 'Agrd' //Ashenvale Lumpy Grass : NO EFFECT
+        constant integer NOEFFECT = LUMPYGRASS //Ashenvale Lumpy Grass : NO EFFECT
         
         //redefines to make platformer naming convention more memorable
         constant integer DEATH = LAVA
-        constant integer WALL = NOEFFECT
+        constant integer WALL = LUMPYGRASS
         constant integer PLATFORMING = LRGBRICKS
         constant integer PATHABLE = ABYSS
         constant integer OCEAN = MEDIUMICE
@@ -52,8 +53,8 @@ library TerrainGlobals initializer initTerrainGlobals requires GameGlobalConstan
 			return "road"
 		elseif ttype == LAVA then
 			return "lava"
-		elseif ttype == NOEFFECT then
-			return "no effect"
+		elseif ttype == LUMPYGRASS then
+			return "lumpy grass"
 		elseif ttype == GRASS then
 			return "grass"
 		elseif ttype == SNOW then
@@ -122,10 +123,10 @@ library TerrainGlobals initializer initTerrainGlobals requires GameGlobalConstan
     */
 	
     public function IsTerrainDiagonal takes integer ttype returns boolean
-        return ttype == SLOWICE or ttype == FASTICE or ttype == GRASS or ttype == DGRASS
+        return ttype == SLOWICE or ttype == FASTICE or ttype == DGRASS or ttype == ROAD
     endfunction
     public function IsTerrainSquare takes integer ttype returns boolean
-        return ttype == WALL or ttype == SNOW or ttype == SAND or ttype == RSNOW or ttype == ROAD
+        return ttype == WALL or ttype == GRASS or ttype == SNOW or ttype == SAND or ttype == RSNOW
     endfunction
     
     function GetTerrainCenterpoint takes real x, real y returns vector2

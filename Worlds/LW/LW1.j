@@ -157,8 +157,6 @@ library LW1 requires Recycle, Levels
 			
 			call SetTerrainType(-9602, -14718, NOEFFECT, 0, 1, 1)
 			call SetTerrainType(-9602, -14846, ABYSS, 0, 1, 1)
-			
-			call SetTerrainType(-9602, -15738, NOEFFECT, 0, 1, 1)
 		endif
 		
 		//width 4 spawn

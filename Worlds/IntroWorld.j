@@ -75,6 +75,8 @@ library IntroWorld requires Recycle, Levels
 			set rand = l.GetWeightedRandomInt(0, 2)
 			
 			call l.AddStartable(MortarNTarget.create(SMLMORT, SMLTARG, gg_rct_IntroWorld_Mortar1 , gg_rct_IntroWorld_Target1))
+			
+			call SetTerrainType(GetRectCenterX(gg_rct_IntroWorld_TC2), GetRectCenterY(gg_rct_IntroWorld_TC2), ABYSS, 0, 1, 0)
 		else
 			set rand = l.GetWeightedRandomInt(1, 3)
 			
@@ -123,9 +125,13 @@ library IntroWorld requires Recycle, Levels
 		endif
 		
 		call Recycle_MakeUnitAndPatrolRect(LGUARD, gg_rct_Rect_041, gg_rct_Rect_042)
-		call Recycle_MakeUnitAndPatrolRect(LGUARD, gg_rct_Rect_040, gg_rct_Rect_043)
+		if RewardMode == GameModesGlobals_HARD then
+			call Recycle_MakeUnitAndPatrolRect(LGUARD, gg_rct_Rect_040, gg_rct_Rect_043)
+		endif
 		call Recycle_MakeUnitAndPatrolRect(LGUARD, gg_rct_Rect_039, gg_rct_Rect_044)
-		call Recycle_MakeUnitAndPatrolRect(GUARD, gg_rct_Rect_038, gg_rct_Rect_045)
+		if RewardMode == GameModesGlobals_HARD then
+			call Recycle_MakeUnitAndPatrolRect(GUARD, gg_rct_Rect_038, gg_rct_Rect_045)
+		endif
 		call Recycle_MakeUnitAndPatrolRect(GUARD, gg_rct_Rect_037, gg_rct_Rect_046)
 		
 		//leaf patrol
