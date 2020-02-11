@@ -18,7 +18,7 @@ library TerrainGlobals initializer initTerrainGlobals requires GameGlobalConstan
 		constant integer ROAD = 'Nrck' //Northrend Rock (non-cliff): same as no effect, but is visually different
 		constant integer LUMPYGRASS = 'Agrd' //Ashenvale Lumpy Grass
         
-        constant integer NOEFFECT = LUMPYGRASS //Ashenvale Lumpy Grass : NO EFFECT
+        constant integer NOEFFECT = GRASS //Ashenvale Lumpy Grass : NO EFFECT
         
         //redefines to make platformer naming convention more memorable
         constant integer DEATH = LAVA

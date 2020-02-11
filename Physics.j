@@ -11,12 +11,12 @@ globals
     private constant boolean PRESSED    = true
     private constant boolean RELEASED   = false
     
-    private constant integer vjBUFFER       = 40
-    private constant integer hjBUFFER       = 40
+    private constant integer vjBUFFER       = 30		//how much offset to use when determining if there's valid terrain below or above to jump off of
+    private constant integer hjBUFFER       = 50		//how much offset to use when determining if there's valid terrain left or right to jump off of
     
     private constant real   tOFFSET         = 30.0      //how much offset to use when determining terrain type for terrain kill
-    private constant real   wOFFSET         = 1.5       //how much offset to use when determining if you're touching a wall, also used for wall jumps
-    
+    private constant real   wOFFSET         = 1.5       //how much offset to use when determining if you're touching a wall
+	
     private constant integer xMINVELOCITY   = 1         //a velocity less than this will turn to 0
     private constant real   hJUMPCUTOFF     = 1.0       //if less than this value, set to 0
     private constant real   INSTANT_MS      = 1.25       //.MoveSpeed * INSTANT_MS = the amount offset immediately on left/right key press -- higher = more reactive
@@ -2614,16 +2614,21 @@ endglobals
             if .YAppliedTerrainPushedAgainst == SAND then
                 call .XFalloffEquation.removeAdjustment(PlatformerPropertyEquation_MULTIPLY_ADJUSTMENT, SAND)
                 set .XFalloff = .XFalloffEquation.calculateAdjustedValue(.BaseProfile.XFalloff)
-            elseif .YAppliedTerrainPushedAgainst == GRASS then				
+			elseif .YAppliedTerrainPushedAgainst == GRASS then
 				call .MSEquation.removeAdjustment(PlatformerPropertyEquation_MULTIPLY_ADJUSTMENT, GRASS)
                 set .MoveSpeed = .MSEquation.calculateAdjustedValue(.BaseProfile.MoveSpeed)
+            elseif .YAppliedTerrainPushedAgainst == LUMPYGRASS then				
+				call .MSEquation.removeAdjustment(PlatformerPropertyEquation_MULTIPLY_ADJUSTMENT, LUMPYGRASS)
+                set .MoveSpeed = .MSEquation.calculateAdjustedValue(.BaseProfile.MoveSpeed)
+			elseif .YAppliedTerrainPushedAgainst == ROAD then
+				call .MSEquation.removeAdjustment(PlatformerPropertyEquation_MULTIPLY_ADJUSTMENT, ROAD)
+                set .MoveSpeed = .MSEquation.calculateAdjustedValue(.BaseProfile.MoveSpeed)
 				
-                call .TVYEquation.removeAdjustment(PlatformerPropertyEquation_MULTIPLY_ADJUSTMENT, GRASS)
+                call .TVYEquation.removeAdjustment(PlatformerPropertyEquation_MULTIPLY_ADJUSTMENT, ROAD)
                 set .TerminalVelocityY = .TVYEquation.calculateAdjustedValue(.BaseProfile.TerminalVelocityY)
 			elseif .YAppliedTerrainPushedAgainst == DGRASS then
                 call .MSEquation.removeAdjustment(PlatformerPropertyEquation_MULTIPLY_ADJUSTMENT, DGRASS)
                 set .MoveSpeed = .MSEquation.calculateAdjustedValue(.BaseProfile.MoveSpeed)
-                //set .MoveSpeed = .MoveSpeed / DGRASS_MS
 				
                 call .TVYEquation.removeAdjustment(PlatformerPropertyEquation_MULTIPLY_ADJUSTMENT, DGRASS)
                 set .TerminalVelocityY = .TVYEquation.calculateAdjustedValue(.BaseProfile.TerminalVelocityY)
@@ -2677,232 +2682,242 @@ endglobals
             //TODO get dominant terrain type when on DEATH
             if ttype == DEATH then
                 //check full sides individually                
-                //if GetTerrainType(x + tOFFSET, y) == DEATH and GetTerrainType(x + tOFFSET * .75, y + tOFFSET * .75) == DEATH and GetTerrainType(x + tOFFSET * .75, y - tOFFSET * .75) == DEATH then
-                
-                //endif
-                
-                //get centerpoint and check based on that
-                set terrainCenter = GetTerrainCenterpoint(x, y)
-                set terrainCenter.x = terrainCenter.x - x
-                set terrainCenter.y = terrainCenter.y - y
-                
                 //debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "offset: " + R2S(offsetZone) + "; x, y: " + R2S(terrainCenter.x) + ", " + R2S(terrainCenter.y))
                 
-				//check if unit is within a much smaller square centered on this tile
-                if terrainCenter.x < offsetZone and terrainCenter.x > -offsetZone and terrainCenter.y < offsetZone and terrainCenter.y > -offsetZone then
-                    static if DEBUG_TERRAIN_KILL then
-                        call DisplayTextToForce(bj_FORCE_PLAYER[0], "On lava, center")
-                        call DestroyEffect(AddSpecialEffect(DEBUG_TERRAIN_KILL_FX, .XPosition, .YPosition))
-                    else
-                        call DestroyEffect(AddSpecialEffect(TERRAIN_KILL_FX, .XPosition, .YPosition))
-                    endif
-                    
-                    static if APPLY_TERRAIN_KILL then
-                        call .KillPlatformer()
-                    endif
-                    
+				//check if unit is pushing against a cartesian surface, in which case being, on lava should always kill you
+				if .PushedAgainstVector != 0 and (.PushedAgainstVector == ComplexTerrainPathing_Up_UnitVector or .PushedAgainstVector == ComplexTerrainPathing_Down_UnitVector or .PushedAgainstVector == ComplexTerrainPathing_Right_UnitVector or .PushedAgainstVector == ComplexTerrainPathing_Left_UnitVector) then
+					static if DEBUG_TERRAIN_KILL then
+						call DisplayTextToForce(bj_FORCE_PLAYER[0], "On lava, pushed against cartesian surface")
+						call DestroyEffect(AddSpecialEffect(DEBUG_TERRAIN_KILL_FX, .XPosition, .YPosition))
+					else
+						call DestroyEffect(AddSpecialEffect(TERRAIN_KILL_FX, .XPosition, .YPosition))
+					endif
+					
+					static if APPLY_TERRAIN_KILL then
+						call .KillPlatformer()
+					endif
+				else
+					//get centerpoint and check based on that
+					set terrainCenter = GetTerrainCenterpoint(x, y)
+					set terrainCenter.x = terrainCenter.x - x
+					set terrainCenter.y = terrainCenter.y - y
+					
+					//check if unit is within a much smaller square centered on this tile
+					if terrainCenter.x < offsetZone and terrainCenter.x > -offsetZone and terrainCenter.y < offsetZone and terrainCenter.y > -offsetZone then
+						static if DEBUG_TERRAIN_KILL then
+							call DisplayTextToForce(bj_FORCE_PLAYER[0], "On lava, center")
+							call DestroyEffect(AddSpecialEffect(DEBUG_TERRAIN_KILL_FX, .XPosition, .YPosition))
+						else
+							call DestroyEffect(AddSpecialEffect(TERRAIN_KILL_FX, .XPosition, .YPosition))
+						endif
+						
+						static if APPLY_TERRAIN_KILL then
+							call .KillPlatformer()
+						endif
+						
+						call terrainCenter.destroy()
+						return
+					else
+						//check if unit is within a larger rectangle, formed by multiple squares of adjoining lava or non pathable tiles
+						if terrainCenter.x <= -offsetZone then
+							//on right side -- either of two corners or the middle
+							set ttype = GetTerrainType(x + tOFFSET, y)
+							if ttype == DEATH or not TerrainGlobals_IsTerrainPathable(ttype) then
+								if terrainCenter.y <= -offsetZone then
+									//top right
+									set ttype = GetTerrainType(x + tOFFSET, y + tOFFSET)
+									if ttype == DEATH or not TerrainGlobals_IsTerrainPathable(ttype) then
+										set ttype = GetTerrainType(x, y + tOFFSET)
+										if ttype == DEATH or not TerrainGlobals_IsTerrainPathable(ttype) then
+											static if DEBUG_TERRAIN_KILL then
+												call DisplayTextToForce(bj_FORCE_PLAYER[0], "On lava, top right side")
+												call DestroyEffect(AddSpecialEffect(DEBUG_TERRAIN_KILL_FX, .XPosition, .YPosition))
+											else
+												call DestroyEffect(AddSpecialEffect(TERRAIN_KILL_FX, .XPosition, .YPosition))
+											endif
+											
+											static if APPLY_TERRAIN_KILL then
+												call .KillPlatformer()
+											endif
+
+											call terrainCenter.destroy()
+											return
+											//set ttype = DEATH
+										endif
+									endif
+								elseif terrainCenter.y >= offsetZone then
+									//bot right
+									set ttype = GetTerrainType(x + tOFFSET, y - tOFFSET)
+									if ttype == DEATH or not TerrainGlobals_IsTerrainPathable(ttype) then
+										set ttype = GetTerrainType(x, y - tOFFSET)
+										if ttype == DEATH or not TerrainGlobals_IsTerrainPathable(ttype) then
+											static if DEBUG_TERRAIN_KILL then
+												call DisplayTextToForce(bj_FORCE_PLAYER[0], "On lava, bottom right side")
+												call DestroyEffect(AddSpecialEffect(DEBUG_TERRAIN_KILL_FX, .XPosition, .YPosition))
+											else
+												call DestroyEffect(AddSpecialEffect(TERRAIN_KILL_FX, .XPosition, .YPosition))
+											endif
+											
+											static if APPLY_TERRAIN_KILL then
+												call .KillPlatformer()
+											endif
+											
+											call terrainCenter.destroy()
+											return
+											//set ttype = DEATH
+										endif
+									endif
+								else
+									//right
+									set ttype = GetTerrainType(x + tOFFSET, y - tOFFSET)
+									if ttype == DEATH or not TerrainGlobals_IsTerrainPathable(ttype) then
+										set ttype = GetTerrainType(x + tOFFSET, y + tOFFSET)
+										if ttype == DEATH or not TerrainGlobals_IsTerrainPathable(ttype) then
+											static if DEBUG_TERRAIN_KILL then
+												call DisplayTextToForce(bj_FORCE_PLAYER[0], "On lava, right side")
+												call DestroyEffect(AddSpecialEffect(DEBUG_TERRAIN_KILL_FX, .XPosition, .YPosition))
+											else
+												call DestroyEffect(AddSpecialEffect(TERRAIN_KILL_FX, .XPosition, .YPosition))
+											endif
+											
+											static if APPLY_TERRAIN_KILL then
+												call .KillPlatformer()
+											endif
+											
+											call terrainCenter.destroy()
+											return
+											//set ttype = DEATH
+										endif
+									endif
+								endif
+							endif
+						elseif terrainCenter.x > offsetZone then
+							//on left side
+							set ttype = GetTerrainType(x - tOFFSET, y)
+							if ttype == DEATH or not TerrainGlobals_IsTerrainPathable(ttype) then
+								if terrainCenter.y <= -offsetZone then
+									//top left
+									set ttype = GetTerrainType(x - tOFFSET, y + tOFFSET)
+									if ttype == DEATH or not TerrainGlobals_IsTerrainPathable(ttype) then
+										set ttype = GetTerrainType(x, y + tOFFSET)
+										if ttype == DEATH or not TerrainGlobals_IsTerrainPathable(ttype) then
+											static if DEBUG_TERRAIN_KILL then
+												call DisplayTextToForce(bj_FORCE_PLAYER[0], "On lava, top left side")
+												call DestroyEffect(AddSpecialEffect(DEBUG_TERRAIN_KILL_FX, .XPosition, .YPosition))
+											else
+												call DestroyEffect(AddSpecialEffect(TERRAIN_KILL_FX, .XPosition, .YPosition))
+											endif
+											
+											static if APPLY_TERRAIN_KILL then
+												call .KillPlatformer()
+											endif
+											
+											call terrainCenter.destroy()
+											return
+											//set ttype = DEATH
+										endif
+									endif
+								elseif terrainCenter.y >= offsetZone then
+									//bot left
+									set ttype = GetTerrainType(x - tOFFSET, y - tOFFSET)
+									if ttype == DEATH or not TerrainGlobals_IsTerrainPathable(ttype) then
+										set ttype = GetTerrainType(x, y - tOFFSET)
+										if ttype == DEATH or not TerrainGlobals_IsTerrainPathable(ttype) then
+											static if DEBUG_TERRAIN_KILL then
+												call DisplayTextToForce(bj_FORCE_PLAYER[0], "On lava, bottom left side")
+												call DestroyEffect(AddSpecialEffect(DEBUG_TERRAIN_KILL_FX, .XPosition, .YPosition))
+											else
+												call DestroyEffect(AddSpecialEffect(TERRAIN_KILL_FX, .XPosition, .YPosition))
+											endif
+											
+											static if APPLY_TERRAIN_KILL then
+												call .KillPlatformer()
+											endif
+
+											call terrainCenter.destroy()
+											return
+											//set ttype = DEATH
+										endif
+									endif
+								else
+									//left
+									set ttype = GetTerrainType(x - tOFFSET, y - tOFFSET)
+									if ttype == DEATH or not TerrainGlobals_IsTerrainPathable(ttype) then
+										set ttype = GetTerrainType(x - tOFFSET, y + tOFFSET)
+										if ttype == DEATH or not TerrainGlobals_IsTerrainPathable(ttype) then
+											static if DEBUG_TERRAIN_KILL then
+												call DisplayTextToForce(bj_FORCE_PLAYER[0], "On lava, left side")
+												call DestroyEffect(AddSpecialEffect(DEBUG_TERRAIN_KILL_FX, .XPosition, .YPosition))
+											else
+												call DestroyEffect(AddSpecialEffect(TERRAIN_KILL_FX, .XPosition, .YPosition))
+											endif
+											
+											static if APPLY_TERRAIN_KILL then
+												call .KillPlatformer()
+											endif
+
+											call terrainCenter.destroy()
+											return
+											//set ttype = DEATH
+										endif
+									endif
+								endif
+							endif
+						elseif terrainCenter.y <= -offsetZone then
+							//top middle side
+							set ttype = GetTerrainType(x, y + tOFFSET)
+							if ttype == DEATH or not TerrainGlobals_IsTerrainPathable(ttype) then
+								set ttype = GetTerrainType(x - tOFFSET, y + tOFFSET)
+								if ttype == DEATH or not TerrainGlobals_IsTerrainPathable(ttype) then
+									set ttype = GetTerrainType(x + tOFFSET, y + tOFFSET)
+									if ttype == DEATH or not TerrainGlobals_IsTerrainPathable(ttype) then
+										static if DEBUG_TERRAIN_KILL then
+											call DisplayTextToForce(bj_FORCE_PLAYER[0], "On lava, top side")
+											call DestroyEffect(AddSpecialEffect(DEBUG_TERRAIN_KILL_FX, .XPosition, .YPosition))
+										else
+											call DestroyEffect(AddSpecialEffect(TERRAIN_KILL_FX, .XPosition, .YPosition))
+										endif
+										
+										static if APPLY_TERRAIN_KILL then
+											call .KillPlatformer()
+										endif
+
+										call terrainCenter.destroy()
+										return
+										//set ttype = DEATH
+									endif
+								endif
+							endif
+						elseif terrainCenter.y >= offsetZone then
+							//bottom middle side
+							set ttype = GetTerrainType(x, y - tOFFSET)
+							if ttype == DEATH or not TerrainGlobals_IsTerrainPathable(ttype) then
+								set ttype = GetTerrainType(x - tOFFSET, y - tOFFSET)
+								if ttype == DEATH or not TerrainGlobals_IsTerrainPathable(ttype) then
+									set ttype = GetTerrainType(x + tOFFSET, y - tOFFSET)
+									if ttype == DEATH or not TerrainGlobals_IsTerrainPathable(ttype) then
+										static if DEBUG_TERRAIN_KILL then
+											call DisplayTextToForce(bj_FORCE_PLAYER[0], "On lava, bottom side")
+											call DestroyEffect(AddSpecialEffect(DEBUG_TERRAIN_KILL_FX, .XPosition, .YPosition))
+										else
+											call DestroyEffect(AddSpecialEffect(TERRAIN_KILL_FX, .XPosition, .YPosition))
+										endif
+										
+										static if APPLY_TERRAIN_KILL then
+											call .KillPlatformer()
+										endif
+
+										call terrainCenter.destroy()
+										return
+										//set ttype = DEATH
+									endif
+								endif
+							endif
+						endif                
+					endif
+					
 					call terrainCenter.destroy()
-                    return
-                else
-					//check if unit is within a larger rectangle, formed by multiple squares of adjoining lava or non pathable tiles
-                    if terrainCenter.x <= -offsetZone then
-                        //on right side -- either of two corners or the middle
-                        set ttype = GetTerrainType(x + tOFFSET, y)
-                        if ttype == DEATH or not TerrainGlobals_IsTerrainPathable(ttype) then
-                            if terrainCenter.y <= -offsetZone then
-                                //top right
-                                set ttype = GetTerrainType(x + tOFFSET, y + tOFFSET)
-                                if ttype == DEATH or not TerrainGlobals_IsTerrainPathable(ttype) then
-                                    set ttype = GetTerrainType(x, y + tOFFSET)
-                                    if ttype == DEATH or not TerrainGlobals_IsTerrainPathable(ttype) then
-                                        static if DEBUG_TERRAIN_KILL then
-                                            call DisplayTextToForce(bj_FORCE_PLAYER[0], "On lava, top right side")
-                                            call DestroyEffect(AddSpecialEffect(DEBUG_TERRAIN_KILL_FX, .XPosition, .YPosition))
-                                        else
-                                            call DestroyEffect(AddSpecialEffect(TERRAIN_KILL_FX, .XPosition, .YPosition))
-                                        endif
-                                        
-                                        static if APPLY_TERRAIN_KILL then
-                                            call .KillPlatformer()
-                                        endif
-
-										call terrainCenter.destroy()
-                                        return
-                                        //set ttype = DEATH
-                                    endif
-                                endif
-                            elseif terrainCenter.y >= offsetZone then
-                                //bot right
-                                set ttype = GetTerrainType(x + tOFFSET, y - tOFFSET)
-                                if ttype == DEATH or not TerrainGlobals_IsTerrainPathable(ttype) then
-                                    set ttype = GetTerrainType(x, y - tOFFSET)
-                                    if ttype == DEATH or not TerrainGlobals_IsTerrainPathable(ttype) then
-                                        static if DEBUG_TERRAIN_KILL then
-                                            call DisplayTextToForce(bj_FORCE_PLAYER[0], "On lava, bottom right side")
-                                            call DestroyEffect(AddSpecialEffect(DEBUG_TERRAIN_KILL_FX, .XPosition, .YPosition))
-                                        else
-                                            call DestroyEffect(AddSpecialEffect(TERRAIN_KILL_FX, .XPosition, .YPosition))
-                                        endif
-                                        
-                                        static if APPLY_TERRAIN_KILL then
-                                            call .KillPlatformer()
-                                        endif
-                                        
-										call terrainCenter.destroy()
-                                        return
-                                        //set ttype = DEATH
-                                    endif
-                                endif
-                            else
-                                //right
-                                set ttype = GetTerrainType(x + tOFFSET, y - tOFFSET)
-                                if ttype == DEATH or not TerrainGlobals_IsTerrainPathable(ttype) then
-                                    set ttype = GetTerrainType(x + tOFFSET, y + tOFFSET)
-                                    if ttype == DEATH or not TerrainGlobals_IsTerrainPathable(ttype) then
-                                        static if DEBUG_TERRAIN_KILL then
-                                            call DisplayTextToForce(bj_FORCE_PLAYER[0], "On lava, right side")
-                                            call DestroyEffect(AddSpecialEffect(DEBUG_TERRAIN_KILL_FX, .XPosition, .YPosition))
-                                        else
-                                            call DestroyEffect(AddSpecialEffect(TERRAIN_KILL_FX, .XPosition, .YPosition))
-                                        endif
-                                        
-                                        static if APPLY_TERRAIN_KILL then
-                                            call .KillPlatformer()
-                                        endif
-                                        
-										call terrainCenter.destroy()
-                                        return
-                                        //set ttype = DEATH
-                                    endif
-                                endif
-                            endif
-                        endif
-                    elseif terrainCenter.x > offsetZone then
-                        //on left side
-                        set ttype = GetTerrainType(x - tOFFSET, y)
-                        if ttype == DEATH or not TerrainGlobals_IsTerrainPathable(ttype) then
-                            if terrainCenter.y <= -offsetZone then
-                                //top left
-                                set ttype = GetTerrainType(x - tOFFSET, y + tOFFSET)
-                                if ttype == DEATH or not TerrainGlobals_IsTerrainPathable(ttype) then
-                                    set ttype = GetTerrainType(x, y + tOFFSET)
-                                    if ttype == DEATH or not TerrainGlobals_IsTerrainPathable(ttype) then
-                                        static if DEBUG_TERRAIN_KILL then
-                                            call DisplayTextToForce(bj_FORCE_PLAYER[0], "On lava, top left side")
-                                            call DestroyEffect(AddSpecialEffect(DEBUG_TERRAIN_KILL_FX, .XPosition, .YPosition))
-                                        else
-                                            call DestroyEffect(AddSpecialEffect(TERRAIN_KILL_FX, .XPosition, .YPosition))
-                                        endif
-                                        
-                                        static if APPLY_TERRAIN_KILL then
-                                            call .KillPlatformer()
-                                        endif
-                                        
-										call terrainCenter.destroy()
-                                        return
-                                        //set ttype = DEATH
-                                    endif
-                                endif
-                            elseif terrainCenter.y >= offsetZone then
-                                //bot left
-                                set ttype = GetTerrainType(x - tOFFSET, y - tOFFSET)
-                                if ttype == DEATH or not TerrainGlobals_IsTerrainPathable(ttype) then
-                                    set ttype = GetTerrainType(x, y - tOFFSET)
-                                    if ttype == DEATH or not TerrainGlobals_IsTerrainPathable(ttype) then
-                                        static if DEBUG_TERRAIN_KILL then
-                                            call DisplayTextToForce(bj_FORCE_PLAYER[0], "On lava, bottom left side")
-                                            call DestroyEffect(AddSpecialEffect(DEBUG_TERRAIN_KILL_FX, .XPosition, .YPosition))
-                                        else
-                                            call DestroyEffect(AddSpecialEffect(TERRAIN_KILL_FX, .XPosition, .YPosition))
-                                        endif
-                                        
-                                        static if APPLY_TERRAIN_KILL then
-                                            call .KillPlatformer()
-                                        endif
-
-										call terrainCenter.destroy()
-                                        return
-                                        //set ttype = DEATH
-                                    endif
-                                endif
-                            else
-                                //left
-                                set ttype = GetTerrainType(x - tOFFSET, y - tOFFSET)
-                                if ttype == DEATH or not TerrainGlobals_IsTerrainPathable(ttype) then
-                                    set ttype = GetTerrainType(x - tOFFSET, y + tOFFSET)
-                                    if ttype == DEATH or not TerrainGlobals_IsTerrainPathable(ttype) then
-                                        static if DEBUG_TERRAIN_KILL then
-                                            call DisplayTextToForce(bj_FORCE_PLAYER[0], "On lava, left side")
-                                            call DestroyEffect(AddSpecialEffect(DEBUG_TERRAIN_KILL_FX, .XPosition, .YPosition))
-                                        else
-                                            call DestroyEffect(AddSpecialEffect(TERRAIN_KILL_FX, .XPosition, .YPosition))
-                                        endif
-                                        
-                                        static if APPLY_TERRAIN_KILL then
-                                            call .KillPlatformer()
-                                        endif
-
-										call terrainCenter.destroy()
-                                        return
-                                        //set ttype = DEATH
-                                    endif
-                                endif
-                            endif
-                        endif
-                    elseif terrainCenter.y <= -offsetZone then
-                        //top middle side
-                        set ttype = GetTerrainType(x, y + tOFFSET)
-                        if ttype == DEATH or not TerrainGlobals_IsTerrainPathable(ttype) then
-                            set ttype = GetTerrainType(x - tOFFSET, y + tOFFSET)
-                            if ttype == DEATH or not TerrainGlobals_IsTerrainPathable(ttype) then
-                                set ttype = GetTerrainType(x + tOFFSET, y + tOFFSET)
-                                if ttype == DEATH or not TerrainGlobals_IsTerrainPathable(ttype) then
-                                    static if DEBUG_TERRAIN_KILL then
-                                        call DisplayTextToForce(bj_FORCE_PLAYER[0], "On lava, top side")
-                                        call DestroyEffect(AddSpecialEffect(DEBUG_TERRAIN_KILL_FX, .XPosition, .YPosition))
-                                    else
-                                        call DestroyEffect(AddSpecialEffect(TERRAIN_KILL_FX, .XPosition, .YPosition))
-                                    endif
-                                    
-                                    static if APPLY_TERRAIN_KILL then
-                                        call .KillPlatformer()
-                                    endif
-
-									call terrainCenter.destroy()
-                                    return
-                                    //set ttype = DEATH
-                                endif
-                            endif
-                        endif
-                    elseif terrainCenter.y >= offsetZone then
-                        //bottom middle side
-                        set ttype = GetTerrainType(x, y - tOFFSET)
-                        if ttype == DEATH or not TerrainGlobals_IsTerrainPathable(ttype) then
-                            set ttype = GetTerrainType(x - tOFFSET, y - tOFFSET)
-                            if ttype == DEATH or not TerrainGlobals_IsTerrainPathable(ttype) then
-                                set ttype = GetTerrainType(x + tOFFSET, y - tOFFSET)
-                                if ttype == DEATH or not TerrainGlobals_IsTerrainPathable(ttype) then
-                                    static if DEBUG_TERRAIN_KILL then
-                                        call DisplayTextToForce(bj_FORCE_PLAYER[0], "On lava, bottom side")
-                                        call DestroyEffect(AddSpecialEffect(DEBUG_TERRAIN_KILL_FX, .XPosition, .YPosition))
-                                    else
-                                        call DestroyEffect(AddSpecialEffect(TERRAIN_KILL_FX, .XPosition, .YPosition))
-                                    endif
-                                    
-                                    static if APPLY_TERRAIN_KILL then
-                                        call .KillPlatformer()
-                                    endif
-
-									call terrainCenter.destroy()
-                                    return
-                                    //set ttype = DEATH
-                                endif
-                            endif
-                        endif
-                    endif                
-                endif
-                
-                call terrainCenter.destroy()
+				endif
             endif
             
             //debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "On terrain " + I2S(.TerrainDX) + ", new on terrain: " + I2S(ttype))
@@ -2999,11 +3014,17 @@ endglobals
                     set .XFalloff = .XFalloffEquation.calculateAdjustedValue(.BaseProfile.XFalloff)
                     //set .XFalloff = .XFalloff * SAND_FALLOFF
 				elseif .YTerrainPushedAgainst == GRASS then
-					call .MSEquation.addAdjustment(PlatformerPropertyEquation_MULTIPLY_ADJUSTMENT, GRASS, GRASS_MS)
+					call .MSEquation.addAdjustment(PlatformerPropertyEquation_MULTIPLY_ADJUSTMENT, GRASS, MS_FAST_FACTOR)
+                    set .MoveSpeed = .MSEquation.calculateAdjustedValue(.BaseProfile.MoveSpeed)
+				elseif .YTerrainPushedAgainst == LUMPYGRASS then
+					call .MSEquation.addAdjustment(PlatformerPropertyEquation_MULTIPLY_ADJUSTMENT, LUMPYGRASS, MS_FASTER_FACTOR)
+                    set .MoveSpeed = .MSEquation.calculateAdjustedValue(.BaseProfile.MoveSpeed)
+				elseif .YTerrainPushedAgainst == ROAD then
+					call .MSEquation.addAdjustment(PlatformerPropertyEquation_MULTIPLY_ADJUSTMENT, ROAD, MS_FAST_FACTOR)
                     set .MoveSpeed = .MSEquation.calculateAdjustedValue(.BaseProfile.MoveSpeed)
 					
-                    if (.GravitationalAccel > 0 and (.DiagonalPathing.TerrainPathingForPoint == ComplexTerrainPathing_Bottom or .DiagonalPathing.TerrainPathingForPoint == ComplexTerrainPathing_SE or .DiagonalPathing.TerrainPathingForPoint == ComplexTerrainPathing_SW)) or (.GravitationalAccel < 0 and (.DiagonalPathing.TerrainPathingForPoint == ComplexTerrainPathing_Top or .DiagonalPathing.TerrainPathingForPoint == ComplexTerrainPathing_NE or .DiagonalPathing.TerrainPathingForPoint == ComplexTerrainPathing_NW)) then
-						call .TVYEquation.addAdjustment(PlatformerPropertyEquation_MULTIPLY_ADJUSTMENT, GRASS, GRASS_TVY)
+					if (.GravitationalAccel > 0 and (.DiagonalPathing.TerrainPathingForPoint == ComplexTerrainPathing_Bottom or .DiagonalPathing.TerrainPathingForPoint == ComplexTerrainPathing_SE or .DiagonalPathing.TerrainPathingForPoint == ComplexTerrainPathing_SW)) or (.GravitationalAccel < 0 and (.DiagonalPathing.TerrainPathingForPoint == ComplexTerrainPathing_Top or .DiagonalPathing.TerrainPathingForPoint == ComplexTerrainPathing_NE or .DiagonalPathing.TerrainPathingForPoint == ComplexTerrainPathing_NW)) then
+						call .TVYEquation.addAdjustment(PlatformerPropertyEquation_MULTIPLY_ADJUSTMENT, ROAD, GRASS_TVY)
                         set .TerminalVelocityY = .TVYEquation.calculateAdjustedValue(.BaseProfile.TerminalVelocityY)
 						
 						static if DEBUG_GRASS_GRAVITY then
@@ -3011,7 +3032,7 @@ endglobals
 						endif
                     endif
                 elseif .YTerrainPushedAgainst == DGRASS then
-                    call .MSEquation.addAdjustment(PlatformerPropertyEquation_MULTIPLY_ADJUSTMENT, DGRASS, DGRASS_MS)
+                    call .MSEquation.addAdjustment(PlatformerPropertyEquation_MULTIPLY_ADJUSTMENT, DGRASS, MS_FASTER_FACTOR)
                     set .MoveSpeed = .MSEquation.calculateAdjustedValue(.BaseProfile.MoveSpeed)
 					//set .MoveSpeed = .MoveSpeed * DGRASS_MS
 					
