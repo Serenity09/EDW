@@ -409,6 +409,9 @@ library PlatformerIce initializer Init requires SimpleList, PlatformerGlobals
             set IsOnIce[p.PID] = true
             
             call Platformers.add(p)
+			
+			//immediately update physics, so that the platformer's initial velocity always reflects physics state
+			call p.ApplyPhysics()
             
             if Platformers.count == 1 then
                 //set Timer = NewTimer()
