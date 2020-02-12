@@ -1,4 +1,4 @@
-library LW2 requires Recycle, Levels, EDWCollectibleResolveHandlers
+library LW2 requires Recycle, Levels, EDWCollectibleResolveHandlers, ZoomChange
 	public function InitializeStartableContent takes nothing returns nothing
 		local Levels_Level l = Levels_Level(LW2_LEVEL_ID)
 		
@@ -11,6 +11,8 @@ library LW2 requires Recycle, Levels, EDWCollectibleResolveHandlers
 		local Collectible collectible
 		
 		local Wheel wheel
+		
+		local ZoomChange zc
 		
 		local integer lastRand
 		local integer i
@@ -45,6 +47,12 @@ library LW2 requires Recycle, Levels, EDWCollectibleResolveHandlers
 		call collectibleSet.AddCollectible(collectible)
 				
 		call FastLoad.create(l, l.Checkpoints.first.value, 30., 1.)
+		
+		set zc = ZoomChange.create(gg_rct_LW2_VC1a, 2200)
+		call zc.AddBoundary(gg_rct_LW2_VC1b)
+		call zc.AddBoundary(gg_rct_LW2_VC1c)
+		call zc.AddBoundary(gg_rct_LW2_VC1d)
+		call l.AddStartable(zc)
 		
 		//
 		set wheel = Wheel.createFromPoint(gg_rct_LW2_WW1)

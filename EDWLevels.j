@@ -41,6 +41,7 @@ library EDWLevels requires LevelIDGlobals, Levels, PW4
         set l = Levels_Level.create(IW3_LEVEL_ID, 6, 4, "IW3Start", "IW3Stop", gg_rct_IWR_3_1, gg_rct_IW3_Vision, gg_rct_IW3_End, l)
         call l.AddCheckpoint(gg_rct_IWCP_3_1, gg_rct_IWR_3_2)
         call l.AddCheckpoint(gg_rct_IWCP_3_2, gg_rct_IWR_3_3)
+		call l.AddCheckpoint(gg_rct_IWCP_3_2b, gg_rct_IWR_3_3b)
         call l.AddCheckpoint(gg_rct_IWCP_3_3, gg_rct_IWR_3_4)
 		
 		//LEVEL 4

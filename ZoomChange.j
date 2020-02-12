@@ -1,4 +1,4 @@
-library ZoomChange requires IStartable, User, Alloc, SimpleList, Teams
+library ZoomChange requires IStartable, User, Alloc, SimpleList, HandleList, Teams
 	globals
 		private constant real TIMESTEP = 1.
 		private constant real TRANSITION_TIME = .5
@@ -13,13 +13,17 @@ library ZoomChange requires IStartable, User, Alloc, SimpleList, Teams
 	endstruct
 	
 	struct ZoomChange extends IStartable
-		public rect Area
+		private RectList Boundaries
 		public real CameraDistance
 		public SimpleList_List ActiveUserData
 		
 		private static SimpleList_List Active
 		private static timer Timer
-			
+		
+		public method AddBoundary takes rect area returns nothing
+			call .Boundaries.addEnd(area)
+		endmethod
+		
 		public method GetUser takes User user returns UserChangeData
 			local SimpleList_ListNode curActiveUserData = ActiveUserData.first
 			
@@ -67,6 +71,10 @@ library ZoomChange requires IStartable, User, Alloc, SimpleList, Teams
 			
 			local UserChangeData userData
 			
+			local integer iBoundaryRect
+			local rect boundaryRect
+			local boolean inBoundary
+			
 			loop
 			exitwhen curTeam == 0
 				set curUser = Teams_MazingTeam(curTeam.value).FirstUser
@@ -76,10 +84,28 @@ library ZoomChange requires IStartable, User, Alloc, SimpleList, Teams
 					set userData = .GetUser(curUser.value)
 					
 					if User(curUser.value).GameMode == Teams_GAMEMODE_STANDARD or User(curUser.value).GameMode == Teams_GAMEMODE_STANDARD_PAUSED then						
-						if userData == 0 and RectContainsCoords(.Area, GetUnitX(User(curUser.value).ActiveUnit), GetUnitY(User(curUser.value).ActiveUnit)) then
-							call .AddUser(curUser.value)
-						elseif userData != 0 and not BufferedRectContainsCoords(.Area, GetUnitX(User(curUser.value).ActiveUnit), GetUnitY(User(curUser.value).ActiveUnit), TRANSITION_BUFFER) then
-							call .RemoveUser(userData)
+						//check if current user is in any of this vision modifier's rects
+						set iBoundaryRect = 0
+						set inBoundary = false
+						
+						loop
+						exitwhen inBoundary or iBoundaryRect >= .Boundaries.size
+						set boundaryRect = .Boundaries[iBoundaryRect]
+							if (userData == 0 and RectContainsCoords(boundaryRect, GetUnitX(User(curUser.value).ActiveUnit), GetUnitY(User(curUser.value).ActiveUnit))) /*
+								*/ or (userData != 0 and BufferedRectContainsCoords(boundaryRect, GetUnitX(User(curUser.value).ActiveUnit), GetUnitY(User(curUser.value).ActiveUnit), TRANSITION_BUFFER)) then
+								set inBoundary = true
+							endif
+						set iBoundaryRect = iBoundaryRect + 1
+						endloop
+						
+						if userData == 0 then
+							if inBoundary then
+								call .AddUser(curUser.value)
+							endif
+						else
+							if not inBoundary then
+								call .RemoveUser(userData)
+							endif
 						endif
 					elseif userData != 0 then
 						call .RemoveUser(userData)
@@ -88,6 +114,7 @@ library ZoomChange requires IStartable, User, Alloc, SimpleList, Teams
 				endloop
 			set curTeam = curTeam.next
 			endloop
+			
 		endmethod
 		private static method Periodic takes nothing returns nothing
 			local SimpleList_ListNode curActive = thistype.Active.first
@@ -127,7 +154,8 @@ library ZoomChange requires IStartable, User, Alloc, SimpleList, Teams
 		static method create takes rect area, real cameraDistance returns thistype
 			local thistype new = thistype.allocate()
 			
-			set new.Area = area
+			set new.Boundaries = RectList.create()
+			call new.Boundaries.addEnd(area)
 			set new.CameraDistance = cameraDistance
 			
 			set new.ActiveUserData = SimpleList_List.create()

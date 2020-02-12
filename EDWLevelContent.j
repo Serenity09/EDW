@@ -1,4 +1,4 @@
-library EDWLevelContent requires LevelIDGlobals, EDWLevels, SimpleList, Teams, Levels, EDWPatternSpawnDefinitions, Collectible, FastLoad
+library EDWLevelContent requires LevelIDGlobals, EDWLevels, SimpleList, Teams, Levels, EDWPatternSpawnDefinitions, Collectible, FastLoad, ZoomChange
 	public function Initialize takes nothing returns nothing
 		local Levels_Level l
 		local Checkpoint cp
@@ -17,6 +17,8 @@ library EDWLevelContent requires LevelIDGlobals, EDWLevels, SimpleList, Teams, L
 		
 		local CollectibleSet collectibleSet
 		local Collectible collectible
+		
+		local ZoomChange zc
 		
 		local FastLoad fastLoad
 		
@@ -61,6 +63,14 @@ library EDWLevelContent requires LevelIDGlobals, EDWLevels, SimpleList, Teams, L
         call rg.EndTurns(90)
         
         call l.AddStartable(rg)
+		
+		set zc = ZoomChange.create(gg_rct_IW4_VC1a, 2200)
+		call zc.AddBoundary(gg_rct_IW4_VC1b)
+		call zc.AddBoundary(gg_rct_IW4_VC1c)
+		call zc.AddBoundary(gg_rct_IW4_VC1d)
+		call zc.AddBoundary(gg_rct_IW4_VC1e)
+		call zc.AddBoundary(gg_rct_IW4_VC1f)
+		call l.AddStartable(zc)
 		
         //
 		if RewardMode != GameModesGlobals_HARD then

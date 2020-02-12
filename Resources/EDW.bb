@@ -26,7 +26,7 @@ Join the EDW discord to find other people to play with, or submit a world record
 
 Learn how the basics of the game in a easy-does-it tutorial level. While on the tutorial level you'll have unlimited continues, your deaths won't be counted, and you'll even instantly come back to life! What a deal!
 
-Past the intro you'll find the Doors to different worlds. Each world has a different theme, mostly meaning the types of terrain and obstacles. The game is shipping with three worlds initially. A full game for new players will probably only see part of one world.
+Past the intro you'll find the Doors to different worlds. Each world has a different theme, mostly meaning the types of terrain and obstacles. There are three worlds for players to see, but a full game for new players will probably only see part of one world.
 
 [otablei][tr][td][IMG]https://i.imgur.com/4mryzQm.png[/IMG][/td][td]The land world is about optimal movement, but also being able to pause for a second when necessary. It's probably the most beginner friendly world, focusing on fun elements while keeping the gameplay familiar[/td][/tr]
 [tr][td][IMG]https://i.imgur.com/x6aLro7.png[/IMG][/td][td]The Ice world focuses on movement mechanics. It's meant to highlight your understanding and dexterity of movement. This world is pretty hard to start, and then picks up drastically from Level 3 onward[/td][/tr]
@@ -59,12 +59,12 @@ When playing in a team mode, dying will leave a revive circle in your wake. [B]A
 [tr][td]Abyss[/td][td]Death, in a sudden, but still willing to bargain sorta way[/td][/tr]
 [tr][td]Lava[/td][td]PAIN[/td][/tr]
 [tr][td]Vines[/td][td]Sooooo Sloooooow[/td][/tr]
-[tr][td]Grasses[/td][td]Effects default movement speed. The darker the grass, the faster you go. Except for lumpy grass, cuz easy learning is for chumps[/td][/tr]
+[tr][td]Grasses[/td][td]Effects default movement speed. The darker the grass, the faster you go[/td][/tr]
 [tr][td]Leaves[/td][td]Super speed. Use with caution[/td][/tr]
-[tr][td]Ices[/td][td]Causes "ice skating" effect. The darker the ice, the faster you go[/td][/tr]
-[tr][td]Snow[/td][td]Causes "velocity skating" effect[/td][/tr]
-[tr][td]Rocky Snow[/td][td]Causes "velocity skating" effect, but you can't control your direction while on it[/td][/tr]
-[tr][td]Sand[/td][td]Causes "velocity running" effect[/td][/tr]
+[tr][td]Ices[/td][td]Ice skating! The darker the ice, the faster you go[/td][/tr]
+[tr][td]Snow[/td][td]Velocity skating![/td][/tr]
+[tr][td]Rocky Snow[/td][td]Velocity skating, but you can't control your direction while on it[/td][/tr]
+[tr][td]Sand[/td][td]Velocity running![/td][/tr]
 [tr][td]Compass Tile[/td][td]Enables willful teleportation in 4 cardinal compass directions[/td][/tr]
 [tr][td]Mossy Bricks[/td][td]Switch between 3D and 2D[/td][/tr]
 [tr][td]The Road[/td][td]The inky asphalt of the soul. Really, it's just visual[/td][/tr]
@@ -77,9 +77,9 @@ When playing in a team mode, dying will leave a revive circle in your wake. [B]A
 [tr][td]Abyss[/td][td]Open space[/td][/tr]
 [tr][td]Lava[/td][td]Death, of the more abrupt variety[/td][/tr]
 [tr][td]Vines[/td][td]Stiiiiiill Sooooo Sloooooow[/td][/tr]
-[tr][td]Grasses[/td][td]Effects default movement speed. The darker the grass, the faster you go. Except for lumpy grass, cuz easy learning is for chumps. Oh yeah, and the fast grasses are diamond shaped, and the lumpy one is square[/td][/tr]
+[tr][td]Grasses[/td][td]Effects default movement speed. The darker the grass, the faster you go. Some are diamond shaped[/td][/tr]
 [tr][td]Leaves[/td][td]First up, then down[/td][/tr]
-[tr][td]Light and Dark ice[/td][td]Causes 2D "ice skating" effect. The darker the ice, the faster you go. Diamond shaped[/td][/tr]
+[tr][td]Light and Dark ice[/td][td]Causes 2D ice skating. The darker the ice, the faster you go. Diamond shaped[/td][/tr]
 [tr][td]Medium ice[/td][td]Obviously, the ocean[/td][/tr]
 [tr][td]Snow[/td][td]Soft square terrain. Can't wall jump[/td][/tr]
 [tr][td]Rocky Snow[/td][td]Hard square terrain. Can't wall jump[/td][/tr]
@@ -96,9 +96,9 @@ When playing in a team mode, dying will leave a revive circle in your wake. [B]A
 [tr][td]Abyss[/td][td][IMG]https://imgur.com/cGWgkwc.png[/IMG][/td][/tr]
 [tr][td]Lava[/td][td][IMG]https://imgur.com/HyPOw5E.png[/IMG][/td][/tr]
 [tr][td]Vines[/td][td][IMG]https://imgur.com/AdgoppI.png[/IMG][/td][/tr]
-[tr][td]Lumpy Grass[/td][td][IMG]https://imgur.com/zJSDoMg.png[/IMG][/td][/tr]
 [tr][td]Light Grass[/td][td][IMG]https://imgur.com/Xs9Sf57.png[/IMG][/td][/tr]
 [tr][td]Dark Grass[/td][td][IMG]https://imgur.com/9dXMtZN.png[/IMG][/td][/tr]
+[tr][td]Lumpy Grass[/td][td][IMG]https://imgur.com/zJSDoMg.png[/IMG][/td][/tr]
 [tr][td]Leaves[/td][td][IMG]https://imgur.com/wmBLvqc.png[/IMG][/td][/tr]
 [tr][td]Light Ice[/td][td][IMG]https://imgur.com/GsmKSoD.png[/IMG][/td][/tr]
 [tr][td]Medium Ice[/td][td][IMG]https://imgur.com/EO4zllf.png[/IMG][/td][/tr]
@@ -168,7 +168,8 @@ You can also enable / disable "Camera Tracking" by pressing the escape key! This
 [/Tab]
 [Tab=Videos]Submit links to your videos to this thread or via PM!
 [/Tab]
-[Tab=Changelog][2019-12-7] (v1.0.0) First release!
+[Tab=Changelog][2020-01-24](v1.2.0) Difficulty balancing for all first levels
+
 [2020-01-16] (v1.1.0) Community Updates (thank you deepstrasz, tough_zai, and Otherknownoise)
 Bug fix for 2+ players simultaneously activating the same foot switch.
 Bug fix for unrendered vote menu when 1+ player disconnects during game load.
@@ -176,7 +177,8 @@ Chinese localizations improved.
 Health bars always hidden.
 Quest added explaining available chat commands.
 Game auto detects and resets a player's camera when its accidentally changed during 3d mazing, ie by accidentally scrolling.
-[2020-01-24](v1.2.0) Difficulty balancing for all first levels
+
+[2019-12-7] (v1.0.0) First release!
 [/Tab]
 [Tab=Credits]Thanks to my partner, who's endured this map's development.
 
@@ -207,8 +209,9 @@ Firelord213 - Walk Sign ([URL='https://www.hiveworkshop.com/threads/walkpole.931
 Blood Raven - Snow Pile ([URL='https://www.hiveworkshop.com/threads/frozen-cliff-snow-pile.245486/#resource-35326']Frozen Cliff + Snow Pile[/URL])
 
 2D Textures:
-MassiveMaster - Road Terrain ([URL='https://www.hiveworkshop.com/threads/north_rock-blp.143827/']North_rock.blp[/URL])
-Anonymous author - Anime Sunset loadscreen art ([URL='https://www.wallpapervortex.com/wallpaper-38651_anime_scenery_anime_sunset.html']Anime Sunset HD Wallpaper | 1920x1080 | ID:38651  - WallpaperVortex.com[/URL])
+MassiveMaster - [URL='https://www.hiveworkshop.com/threads/north_rock-blp.143827/']Road Terrain[/URL]
+Veronnis - [URL='https://www.hiveworkshop.com/threads/reforged-street-texture-request.320390/']HD Road Terrain[/URL]
+Anonymous author - [URL='https://www.wallpapervortex.com/wallpaper-38651_anime_scenery_anime_sunset.html']Anime Sunset loadscreen art[/URL]
 
 Sound Effects:
 Hasbro - Frogger Victory
@@ -240,13 +243,14 @@ Jeff Pang - Online vanilla JASS documentation (http://jass.sourceforge.net/index
 Tyrande-ma3x - WC3 Terrain raw codes (https://www.thehelper.net/threads/terrain-type-raw-value.105981/)
 Raen7 - WC3 playercolors to hex codes (https://docs.google.com/spreadsheets/d/1wzWIYzRW9pqpo1ZuEcU-qJTg-H4z5-PaTnHIXPezaRQ/edit#gid=1812483906)
 Rufus - Map Description guide & templates (https://www.hiveworkshop.com/threads/description-guide-maps.287829/)
+Mayday - Reforged Custom Loading Screen (https://www.hiveworkshop.com/threads/high-resolution-loading-screens.322172/)
 
 Help:
 Pat1487 - Too many answers to list all (https://tmmm.forumotion.com/)
 Anitarf, PurgeandFire111, Bannar - Questions about globals (http://www.wc3c.net/showthread.php?p=1134646#post1134646)
 Anitarf, PurgeandFire111, BBQ, Fledermaus - Questions about structs (http://www.wc3c.net/showthread.php?p=1132076#post1132076)
 Anitarf, BBQ, Bribe - Wisp Wheel (http://www.wc3c.net/showthread.php?p=1131278#post1131278)
-Dr Super Good - Too many answers to list all, but among which are tips to generating random points (https://www.hiveworkshop.com/threads/get-evenly-weighted-random-point-in-rectangle.294547/), unit rotation mechanics (https://www.hiveworkshop.com/threads/unit-turning-mechanics.300224/), MPQ localization (https://www.hiveworkshop.com/threads/data-storage-in-mpq.320370/) and general smugness about things I could have if only I used Starcraft 2's engine or, more recently, Lua
+Dr Super Good - Too many answers to list all, but among which are tips to generating random points (https://www.hiveworkshop.com/threads/get-evenly-weighted-random-point-in-rectangle.294547/), unit rotation mechanics (https://www.hiveworkshop.com/threads/unit-turning-mechanics.300224/), MPQ localization (https://www.hiveworkshop.com/threads/data-storage-in-mpq.320370/) and general sass about things I could have if only I used Starcraft 2's engine or, more recently, Lua
 -Manuel- - Fix to setting unit immobile/mobile (https://www.hiveworkshop.com/threads/prevent-movement.312061/#post-3321807)
 Pyrogasm & Wrda - Approach to making units locally visible/invisible (https://www.hiveworkshop.com/threads/make-units-locally-visible.310326/)
 wc3neverdies - A fix for selecting terrain in the World Editor (https://www.hiveworkshop.com/threads/world-editor-crash.320150/#post-3384554)
@@ -254,9 +258,12 @@ Lep, Drake53, Pyrogasm, DSG, Tasyen - WC localization/language storage & auto-de
 TriggerHappy - Additional help on WC localization/language auto-detection via PM (primarily referencing https://www.hiveworkshop.com/threads/how-to-localize-map.304594/)
 deepstrasz, wolfman, x3GlikE - Hiding unit health bars (https://www.hiveworkshop.com/threads/hide-health-bar.193287/)
 Otherknownoise - bug reports for Respawning Gateways MUI, player dropped during gameload
+Veronnis - help migrating from .blp terrain tile to .dds
 
 Feedback:
 Thank you everyone again for taking time to consider my game and giving feedback and/or suggestions!
+
+Pyrogasm - use blight tile to get around some limitations on tiles
 
 v1.0
 tough_zai - car feedback

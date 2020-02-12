@@ -7,6 +7,8 @@ library IW3 requires Recycle, Levels
 		
 		local SynchronizedGroup nsync
 		local SynchronizedUnit jtimber
+		
+		local ZoomChange zc
         
 		local integer i
 		
@@ -78,7 +80,10 @@ library IW3 requires Recycle, Levels
 		// call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_Rect_185))
 		// set jtimber.AllOrders.last.next = jtimber.AllOrders.first
 		
-		call l.AddStartable(ZoomChange.create(gg_rct_IW3_VC1, 2200))
+		set zc = ZoomChange.create(gg_rct_IW3_VC1b, 2200)
+		call zc.AddBoundary(gg_rct_IW3_VC1a)
+		call l.AddStartable(zc)
+		
 		call l.AddStartable(IceSkaterGenerator.create(PatternSpawn.create(IW3SkaterPattern, 3), 5.))
 		
 		//
