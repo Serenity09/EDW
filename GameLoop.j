@@ -17,7 +17,7 @@ library StandardGameLoop initializer init requires EDWEffects, LavaDamage, IceMo
 	endglobals
 
 //! textmacro GetTerrainPriority takes TType, TPriority
-	if $TType$ == ABYSS /* or $TType$ == LRGBRICKS */ or $TType$ == RTILE or $TType$ == ROAD then
+	if $TType$ == ABYSS /* or $TType$ == LRGBRICKS or $TType$ == RTILE */ or $TType$ == ROAD then
 		set $TPriority$ = 0
 	elseif $TType$ == LAVA then
 		set $TPriority$ = 1
@@ -31,7 +31,9 @@ library StandardGameLoop initializer init requires EDWEffects, LavaDamage, IceMo
 		set $TPriority$ = 6
 	elseif $TType$ == FASTICE then
 		set $TPriority$ = 7
-	else //if $TType$ == VINES or $TType$ == SAND or $TType$ == RSNOW or $TType$ == LRGBRICKS then
+	elseif $TType$ == RTILE then
+		set $TPriority$ = 8
+	else //if $TType$ == VINES or $TType$ == SAND or $TType$ == RSNOW or $TType$ == LRGBRICKS or $TType$ == RTILE then
 		set $TPriority$ = 2
 	endif
 //! endtextmacro
@@ -313,12 +315,14 @@ function GameLoop takes nothing returns nothing
 					//call RotationCameras[user].cUnpause()
 					//functionality defined within Ice.isMoving
 					set UseTeleportMovement[user] = true
-					set terrainCenterPoint = GetTerrainCenterpoint(x, y)
-					call SetUnitX(u, terrainCenterPoint.x)
-					call SetUnitY(u, terrainCenterPoint.y)
-					call IssueImmediateOrder(u, "stop")
-					
-					call terrainCenterPoint.destroy()
+					set terrainCenterPoint = GetClosestTerrain(x, y, RTILE, 2)
+					if terrainCenterPoint != 0 then
+						call SetUnitX(u, terrainCenterPoint.x)
+						call SetUnitY(u, terrainCenterPoint.y)
+						call IssueImmediateOrder(u, "stop")
+						
+						call terrainCenterPoint.destroy()
+					endif
 				elseif (basicterrain == SAND) then
 					//call DisplayTextToForce(bj_FORCE_PLAYER[user], "On Sand")
 					call SandMovement.Add(user)

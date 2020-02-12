@@ -185,5 +185,56 @@ library Vector2
 			endif
             return Acos((a.x*b.x+a.y*b.y)/l) //angle is returned in radians
         endmethod
+		
+		method distanceToSquare takes vector2 squareCenter, real size returns real
+			local real dx = 0
+			local real dy = 0
+			
+			local real temp = squareCenter.x - size - .x
+			
+			if temp > dx then
+				set dx = temp
+			endif
+			set temp = .x - squareCenter.x - size
+			if temp > dx then
+				set dx = temp
+			endif
+			
+			set temp = squareCenter.y - size - .y
+			if temp > dy then
+				set dy = temp
+			endif
+			set temp = .y - squareCenter.y - size
+			if temp > dy then
+				set dy = temp
+			endif
+			
+			return SquareRoot(dx*dx + dy*dy)
+		endmethod
+		method distanceToRect takes vector2 rectMin, vector2 rectMax returns real
+			local real dx = 0
+			local real dy = 0
+			
+			local real temp = rectMin.x - .x
+			
+			if temp > dx then
+				set dx = temp
+			endif
+			set temp = .x - rectMax.x
+			if temp > dx then
+				set dx = temp
+			endif
+			
+			set temp = rectMin.y - .y
+			if temp > dy then
+				set dy = temp
+			endif
+			set temp = .y - rectMax.y
+			if temp > dy then
+				set dy = temp
+			endif
+			
+			return SquareRoot(dx*dx + dy*dy)
+		endmethod
     endstruct
 endlibrary

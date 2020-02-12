@@ -73,7 +73,106 @@ library TerrainHelpers requires TerrainGlobals, UnitGlobals, Vector2
 		
 		return SquareRoot(dx*dx + dy*dy)
 	endfunction
-	    
+	
+	//needs anonymous func support
+	function GetClosestTerrain takes real x, real y, integer ttype, integer maxRadius returns vector2
+		local integer iSide
+        local integer iRadius
+								
+		local vector2 tileCenter
+		
+		local real checkDistance
+		local real bestDistance = 10000
+		local vector2 bestCenter = 0
+                
+		//get x,y tile center, to define other nearby tiles and check the distance between them and x,y
+        set tileCenter = GetTerrainCenterpoint(x, y)
+		
+		if GetTerrainType(tileCenter.x, tileCenter.y) == ttype then
+			return tileCenter
+		endif
+		
+        set iRadius = 2
+        loop
+        exitwhen iRadius > maxRadius  
+            //check the two long sides
+            set iSide = 1
+            loop
+            exitwhen iSide > iRadius * 2 - 1      
+                //debug call CreateUnit(Player(0), WWWISP, x - 128 * iRadius + 128 * iSide, y + 128 * (iRadius - 1), 0)
+                //debug call CreateUnit(Player(1), WWWISP, x - 128 * iRadius + 128 * iSide, y - 128 * (iRadius - 1), 0)
+                
+                if GetTerrainType(tileCenter.x - 128 * iRadius + 128 * iSide, tileCenter.y + 128 * (iRadius - 1)) == ttype then
+                    //get the distance between the check center and previous best center
+					set checkDistance = GetDistanceFromTile(tileCenter.x  - 128 * iRadius + 128 * iSide, tileCenter.y  + 128 * (iRadius - 1), x, y)
+					if checkDistance < bestDistance then
+						set bestDistance = checkDistance
+						
+						if bestCenter != 0 then
+							call bestCenter.deallocate()
+						endif
+						set bestCenter = vector2.create(tileCenter.x - 128 * iRadius + 128 * iSide, tileCenter.y + 128 * (iRadius - 1))
+					endif
+                endif
+				
+				if GetTerrainType(tileCenter.x - 128 * iRadius + 128 * iSide, tileCenter.y - 128 * (iRadius - 1)) == ttype then
+                    set checkDistance = GetDistanceFromTile(tileCenter.x - 128 * iRadius + 128 * iSide, tileCenter.y - 128 * (iRadius - 1), x, y)
+					if checkDistance < bestDistance then
+						set bestDistance = checkDistance
+						
+						if bestCenter != 0 then
+							call bestCenter.deallocate()
+						endif
+						set bestCenter = vector2.create(tileCenter.x - 128 * iRadius + 128 * iSide, tileCenter.y - 128 * (iRadius - 1))
+					endif
+                endif
+            set iSide = iSide + 1
+            endloop
+                        
+            //check the two short sides
+            set iSide = 1
+            loop
+            exitwhen iSide > iRadius * 2 - 3
+                //debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "placing y: " + R2S(y - 128 * (iRadius - 1) + 128 * iSide))
+                //debug call CreateUnit(Player(2), WWWISP, x + 128 * (iRadius - 1), y - 128 * (iRadius - 1) + 128 * iSide, 0)
+                //debug call CreateUnit(Player(3), WWWISP, x - 128 * (iRadius - 1), y - 128 * (iRadius - 1) + 128 * iSide, 0)                
+                if GetTerrainType(tileCenter.x + 128 * (iRadius - 1), tileCenter.y - 128 * (iRadius - 1) + 128 * iSide) == ttype then
+                    set checkDistance = GetDistanceFromTile(tileCenter.x + 128 * (iRadius - 1), tileCenter.y - 128 * (iRadius - 1) + 128 * iSide, x, y)
+					if checkDistance < bestDistance then
+						set bestDistance = checkDistance
+						
+						if bestCenter != 0 then
+							call bestCenter.deallocate()
+						endif
+						set bestCenter = vector2.create(tileCenter.x + 128 * (iRadius - 1), tileCenter.y - 128 * (iRadius - 1) + 128 * iSide)
+					endif
+                elseif GetTerrainType(tileCenter.x - 128 * (iRadius - 1), tileCenter.y - 128 * (iRadius - 1) + 128 * iSide) == ttype then
+                    set checkDistance = GetDistanceFromTile(tileCenter.x - 128 * (iRadius - 1), tileCenter.y - 128 * (iRadius - 1) + 128 * iSide, x, y)
+					if checkDistance < bestDistance then
+						set bestDistance = checkDistance
+						
+						if bestCenter != 0 then
+							call bestCenter.deallocate()
+						endif
+						set bestCenter = vector2.create(tileCenter.x - 128 * (iRadius - 1), tileCenter.y - 128 * (iRadius - 1) + 128 * iSide)
+					endif
+                endif
+            set iSide = iSide + 1
+            endloop
+			
+			//the best center for any single ring will be better than any best center in the next ring
+			if bestCenter != 0 then
+				call tileCenter.deallocate()
+				return bestCenter
+			endif
+        set iRadius = iRadius + 1
+        endloop
+        
+        //failed to find a safe location, return 0 and pass the buck
+		call tileCenter.deallocate()
+        return 0
+	endfunction
+	
     public function TryGetFirstSafeLocation takes real x, real y, integer maxRadius, integer prevGameMode returns vector2
         local integer iSide
         local integer iRadius
