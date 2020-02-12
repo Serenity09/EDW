@@ -104,6 +104,7 @@ endglobals
         public real          GravitationalAccel   //how strong the effect of gravity is
         public PlatformerPropertyEquation GravityEquation
         public real          vJumpSpeed           //how fast a wall jump is vertically
+		public PlatformerPropertyEquation vJumpSpeedEquation
         public real          v2hJumpRatio         //0-1 how much of vJumpSpeed is still applied (vertically) during a wall jump
         public real          hJumpSpeed           //how fast a wall jump is horizontally
         public boolean       CanOceanJump
@@ -972,7 +973,7 @@ endglobals
             endmethod
         endif
         
-        private method ApplyPhysics takes nothing returns nothing
+        public method ApplyPhysics takes nothing returns nothing
             local real newX = 0
             local real newY = 0
             
@@ -2534,11 +2535,14 @@ endglobals
                                 
                 call .TVYEquation.removeAdjustment(PlatformerPropertyEquation_MULTIPLY_ADJUSTMENT, OCEAN)
                 set .TerminalVelocityY = .TVYEquation.calculateAdjustedValue(.BaseProfile.TerminalVelocityY)
+				
+				call .vJumpSpeedEquation.removeAdjustment(PlatformerPropertyEquation_MULTIPLY_ADJUSTMENT, OCEAN)
+				set .vJumpSpeed = .vJumpSpeedEquation.calculateAdjustedValue(.BaseProfile.vJumpSpeed)
                 
                 //set .GravitationalAccel = .GravitationalAccel / PlatformerOcean_GRAVITYPERCENT
                 //set .MoveSpeed = .MoveSpeed / PlatformerOcean_MS
                 set .hJumpSpeed = .hJumpSpeed / PlatformerOcean_HJUMP
-                set .vJumpSpeed = .vJumpSpeed / PlatformerOcean_VJUMP
+                // set .vJumpSpeed = .vJumpSpeed / PlatformerOcean_VJUMP
                 set .v2hJumpRatio = .v2hJumpRatio / PlatformerOcean_V2H
                 //set .TerminalVelocityY = .TerminalVelocityY / PlatformerOcean_TVX
                 //set .TerminalVelocityX = .TerminalVelocityX / PlatformerOcean_TVY
@@ -2557,6 +2561,9 @@ endglobals
                 
                 call .TVYEquation.removeAdjustment(PlatformerPropertyEquation_MULTIPLY_ADJUSTMENT, VINES)
                 set .TerminalVelocityY = .TVYEquation.calculateAdjustedValue(.BaseProfile.TerminalVelocityY)
+				
+				call .vJumpSpeedEquation.removeAdjustment(PlatformerPropertyEquation_MULTIPLY_ADJUSTMENT, VINES)
+                set .vJumpSpeed = .vJumpSpeedEquation.calculateAdjustedValue(.BaseProfile.vJumpSpeed)
 				
                 //set .TerminalVelocityY = .TerminalVelocityY / VINES_SLOWDOWNPERCENT
                 
@@ -3096,7 +3103,7 @@ endglobals
                     //set .GravitationalAccel = .GravitationalAccel * PlatformerOcean_GRAVITYPERCENT
                     //set .MoveSpeed = .MoveSpeed * PlatformerOcean_MS
                     set .hJumpSpeed = .hJumpSpeed * PlatformerOcean_HJUMP
-                    set .vJumpSpeed = .vJumpSpeed * PlatformerOcean_VJUMP
+                    // set .vJumpSpeed = .vJumpSpeed * PlatformerOcean_VJUMP
                     set .v2hJumpRatio = .v2hJumpRatio * PlatformerOcean_V2H
                     //set .TerminalVelocityY = .TerminalVelocityY * PlatformerOcean_TVX
                     //set .TerminalVelocityX = .TerminalVelocityX * PlatformerOcean_TVY
@@ -3104,6 +3111,9 @@ endglobals
                     //set .YFalloff = .YFalloff * PlatformerOcean_YFALLOFF
                     set .MoveSpeedVelOffset = .MoveSpeedVelOffset * PlatformerOcean_MSOFF
                     
+					call .vJumpSpeedEquation.addAdjustment(PlatformerPropertyEquation_MULTIPLY_ADJUSTMENT, OCEAN, PlatformerOcean_VJUMP)
+                    set .vJumpSpeed = .vJumpSpeedEquation.calculateAdjustedValue(.BaseProfile.vJumpSpeed)
+					
                     call .MSEquation.addAdjustment(PlatformerPropertyEquation_MULTIPLY_ADJUSTMENT, OCEAN, PlatformerOcean_MS)
                     set .MoveSpeed = .MSEquation.calculateAdjustedValue(.BaseProfile.MoveSpeed)
                     
@@ -3142,6 +3152,9 @@ endglobals
                     
                     call .TVYEquation.addAdjustment(PlatformerPropertyEquation_MULTIPLY_ADJUSTMENT, VINES, VINES_SLOWDOWNPERCENT)
                     set .TerminalVelocityY = .TVYEquation.calculateAdjustedValue(.BaseProfile.TerminalVelocityY)
+					
+					call .vJumpSpeedEquation.addAdjustment(PlatformerPropertyEquation_MULTIPLY_ADJUSTMENT, VINES, VINES_VJUMPPERCENT)
+					set .vJumpSpeed = .vJumpSpeedEquation.calculateAdjustedValue(.BaseProfile.vJumpSpeed)
                     
 					call DestroyEffect(AddSpecialEffect(TERRAIN_VINES_FX, x, y))
                     //debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "On vines, grav is: " + R2S(.GravitationalAccel))
@@ -3232,9 +3245,10 @@ endglobals
             set .XFalloff = .XFalloffEquation.calculateAdjustedValue(.BaseProfile.XFalloff)
             set .YFalloff = .YFalloffEquation.calculateAdjustedValue(.BaseProfile.YFalloff)
             set .TerminalVelocityY = .TVYEquation.calculateAdjustedValue(.BaseProfile.TerminalVelocityY)
+			set .vJumpSpeed = .vJumpSpeedEquation.calculateAdjustedValue(.BaseProfile.vJumpSpeed)
             
             //set .GravitationalAccel = .BaseProfile.GravitationalAccel
-            set .vJumpSpeed = .BaseProfile.vJumpSpeed
+            // set .vJumpSpeed = .BaseProfile.vJumpSpeed
             set .hJumpSpeed = .BaseProfile.hJumpSpeed
             //set .MoveSpeed = .BaseProfile.MoveSpeed
             //set .TerminalVelocityX = .BaseProfile.TerminalVelocityX
@@ -3339,6 +3353,7 @@ endglobals
                 call .XFalloffEquation.clearAdjustments()
                 call .YFalloffEquation.clearAdjustments()
                 call .TVYEquation.clearAdjustments()
+				call .vJumpSpeedEquation.clearAdjustments()
                 //debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "End clearing adjustments")
                 
                 if thistype.ActivePlatformers.count == 0 then
@@ -3862,6 +3877,7 @@ endglobals
             set new.XFalloffEquation = PlatformerPropertyEquation.create()
             set new.YFalloffEquation = PlatformerPropertyEquation.create()
             set new.TVYEquation = PlatformerPropertyEquation.create()
+			set new.vJumpSpeedEquation = PlatformerPropertyEquation.create()
             
             set new.Unit = CreateUnit(Player(pID), PLATFORMERWISP, PlatformerGlobals_SAFE_X, PlatformerGlobals_SAFE_Y, 0)
             call UnitAddAbility(new.Unit, 'Aloc')

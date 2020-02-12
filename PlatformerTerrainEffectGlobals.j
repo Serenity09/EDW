@@ -3,6 +3,7 @@ library PlatformerTerrainEffectGlobals requires PlatformerGlobals, TerrainGlobal
 
         constant real VINES_SLOWDOWNPERCENT = .2
         constant real VINES_MOVESPEEDPERCENT = .75
+		constant real VINES_VJUMPPERCENT = .45
         
         constant real BOOST_SPEED = 1300 * PlatformerGlobals_GAMELOOP_TIMESTEP
         
