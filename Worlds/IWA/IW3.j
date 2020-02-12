@@ -78,6 +78,7 @@ library IW3 requires Recycle, Levels
 		// call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_Rect_185))
 		// set jtimber.AllOrders.last.next = jtimber.AllOrders.first
 		
+		call l.AddStartable(ZoomChange.create(gg_rct_IW3_VC1, 2200))
 		call l.AddStartable(IceSkaterGenerator.create(PatternSpawn.create(IW3SkaterPattern, 3), 5.))
 		
 		//
