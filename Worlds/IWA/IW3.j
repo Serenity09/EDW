@@ -80,7 +80,7 @@ library IW3 requires Recycle, Levels
 		// call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_Rect_185))
 		// set jtimber.AllOrders.last.next = jtimber.AllOrders.first
 		
-		set zc = ZoomChange.create(gg_rct_IW3_VC1b, 2200)
+		set zc = ZoomChange.create(gg_rct_IW3_VC1b, FAR_CAMERA_DISTANCE)
 		call zc.AddBoundary(gg_rct_IW3_VC1a)
 		call l.AddStartable(zc)
 		

@@ -48,7 +48,7 @@ library LW2 requires Recycle, Levels, EDWCollectibleResolveHandlers, ZoomChange
 				
 		call FastLoad.create(l, l.Checkpoints.first.value, 30., 1.)
 		
-		set zc = ZoomChange.create(gg_rct_LW2_VC1a, 2200)
+		set zc = ZoomChange.create(gg_rct_LW2_VC1a, FAR_CAMERA_DISTANCE)
 		call zc.AddBoundary(gg_rct_LW2_VC1b)
 		call zc.AddBoundary(gg_rct_LW2_VC1c)
 		call zc.AddBoundary(gg_rct_LW2_VC1d)

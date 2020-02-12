@@ -3,6 +3,11 @@ library ZoomChange requires IStartable, User, Alloc, SimpleList, HandleList, Tea
 		private constant real TIMESTEP = 1.
 		private constant real TRANSITION_TIME = .5
 		private constant real TRANSITION_BUFFER = TERRAIN_TILE_SIZE * 2.
+		
+		constant real NEAR_CAMERA_DISTANCE = 1250.
+		constant real VANILLA_CAMERA_DISTANCE = 1650.
+		constant real DEFAULT_3D_CAMERA_DISTANCE = 1850.
+		constant real FAR_CAMERA_DISTANCE = 2250.
 	endglobals
 	
 	private struct UserChangeData extends array
