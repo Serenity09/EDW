@@ -14,7 +14,7 @@ globals
     private constant integer vjBUFFER       = 30		//how much offset to use when determining if there's valid terrain below or above to jump off of
     private constant integer hjBUFFER       = 50		//how much offset to use when determining if there's valid terrain left or right to jump off of
     
-    private constant real   tOFFSET         = 30.0      //how much offset to use when determining terrain type for terrain kill
+    private constant real   tOFFSET         = 40.0      //how much offset to use when determining terrain type for terrain kill
     private constant real   wOFFSET         = 1.5       //how much offset to use when determining if you're touching a wall
 	
     private constant integer xMINVELOCITY   = 1         //a velocity less than this will turn to 0
@@ -3125,7 +3125,7 @@ endglobals
                     
                     call .YFalloffEquation.addAdjustment(PlatformerPropertyEquation_MULTIPLY_ADJUSTMENT, OCEAN, PlatformerOcean_YFALLOFF)
                     set .YFalloff = .YFalloffEquation.calculateAdjustedValue(.BaseProfile.YFalloff)
-                                        
+					
                     call .TVYEquation.addAdjustment(PlatformerPropertyEquation_MULTIPLY_ADJUSTMENT, OCEAN, PlatformerOcean_TVY)
                     set .TerminalVelocityY = .TVYEquation.calculateAdjustedValue(.BaseProfile.TerminalVelocityY)
                     
