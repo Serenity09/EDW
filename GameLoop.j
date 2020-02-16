@@ -189,8 +189,7 @@ function GameLoopRemoveTerrainAction takes unit u, integer i, integer oldterrain
         //call DisplayTextToForce(bj_FORCE_PLAYER[i], R2S(VelocityX[i]))
         //call DisplayTextToForce(bj_FORCE_PLAYER[i], R2S(VelocityY[i]))
     elseif oldterrain == SNOW then
-        set CanSteer[i] = false
-        call SnowMovement.Remove(u)
+        call SnowMovement.Remove(i)
         
         if curterrain == SAND or curterrain == RSNOW or curterrain == SLOWICE or curterrain == MEDIUMICE or curterrain == FASTICE then
             //velocity carries over to sand, so do nothing
@@ -340,8 +339,7 @@ function GameLoop takes nothing returns nothing
 						// call user.SetActiveEffect(SAND_MOVEMENT_FX, "origin")
 					// endif
 				elseif (basicterrain == SNOW) then
-					set CanSteer[user] = true
-					call SnowMovement.Add(u)
+					call SnowMovement.Add(user)
 					
 					//momentum going onto sand from regular ice (do momentum ice later)
 					if (previousterrain == FASTICE or previousterrain == MEDIUMICE or previousterrain == SLOWICE) then

@@ -1,4 +1,4 @@
-library SnowMovement requires MazerGlobals, SkatingGlobals, TimerUtils, GroupUtils
+library SnowMovement requires MazerGlobals, SkatingGlobals, TimerUtils, SimpleList
 
 globals
     private constant real TIMESTEP = 0.035
@@ -8,21 +8,22 @@ globals
 endglobals
 
 struct SnowMovement extends array
-	private static group g = null
+	private static SimpleList_List active
 	private static timer t = null
 	
 	private static method SnowMove takes nothing returns nothing
-		local group swap = NewGroup()
+		local SimpleList_ListNode curUser = thistype.active.first
 		local unit u
-		
 		local integer i
+
 		local real x
 		local real y
 		
 		loop
-		set u = FirstOfGroup(g)
-		exitwhen u == null
-			set i = GetPlayerId(GetOwningPlayer(u))
+		exitwhen curUser == 0
+			set i = curUser.value
+			set u = User(curUser.value).ActiveUnit
+			
 			set x = Cos(GetUnitFacing(u)*bj_DEGTORAD)
 			set y = Sin(GetUnitFacing(u)*bj_DEGTORAD)
 			
@@ -44,39 +45,36 @@ struct SnowMovement extends array
 			call SetUnitX(u, GetUnitX(u) + VelocityX[i])
 			call SetUnitY(u, GetUnitY(u) + VelocityY[i])
 			call IssueImmediateOrder(u, "stop")
-			
-		call GroupAddUnit(swap, u)
-		call GroupRemoveUnit(g, u)
+		
+		set curUser = curUser.next
 		endloop
 		
-		call ReleaseGroup(g)
-		set g = swap
-		
 		set u = null
-		set swap = null
 	endmethod
 
-	public static method Add takes unit u returns nothing
-		if g == null then
-			set g = NewGroup()
-			set t = NewTimer()
-			
-			call TimerStart(t, TIMESTEP, true, function thistype.SnowMove)
+	public static method Add takes User user returns nothing
+		if thistype.active.count == 0 then
+			call TimerStart(thistype.t, TIMESTEP, true, function thistype.SnowMove)
 		endif
 		
-		call GroupAddUnit(g, u)
+		call thistype.active.addEnd(user)
+		
+		set CanSteer[user] = true
 	endmethod
 	
-	public static method Remove takes unit u returns nothing
-		call GroupRemoveUnit(g, u)
+	public static method Remove takes User user returns nothing
+		call thistype.active.remove(user)
 		
-		if IsGroupEmpty(g) then
-			call ReleaseTimer(t)
-			call ReleaseGroup(g)
-			
-			set g = null
-			set t = null
+		if thistype.active.count == 0 then
+			call PauseTimer(thistype.t)
 		endif
+		
+		set CanSteer[user] = false
+	endmethod
+	
+	private static method onInit takes nothing returns nothing
+		set thistype.active = SimpleList_List.create()
+		set thistype.t = CreateTimer()
 	endmethod
 endstruct
 
