@@ -5,6 +5,12 @@ globals
     
     private constant real OPPOSITION_BONUS = 1.5
     private constant real ACCELERATION = 5.0000*TIMESTEP
+	
+	private constant real FALLOFF_LOWER = 0.275
+	private constant real FALLOFF_UPPER = 0.8
+	
+	private constant boolean DEBUG_VELOCITY = false
+	private constant boolean DEBUG_V2 = false
 endglobals
 
 struct SnowMovement extends array
@@ -16,31 +22,38 @@ struct SnowMovement extends array
 		local unit u
 		local integer i
 
+		local real facing
 		local real x
 		local real y
+		
+		local real angleUV
+		local real falloffFactor
 		
 		loop
 		exitwhen curUser == 0
 			set i = curUser.value
 			set u = User(curUser.value).ActiveUnit
 			
-			set x = Cos(GetUnitFacing(u)*bj_DEGTORAD)
-			set y = Sin(GetUnitFacing(u)*bj_DEGTORAD)
+			set facing = GetUnitFacing(u) * bj_DEGTORAD
+			set x = Cos(facing)
+			set y = Sin(facing)
 			
-			if (x > 0 and VelocityX[i] < 0) or (x < 0 and VelocityX[i] > 0) then
-				set x = x * OPPOSITION_BONUS * ACCELERATION
-			else
-				set x = x * ACCELERATION
+			set angleUV = Atan2(VelocityX[i]*y - VelocityY[i]*x, VelocityX[i]*x + VelocityY[i]*y)
+			set falloffFactor = RAbsBJ(Sin(angleUV))*(FALLOFF_UPPER - FALLOFF_LOWER) + FALLOFF_LOWER
+			
+			set VelocityX[i] = VelocityX[i] - TIMESTEP * falloffFactor * VelocityX[i] + x * ACCELERATION
+			set VelocityY[i] = VelocityY[i] - TIMESTEP * falloffFactor * VelocityY[i] + y * ACCELERATION
+			
+			static if DEBUG_VELOCITY then
+				call DisplayTextToPlayer(GetLocalPlayer(), 0, 0, "Velocity X: " + R2S(VelocityX[i]))
+				call DisplayTextToPlayer(GetLocalPlayer(), 0, 0, "Velocity Y: " + R2S(VelocityY[i]))
 			endif
-			
-			if (y > 0 and VelocityY[i] < 0) or (y < 0 and VelocityY[i] > 0) then
-				set y = y * OPPOSITION_BONUS * ACCELERATION
-			else
-				set y = y * ACCELERATION
+			static if DEBUG_V2 then
+				call DisplayTextToPlayer(GetLocalPlayer(), 0, 0, "Angle between U and V: " + R2S(angleUV))
+				call DisplayTextToPlayer(GetLocalPlayer(), 0, 0, "Falloff factor: " + R2S(falloffFactor))
+				call DisplayTextToPlayer(GetLocalPlayer(), 0, 0, "Velocity falloff X: " + R2S(TIMESTEP * falloffFactor * VelocityX[i]))
+				call DisplayTextToPlayer(GetLocalPlayer(), 0, 0, "Velocity falloff Y: " + R2S(TIMESTEP * falloffFactor * VelocityY[i]))
 			endif
-			
-			set VelocityX[i] = VelocityX[i] + x /*((MAXVELOCITY - RAbsBJ(VelocityX[i])) / MAXVELOCITY)*/
-			set VelocityY[i] = VelocityY[i] + y /*((MAXVELOCITY - RAbsBJ(VelocityY[i])) / MAXVELOCITY)*/
 			
 			call SetUnitX(u, GetUnitX(u) + VelocityX[i])
 			call SetUnitY(u, GetUnitY(u) + VelocityY[i])

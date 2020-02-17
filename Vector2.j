@@ -144,11 +144,19 @@ library Vector2
 		endmethod
         
         static method dotProduct takes vector2 a, vector2 b returns real
-            return (a.x*b.x+a.y*b.y)
+            return (a.x*b.x + a.y*b.y)
         endmethod
 		
 		method getAngleHorizontal takes nothing returns real
 			return Atan2(.y, .x)
+		endmethod
+		
+		method angleBetween takes vector2 other returns real
+			// local real sin = this.x*other.y - this.y*other.x
+			// local real cos = this.x*other.x + this.y*other.y
+			
+			// return Atan2(sin, cos)			
+			return Atan2(this.x*other.y - this.y*other.x, this.x*other.x + this.y*other.y)
 		endmethod
 		
 // ================================================================
