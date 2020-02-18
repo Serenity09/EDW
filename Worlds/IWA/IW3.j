@@ -165,8 +165,6 @@ library IW3 requires Recycle, Levels
 		if RewardMode == GameModesGlobals_HARD then
 			call Recycle_MakeUnitAndPatrolRect(GUARD, gg_rct_Rect_154, gg_rct_Rect_155)
 		endif
-		call Recycle_MakeUnitAndPatrolRect(LGUARD, gg_rct_Rect_156, gg_rct_Rect_157)
-		call Recycle_MakeUnitAndPatrolRect(LGUARD, gg_rct_Rect_158, gg_rct_Rect_159)
 		if RewardMode == GameModesGlobals_HARD then
 			call Recycle_MakeUnitAndPatrolRect(GUARD, gg_rct_Rect_160, gg_rct_Rect_161)
 			call Recycle_MakeUnitAndPatrolRect(GUARD, gg_rct_Rect_162, gg_rct_Rect_163)
