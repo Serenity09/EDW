@@ -12,16 +12,14 @@ library PlatformerIce initializer Init requires SimpleList, PlatformerGlobals
         public real SLOW_MAX_VELOCITY = PLATFORMING_MAXCHANGE / 1.25
 		
 		// private string VFX_PATH = "Abilities\\Spells\\Undead\\FrostArmor\\FrostArmorDamage.mdl"
-		private string VFX_PATH = "war3mapImported\\2d-skating.mdx"
-        
-        //properties applied in this timer loop should be relative to it's timestep
-        
+		private constant string VFX_PATH = "war3mapImported\\2d-skating.mdx"
         
         public constant real FAST_MS = .1
         public constant real FAST_XFALLOFF = .01
         public constant real FAST_YFALLOFF = .01
         public constant real FAST_OPPOSITIONDIFFERENCE = 0
         
+		//properties applied in this timer loop should be relative to it's timestep
         public real FAST_VELOCITY = 40 * TIMESTEP
         public real FAST_MAX_VELOCITY = PLATFORMING_MAXCHANGE * 4.
         
@@ -30,7 +28,6 @@ library PlatformerIce initializer Init requires SimpleList, PlatformerGlobals
         
         private timer Timer
         public SimpleList_List Platformers
-        public boolean array IsOnIce //TODO remove and replace with Platformers.contains(p)
 		
 		private constant boolean DEBUG_ICE_LOOP = false
     endglobals
@@ -408,9 +405,7 @@ library PlatformerIce initializer Init requires SimpleList, PlatformerGlobals
     endfunction
     
     public function Add takes Platformer p returns nothing
-        if not IsOnIce[p.PID] then            
-            set IsOnIce[p.PID] = true
-            
+        if not Platformers.contains(p) then            
             call Platformers.add(p)
 			
 			//immediately update physics, so that the platformer's initial velocity always reflects physics state
@@ -424,9 +419,7 @@ library PlatformerIce initializer Init requires SimpleList, PlatformerGlobals
     endfunction
     
     public function Remove takes Platformer p returns nothing
-        if IsOnIce[p.PID] then
-            set IsOnIce[p.PID] = false
-            
+        if Platformers.contains(p) then
             call Platformers.remove(p)
             
             if Platformers.count == 0 then
@@ -442,11 +435,5 @@ library PlatformerIce initializer Init requires SimpleList, PlatformerGlobals
         
         set Platformers = SimpleList_List.create()
         set Timer = CreateTimer()
-        
-        loop
-        exitwhen i >= 8
-            set IsOnIce[i] = false
-        set i = i + 1
-        endloop
     endfunction
 endlibrary
