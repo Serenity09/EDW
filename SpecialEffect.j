@@ -1,4 +1,4 @@
-library SpecialEffect requires Alloc
+library SpecialEffect requires Alloc, TimerUtils
 	globals
 		public constant boolean ENABLED = true
 		public constant boolean APPLY_LOCAL = false

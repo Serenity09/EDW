@@ -19,7 +19,7 @@ library UnitDefaultRadius
 		elseif unitTypeID == LMEMORY then
 			return 39.
 		elseif unitTypeID == GUILT then
-			return 92.
+			return 64.
 		elseif unitTypeID == GREENFROG or unitTypeID == ORANGEFROG or unitTypeID == PURPLEFROG or unitTypeID == TURQOISEFROG or unitTypeID == REDFROG then
 			return 32.
 		elseif InWorldPowerup.IsPowerupUnit(unitTypeID) then

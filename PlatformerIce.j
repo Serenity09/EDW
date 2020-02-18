@@ -10,6 +10,9 @@ library PlatformerIce initializer Init requires SimpleList, PlatformerGlobals
         
         public real SLOW_VELOCITY = 20 * TIMESTEP
         public real SLOW_MAX_VELOCITY = PLATFORMING_MAXCHANGE / 1.25
+		
+		// private string VFX_PATH = "Abilities\\Spells\\Undead\\FrostArmor\\FrostArmorDamage.mdl"
+		private string VFX_PATH = "war3mapImported\\2d-skating.mdx"
         
         //properties applied in this timer loop should be relative to it's timestep
         
@@ -114,7 +117,7 @@ library PlatformerIce initializer Init requires SimpleList, PlatformerGlobals
 						endif
 						
 						//play effect when moving in same direction
-						call DestroyEffect(AddSpecialEffect("Abilities\\Spells\\Undead\\FrostArmor\\FrostArmorDamage.mdl", p.XPosition - p.PushedAgainstVector.x * PlatformerGlobals_RADIUS, p.YPosition - p.PushedAgainstVector.y * PlatformerGlobals_RADIUS))
+						call DestroyEffect(AddSpecialEffect(VFX_PATH, p.XPosition - p.PushedAgainstVector.x * PlatformerGlobals_RADIUS, p.YPosition - p.PushedAgainstVector.y * PlatformerGlobals_RADIUS))
 					endif
 				else
 					if p.DiagonalPathing != 0 then
@@ -281,7 +284,7 @@ library PlatformerIce initializer Init requires SimpleList, PlatformerGlobals
 						endif
 						
 						//play effect when moving in same direction
-						call DestroyEffect(AddSpecialEffect("Abilities\\Spells\\Undead\\FrostArmor\\FrostArmorDamage.mdl", p.XPosition - p.PushedAgainstVector.x * PlatformerGlobals_RADIUS, p.YPosition - p.PushedAgainstVector.y * PlatformerGlobals_RADIUS))
+						call DestroyEffect(AddSpecialEffect(VFX_PATH, p.XPosition - p.PushedAgainstVector.x * PlatformerGlobals_RADIUS, p.YPosition - p.PushedAgainstVector.y * PlatformerGlobals_RADIUS))
 					endif
 				else
 					//debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "(same) before: " + R2S(p.XVelocity) + " after: " + R2S(p.XVelocity - p.MoveSpeed * OCEAN_MOTION))
