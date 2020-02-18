@@ -8,7 +8,13 @@ library IW2 requires Recycle, Levels
 		local SynchronizedGroup nsync
 		local SynchronizedUnit jtimber
         
+		local ZoomChange zc
+		
 		local integer i
+		
+		set zc = ZoomChange.create(gg_rct_IW2_VC1a, FAR_CAMERA_DISTANCE)
+		call zc.AddBoundary(gg_rct_IW2_VC1b)
+		call l.AddStartable(zc)
 		
 		set pattern = LinePatternSpawn.createFromRect(IW2PatternSpawn, 1, gg_rct_Rect_092, TERRAIN_TILE_SIZE)
 		set sg = SimpleGenerator.create(pattern, .9, 0, 23)
