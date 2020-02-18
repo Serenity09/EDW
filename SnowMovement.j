@@ -3,10 +3,9 @@ library SnowMovement requires MazerGlobals, SkatingGlobals, TimerUtils, SimpleLi
 globals
     private constant real TIMESTEP = 0.035
     
-    private constant real OPPOSITION_BONUS = 1.5
     private constant real ACCELERATION = 5.0000*TIMESTEP
 	
-	private constant real FALLOFF_LOWER = 0.275
+	private constant real FALLOFF_LOWER = 0.25
 	private constant real FALLOFF_UPPER = 0.8
 	
 	private constant boolean DEBUG_VELOCITY = false

@@ -14,6 +14,7 @@ library StandardGameLoop initializer init requires EDWEffects, LavaDamage, IceMo
 			
 		//public constant string PLATFORMING_FX = "Abilities\\Spells\\Human\\Polymorph\\PolyMorphTarget.mdl"
 		public constant string PLATFORMING_FX = "Abilities\\Spells\\Human\\Polymorph\\PolyMorphDoneGround.mdl"
+		// public constant string PLATFORMING_FX = "Abilities\\Spells\\NightElf\\FaerieDragonInvis\\FaerieDragon_Invis.mdl"
 	endglobals
 
 //! textmacro GetTerrainPriority takes TType, TPriority
@@ -33,7 +34,7 @@ library StandardGameLoop initializer init requires EDWEffects, LavaDamage, IceMo
 		set $TPriority$ = 7
 	elseif $TType$ == RTILE then
 		set $TPriority$ = 8
-	else //if $TType$ == VINES or $TType$ == SAND or $TType$ == RSNOW or $TType$ == LRGBRICKS or $TType$ == RTILE then
+	else //if $TType$ == VINES or $TType$ == SAND or $TType$ == RSNOW or $TType$ == LRGBRICKS then
 		set $TPriority$ = 2
 	endif
 //! endtextmacro
