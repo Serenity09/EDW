@@ -322,10 +322,10 @@ library InGameCommands initializer init requires MazerGlobals, Platformer, Relay
 				set PlatformerOcean_OCEAN_MOTION = val
 			elseif cmd == "ovj" then
 				set JUMPHEIGHTINOCEAN = val
-			elseif cmd == "iss" then
-				set PlatformerIce_SLOW_VELOCITY = val
-			elseif cmd == "ifs" then
-				set PlatformerIce_FAST_VELOCITY = val
+			// elseif cmd == "iss" then
+				// set PlatformerIce_SLOW_VELOCITY = val
+			// elseif cmd == "ifs" then
+				// set PlatformerIce_FAST_VELOCITY = val
 			elseif cmd == "size" or cmd == "s" then
 				call DisplayTextToForce(bj_FORCE_PLAYER[pID], "Size: " + R2S(GetUnitCollision(FirstOfGroup(GetUnitsSelectedAll(Player(pID))))))
 			elseif cmd == "unitmovespeed" or cmd == "ums" then

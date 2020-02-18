@@ -8,11 +8,13 @@ library PlatformerIce initializer Init requires SimpleList, PlatformerGlobals
         public constant real SLOW_YFALLOFF = .1
         public constant real SLOW_OPPOSITIONDIFFERENCE = .1
         
-        public real SLOW_VELOCITY = 20 * TIMESTEP
-        public real SLOW_MAX_VELOCITY = PLATFORMING_MAXCHANGE / 1.25
+        public constant real SLOW_VELOCITY = 20 * TIMESTEP
+        public constant real SLOW_MAX_VELOCITY = PLATFORMING_MAXCHANGE / 1.25
 		
 		// private string VFX_PATH = "Abilities\\Spells\\Undead\\FrostArmor\\FrostArmorDamage.mdl"
 		private constant string VFX_PATH = "war3mapImported\\2d-skating.mdx"
+		private constant string ALT_VFX_PATH = "war3mapImported\\2d-skating-alt.mdx"
+		private constant real ALT_VFX_DISTANCE = TERRAIN_TILE_SIZE * 2.
         
         public constant real FAST_MS = .1
         public constant real FAST_XFALLOFF = .01
@@ -20,11 +22,12 @@ library PlatformerIce initializer Init requires SimpleList, PlatformerGlobals
         public constant real FAST_OPPOSITIONDIFFERENCE = 0
         
 		//properties applied in this timer loop should be relative to it's timestep
-        public real FAST_VELOCITY = 40 * TIMESTEP
-        public real FAST_MAX_VELOCITY = PLATFORMING_MAXCHANGE * 4.
+        public constant real FAST_VELOCITY = 40 * TIMESTEP
+        public constant real FAST_MAX_VELOCITY = PLATFORMING_MAXCHANGE * 4.
         
-        public real HYBRID_VELOCITY = (SLOW_VELOCITY * SIN_45 + FAST_VELOCITY * SIN_45) / 2
-        public real HYBRID_OPP_VELOCITY = (SLOW_VELOCITY * SLOW_OPPOSITIONDIFFERENCE * SIN_45 + FAST_VELOCITY * FAST_OPPOSITIONDIFFERENCE * SIN_45) / 2
+        public constant real HYBRID_VELOCITY = (SLOW_VELOCITY + FAST_VELOCITY) / 2.
+		public constant real HYBRID_MAX_VELOCITY = (SLOW_MAX_VELOCITY + FAST_MAX_VELOCITY) / 2.
+        public constant real HYBRID_OPP_VELOCITY = (SLOW_VELOCITY * SLOW_OPPOSITIONDIFFERENCE + FAST_VELOCITY * FAST_OPPOSITIONDIFFERENCE) / 2.
         
         private timer Timer
         public SimpleList_List Platformers
@@ -353,7 +356,7 @@ library PlatformerIce initializer Init requires SimpleList, PlatformerGlobals
 
 				//check if projVelocity distance is greater than or equal to max speed for ice type
 				if (p.XTerrainPushedAgainst == SLOWICE and p.YTerrainPushedAgainst == FASTICE) or (p.XTerrainPushedAgainst == FASTICE and p.YTerrainPushedAgainst == SLOWICE) then
-					set maxDistance = (SLOW_MAX_VELOCITY + FAST_MAX_VELOCITY) / 2
+					set maxDistance = HYBRID_MAX_VELOCITY
 				elseif p.XTerrainPushedAgainst == SLOWICE or p.YTerrainPushedAgainst == SLOWICE then
 					set maxDistance = SLOW_MAX_VELOCITY
 				elseif p.XTerrainPushedAgainst == FASTICE or p.YTerrainPushedAgainst == FASTICE then
