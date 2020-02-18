@@ -1,14 +1,9 @@
-library EDWVisualVote requires VisualVote, ContinueGlobals, Teams, PlayerUtils, MazerGlobals, EDWPlayerStart, Levels, EDWLevelContent
+library EDWVisualVote requires ConfigurationMode, VisualVote, ContinueGlobals, Teams, PlayerUtils, MazerGlobals, Levels, EDWLevelContent
     globals
         //public VisualVote_voteMenu MyMenu
         
         private constant real VOTE_TIME_ROUND_ONE = 10
 		private constant real VOTE_TIME_ROUND_TWO = 10
-		
-		private constant integer DEBUG_DIFFICULTY_MODE = GameModesGlobals_HARD
-		private constant integer DEBUG_TEAM_MODE = GameModesGlobals_SOLO
-		
-		private constant boolean DEBUG_USE_FULL_VISIBILITY = true
     endglobals
     	
     public function GameModeSolo takes nothing returns nothing
@@ -117,7 +112,7 @@ library EDWVisualVote requires VisualVote, ContinueGlobals, Teams, PlayerUtils, 
         local boolean flag
 		
 		//get first level -- mostly for debugging, should always be 0 in release
-        local Levels_Level firstLevel = GetFirstLevel()
+        local Levels_Level firstLevel = Levels_Level(GetFirstLevelID())
 		
 		local real welcomeCineTime = 0
 		local Cinematic welcomeCine
@@ -438,7 +433,7 @@ library EDWVisualVote requires VisualVote, ContinueGlobals, Teams, PlayerUtils, 
 			call Teams_MazingTeam.MinimizeMultiboardAll(true)
 			// call MultiboardMinimize(Teams_MazingTeam.PlayerStats, true)
 			
-			if GetFirstLevel() != Levels_Level(1) then
+			if GetFirstLevelID() != INTRO_LEVEL_ID then
 				call TrackGameTime()
 			endif
 			
