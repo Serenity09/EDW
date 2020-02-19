@@ -189,6 +189,23 @@ struct User extends array
 		call UserActiveTimedEffect.create(fxFileLocation, attachPointName, this, duration, localizeVFX)
 	endmethod
 	
+	public method CreateSpecialEffectOutsideRadius takes string fxFileLocation, real x, real y, real radius returns effect
+		local string localFXFileLocation = fxFileLocation
+		local SimpleList_ListNode curUserNode = PlayerUtils_FirstPlayer
+		
+		loop
+		exitwhen curUserNode == 0
+			if GetLocalPlayer() == Player(curUserNode.value) and curUserNode.value != this and User(curUserNode.value).ActiveUnit != null and SquareRoot(x * GetUnitX(User(curUserNode.value).ActiveUnit) + y * GetUnitY(User(curUserNode.value).ActiveUnit)) <= radius then
+				set localFXFileLocation = ""
+			endif
+		set curUserNode = curUserNode.next
+		endloop
+		
+		return AddSpecialEffect(localFXFileLocation, x, y)
+	endmethod
+	public method CreateInstantSpecialEffectOutsideRadius takes string fxFileLocation, real x, real y, real radius returns nothing
+		call DestroyEffect(this.CreateSpecialEffectOutsideRadius(fxFileLocation, x, y, radius))
+	endmethod
 	
 	public method FlashQuestButton takes nothing returns nothing
 		if GetLocalPlayer() == Player(this) then

@@ -376,7 +376,7 @@ library PlatformerIce initializer Init requires SimpleList, PlatformerGlobals
 					//TODO use a different, firey effect when distance >= STICKY
 					//play effect when moving in same direction
 					// call DestroyEffect(AddSpecialEffect(VFX_PATH, p.XPosition - p.PushedAgainstVector.x * PlatformerGlobals_RADIUS, p.YPosition - p.PushedAgainstVector.y * PlatformerGlobals_RADIUS))
-					call CreateInstantSpecialEffect(VFX_PATH, p.XPosition - p.PushedAgainstVector.x * PlatformerGlobals_RADIUS, p.YPosition - p.PushedAgainstVector.y * PlatformerGlobals_RADIUS, null)
+					call User(p.PID).CreateInstantSpecialEffectOutsideRadius(VFX_PATH, p.XPosition - p.PushedAgainstVector.x * PlatformerGlobals_RADIUS, p.YPosition - p.PushedAgainstVector.y * PlatformerGlobals_RADIUS, 600)
 				endif
 				
 				static if DEBUG_ALT_VFX then
