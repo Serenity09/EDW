@@ -86,10 +86,9 @@ library isMoving requires TerrainGlobals, ORDER, SimpleList
 				set deltaX = 0
 			endif
 			
-			call DestroyEffect(AddSpecialEffect(TELEPORT_MOVEMENT_FROM_FX, GetUnitX(pID.ActiveUnit), GetUnitY(pID.ActiveUnit)))
-			// call CreateInstantSpecialEffect(TELEPORT_MOVEMENT_FX, GetUnitX(pID.ActiveUnit), GetUnitY(pID.ActiveUnit), Player(pID))
+			call CreateInstantSpecialEffect(TELEPORT_MOVEMENT_FROM_FX, GetUnitX(pID.ActiveUnit), GetUnitY(pID.ActiveUnit), null)
 			call SetUnitPosition(pID.ActiveUnit, curX + deltaX, curY + deltaY)
-			call DestroyEffect(AddSpecialEffect(TELEPORT_MOVEMENT_TO_FX, GetUnitX(pID.ActiveUnit), GetUnitY(pID.ActiveUnit)))
+			call CreateInstantSpecialEffect(TELEPORT_MOVEMENT_TO_FX, GetUnitX(pID.ActiveUnit), GetUnitY(pID.ActiveUnit), null)
 			//call SetUnitX(u, OrderDestinationX[i] - x)
 			//call SetUnitY(u, OrderDestinationY[i] - y)
 			

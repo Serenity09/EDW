@@ -1,7 +1,6 @@
 library SpecialEffect requires Alloc, TimerUtils
 	globals
-		public constant boolean ENABLED = true
-		public constant boolean APPLY_LOCAL = false
+		public constant boolean APPLY_LOCAL = true
 		
 		public constant string OVERHEAD = "overhead"
 		public constant string HEAD = "head"
@@ -89,8 +88,9 @@ library SpecialEffect requires Alloc, TimerUtils
 			set t = null
 		endmethod
 		
-		public static method create takes string fxFileLocation, string attachPointName, User viewer, real duration returns thistype
+		public static method create takes string fxFileLocation, string attachPointName, User viewer, real duration, boolean localizeVFX returns thistype
 			local TimedEffect new = TimedEffect.allocate()
+			local string localFXFileLocation
 			
 			set UserActiveTimedEffect(new).Viewer = viewer
 			
@@ -99,9 +99,9 @@ library SpecialEffect requires Alloc, TimerUtils
 			endif
 			
 			static if APPLY_LOCAL then
-				local string localFXFileLocation = fxFileLocation
+				set localFXFileLocation = fxFileLocation
 				
-				if viewer != null and GetLocalPlayer() != Player(viewer) then
+				if not localizeVFX or GetLocalPlayer() != Player(viewer) then
 					set localFXFileLocation = ""
 				endif
 				

@@ -185,8 +185,8 @@ struct User extends array
 		call .SetActiveEffect(null, null)
 	endmethod
 	
-	public method CreateUserTimedEffect takes string fxFileLocation, string attachPointName, real duration returns nothing
-		call UserActiveTimedEffect.create(fxFileLocation, attachPointName, this, duration)
+	public method CreateUserTimedEffect takes string fxFileLocation, string attachPointName, real duration, boolean localizeVFX returns nothing
+		call UserActiveTimedEffect.create(fxFileLocation, attachPointName, this, duration, localizeVFX)
 	endmethod
 	
 	

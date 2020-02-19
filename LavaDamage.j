@@ -43,10 +43,10 @@ library LavaDamage requires TimerUtils, GroupUtils, SimpleList, SpecialEffect
 			call SetUnitState(MazersArray[pID], UNIT_STATE_LIFE, damagedHP)
 			
 			//TODO better for HD only (add for HD only)
-			call BlzSetSpecialEffectScale(CreateTimedSpecialEffect(LAVA_MOVEMENT_FX, GetUnitX(MazersArray[pID]), GetUnitY(MazersArray[pID]), Player(pID), TIMESTEP * GetRandomReal(1.5, 2.)), GetRandomReal(.6, .8))
+			call BlzSetSpecialEffectScale(CreateTimedSpecialEffect(LAVA_MOVEMENT_FX, GetUnitX(MazersArray[pID]), GetUnitY(MazersArray[pID]), null, TIMESTEP * GetRandomReal(1.5, 2.)), GetRandomReal(.6, .8))
 			
 			if damagedHP == 0 then
-				call CreateInstantSpecialEffect(DEATH_FX, GetUnitX(MazersArray[pID]), GetUnitY(MazersArray[pID]), Player(pID))
+				call CreateInstantSpecialEffect(DEATH_FX, GetUnitX(MazersArray[pID]), GetUnitY(MazersArray[pID]), null)
 			endif
 		endmethod		
 		private static method ApplyDamageLoop takes nothing returns nothing
