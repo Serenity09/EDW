@@ -38,6 +38,9 @@ library EDWPlayerSlots requires MazerGlobals, User, PlayerUtils, VisualVote, Tea
                 call CameraSetupSetField(DefaultCamera[i], CAMERA_FIELD_FIELD_OF_VIEW, 70, 0)
                 call CameraSetupSetField(DefaultCamera[i], CAMERA_FIELD_ROLL, 0, 0)
                 call CameraSetupSetField(DefaultCamera[i], CAMERA_FIELD_ROTATION, 90, 0)
+				
+				//set NPC allies
+				call SetPlayerAlliance(Player(i), Player(9), ALLIANCE_PASSIVE, true)
                 
                 //assumes all units will start in standard gamemode
                 set NumberMazing = NumberMazing + 1

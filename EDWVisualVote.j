@@ -324,9 +324,7 @@ library EDWVisualVote requires ConfigurationMode, VisualVote, ContinueGlobals, T
 			if ShouldShowSettingVoteMenu() then
 				call team[i].CancelAutoUnpauseForTeam()
 			endif
-			
-			call team[i].SetTeamAlliance(Player(9), ALLIANCE_PASSIVE, true)
-			
+						
             //debug call DisplayTextToPlayer(Player(0), 0, 0, "Team " + I2S(team[i]) + " on level: " + I2S(team[i].OnLevel))
         set i = i + 1
         exitwhen i >= teamCount
