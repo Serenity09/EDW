@@ -230,6 +230,14 @@ function GameLoopRemoveTerrainAction takes unit u, integer i, integer oldterrain
     elseif oldterrain == RTILE then
         //call RotationCameras[i].cPause()
         set UseTeleportMovement[i] = false
+		
+		//change user's camera to new zoom level
+		call CameraSetupSetField(DefaultCamera[i], CAMERA_FIELD_TARGET_DISTANCE, DEFAULT_3D_CAMERA_DISTANCE, 0)
+		
+		//immediately update user's camera
+		if GetLocalPlayer() == Player(i) then
+			call CameraSetupApplyForceDuration(DefaultCamera[i], false, .5)
+		endif
     endif
 endfunction
 
@@ -322,6 +330,14 @@ function GameLoop takes nothing returns nothing
 						call IssueImmediateOrder(u, "stop")
 						
 						call terrainCenterPoint.destroy()
+					endif
+					
+					//change user's camera to new zoom level
+					call CameraSetupSetField(DefaultCamera[user], CAMERA_FIELD_TARGET_DISTANCE, FAR_CAMERA_DISTANCE, 0)
+					
+					//immediately update user's camera
+					if GetLocalPlayer() == Player(user) then
+						call CameraSetupApplyForceDuration(DefaultCamera[user], false, .5)
 					endif
 				elseif (basicterrain == SAND) then
 					//call DisplayTextToForce(bj_FORCE_PLAYER[user], "On Sand")
