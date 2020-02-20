@@ -11,14 +11,6 @@ library PlatformerIce initializer Init requires SimpleList, PlatformerGlobals
         public constant real SLOW_VELOCITY = 20 * TIMESTEP
         public constant real SLOW_MAX_VELOCITY = PLATFORMING_MAXCHANGE * .75
 		
-		// private string VFX_PATH = "Abilities\\Spells\\Undead\\FrostArmor\\FrostArmorDamage.mdl"
-		private constant string VFX_PATH = "war3mapImported\\2d-skating.mdx"
-		private constant string ALT_VFX_PATH = "war3mapImported\\2d-skating-alt.mdx"
-		private constant real ALT_VFX_MIN_RATE = .5 * TIMESTEP
-		private constant real ALT_VFX_MAX_RATE = 10. * TIMESTEP
-		private constant real ALT_VFX_RATE_CAP = PLATFORMING_MAXCHANGE * .1
-		private constant real ALT_VFX_TIMEOUT = 4.
-		
         public constant real FAST_MS = .1
         public constant real FAST_XFALLOFF = .01
         public constant real FAST_YFALLOFF = .01
@@ -32,6 +24,18 @@ library PlatformerIce initializer Init requires SimpleList, PlatformerGlobals
 		public constant real HYBRID_MAX_VELOCITY = (SLOW_MAX_VELOCITY + FAST_MAX_VELOCITY) / 2.
         public constant real HYBRID_OPP_VELOCITY = (SLOW_VELOCITY * SLOW_OPPOSITIONDIFFERENCE + FAST_VELOCITY * FAST_OPPOSITIONDIFFERENCE) / 2.
         
+		// private string VFX_PATH = "Abilities\\Spells\\Undead\\FrostArmor\\FrostArmorDamage.mdl"
+		// private constant real BLUE_RED_TRANSITION = DIAGONAL_STICKYDISTANCE
+		// private constant real BLUE_RED_TRANSITION = PLATFORMING_MAXCHANGE * 2
+		private constant real BLUE_RED_TRANSITION = FAST_MAX_VELOCITY * .9
+		private constant string BLUE_VFX_PATH = "war3mapImported\\2d-skating.mdx"
+		private constant string RED_VFX_PATH = "Abilities\\Weapons\\LordofFlameMissile\\LordofFlameMissile.mdl"
+		private constant string ALT_VFX_PATH = "war3mapImported\\2d-skating-alt.mdx"
+		private constant real ALT_VFX_MIN_RATE = .5 * TIMESTEP
+		private constant real ALT_VFX_MAX_RATE = 10. * TIMESTEP
+		private constant real ALT_VFX_RATE_CAP = PLATFORMING_MAXCHANGE * .1
+		private constant real ALT_VFX_TIMEOUT = 4.
+		
         private timer Timer
         public SimpleList_List Platformers
 		
@@ -373,10 +377,14 @@ library PlatformerIce initializer Init requires SimpleList, PlatformerGlobals
 					
 					set AltVFXTimeout[p] = 0
 				else
-					//TODO use a different, firey effect when distance >= STICKY
-					//play effect when moving in same direction
-					// call DestroyEffect(AddSpecialEffect(VFX_PATH, p.XPosition - p.PushedAgainstVector.x * PlatformerGlobals_RADIUS, p.YPosition - p.PushedAgainstVector.y * PlatformerGlobals_RADIUS))
-					call User(p.PID).CreateInstantSpecialEffectOutsideRadius(VFX_PATH, p.XPosition - p.PushedAgainstVector.x * PlatformerGlobals_RADIUS, p.YPosition - p.PushedAgainstVector.y * PlatformerGlobals_RADIUS, 600)
+					if distance >= BLUE_RED_TRANSITION then
+						//TODO use a different, firey effect when distance >= STICKY
+						call User(p.PID).CreateInstantSpecialEffectOutsideRadius(RED_VFX_PATH, p.XPosition - p.PushedAgainstVector.x * PlatformerGlobals_RADIUS, p.YPosition - p.PushedAgainstVector.y * PlatformerGlobals_RADIUS, TERRAIN_TILE_SIZE * 3)
+					else
+						
+						//play effect when moving in same direction
+						call User(p.PID).CreateInstantSpecialEffectOutsideRadius(BLUE_VFX_PATH, p.XPosition - p.PushedAgainstVector.x * PlatformerGlobals_RADIUS, p.YPosition - p.PushedAgainstVector.y * PlatformerGlobals_RADIUS, TERRAIN_TILE_SIZE * 2)
+					endif
 				endif
 				
 				static if DEBUG_ALT_VFX then
