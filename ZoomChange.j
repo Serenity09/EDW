@@ -56,7 +56,9 @@ library ZoomChange requires IStartable, User, Alloc, SimpleList, HandleList, Tea
 			
 			//immediately update user's camera
 			// call data.User.CheckDefaultCameraZoom()
-			call CameraSetupApplyForceDuration(DefaultCamera[data.User], false, TRANSITION_TIME)
+			if GetLocalPlayer() == Player(user) then
+				call CameraSetupApplyForceDuration(DefaultCamera[user], false, TRANSITION_TIME)
+			endif
 		endmethod
 		public method RemoveUser takes UserChangeData data returns nothing
 			//reset user's camera to original zoom level
@@ -64,7 +66,9 @@ library ZoomChange requires IStartable, User, Alloc, SimpleList, HandleList, Tea
 			
 			//immediately update user's camera
 			// call data.User.CheckDefaultCameraZoom()
-			call CameraSetupApplyForceDuration(DefaultCamera[data.User], false, TRANSITION_TIME)
+			if GetLocalPlayer() == Player(data.User) then
+				call CameraSetupApplyForceDuration(DefaultCamera[data.User], false, TRANSITION_TIME)
+			endif
 			
 			call .ActiveUserData.remove(data)
 			call data.deallocate()
