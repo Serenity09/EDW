@@ -6,18 +6,21 @@ library VisualVote requires Vector2, Alloc, Table, PlayerUtils, SimpleList, locu
         public constant integer COLUMN_MARGIN_RIGHT = 128
         public constant integer COLUMN_MARGIN_BOTTOM = 128
         
-        public constant integer DISABLED_PLAYER_ID = 8
-        public constant integer VOTE_PLAYER_ID = 10
-        public constant integer VOTE_UNIT_ID = 'eVOT'
+        public constant integer DISABLED_PLAYER_ID = 9
+        public constant integer VOTE_PLAYER_ID = 9
+        public constant integer VOTE_UNIT_ID = 'eBAL'
         public constant integer PLAYER_VOTE_UNIT_ID = 'eVOT'
         public constant integer VOTE_UNIT_OFFSET = -64
-        public constant integer PLAYER_VOTE_UNIT_OFFSET = -32
+        public constant integer PLAYER_VOTE_UNIT_OFFSET = -50
+		public constant real VOTE_VERTICAL_OFFSET = 32.
         
         public constant real TEXT_OFFSET_HEIGHT = 0
         public constant real TEXT_HEIGHT = 4
         public constant integer TEXT_OPTION_SIZE = 14
         public constant integer TEXT_HEADER1_SIZE = 20
         public constant integer TEXT_HEADER2_SIZE = 16
+		
+		public constant real MENU_VISION_BUFFER = TERRAIN_TILE_SIZE * 2.
         
         public VisualVote_voteMenu LastFinishedMenu
     endglobals
@@ -202,9 +205,9 @@ library VisualVote requires Vector2, Alloc, Table, PlayerUtils, SimpleList, locu
             if voteUnit == null then
                 
                 if .enabled then
-                    set voteUnit = CreateUnit(Player(VOTE_PLAYER_ID), VOTE_UNIT_ID, x + VOTE_UNIT_OFFSET, y, 0)
+                    set voteUnit = CreateUnit(Player(VOTE_PLAYER_ID), VOTE_UNIT_ID, x + VOTE_UNIT_OFFSET, y + VOTE_VERTICAL_OFFSET, 0)
                 else
-                    set voteUnit = CreateUnit(Player(DISABLED_PLAYER_ID), VOTE_UNIT_ID, x + VOTE_UNIT_OFFSET, y, 0)
+                    set voteUnit = CreateUnit(Player(DISABLED_PLAYER_ID), VOTE_UNIT_ID, x + VOTE_UNIT_OFFSET, y + VOTE_VERTICAL_OFFSET, 0)
                 endif
             endif
             
@@ -822,13 +825,14 @@ library VisualVote requires Vector2, Alloc, Table, PlayerUtils, SimpleList, locu
                 exitwhen fp == 0
                     if GetLocalPlayer() == Player(fp.value) then
 						//for some reason, this will only work properly for all effected players when applied only to each effected player locally. Otherwise, only the first player see's it
-                        call FogModifierStart(CreateFogModifierRect(Player(fp.value), FOG_OF_WAR_VISIBLE, Rect(topLeft.x, botRight.y, botRight.x, topLeft.y), false, true))
+                        call FogModifierStart(CreateFogModifierRect(Player(fp.value), FOG_OF_WAR_VISIBLE, Rect(topLeft.x - MENU_VISION_BUFFER, botRight.y - MENU_VISION_BUFFER, botRight.x + MENU_VISION_BUFFER, topLeft.y + MENU_VISION_BUFFER), false, true))
 						
 						//only show timer dialog for players it effects
                         call TimerDialogDisplay(.td, true)
 						
-                        call SetCameraBounds(topLeft.x, topLeft.y, topLeft.x, botRight.y, botRight.x, botRight.y, botRight.x, topLeft.y)
-                        call User(fp.value).PanCamera((topLeft.x + botRight.x) / 2, (topLeft.y + botRight.y) / 2, 0.01)
+						call SetCameraBounds(topLeft.x, topLeft.y, topLeft.x, botRight.y, botRight.x, botRight.y, botRight.x, topLeft.y)
+                        // call SetCameraBounds(topLeft.x - MENU_VISION_BUFFER, topLeft.y + MENU_VISION_BUFFER, topLeft.x - MENU_VISION_BUFFER, botRight.y - MENU_VISION_BUFFER, botRight.x + MENU_VISION_BUFFER, botRight.y - MENU_VISION_BUFFER, botRight.x + MENU_VISION_BUFFER, topLeft.y + MENU_VISION_BUFFER)
+                        call User(fp.value).PanCamera((topLeft.x + botRight.x) / 2, (topLeft.y + botRight.y) / 1.5, 0.01)
 						// call PanCameraToTimed((topLeft.x + botRight.x) / 2, (topLeft.y + botRight.y) / 2, 0.01)
                         
                         //pivot camera to top down view

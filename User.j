@@ -193,14 +193,22 @@ struct User extends array
 		local string localFXFileLocation = fxFileLocation
 		local SimpleList_ListNode curUserNode = PlayerUtils_FirstPlayer
 		
+		local real dx
+		local real dy
+		
 		loop
 		exitwhen curUserNode == 0
-			if GetLocalPlayer() == Player(curUserNode.value) and curUserNode.value != this and User(curUserNode.value).ActiveUnit != null and SquareRoot(x * GetUnitX(User(curUserNode.value).ActiveUnit) + y * GetUnitY(User(curUserNode.value).ActiveUnit)) <= radius then
-				set localFXFileLocation = ""
+			if GetLocalPlayer() == Player(curUserNode.value) and curUserNode.value != this and User(curUserNode.value).ActiveUnit != null then
+				set dx = x - GetUnitX(User(curUserNode.value).ActiveUnit)
+				set dy = y - GetUnitY(User(curUserNode.value).ActiveUnit)
+				
+				if SquareRoot(dx*dx + dy*dy) <= radius then
+					set localFXFileLocation = ""
+				endif
 			endif
 		set curUserNode = curUserNode.next
 		endloop
-		
+				
 		return AddSpecialEffect(localFXFileLocation, x, y)
 	endmethod
 	public method CreateInstantSpecialEffectOutsideRadius takes string fxFileLocation, real x, real y, real radius returns nothing
@@ -469,9 +477,7 @@ struct User extends array
 	endmethod
     public method ApplyDefaultCameras takes real time returns nothing
         static if DEBUG_CAMERA then
-			if GetLocalPlayer() == Player(0) then
-				call DisplayTextToForce(bj_FORCE_PLAYER[0], "Before apply, camera destination x: " + R2S(GetCameraTargetPositionX()) + ", y: " + R2S(GetCameraTargetPositionY()))
-			endif
+			call DisplayTextToPlayer(Player(this), 0, 0, "Before apply, camera destination x: " + R2S(GetCameraTargetPositionX()) + ", y: " + R2S(GetCameraTargetPositionY()))
 		endif
 		
 		if .GameMode == Teams_GAMEMODE_PLATFORMING or .GameMode == Teams_GAMEMODE_PLATFORMING_PAUSED then
@@ -496,16 +502,12 @@ struct User extends array
         endif
 		
 		static if DEBUG_CAMERA then
-			if GetLocalPlayer() == Player(0) then
-				call DisplayTextToForce(bj_FORCE_PLAYER[0], "After apply, camera destination x: " + R2S(GetCameraTargetPositionX()) + ", y: " + R2S(GetCameraTargetPositionY()))
-			endif
+			call DisplayTextToPlayer(Player(this), 0, 0, "After apply, camera destination x: " + R2S(GetCameraTargetPositionX()) + ", y: " + R2S(GetCameraTargetPositionY()))
 		endif
     endmethod
 	public method ResetDefaultCamera takes real duration returns nothing
         static if DEBUG_CAMERA then
-			if GetLocalPlayer() == Player(0) then
-				call DisplayTextToForce(bj_FORCE_PLAYER[0], "Before reset, camera destination x: " + R2S(GetCameraTargetPositionX()) + ", y: " + R2S(GetCameraTargetPositionY()))
-			endif
+			call DisplayTextToPlayer(Player(this), 0, 0, "Before reset, camera destination x: " + R2S(GetCameraTargetPositionX()) + ", y: " + R2S(GetCameraTargetPositionY()))
 		endif
 		
 		if (GetLocalPlayer() == Player(this)) then
@@ -522,9 +524,7 @@ struct User extends array
 		call .RegisterSystemCameraTransition(0.)
 		
 		static if DEBUG_CAMERA then
-			if GetLocalPlayer() == Player(0) then
-				call DisplayTextToForce(bj_FORCE_PLAYER[0], "After reset, camera destination x: " + R2S(GetCameraTargetPositionX()) + ", y: " + R2S(GetCameraTargetPositionY()))
-			endif
+			call DisplayTextToPlayer(Player(this), 0, 0, "After reset, camera destination x: " + R2S(GetCameraTargetPositionX()) + ", y: " + R2S(GetCameraTargetPositionY()))
 		endif
     endmethod
 	
@@ -1210,7 +1210,7 @@ struct User extends array
         local vector2 respawnPoint
                 
         //disable camera tracking if that player has it enabled
-        call ResetDefaultCamera(1.)
+		call this.ResetDefaultCamera(1.)
         
         //check if respawn circles should be used
         if not RespawnASAPMode and .IsPlaying then
