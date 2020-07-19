@@ -14,7 +14,7 @@
 [color=#e1c492]
 A game to play, with friend and foe
 Run fast first, but now so slow
-Skate on ice, skate on snow
+Skate on ice, ski on snow
 Easy now, what will show?
 [/color][/Center][color=#e1c492]
 
@@ -28,9 +28,9 @@ Learn how the basics of the game in a easy-does-it tutorial level. While on the 
 
 Past the intro you'll find the Doors to different worlds. Each world has a different theme, mostly meaning the types of terrain and obstacles. There are three worlds for players to see, but a full game for new players will probably only see part of one world.
 
-[otablei][tr][td][IMG]https://i.imgur.com/4mryzQm.png[/IMG][/td][td]The land world is about optimal movement, but also being able to pause for a second when necessary. It's probably the most beginner friendly world, focusing on fun elements while keeping the gameplay familiar[/td][/tr]
-[tr][td][IMG]https://i.imgur.com/x6aLro7.png[/IMG][/td][td]The Ice world focuses on movement mechanics. It's meant to highlight your understanding and dexterity of movement. This world is pretty hard to start, and then picks up drastically from Level 3 onward[/td][/tr]
-[tr][td][IMG]https://i.imgur.com/nfFNnyP.png[/IMG][/td][td]The 2.5D world focuses on changing perspective. It's meant to highlight how the same experience can play out so many different ways. This world isn't easy, but fun is definitely prioritized over difficulty[/td][/tr][/otablei]
+[otablei][tr][td][img]https://i.imgur.com/9wHeihe.jpg?2[/img][/td][td]The land world is about optimal movement, but also being able to pause for a second when necessary. It's probably the most beginner friendly world, focusing on fun elements while keeping the gameplay familiar[/td][/tr]
+[tr][td][img]https://i.imgur.com/OazufW9.jpg?2[/img][/td][td]The Ice world focuses on movement mechanics. It's meant to highlight your understanding and dexterity of movement. This world is pretty hard to start, and then picks up drastically from Level 3 onward[/td][/tr]
+[tr][td][img]https://i.imgur.com/GvmzNBL.jpg?2[/img][/td][td]The 2.5D world focuses on changing perspective. It's meant to highlight how the same experience can play out so many different ways. This world isn't easy, but fun is definitely prioritized over difficulty[/td][/tr][/otablei]
 
 As you advance through a world, you'll gain and lose continues, and (hopefully) gain in score. Run out of continues, though, and you'll be booted back to the Doors, where you can start another world. Want to retry a world? Go again and you'll be sent back to the last level you started. Your team cannot replay a world that they have already fully finished.
 [/Tab]
@@ -62,7 +62,7 @@ When playing in a team mode, dying will leave a revive circle in your wake. [B]A
 [tr][td]Grasses[/td][td]Effects default movement speed. The darker the grass, the faster you go[/td][/tr]
 [tr][td]Leaves[/td][td]Super speed. Use with caution[/td][/tr]
 [tr][td]Ices[/td][td]Ice skating! The darker the ice, the faster you go[/td][/tr]
-[tr][td]Snow[/td][td]Velocity skating![/td][/tr]
+[tr][td]Snow[/td][td]Skiing! Try swaying back and forth rather than doing 180s (though both work!)[/td][/tr]
 [tr][td]Rocky Snow[/td][td]Velocity skating, but you can't control your direction while on it[/td][/tr]
 [tr][td]Sand[/td][td]Velocity running![/td][/tr]
 [tr][td]Compass Tile[/td][td]Enables willful teleportation in 4 cardinal compass directions[/td][/tr]
@@ -162,19 +162,29 @@ It is easy to add **basic** support for a new language, so feel free to request 
 You can also enable / disable "Camera Tracking" by pressing the escape key! This mode is useful if you have a hard time with ice in general.
 [/Tab]
 [Tab=Screenshots]Submit your screenshots to this thread or via PM!
-[IMG]https://i.imgur.com/G0lAMXp.jpg[/IMG]
-[IMG]https://i.imgur.com/adlW3Nx.png[/IMG]
-[IMG]https://i.imgur.com/71HSz19.jpg[/IMG]
+[img]https://i.imgur.com/bo5u9VT.jpg[/img]
+[img]https://i.imgur.com/xNvvfqc.jpg[/img]
+[img]https://i.imgur.com/L03LRZF.jpg[/img]
+[img]https://i.imgur.com/kIfKwBO.png[/img]
 [/Tab]
 [Tab=Videos]Submit links to your videos to this thread or via PM!
 [/Tab]
-[Tab=Changelog][2020-01-24](v1.2.0) Difficulty balancing for all first levels
+[Tab=Changelog][2020-02-12](v1.3.0) Reforged optimizations and Quality of  Life (thank you Blizzard, deepstrasz and SlowWillyy). This update includes 33 minor versions, here are the highlights:
+All game content is now optimized for native SD [b]and[/b] HD assets. Huge shout out to Blizzard for models and engine improvements
+3d Snow completely overhauled! Should feel much more like skiing now; you can control your momentum by weaving back and forth (no full stop necessary). Feedback by almost everyone that's played! This is my favorite change post release!
+2d Ice now gives much more feedback from VFX
+Camera automatically zooms out when player is in some areas (and back in after they leave those areas). Camera also zooms out while on the teleportation terrain tile. Feedback & suggestion by deepstrasz
+Units that won't kill a player now owned by a friendly player, so selection events are yellow rather than red. Inspiration from deepstrasz's [URL='https://www.hiveworkshop.com/threads/somewhere-across-nowhere.286559/']Somewhere Across Nowhere[/URL]
+Grass gameplay effect shifted to be more consistent - the darker the grass, the faster you run
+Player unit size increased by 25% to look better in HD. Player unit radius / collision size increased to match
+
+[2020-01-24](v1.2.0) Difficulty balancing for all first levels
 
 [2020-01-16] (v1.1.0) Community Updates (thank you deepstrasz, tough_zai, and Otherknownoise)
-Bug fix for 2+ players simultaneously activating the same foot switch.
-Bug fix for unrendered vote menu when 1+ player disconnects during game load.
-Chinese localizations improved.
-Health bars always hidden.
+Bug fix for 2+ players simultaneously activating the same foot switch. Bug report by Otherknownoise
+Bug fix for unrendered vote menu when 1+ player disconnects during game load. Bug report by Otherknownoise
+Chinese localizations improved, by Otherknownoise
+Health bars always hidden, feedback & suggestion by deepstrasz
 Quest added explaining available chat commands.
 Game auto detects and resets a player's camera when its accidentally changed during 3d mazing, ie by accidentally scrolling.
 
@@ -217,13 +227,14 @@ Sound Effects:
 Hasbro - Frogger Victory
 
 Tools:
-Vexorian - vJASS compiler ([URL='http://www.wc3c.net/vexorian/jasshelpermanual.html']JassHelper 0.A.0.0[/URL])
+Vexorian - [URL='http://www.wc3c.net/vexorian/jasshelpermanual.html']JassHelper 0.A.0.0[/URL]
 PipeDream, Vecorian, Cohadar, UMSWE team, Pitzermike, SFilip, Van Damm, Risc, ScorpioT1000, Mc!, Moyack, PurgeAndFire - JNGP World Editor v2.0
 MindWorx & the above - SharpCraft World Editor Extended
 Blizzard - Vanilla World Editor (Reforged)
-sumneko, actboy168, other authors? - w3x2lni ([URL='https://github.com/sumneko/w3x2lni/blob/master/docs/en-us/insider.md']sumneko/w3x2lni[/URL])
-Shadow Daemon - BLP Lab ([URL='https://www.hiveworkshop.com/threads/blp-lab-v0-5-0.137599/']BLP Lab v0.5.0[/URL])
+sumneko, actboy168, other authors? - [URL='https://github.com/sumneko/w3x2lni/blob/master/docs/en-us/insider.md']sumneko/w3x2lni[/URL]
+Shadow Daemon - [URL='https://www.hiveworkshop.com/threads/blp-lab-v0-5-0.137599/']BLP Lab v0.5.0[/URL]
 Google - Google Translate
+Frotty - [URL='https://www.hiveworkshop.com/threads/w3protect-jass-and-lua-map-optimizer.319036/']W3Protect[/URL] (map finalization / protection)
 
 Influences:
 gameslayer001 - [URL='https://www.epicwar.com/maps/75976/']Platform Escape[/URL] - influenced Platform/2D game mode and levels
@@ -250,7 +261,7 @@ Pat1487 - Too many answers to list all (https://tmmm.forumotion.com/)
 Anitarf, PurgeandFire111, Bannar - Questions about globals (http://www.wc3c.net/showthread.php?p=1134646#post1134646)
 Anitarf, PurgeandFire111, BBQ, Fledermaus - Questions about structs (http://www.wc3c.net/showthread.php?p=1132076#post1132076)
 Anitarf, BBQ, Bribe - Wisp Wheel (http://www.wc3c.net/showthread.php?p=1131278#post1131278)
-Dr Super Good - Too many answers to list all, but among which are tips to generating random points (https://www.hiveworkshop.com/threads/get-evenly-weighted-random-point-in-rectangle.294547/), unit rotation mechanics (https://www.hiveworkshop.com/threads/unit-turning-mechanics.300224/), MPQ localization (https://www.hiveworkshop.com/threads/data-storage-in-mpq.320370/) and general sass about things I could have if only I used Starcraft 2's engine or, more recently, Lua
+Dr Super Good - Too many answers to list all, but among which are tips to generating random points (https://www.hiveworkshop.com/threads/get-evenly-weighted-random-point-in-rectangle.294547/), unit rotation mechanics (https://www.hiveworkshop.com/threads/unit-turning-mechanics.300224/), MPQ localization (https://www.hiveworkshop.com/threads/data-storage-in-mpq.320370/), help fixing red minimap caused by the abyss (https://www.hiveworkshop.com/threads/1-32-red-minimap.322340/) and general sass about things I could have if only I used Starcraft 2's engine or, more recently, Lua
 -Manuel- - Fix to setting unit immobile/mobile (https://www.hiveworkshop.com/threads/prevent-movement.312061/#post-3321807)
 Pyrogasm & Wrda - Approach to making units locally visible/invisible (https://www.hiveworkshop.com/threads/make-units-locally-visible.310326/)
 wc3neverdies - A fix for selecting terrain in the World Editor (https://www.hiveworkshop.com/threads/world-editor-crash.320150/#post-3384554)
