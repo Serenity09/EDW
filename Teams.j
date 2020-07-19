@@ -1,4 +1,4 @@
-library Teams requires MazerGlobals, MultiboardGlobals, User, UnitLocalVisibility
+library Teams requires MazerGlobals, MultiboardGlobals, User, UnitLocalVisibility, LevelPath
 globals
     private constant real VOTE_TOP_LEFT_X = -15000
 	private constant real VOTE_TOP_LEFT_Y = -4220
@@ -18,6 +18,9 @@ globals
 	private constant integer GAMEMODE_INIT = -1032132
     
     public constant real MULTIBOARD_HIDE_DELAY = 2.
+	
+	// private constant real PATH_UPDATE_TIMEOUT = .5
+	private constant real PATH_UPDATE_TIMEOUT = .035
 	
 	Teams_MazingTeam TriggerTeam //used with events
 	
@@ -61,6 +64,7 @@ public struct MazingTeam extends array
     public Levels_Level OnLevel
     public string TeamName // TODO allow custom player defined team names
     public integer OnCheckpoint //Used purely in conjunction with levels struct. ==0 refers to the initial CP for a level
+	readonly LevelPath Path
     private integer Score
     public real Weight
     public integer DefaultGameMode
@@ -70,11 +74,10 @@ public struct MazingTeam extends array
     
     // public static multiboard PlayerStats    
     readonly static integer NumberTeams = 0
-	
 	readonly static SimpleList_List AllTeams
-    
+	    
 	implement Alloc
-	
+		
 	method operator < takes thistype other returns boolean
 		return R2I(I2R(this)) < R2I(I2R(other))
 	endmethod
@@ -1349,6 +1352,50 @@ public struct MazingTeam extends array
 		set curPlayerNode = curPlayerNode.next
 		endloop
 	endmethod
+	
+	public method SetPathForTeam takes LevelPath path returns nothing
+		local SimpleList_ListNode curUserNode = this.FirstUser
+		
+		// call DisplayTextToPlayer(GetLocalPlayer(), 0, 0, "Setting path: " + I2S(path) + ", for team: " + I2S(this))
+		
+		if this.Path != path then
+			set this.Path = path
+		
+			loop
+			exitwhen curUserNode == 0
+				call User(curUserNode.value).SetPath(path)
+				
+			set curUserNode = curUserNode.next
+			endloop
+		endif
+	endmethod
+	
+	public method CheckPathForTeam takes nothing returns nothing		
+		local SimpleList_ListNode curUserNode = this.FirstUser
+		
+		if this.Path != 0 then			
+			loop
+			exitwhen curUserNode == 0
+				// call DisplayTextToPlayer(GetLocalPlayer(), 0, 0, "Checking path: " + I2S(this.Path) + ", for user: " + I2S(curUserNode.value))
+				
+				call User(curUserNode.value).CheckPath(this.Path)
+				
+			set curUserNode = curUserNode.next
+			endloop
+		endif
+	endmethod
+	private static method AutoCheckPath takes nothing returns nothing
+		local SimpleList_ListNode curTeamNode = thistype.AllTeams.first
+        
+        loop
+        exitwhen curTeamNode == 0
+			// call DisplayTextToPlayer(GetLocalPlayer(), 0, 0, "Auto checking team: " + I2S(curTeamNode.value))
+			
+			call MazingTeam(curTeamNode.value).CheckPathForTeam()
+			
+		set curTeamNode = curTeamNode.next
+        endloop
+	endmethod
 		
     public static method create takes nothing returns thistype
         local thistype mt = thistype.allocate()
@@ -1379,6 +1426,8 @@ public struct MazingTeam extends array
 	
 	private static method onInit takes nothing returns nothing
 		set thistype.AllTeams = SimpleList_List.create()
+		
+		call TimerStart(CreateTimer(), PATH_UPDATE_TIMEOUT, true, function thistype.AutoCheckPath)
 	endmethod
 endstruct
 

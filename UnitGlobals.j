@@ -75,7 +75,7 @@ library UnitGlobals
 		
 		constant integer TELEPORT = 'eTEL'
         
-        debug constant integer DEBUG_UNIT = 'eTST' //NOT USED FOR ANYTHING IN RELEASE MODE
+        constant integer DEBUG_UNIT = 'eTST' //NOT USED FOR ANYTHING IN RELEASE MODE
 		
 		constant integer INACTIVE_UNIT_OPACITY = 100
     endglobals

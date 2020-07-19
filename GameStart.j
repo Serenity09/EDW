@@ -1,4 +1,4 @@
-library EDWGameStart initializer Init requires TimerUtils, Levels, EDWVisualVote, UnitGlobals, MazerGlobals, GameMessage, EDWLevelContent, EDWCinematicContent, Recycle, AsyncInit
+library EDWGameStart initializer Init requires TimerUtils, Levels, EDWVisualVote, UnitGlobals, MazerGlobals, GameMessage, EDWLevels, EDWLevelPaths, EDWLevelContent, EDWCinematicContent, Recycle, AsyncInit
     globals
         constant real GAME_INIT_TIME_INITIAL = 0.01 //how long into the game before we start
         //constant real GAME_INIT_TIME_STEP = .5
@@ -157,6 +157,7 @@ library EDWGameStart initializer Init requires TimerUtils, Levels, EDWVisualVote
 			call DisplayTextToForce(bj_FORCE_PLAYER[0], "Preload 2")
 		endif
 		
+		call EDWLevelPaths_Initialize()
 		// call EDWLevelContent_Initialize()
 		
 		static if DEBUG_PRELOAD_FULL then

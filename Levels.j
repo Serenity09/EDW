@@ -40,6 +40,8 @@ library Levels requires SimpleList, Teams, GameModesGlobals, LevelIDGlobals, Cin
         public integer DefaultColor
         public integer DefaultGameMode
 		public boolean RequiresSameGameMode
+		
+		public LevelPath Path
         
 		public static method create takes rect gate, rect center returns thistype
 			local thistype new = c + 1
@@ -52,7 +54,8 @@ library Levels requires SimpleList, Teams, GameModesGlobals, LevelIDGlobals, Cin
 			set new.DefaultColor = KEY_NONE
 			set new.DefaultGameMode = Teams_GAMEMODE_STANDARD
 			set new.RequiresSameGameMode = false
-			
+			set new.Path = 0
+						
 			return new
 		endmethod
 		
@@ -362,10 +365,31 @@ library Levels requires SimpleList, Teams, GameModesGlobals, LevelIDGlobals, Cin
 			set r = null
         endmethod
 		
-        public method SetCheckpointForTeam takes Teams_MazingTeam mt, integer cpID returns nothing
-            local Checkpoint cp = Checkpoint(.Checkpoints.get(cpID).value)
+		public method GetCheckpoint takes integer cpID returns Checkpoint
+			return .Checkpoints.get(cpID).value
+		endmethod
+        public method AddCheckpoint takes rect gate, rect center returns Checkpoint
+            local Checkpoint cp = Checkpoint.create(gate, center)
+			call .Checkpoints.addEnd(cp)
 			
-			//call DisplayTextToForce(bj_FORCE_PLAYER[0], "Started setting CP for team " + I2S(mt) + ", index " + I2S(cpID) + ", cp " + I2S(cp))
+			return cp
+        endmethod
+		public method InsertCheckpoint takes rect gate, rect center, integer position returns Checkpoint
+			local Checkpoint cp = Checkpoint.create(gate, center)
+			
+			if position < .Checkpoints.count then
+				call .Checkpoints.insert(cp, position)
+			else
+				call .Checkpoints.addEnd(cp)
+			endif
+			
+			return cp
+		endmethod
+		
+        public method SetCheckpointForTeam takes Teams_MazingTeam mt, integer cpID returns nothing
+            local Checkpoint cp = this.GetCheckpoint(cpID)
+			
+			// call DisplayTextToForce(bj_FORCE_PLAYER[0], "Started setting CP for team " + I2S(mt) + ", index " + I2S(cpID) + ", cp " + I2S(cp))
 			
 			if cp != 0 then
 				set EventCheckpoint = cp
@@ -373,9 +397,9 @@ library Levels requires SimpleList, Teams, GameModesGlobals, LevelIDGlobals, Cin
 				set this.CBTeam = mt
 				
 				set mt.OnCheckpoint = cpID
-                
                 set mt.DefaultGameMode = cp.DefaultGameMode
                 
+				call mt.SetPathForTeam(cp.Path)
                 call mt.MoveRevive(cp.ReviveCenter)
                 call mt.RespawnTeamAtRect(cp.ReviveCenter, true)
                 call mt.ApplyKeyToTeam(cp.DefaultColor)
@@ -475,7 +499,7 @@ library Levels requires SimpleList, Teams, GameModesGlobals, LevelIDGlobals, Cin
 			// return origin.GetLocalizedPlayerName(localizer) + " " + LocalizeContent('LSCP', localizer.LanguageCode)
 		endmethod
 		public method AnimatedSetCheckpointForTeam takes Teams_MazingTeam mt, integer cpID returns nothing
-			local Checkpoint cp = Checkpoint(.Checkpoints.get(cpID).value)
+			local Checkpoint cp = this.GetCheckpoint(cpID)
 			
 			// call DisplayTextToForce(bj_FORCE_PLAYER[0], "Started setting CP for team " + I2S(mt) + ", index " + I2S(cpID) + ", cp " + I2S(cp))
 			if mt.Users.count > 1 then
@@ -498,24 +522,6 @@ library Levels requires SimpleList, Teams, GameModesGlobals, LevelIDGlobals, Cin
 			else
 				call this.SetCheckpointForTeam(mt, cpID)
 			endif
-		endmethod
-                        
-        public method AddCheckpoint takes rect gate, rect center returns Checkpoint
-            local Checkpoint cp = Checkpoint.create(gate, center)
-			call .Checkpoints.addEnd(cp)
-			
-			return cp
-        endmethod
-		public method InsertCheckpoint takes rect gate, rect center, integer position returns Checkpoint
-			local Checkpoint cp = Checkpoint.create(gate, center)
-			
-			if position < .Checkpoints.count then
-				call .Checkpoints.insert(cp, position)
-			else
-				call .Checkpoints.addEnd(cp)
-			endif
-			
-			return cp
 		endmethod
         
 		public method GetWeightedScore takes nothing returns integer
@@ -1131,6 +1137,33 @@ library Levels requires SimpleList, Teams, GameModesGlobals, LevelIDGlobals, Cin
 			return score
 		endmethod
 		
+		public method InitializeLevelPath takes integer startCPID, integer endCPID returns LevelPath
+			local Checkpoint startCP = this.GetCheckpoint(startCPID)
+			local rect endRect
+			
+			if endCPID > this.Checkpoints.count then
+				set endRect = this.LevelEnd
+			else
+				set endRect = this.GetCheckpoint(endCPID).Gate
+			endif
+			
+			set startCP.Path = LevelPath.createFromRect(startCP.ReviveCenter, endRect)
+			return startCP.Path
+		endmethod
+		public method InitializeDefaultLevelPaths takes nothing returns nothing
+			local integer cpID = 0
+			
+			local Checkpoint cp
+			local rect pathStart
+			local rect pathEnd
+			
+			loop
+			exitwhen cpID > this.Checkpoints.count
+				call this.InitializeLevelPath(cpID, cpID + 1)
+			set cpID = cpID + 1
+			endloop
+		endmethod
+		
         //creates a level struct
         static method create takes integer LevelID, integer rawContinues, integer rawScore, string startFunction, string stopFunction, rect startspawn, rect vision, rect levelEnd, Level previouslevel returns Level
             local Level new = LevelID
@@ -1167,6 +1200,7 @@ library Levels requires SimpleList, Teams, GameModesGlobals, LevelIDGlobals, Cin
 			set new.Checkpoints = SimpleList_List.create()
             //use the checkpoint schema for the first checkpoint. region enter event is handled separately, so use null for the region
             call new.AddCheckpoint(null, startspawn)
+			
             
 			set new.MaxCollisionSize = DEFAULT_MAX_COLLISION_SIZE
 			set new.OnLevelStart = 0

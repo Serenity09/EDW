@@ -32,6 +32,18 @@ library SimpleList requires Alloc, Table
             
             set .count = .count + 1            
         endmethod
+		public method addRange takes List other returns nothing
+			local ListNode curOtherNode = other.first
+			
+			if other != 0 then
+				loop
+				exitwhen curOtherNode == 0
+					call .add(curOtherNode.value)
+				set curOtherNode = curOtherNode.next
+				endloop
+			endif
+		endmethod
+		
         public method addEnd takes integer value returns nothing
             local ListNode curEnd = .last
             
@@ -49,6 +61,19 @@ library SimpleList requires Alloc, Table
             
             set .count = .count + 1
         endmethod
+		public method addEndRange takes List other returns nothing
+			local ListNode curOtherNode = other.first
+			
+			if other != 0 then
+				loop
+				exitwhen curOtherNode == 0
+					call .addEnd(curOtherNode.value)
+				set curOtherNode = curOtherNode.next
+				endloop
+			endif
+		endmethod
+		
+		
 		public method insert takes integer value, integer position returns nothing
 			local integer curPosition = 0
 			local ListNode curNode
@@ -185,12 +210,6 @@ library SimpleList requires Alloc, Table
             set .count = 0
         endmethod
         
-//        public method insertAt takes integer value, integer position returns nothing
-//            //TODO add an optional static table to make insert at efficient
-//            
-//            
-//        endmethod
-//        
         public method contains takes integer value returns boolean
             local ListNode cur = .first
             
@@ -282,7 +301,7 @@ library SimpleList requires Alloc, Table
                 call new.addEnd(cur.value)
             set cur = cur.next
             endloop
-            			
+            
 			return new
 		endmethod
     endstruct

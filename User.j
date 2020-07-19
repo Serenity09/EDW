@@ -39,6 +39,8 @@ globals
 	
 	private constant boolean DEBUG_AFK = false
 	private constant real AFK_CAMERA_DEBUG_TIMEOUT = AFK_CAMERA_MIN_TIMEOUT
+	
+	private constant boolean DEBUG_CURRENT_CONNECTION = true
 endglobals
 
 struct User extends array
@@ -90,10 +92,116 @@ struct User extends array
 	// public static trigger AFKMouseEvent
 	// public static vector2 LocalUserMousePosition
 	
+	readonly LevelPathNodeConnection CurrentPathConnection
+	readonly real FurthestPathDistance
+	readonly LevelPathNodeConnection FurthestPathConnection
+	
+	static if DEBUG_CURRENT_CONNECTION then
+		private lightning CurrentConnectionLine
+		private unit CurrentConnectionProjection
+	endif
+	
 	private static Cinematic ToggleCameraTrackingTutorial
     
 	method operator < takes thistype other returns boolean
 		return R2I(I2R(this)) < R2I(I2R(other))
+	endmethod
+	
+	public method operator IsDead takes nothing returns boolean
+		return .GameMode == Teams_GAMEMODE_DYING or .GameMode == Teams_GAMEMODE_DYING
+	endmethod
+	// public method IsAlive takes nothing returns boolean
+		// return not .IsDead
+	// endmethod
+	
+	public method operator IsStandard takes nothing returns boolean
+		return .GameMode == Teams_GAMEMODE_STANDARD or .GameMode == Teams_GAMEMODE_STANDARD_PAUSED
+	endmethod
+	public method operator IsPlatforming takes nothing returns boolean
+		return .GameMode == Teams_GAMEMODE_PLATFORMING or .GameMode == Teams_GAMEMODE_PLATFORMING_PAUSED
+	endmethod
+	public method operator IsUnpaused takes nothing returns boolean
+		return .GameMode == Teams_GAMEMODE_STANDARD or .GameMode == Teams_GAMEMODE_PLATFORMING
+	endmethod
+	public method operator IsPaused takes nothing returns boolean
+		return .GameMode == Teams_GAMEMODE_STANDARD_PAUSED or .GameMode == Teams_GAMEMODE_PLATFORMING_PAUSED
+	endmethod
+	
+	public method operator IsInactive takes nothing returns boolean
+		return .IsDead or .GameMode == Teams_GAMEMODE_HIDDEN or .IsAFK
+	endmethod
+	public method operator IsActive takes nothing returns boolean
+		return not .IsInactive
+	endmethod
+	
+	public method GetCurrentPosition takes nothing returns vector2
+		if .ActiveUnit != null then
+			return vector2.create(GetUnitX(.ActiveUnit), GetUnitY(.ActiveUnit))
+		else
+			return 0
+		endif
+	endmethod
+	
+	public method SetConnection takes LevelPathNodeConnection connection returns nothing
+		set this.CurrentPathConnection = connection
+		
+		static if DEBUG_CURRENT_CONNECTION then
+			if this.CurrentConnectionLine != null then
+				call DestroyLightning(this.CurrentConnectionLine)
+			endif
+			set this.CurrentConnectionLine = this.CurrentPathConnection.ConnectingLine.DrawEx(Draw_SPIRIT_LINK)
+		endif
+	endmethod
+	public method GetDefaultConnection takes nothing returns LevelPathNodeConnection		
+		local vector2 curUserPosition = this.GetCurrentPosition()
+		local LevelPathNodeConnection bestConnection = this.Team.Path.GetBestConnection(curUserPosition)
+		
+		call curUserPosition.deallocate()
+		return bestConnection
+	endmethod
+	public method SetPath takes LevelPath path returns nothing
+		set this.FurthestPathDistance = 0.
+		set this.FurthestPathConnection = this.CurrentPathConnection
+		
+		call this.SetConnection(this.GetDefaultConnection())
+	endmethod
+	public method CheckPath takes LevelPath path returns nothing
+		local vector2 curUserPosition
+		
+		local LevelPathNodeConnection closestConnection
+		local real closestConnectionTotalDistance
+		
+		local vector2 curProjectedPosition
+		
+		if this.IsUnpaused then
+			set curUserPosition = this.GetCurrentPosition()
+			set closestConnection = this.CurrentPathConnection.GetClosestConnection(curUserPosition)
+			
+			if this.CurrentPathConnection != closestConnection then
+				call this.SetConnection(closestConnection)
+			endif
+			
+			//reorient position using the connection's start point as its new origin
+			set curUserPosition.x = curUserPosition.x - closestConnection.StartNode.Position.x
+			set curUserPosition.y = curUserPosition.y - closestConnection.StartNode.Position.y
+			
+			set closestConnectionTotalDistance = closestConnection.GetTotalDistanceFromPoint(curUserPosition)
+			if closestConnectionTotalDistance > this.FurthestPathDistance then
+				// call DisplayTextToPlayer(GetLocalPlayer(), 0, 0, "Furthest distance reached: " + R2S(closestConnectionTotalDistance))
+				
+				set this.FurthestPathDistance = closestConnectionTotalDistance
+				set this.FurthestPathConnection = closestConnection
+			endif
+			
+			static if DEBUG_CURRENT_CONNECTION then
+				set curProjectedPosition = closestConnection.ConnectingLine.ProjectPoint(curUserPosition)
+				call SetUnitX(this.CurrentConnectionProjection, curProjectedPosition.x + closestConnection.StartNode.Position.x)
+				call SetUnitY(this.CurrentConnectionProjection, curProjectedPosition.y + closestConnection.StartNode.Position.y)
+				call curProjectedPosition.deallocate()
+			endif
+			
+			call curUserPosition.deallocate()
+		endif
 	endmethod
 	
 	// public method CreateMenu takes real time, string optionCB returns nothing
@@ -1433,6 +1541,10 @@ struct User extends array
 				set .ActiveUnit = null
             endif
 			
+			if .IsUnpaused then
+				call .SetConnection(.GetDefaultConnection())
+			endif
+			
 			call .UpdateMultiboardPlayerIcon()
         endif
     endmethod
@@ -1951,6 +2063,11 @@ struct User extends array
 			if GetLocalPlayer() == Player(new) then
 				call request.Sync(SubString(BlzGetLocale(), 0, 2))
 			endif
+		endif
+		
+		static if DEBUG_CURRENT_CONNECTION then
+			set new.CurrentConnectionLine = null
+			set new.CurrentConnectionProjection = Draw_DrawPoint(new, 0, 0)
 		endif
 		
         return new

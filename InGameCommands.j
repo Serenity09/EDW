@@ -251,6 +251,9 @@ library InGameCommands initializer init requires MazerGlobals, Platformer, Relay
 		local unit gunit
 		// local unit selectedUnit = FirstOfGroup(GetUnitsSelectedAll(Player(pID)))
 		
+		local Levels_Level level
+		local Checkpoint checkpoint
+		
 		local Deferred async
 		
 		//debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "msg: " + msg)
@@ -406,6 +409,40 @@ library InGameCommands initializer init requires MazerGlobals, Platformer, Relay
 				// set async = User.SyncLocalCameraIdleTime()
 				// call async.Then(OnAllCameraSync, 0, async)
 			// endif
+			elseif cmd == "path" then
+				// call LevelPath(intVal).PrintPathByBreadth()
+				call DisplayTextToPlayer(Player(pID), 0, 0, "************************")
+				if intVal != 0 then
+					set level = Levels_Level(intVal)
+					set checkpoint = level.GetCheckpoint(0)
+				else
+					set level = team.OnLevel
+					set checkpoint = level.GetCheckpoint(team.OnCheckpoint)
+				endif
+				
+				if checkpoint.Path != 0 then
+					call DisplayTextToPlayer(Player(pID), 0, 0, "Printing path for level: " + level.GetLocalizedLevelName(pID))
+					call DisplayTextToPlayer(Player(pID), 0, 0, "Checkpoint ID: " + I2S(checkpoint))
+					call checkpoint.Path.PrintPathByBreadth()
+				else
+					call DisplayTextToPlayer(Player(pID), 0, 0, "Null path for level: " + level.GetLocalizedLevelName(pID))
+					call DisplayTextToPlayer(Player(pID), 0, 0, "Checkpoint ID: " + I2S(checkpoint))
+				endif
+			elseif cmd == "drawpath" or cmd == "dp" then
+				if intVal != 0 then
+					set level = Levels_Level(intVal)
+					set checkpoint = level.GetCheckpoint(0)
+				else
+					set level = team.OnLevel
+					set checkpoint = level.GetCheckpoint(team.OnCheckpoint)
+				endif
+				
+				if checkpoint.Path != 0 then
+					call checkpoint.Path.Draw()
+				else
+					call DisplayTextToPlayer(Player(pID), 0, 0, "Null path for level: " + level.GetLocalizedLevelName(pID))
+					call DisplayTextToPlayer(Player(pID), 0, 0, "Checkpoint ID: " + I2S(checkpoint))
+				endif
 			elseif cmd == "cam" or cmd == "camera" then
 				if GetLocalPlayer() == Player(pID) then
 					call DisplayTextToPlayer(Player(pID), 0, 0, "Camera distance: " + R2S(GetCameraField(CAMERA_FIELD_TARGET_DISTANCE)))

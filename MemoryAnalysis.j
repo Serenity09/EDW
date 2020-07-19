@@ -219,7 +219,7 @@ library MemoryAnalysis /* v1.1.0.1
 	globals
 		private constant boolean TRACE = false
 		
-		public constant boolean ENABLED = DEBUG_MODE
+		public constant boolean ENABLED = true
 	endglobals
 	
 	static if MemoryAnalysis_ENABLED then
