@@ -1,0 +1,71 @@
+[SIZE=5]What is localization?[/SIZE]
+Localization is another word for translating the displayed content of a program into multiple languages. The idea is that content will be available for all users, and each user will get a version of that content that's locally appropriate to the user's culture
+
+[SIZE=5]Why localize?[/SIZE]
+Because you shouldn't have to speak the same language to have fun playing a game
+
+[SIZE=5]How to localize WC3 content?[/SIZE]
+[LIST=1]
+[*]First, identify the game content to be localized. Meaning line(s) of text that any player may see while playing your game
+[LIST=1]
+[*]I recommend doing your content in big batches for a mostly finished game. This process is currently tedious to do frequently, especially as you're tweaking values, so I recommend only localizing content that's finished
+[*]It's a lot more impactful to do content that has gameplay consequences (like rules, or quests) than with anything more flavor oriented (like non-essential dialog)
+[/LIST]
+[*]Define your content in some spreadsheet app that works easily with a translation service
+[LIST=1]
+[*]You can define your original content in any language, and you should use the language you're most comfortable with!
+[*]I recommend doing all this in Google Sheets. Unless you and your generous friends are fluent in 9 very specific languages, and want to die, you'll need some sort of translation service to do the majority of the 1st draft for all content (now and future) automatically. Google has both the translation, and the spreadsheet, and makes it easy to use them together. Sign me up
+[*][URL='https://docs.google.com/spreadsheets/d/1bWU-eQ9a3lqH02j-usbt6VrvlgBBxFW89Zi1WSXXcEs/edit?usp=sharing']This is a demo of what I did for Escape Dream World[/URL]. You can see the original text under the tab "Original Text". Again, the content can be in any language, I'm just comfortable with English. I recommend making a copy of this demo and using it as your starting point
+[/LIST]
+[*]Define the languages you want to support (this is already done if you copy the above demo)
+[LIST=1]
+[*]You can see what I did under the "Localization Lookups" tab in the above demo
+[*]At the very least, you'll want information for the language's full name and its two character language code. While you could potentially support other dialects with the four character language code, Google Translate doesn't support multiple dialects, so this guide won't cover it
+[/LIST]
+[/LIST]
+
+
+Vanilla Approach (.wts)
+The vanilla approach uses .wts files to define content across multiple languages. Each .wts file contains all content for a single language. By combining multiple files, you may localize multiple languages. Accessing these files is extremely easy, and automatically returns a result that has been localized for the calling player's install settings
+
+The main strengths of this approach are:
+To the point API - just reference the ID of the content, and you get back the relevant content correctly localized for each player
+GUI support - enables map makers to localize content without needing to learn JASS first
+Efficient - only the relevant data is loaded each game, and each player only loads their own data
+
+The main weaknesses of this approach are:
+Sparse support - Only the languages defined by Blizzard are supported. This currently includes 9 languages, with 2 dialects of Chinese
+Rigid - Localization is picked during WC3 install, and cannot be changed later during an individual game. Many custom maps only support English, which leads non-English speakers to chose English during installation. This is not a problem that your individual map can solve entirely, but instead is a problem the map maker should pay respect to. You cannot assume that a person's installation language is their ideal!
+Inconvenient file type - Localization data is stored in a .wts file. This is inconvenient for everything except WC3, and we want to at least use Google's translation service
+
+Scripted Approach (JASS/LUA)
+There are a number of reasons why using .wts files isn't realistic. WC3's World Editor is great, but it'll never be Google translate, so why pretend it is? Just like you want an external app for creating/editing unit models and skins, you'll want an external app (that connects to a free translation service) for managing your localized content
+
+
+
+BAH HUMBUG won't work bc .wts loaded on game start based on install language
+Ideal:
+    Google Sheets (localization strings) -> xml
+        Google Translate
+        Content (source)
+        Output schema
+    xml -> json
+        Web
+    Converter (json) -> .wts
+        Schema
+        Content (localized)
+        .wts template
+    Game (.wts) -> API
+
+Current:
+    Google Sheets (localization strings) -> xml
+        Google Translate
+        Content (source)
+        Output schema
+    xml -> json
+        Web
+    Converter (json) -> JASS
+        Schema
+        Content (localized)
+        JASS template
+    Game (JASS) -> API

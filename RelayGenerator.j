@@ -51,10 +51,6 @@ library RelayGenerator requires GameGlobalConstants, SimpleList, Table, Vector2,
         
         implement Alloc
         
-        public method DrawCorner takes nothing returns nothing
-            
-        endmethod
-        
         public static method create takes rect area, vector2 center, RelayGenerator generator, integer direction, real distance, integer firstX, integer firstY returns thistype
             local thistype new = thistype.allocate()
             local vector2 firstLane
