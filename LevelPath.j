@@ -151,13 +151,14 @@ library LevelPath requires PermanentAlloc, Vector2, LevelPathNode, SimpleList
 			else
 				loop
 				exitwhen curConnectionNode == 0
-					// if not parentBranch.contains(LevelPathNodeConnection(curConnectionNode.value).NextNode) then
-					set childBranch = parentBranch.clone()
-					set childBranches = GetBranchesRecursive(childBranch, LevelPathNodeConnection(curConnectionNode.value).NextNode)
-					call branches.addEndRange(childBranches)
-					
-					call childBranch.destroy()
-					call childBranches.destroy()
+					if not parentBranch.contains(LevelPathNodeConnection(curConnectionNode.value).NextNode) then
+						set childBranch = parentBranch.clone()
+						set childBranches = GetBranchesRecursive(childBranch, LevelPathNodeConnection(curConnectionNode.value).NextNode)
+						call branches.addEndRange(childBranches)
+						
+						call childBranch.destroy()
+						call childBranches.destroy()
+					endif
 				set curConnectionNode = curConnectionNode.next
 				endloop
 				

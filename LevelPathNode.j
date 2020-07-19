@@ -34,6 +34,18 @@ library LevelPathNode requires PermanentAlloc, Vector2, Line, SimpleList
 			set curConnectionNode = curConnectionNode.next
 			endloop
 			
+			set curConnectionNode = this.StartNode.Connections.first
+			loop
+			exitwhen curConnectionNode == 0
+				set curConnectionDistance = thistype(curConnectionNode.value).ConnectingLine.GetDistanceFromPoint(position)
+				
+				if curConnectionDistance + CLOSEST_CONNECTION_BUFFER < closestDistance then
+					set closestDistance = curConnectionDistance
+					set closestConnection = curConnectionNode.value
+				endif
+			set curConnectionNode = curConnectionNode.next
+			endloop
+			
 			return closestConnection
 		endmethod
 		
@@ -60,9 +72,12 @@ library LevelPathNode requires PermanentAlloc, Vector2, Line, SimpleList
 		public integer AssociatedGameMode //needed?
 		
 		implement PermanentAlloc
-		
+				
 		public method AddNextNode takes LevelPathNode nextNode returns nothing
-			call this.Connections.addEnd(LevelPathNodeConnection.create(this, nextNode))
+			local LevelPathNodeConnection connection = LevelPathNodeConnection.create(this, nextNode)
+			
+			call this.Connections.addEnd(connection)
+			call nextNode.Connections.add(connection)
 		endmethod
 		public method GetConnection takes LevelPathNode nextNode returns LevelPathNodeConnection
 			local SimpleList_ListNode curConnectionNode = this.Connections.first
