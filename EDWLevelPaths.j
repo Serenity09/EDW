@@ -56,6 +56,12 @@ library EDWLevelPaths requires LevelIDGlobals, EDWLevels, SimpleList, Teams, Lev
 		call pathNodeA.AddNextNode(pathNodeC)
 
 		call pathNodeC.AddNextNode(path.End)
+		
+		call path.Finalize()
+		
+		//Checkpoint 1
+		set path = l.GetCheckpoint(1).Path
+		
 		call path.Finalize()
         
         //LEVEL 2

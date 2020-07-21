@@ -1,7 +1,15 @@
 library LevelPath requires PermanentAlloc, Vector2, LevelPathNode, SimpleList
+	globals
+		public constant boolean DEBUG_FINALIZE = true
+	endglobals
+	
 	struct LevelPath extends array
 		public LevelPathNode Start
 		public LevelPathNode End
+		
+		static if DEBUG_FINALIZE then
+			public boolean Finalized
+		endif
 			
 		implement PermanentAlloc
 		
@@ -215,6 +223,15 @@ library LevelPath requires PermanentAlloc, Vector2, LevelPathNode, SimpleList
 			local real curBranchTotalDistance
 			local real curBranchDistance
 			
+			static if DEBUG_FINALIZE then
+				if this.Finalized then
+					call DisplayTextToPlayer(GetLocalPlayer(), 0, 0, "Warning! Calling LevelPath.Finalize on an already finalized Path!")
+					call DisplayTextToPlayer(GetLocalPlayer(), 0, 0, "Path ID: " + I2S(this))
+				else
+					set this.Finalized = true
+				endif
+			endif
+			
 			if this.Start.Connections.count == 0 then
 				call this.Start.AddNextNode(this.End)
 			endif
@@ -280,7 +297,11 @@ library LevelPath requires PermanentAlloc, Vector2, LevelPathNode, SimpleList
 			
 			set new.Start = start
 			set new.End = end
-						
+			
+			static if DEBUG_FINALIZE then
+				set new.Finalized = false
+			endif
+			
 			return new
 		endmethod
 		public static method createFromRect takes rect startRect, rect endRect returns thistype

@@ -1356,7 +1356,12 @@ public struct MazingTeam extends array
 	public method SetPathForTeam takes LevelPath path returns nothing
 		local SimpleList_ListNode curUserNode = this.FirstUser
 		
-		// call DisplayTextToPlayer(GetLocalPlayer(), 0, 0, "Setting path: " + I2S(path) + ", for team: " + I2S(this))
+		static if LevelPath_DEBUG_FINALIZE then
+			if path != 0 and not path.Finalized then
+				call DisplayTextToPlayer(GetLocalPlayer(), 0, 0, "Warning! Setting Team's path to a non-finalized Path! Expect lots of vector2 leaks")
+				call DisplayTextToPlayer(GetLocalPlayer(), 0, 0, "Path ID: " + I2S(path) + ", set for team: " + I2S(this))
+			endif
+		endif
 		
 		if this.Path != path then
 			set this.Path = path
