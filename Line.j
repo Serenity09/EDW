@@ -36,33 +36,34 @@ library Line requires Alloc, Vector2
 		endmethod
 		
 		public method GetDistanceFromPoint takes vector2 point returns real
-			local vector2 ps = vector2.create(point.x - this.Start.x, point.y - this.Start.y)
-			local real c = vector2.dotProduct(this.Segment, ps)
+			// local vector2 ps = vector2.create(point.x - this.Start.x, point.y - this.Start.y)
+			local vector2 pe = vector2.create(point.x - this.End.x, point.y - this.End.y)
+			local real c = vector2.dotProduct(this.Segment, pe)
 			
-			local vector2 ep
+			local vector2 sp
 			local vector2 d
 			
 			local real distance = -1
 			
 			if c > 0 then				
-				set distance = SquareRoot(vector2.dotProduct(ps, ps))
+				set distance = SquareRoot(vector2.dotProduct(pe, pe))
 			else
-				// set ep = vector2.create(this.Start.x - point.x, this.Start.y - point.y)
-				set ep = vector2.create(this.End.x - point.x, this.End.y - point.y)
+				set sp = vector2.create(this.Start.x - point.x, this.Start.y - point.y)
+				// set ep = vector2.create(this.End.x - point.x, this.End.y - point.y)
 				
-				if vector2.dotProduct(this.Segment, ep) > 0 then
-					set distance = SquareRoot(vector2.dotProduct(ep, ep))
+				if vector2.dotProduct(this.Segment, sp) > 0 then
+					set distance = SquareRoot(vector2.dotProduct(sp, sp))
 				else
-					set d = vector2.create(ps.x - c / this.MagnitudeSquared * this.Segment.x, ps.y - c / this.MagnitudeSquared * this.Segment.y)
+					set d = vector2.create(pe.x - c / this.MagnitudeSquared * this.Segment.x, pe.y - c / this.MagnitudeSquared * this.Segment.y)
 					set distance = SquareRoot(vector2.dotProduct(d, d))
 					
 					call d.deallocate()
 				endif
 				
-				call ep.deallocate()
+				call sp.deallocate()
 			endif
 			
-			call ps.deallocate()
+			call pe.deallocate()
 			
 			return distance
 		endmethod

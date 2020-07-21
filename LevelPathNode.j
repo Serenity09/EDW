@@ -1,7 +1,5 @@
 library LevelPathNode requires PermanentAlloc, Vector2, Line, SimpleList
 	globals
-		private real CLOSEST_CONNECTION_BUFFER = 1. * TERRAIN_TILE_SIZE
-	
 	endglobals
 	
 	struct LevelPathNodeConnection extends array
@@ -27,7 +25,7 @@ library LevelPathNode requires PermanentAlloc, Vector2, Line, SimpleList
 			exitwhen curConnectionNode == 0
 				set curConnectionDistance = thistype(curConnectionNode.value).ConnectingLine.GetDistanceFromPoint(position)
 				
-				if curConnectionDistance + CLOSEST_CONNECTION_BUFFER < closestDistance then
+				if curConnectionDistance < closestDistance then
 					set closestDistance = curConnectionDistance
 					set closestConnection = curConnectionNode.value
 				endif
@@ -39,12 +37,14 @@ library LevelPathNode requires PermanentAlloc, Vector2, Line, SimpleList
 			exitwhen curConnectionNode == 0
 				set curConnectionDistance = thistype(curConnectionNode.value).ConnectingLine.GetDistanceFromPoint(position)
 				
-				if curConnectionDistance + CLOSEST_CONNECTION_BUFFER < closestDistance then
+				if curConnectionDistance < closestDistance then
 					set closestDistance = curConnectionDistance
 					set closestConnection = curConnectionNode.value
 				endif
 			set curConnectionNode = curConnectionNode.next
 			endloop
+			
+			// call DisplayTextToPlayer(GetLocalPlayer(), 0, 0, "Closest distance was: " + R2S(closestDistance))
 			
 			return closestConnection
 		endmethod
