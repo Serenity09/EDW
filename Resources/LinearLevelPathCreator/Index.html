@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+
+<html>
+	<head>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+		
+		<style>
+			body {
+			  background: #161616;
+			  color: #bdbdbd;
+			  font-weight: 300;
+			  height: 100vh;
+			  margin: 0;
+			  font-family: Helvetica neue, roboto;
+			}
+
+			img {
+			  width: 56px;
+			  height: 48px;
+			}
+
+			h1 {
+			  font-weight: 200;
+			  font-style: 26px;
+			  margin: 10px;
+			}
+			
+			p {
+				margin: 15px;
+			}
+		</style>
+    </head>
+
+	<body>
+		<div class="row">		  
+		  <label for="PathVar1">Path variable name</label>
+		  <input id="PathVar1" type="text" value="pathNodeStart">
+		</div>
+		<div class="row">		  
+			<label for="PathVar2">Path variable name</label>
+			<input id="PathVar2" type="text" value="pathNodeEnd">
+		  </div>
+
+		  <div class="row">
+			<label for="RectRoot">Rect root name</label>
+			<input id="RectRoot" type="text" value="gg_rct__P">
+		  </div>
+
+		  <div class="row">		  
+			<label for="RectFromVal">Rect from value</label>
+			<input id="RectFromVal" type="number" value="1">
+		  </div>
+		  <div class="row">		  
+			<label for="RectToVal">Rect to value</label>
+			<input id="RectToVal" type="number">
+		  </div>
+
+		  <div class="row">
+			  <label for="IncludeStart">Include Start</label>
+			  <input id="IncludeStart" type="checkbox" checked>
+		  </div>
+		  <div class="row">
+			<label for="IncludeEnd">Include End</label>
+			<input id="IncludeEnd" type="checkbox">
+		  </div>
+		  
+
+		  <div class="row pull-right">
+			<button id="GenerateButton" type="button">Generate</button>
+		  </div>
+
+		  <div class="row">
+			  <p id="Output"></p>
+		  </div>
+
+		<script type="text/javascript">
+			var dojoConfig = {
+				async: true,
+				parseOnLoad: false,
+				
+				packages: [
+					{
+						name: "localization",
+						location: "file:///C:/Users/segal/Documents/Warcraft%20III/Maps/MyMaps/EDW/Resources/Localization/JSONTableConverter/"
+					}
+				]
+			};
+		</script>
+		<script src="http://ajax.googleapis.com/ajax/libs/dojo/1.10.4/dojo/dojo.js"></script>
+		
+		<script id="JASSTemplate" type="text/template">
+			set {{PATH_VAR_END}} = LevelPathNode.createFromRect({{VAR_ROOT_NAME}}{{VAR_VALUE}})
+			call {{PATH_VAR_START}}.AddNextNode({{PATH_VAR_END}})
+			set {{PATH_VAR_START}} = {{PATH_VAR_END}}
+		</script>
+		<script id="JASSTemplate_Start" type="text/template">
+			set {{PATH_VAR_START}} = LevelPathNode.createFromRect({{VAR_ROOT_NAME}}{{VAR_VALUE}})
+			call {{PATH_START}}.AddNextNode({{PATH_VAR_START}})
+		</script>
+		<script id="JASSTemplate_End" type="text/template">
+			call {{PATH_VAR_START}}.AddNextNode({{PATH_END}})
+			call {{PATH}}.Finalize()
+		</script>
+
+		<script type="text/javascript">
+			require(["dojo/_base/array", "dojo/query", "dojo/on"], function (array, query, on) {
+				const generateButton = query("#GenerateButton")[0];
+				const outputArea = query("#Output")[0];
+
+				const pathVar1Node = query("#PathVar1")[0];
+				const pathVar2Node = query("#PathVar2")[0];
+				const rectRootNode = query("#RectRoot")[0];
+				const rectFromNode = query("#RectFromVal")[0];
+				const rectToNode = query("#RectToVal")[0];
+
+				const includeStartNode = query("#IncludeStart")[0];
+				const includeEndNode = query("#IncludeEnd")[0];
+
+				const jassTemplate = query("#JASSTemplate")[0];
+				const jassTemplate_Start = query("#JASSTemplate_Start")[0];
+				const jassTemplate_End = query("#JASSTemplate_End")[0];
+
+				const path = "path";
+				const start = "Start";
+				const end = "End";
+				
+	
+				//from https://grax32.com/2014/10/tiny-template-engine-pattern-that-you.html
+				var ApplyTemplate = function(template, properties) {
+					var returnValue = "";
+
+					var templateFragments = template.split("{{");
+
+					returnValue += templateFragments[0];
+
+					for (var i = 1; i < templateFragments.length; i++) {
+						var fragmentSections = templateFragments[i].split("}}", 2);
+						returnValue += properties[fragmentSections[0]];
+						returnValue += fragmentSections[1];
+					}
+
+					return returnValue;
+				}				
+
+				on(generateButton, "click", function() {
+					var pathVar1Val = pathVar1Node.value;
+					var pathVar2Val = pathVar2Node.value;
+					var rectRootVal = rectRootNode.value;
+					var rectFromVal = rectFromNode.value;
+					var rectToVal = Math.max(rectToNode.value, rectFromVal);
+
+					var includeStartVal = includeStartNode.checked;
+					var includeEndVal = includeEndNode.checked;
+
+					var output = "";
+
+					if (includeStartVal) {
+						var templatedJASS = ApplyTemplate(jassTemplate_Start.innerText, {
+							PATH_START: [path, start].join("."),
+							PATH_VAR_START: pathVar1Val,
+							VAR_ROOT_NAME: rectRootVal,
+							VAR_VALUE: rectFromVal
+						});
+
+						rectFromVal++;
+						output += templatedJASS;
+					}
+
+					for (var i = rectFromVal; i <= rectToVal; i++) {
+						var templatedJASS = ApplyTemplate(jassTemplate.innerText, {
+							PATH_VAR_START: pathVar1Val,
+							PATH_VAR_END: pathVar2Val,
+							VAR_ROOT_NAME: rectRootVal,
+							VAR_VALUE: i
+						});
+
+						output += templatedJASS;
+					}
+
+					if (includeEndVal) {
+						var templatedJASS = ApplyTemplate(jassTemplate_End.innerText, {
+							PATH_END: [path, end].join("."),
+							PATH_VAR_START: pathVar1Val,
+							PATH: path
+						});
+
+						output += templatedJASS;
+					}
+
+					console.log(output);
+
+					outputArea.innerText = output;
+				});
+			});
+		</script>
+	</body>
+</html>
