@@ -307,6 +307,7 @@ library EDWLevelPaths requires LevelIDGlobals, EDWLevels, SimpleList, Teams, Lev
 		set pathNodeEnd = LevelPathNode.createFromRect(gg_rct_IW2_P37)
 		call pathNodeA.AddNextNode(pathNodeEnd)
 		set pathNodeStart = pathNodeEnd
+		set pathNodeB = pathNodeStart
 
 		set pathNodeEnd = LevelPathNode.createFromRect(gg_rct_IW2_P38)
 		call pathNodeStart.AddNextNode(pathNodeEnd)
@@ -318,6 +319,8 @@ library EDWLevelPaths requires LevelIDGlobals, EDWLevels, SimpleList, Teams, Lev
 		set pathNodeEnd = LevelPathNode.createFromRect(gg_rct_IW2_P39)
 		call pathNodeA.AddNextNode(pathNodeEnd)
 		set pathNodeStart = pathNodeEnd
+		//loop back
+		call pathNodeStart.AddNextNode(pathNodeB)
 
 		set pathNodeEnd = LevelPathNode.createFromRect(gg_rct_IW2_P40)
 		call pathNodeStart.AddNextNode(pathNodeEnd)
