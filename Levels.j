@@ -399,12 +399,12 @@ library Levels requires SimpleList, Teams, GameModesGlobals, LevelIDGlobals, Cin
 				set mt.OnCheckpoint = cpID
                 set mt.DefaultGameMode = cp.DefaultGameMode
                 
-				call mt.SetPathForTeam(cp.Path)
                 call mt.MoveRevive(cp.ReviveCenter)
                 call mt.RespawnTeamAtRect(cp.ReviveCenter, true)
                 call mt.ApplyKeyToTeam(cp.DefaultColor)
 				call mt.ResetHealthForTeam()
                 
+				call mt.SetPathForTeam(cp.Path)
                 // call mt.UpdateMultiboard()
 				
 				if this.OnCheckpointChange != 0 then
