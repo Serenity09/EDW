@@ -1141,7 +1141,7 @@ library Levels requires SimpleList, Teams, GameModesGlobals, LevelIDGlobals, Cin
 			local Checkpoint startCP = this.GetCheckpoint(startCPID)
 			local rect endRect
 			
-			if endCPID > this.Checkpoints.count then
+			if endCPID >= this.Checkpoints.count then
 				set endRect = this.LevelEnd
 			else
 				set endRect = this.GetCheckpoint(endCPID).Gate
@@ -1200,7 +1200,6 @@ library Levels requires SimpleList, Teams, GameModesGlobals, LevelIDGlobals, Cin
 			set new.Checkpoints = SimpleList_List.create()
             //use the checkpoint schema for the first checkpoint. region enter event is handled separately, so use null for the region
             call new.AddCheckpoint(null, startspawn)
-			
             
 			set new.MaxCollisionSize = DEFAULT_MAX_COLLISION_SIZE
 			set new.OnLevelStart = 0
