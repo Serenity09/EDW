@@ -148,18 +148,13 @@ struct User extends array
 		static if DEBUG_CURRENT_CONNECTION then
 			if this.CurrentConnectionLine != null then
 				call DestroyLightning(this.CurrentConnectionLine)
+				set this.CurrentConnectionLine = null
 			endif
-			set this.CurrentConnectionLine = this.CurrentPathConnection.ConnectingLine.DrawEx(Draw_SPIRIT_LINK)
+			if this.CurrentPathConnection != 0 then
+				set this.CurrentConnectionLine = this.CurrentPathConnection.ConnectingLine.DrawEx(Draw_SPIRIT_LINK)
+			endif
 		endif
-	endmethod
-	public method GetDefaultConnection takes nothing returns LevelPathNodeConnection		
-		local vector2 curUserPosition = this.GetCurrentPosition()
-		local LevelPathNodeConnection bestConnection = this.Team.Path.GetBestConnection(curUserPosition)
-		
-		call curUserPosition.deallocate()
-		return bestConnection
-	endmethod
-	
+	endmethod	
 	
 	public method SetPath takes LevelPath path, LevelPathNodeConnection defaultConnection returns nothing
 		set this.FurthestPathDistance = 0.
@@ -175,9 +170,9 @@ struct User extends array
 		
 		local vector2 curProjectedPosition
 		
-		if this.IsUnpaused then
+		if this.IsUnpaused and this.CurrentPathConnection != 0 then
 			set curUserPosition = this.GetCurrentPosition()
-			set closestConnection = this.CurrentPathConnection.GetClosestConnection(curUserPosition)
+			set closestConnection = this.CurrentPathConnection.GetClosestConnection(this.Team.Path, curUserPosition)
 			
 			if this.CurrentPathConnection != closestConnection then
 				call this.SetConnection(closestConnection)
@@ -1542,11 +1537,7 @@ struct User extends array
 			elseif newGameMode == Teams_GAMEMODE_HIDDEN then
 				set .ActiveUnit = null
             endif
-			
-			// if .IsUnpaused then
-				// call .SetConnection(.GetDefaultConnection())
-			// endif
-			
+						
 			call .UpdateMultiboardPlayerIcon()
         endif
     endmethod

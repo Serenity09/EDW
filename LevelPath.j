@@ -95,20 +95,15 @@ library LevelPath requires PermanentAlloc, Vector2, LevelPathNode, SimpleList
 			call allConnections.destroy()
 		endmethod
 		
-		/*
-		public method GetBestConnection takes vector2 position, LevelPathNodeConnection guess, real closeEnough returns LevelPathNodeConnection
-			
-		endmethod
-		*/
-		
 		//this will lag when called on a complex level path graph
-		public method GetBestConnection takes vector2 position returns LevelPathNodeConnection
+		public method GetBestConnection takes vector2 position, LevelPathNodeConnection guess, real closeEnough returns LevelPathNodeConnection
+			//TODO implement lazy version of .GetConnections with filter built in. rip lambda :(
 			local SimpleList_List allConnections = this.GetConnections()
 			local SimpleList_ListNode curConnectionNode = allConnections.first
 			local real curConnectionDistance
 			
 			local LevelPathNodeConnection bestConnection = 0
-			local real leastConnectionDistance = 100000.
+			local real leastConnectionDistance = LevelPathNode_CONNECTION_MAX_DISTANCE_SQUARED
 			
 			loop
 			exitwhen curConnectionNode == 0
@@ -126,7 +121,7 @@ library LevelPath requires PermanentAlloc, Vector2, LevelPathNode, SimpleList
 			
 			return bestConnection
 		endmethod
-		
+				
 		//private method GetBranchesRecursive takes List<LevelPathNode> parentBranch, LevelPathNode curPathNode returns List<List<LevelPathNode>>
 		private method GetBranchesRecursive takes SimpleList_List parentBranch, LevelPathNode curPathNode returns SimpleList_List
 			//List<List<LevelPathNode>> branches

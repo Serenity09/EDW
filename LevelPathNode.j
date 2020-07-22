@@ -1,5 +1,10 @@
 library LevelPathNode requires PermanentAlloc, Vector2, Line, SimpleList
 	globals
+		public constant real CONNECTION_MAX_DISTANCE = 5. * TERRAIN_TILE_SIZE
+		public constant real CONNECTION_MAX_DISTANCE_SQUARED = CONNECTION_MAX_DISTANCE * CONNECTION_MAX_DISTANCE
+
+		public constant real CLOSE_ENOUGH = 1. * TERRAIN_TILE_SIZE
+		public constant real CLOSE_ENOUGH_SQUARED = CLOSE_ENOUGH * CLOSE_ENOUGH
 	endglobals
 	
 	struct LevelPathNodeConnection extends array
@@ -14,7 +19,7 @@ library LevelPathNode requires PermanentAlloc, Vector2, Line, SimpleList
 			return this.StartNode.CumulativeDistance + this.ConnectingLine.GetProjectedDistanceFromPoint(position)
 		endmethod
 		
-		public method GetClosestConnection takes vector2 position returns thistype
+		public method GetClosestConnection takes LevelPath path, vector2 position returns thistype
 			local real closestDistance = this.ConnectingLine.GetDistanceSquaredFromPoint(position)
 			local thistype closestConnection = this
 			
@@ -45,6 +50,9 @@ library LevelPathNode requires PermanentAlloc, Vector2, Line, SimpleList
 			endloop
 			
 			// call DisplayTextToPlayer(GetLocalPlayer(), 0, 0, "Closest distance was: " + R2S(closestDistance))
+			if closestDistance >= CONNECTION_MAX_DISTANCE_SQUARED then
+				set closestConnection = path.GetBestConnection(position, closestConnection, CLOSE_ENOUGH_SQUARED)
+			endif
 			
 			return closestConnection
 		endmethod
