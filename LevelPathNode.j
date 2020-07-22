@@ -15,7 +15,7 @@ library LevelPathNode requires PermanentAlloc, Vector2, Line, SimpleList
 		endmethod
 		
 		public method GetClosestConnection takes vector2 position returns thistype
-			local real closestDistance = this.ConnectingLine.GetDistanceFromPoint(position)
+			local real closestDistance = this.ConnectingLine.GetDistanceSquaredFromPoint(position)
 			local thistype closestConnection = this
 			
 			local SimpleList_ListNode curConnectionNode = this.NextNode.Connections.first
@@ -23,7 +23,7 @@ library LevelPathNode requires PermanentAlloc, Vector2, Line, SimpleList
 			
 			loop
 			exitwhen curConnectionNode == 0
-				set curConnectionDistance = thistype(curConnectionNode.value).ConnectingLine.GetDistanceFromPoint(position)
+				set curConnectionDistance = thistype(curConnectionNode.value).ConnectingLine.GetDistanceSquaredFromPoint(position)
 				
 				if curConnectionDistance < closestDistance then
 					set closestDistance = curConnectionDistance
@@ -35,7 +35,7 @@ library LevelPathNode requires PermanentAlloc, Vector2, Line, SimpleList
 			set curConnectionNode = this.StartNode.Connections.first
 			loop
 			exitwhen curConnectionNode == 0
-				set curConnectionDistance = thistype(curConnectionNode.value).ConnectingLine.GetDistanceFromPoint(position)
+				set curConnectionDistance = thistype(curConnectionNode.value).ConnectingLine.GetDistanceSquaredFromPoint(position)
 				
 				if curConnectionDistance < closestDistance then
 					set closestDistance = curConnectionDistance

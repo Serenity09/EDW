@@ -95,6 +95,13 @@ library LevelPath requires PermanentAlloc, Vector2, LevelPathNode, SimpleList
 			call allConnections.destroy()
 		endmethod
 		
+		/*
+		public method GetBestConnection takes vector2 position, LevelPathNodeConnection guess, real closeEnough returns LevelPathNodeConnection
+			
+		endmethod
+		*/
+		
+		//this will lag when called on a complex level path graph
 		public method GetBestConnection takes vector2 position returns LevelPathNodeConnection
 			local SimpleList_List allConnections = this.GetConnections()
 			local SimpleList_ListNode curConnectionNode = allConnections.first
@@ -105,7 +112,7 @@ library LevelPath requires PermanentAlloc, Vector2, LevelPathNode, SimpleList
 			
 			loop
 			exitwhen curConnectionNode == 0
-				set curConnectionDistance = LevelPathNodeConnection(curConnectionNode.value).ConnectingLine.GetDistanceFromPoint(position)
+				set curConnectionDistance = LevelPathNodeConnection(curConnectionNode.value).ConnectingLine.GetDistanceSquaredFromPoint(position)
 								
 				if curConnectionDistance < leastConnectionDistance then
 					set bestConnection = curConnectionNode.value

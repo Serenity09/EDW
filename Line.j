@@ -35,7 +35,7 @@ library Line requires Alloc, Vector2
 			return percent
 		endmethod
 		
-		public method GetDistanceFromPoint takes vector2 point returns real
+		public method GetDistanceSquaredFromPoint takes vector2 point returns real
 			// local vector2 ps = vector2.create(point.x - this.Start.x, point.y - this.Start.y)
 			local vector2 pe = vector2.create(point.x - this.End.x, point.y - this.End.y)
 			local real c = vector2.dotProduct(this.Segment, pe)
@@ -45,17 +45,17 @@ library Line requires Alloc, Vector2
 			
 			local real distance = -1
 			
-			if c > 0 then				
-				set distance = SquareRoot(vector2.dotProduct(pe, pe))
+			if c > 0 then
+				set distance = vector2.dotProduct(pe, pe)
 			else
 				set sp = vector2.create(this.Start.x - point.x, this.Start.y - point.y)
 				// set ep = vector2.create(this.End.x - point.x, this.End.y - point.y)
 				
 				if vector2.dotProduct(this.Segment, sp) > 0 then
-					set distance = SquareRoot(vector2.dotProduct(sp, sp))
+					set distance = vector2.dotProduct(sp, sp)
 				else
 					set d = vector2.create(pe.x - c / this.MagnitudeSquared * this.Segment.x, pe.y - c / this.MagnitudeSquared * this.Segment.y)
-					set distance = SquareRoot(vector2.dotProduct(d, d))
+					set distance = vector2.dotProduct(d, d)
 					
 					call d.deallocate()
 				endif
@@ -67,7 +67,10 @@ library Line requires Alloc, Vector2
 			
 			return distance
 		endmethod
-		
+		public method GetDistanceFromPoint takes vector2 point returns real
+			return SquareRoot(this.GetDistanceFromPoint(point))
+		endmethod
+				
 		public method DrawEx takes string fx returns lightning
 			return Draw_DrawVectorLineEx(this.Start, this.End, 0., fx, false)
 		endmethod
