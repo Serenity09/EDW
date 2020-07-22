@@ -42,6 +42,17 @@ library Levels requires SimpleList, Teams, GameModesGlobals, LevelIDGlobals, Cin
 		public boolean RequiresSameGameMode
 		
 		public LevelPath Path
+		public method operator DefaultConnection takes nothing returns LevelPathNodeConnection
+			local LevelPathNodeConnection defaultConnection
+			
+			if this.Path != 0 then
+				set defaultConnection = this.Path.Start.Connections.first.value
+			else
+				set defaultConnection = 0
+			endif
+			
+			return defaultConnection
+		endmethod
         
 		public static method create takes rect gate, rect center returns thistype
 			local thistype new = c + 1
@@ -404,7 +415,7 @@ library Levels requires SimpleList, Teams, GameModesGlobals, LevelIDGlobals, Cin
                 call mt.ApplyKeyToTeam(cp.DefaultColor)
 				call mt.ResetHealthForTeam()
                 
-				call mt.SetPathForTeam(cp.Path)
+				call mt.SetPathForTeam(cp)
                 // call mt.UpdateMultiboard()
 				
 				if this.OnCheckpointChange != 0 then

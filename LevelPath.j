@@ -48,21 +48,7 @@ library LevelPath requires PermanentAlloc, Vector2, LevelPathNode, SimpleList
 					call connections.addEndRange(curPathNode.Connections)
 					
 					loop
-					exitwhen curConnectionNode == 0
-						// set childConnections = GetConnectionsRecursive(visited, LevelPathNodeConnection(curConnectionNode.value).NextNode)
-						// set curChildConnectionNode = childConnections.first
-						
-						// loop
-						// exitwhen curChildConnectionNode == 0
-							// if not connections.contains(curChildConnectionNode.value) then
-								// call connections.addEnd(curChildConnectionNode.value)
-							// endif
-							
-						// set curChildConnectionNode = curChildConnectionNode.next
-						// endloop
-						
-						// call childConnections.destroy()
-						
+					exitwhen curConnectionNode == 0						
 						set childConnections = GetConnectionsRecursive(visited, LevelPathNodeConnection(curConnectionNode.value).NextNode)
 						set curChildConnectionNode = childConnections.first
 						
@@ -120,20 +106,14 @@ library LevelPath requires PermanentAlloc, Vector2, LevelPathNode, SimpleList
 			loop
 			exitwhen curConnectionNode == 0
 				set curConnectionDistance = LevelPathNodeConnection(curConnectionNode.value).ConnectingLine.GetDistanceFromPoint(position)
-				
-				// call DisplayTextToPlayer(GetLocalPlayer(), 0, 0, "Current connection: " + I2S(curConnectionNode.value))
-				// call DisplayTextToPlayer(GetLocalPlayer(), 0, 0, "Current distance: " + R2S(curConnectionDistance))
-				
+								
 				if curConnectionDistance < leastConnectionDistance then
 					set bestConnection = curConnectionNode.value
 					set leastConnectionDistance = curConnectionDistance
 				endif
 			set curConnectionNode = curConnectionNode.next
 			endloop
-			
-			// call DisplayTextToPlayer(GetLocalPlayer(), 0, 0, "Best connection: " + I2S(bestConnection))
-			// call DisplayTextToPlayer(GetLocalPlayer(), 0, 0, "Best distance: " + R2S(leastConnectionDistance))
-			
+						
 			//clean-up
 			call allConnections.destroy()
 			

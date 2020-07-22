@@ -62,8 +62,8 @@ public struct MazingTeam extends array
     // public real LastTransferTime
 	// public boolean IsRemainingTeamAFK
     public Levels_Level OnLevel
+	public integer OnCheckpoint //Used purely in conjunction with levels struct. ==0 refers to the initial CP for a level
     public string TeamName // TODO allow custom player defined team names
-    public integer OnCheckpoint //Used purely in conjunction with levels struct. ==0 refers to the initial CP for a level
 	readonly LevelPath Path
     private integer Score
     public real Weight
@@ -244,6 +244,8 @@ public struct MazingTeam extends array
                 //call DisplayTextToForce(bj_FORCE_PLAYER[0], "cur " + I2S(fp) + ", next " + I2S(fp.next))
                 
                 call u.RespawnAtRect(newlocation, moveliving)
+				
+				call u.SetConnection(this.OnLevel.GetCheckpoint(this.OnCheckpoint).DefaultConnection)
             set fp = fp.next
             endloop
             
@@ -1353,22 +1355,22 @@ public struct MazingTeam extends array
 		endloop
 	endmethod
 	
-	public method SetPathForTeam takes LevelPath path returns nothing
+	public method SetPathForTeam takes Checkpoint checkpoint returns nothing
 		local SimpleList_ListNode curUserNode = this.FirstUser
 		
 		static if LevelPath_DEBUG_FINALIZE then
-			if path != 0 and not path.Finalized then
+			if checkpoint.Path != 0 and not checkpoint.Path.Finalized then
 				call DisplayTextToPlayer(GetLocalPlayer(), 0, 0, "Warning! Setting Team's path to a non-finalized Path! Expect lots of vector2 leaks")
-				call DisplayTextToPlayer(GetLocalPlayer(), 0, 0, "Path ID: " + I2S(path) + ", set for team: " + I2S(this))
+				call DisplayTextToPlayer(GetLocalPlayer(), 0, 0, "Path ID: " + I2S(checkpoint.Path) + ", set for team: " + I2S(this))
 			endif
 		endif
 		
-		if this.Path != path then
-			set this.Path = path
-		
+		if this.Path != checkpoint.Path then
+			set this.Path = checkpoint.Path			
+			
 			loop
 			exitwhen curUserNode == 0
-				call User(curUserNode.value).SetPath(path)
+				call User(curUserNode.value).SetPath(checkpoint.Path, checkpoint.DefaultConnection)
 				
 			set curUserNode = curUserNode.next
 			endloop

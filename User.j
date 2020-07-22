@@ -159,11 +159,13 @@ struct User extends array
 		call curUserPosition.deallocate()
 		return bestConnection
 	endmethod
-	public method SetPath takes LevelPath path returns nothing
+	
+	
+	public method SetPath takes LevelPath path, LevelPathNodeConnection defaultConnection returns nothing
 		set this.FurthestPathDistance = 0.
-		set this.FurthestPathConnection = this.CurrentPathConnection
+		set this.FurthestPathConnection = 0
 		
-		call this.SetConnection(this.GetDefaultConnection())
+		call this.SetConnection(defaultConnection)
 	endmethod
 	public method CheckPath takes LevelPath path returns nothing
 		local vector2 curUserPosition
@@ -1541,9 +1543,9 @@ struct User extends array
 				set .ActiveUnit = null
             endif
 			
-			if .IsUnpaused then
-				call .SetConnection(.GetDefaultConnection())
-			endif
+			// if .IsUnpaused then
+				// call .SetConnection(.GetDefaultConnection())
+			// endif
 			
 			call .UpdateMultiboardPlayerIcon()
         endif
