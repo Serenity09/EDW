@@ -48,7 +48,7 @@
 
 		  <div class="row">		  
 			<label for="RectFromVal">Rect from value</label>
-			<input id="RectFromVal" type="number" value="1">
+			<input id="RectFromVal" type="number" value=1>
 		  </div>
 		  <div class="row">		  
 			<label for="RectToVal">Rect to value</label>
@@ -62,6 +62,10 @@
 		  <div class="row">
 			<label for="IncludeEnd">Include End</label>
 			<input id="IncludeEnd" type="checkbox">
+		  </div>
+		  <div class="row">
+			<label for="Invert">Invert</label>
+			<input id="Invert" type="checkbox">
 		  </div>
 		  
 
@@ -115,6 +119,7 @@
 
 				const includeStartNode = query("#IncludeStart")[0];
 				const includeEndNode = query("#IncludeEnd")[0];
+				const invertNode = query("#Invert")[0];
 
 				const jassTemplate = query("#JASSTemplate")[0];
 				const jassTemplate_Start = query("#JASSTemplate_Start")[0];
@@ -146,27 +151,50 @@
 					var pathVar1Val = pathVar1Node.value;
 					var pathVar2Val = pathVar2Node.value;
 					var rectRootVal = rectRootNode.value;
-					var rectFromVal = rectFromNode.value;
+					var rectFromVal = parseInt(rectFromNode.value);
 					var rectToVal = Math.max(rectToNode.value, rectFromVal);
 
 					var includeStartVal = includeStartNode.checked;
 					var includeEndVal = includeEndNode.checked;
+					var invertVal = invertNode.checked;
 
 					var output = "";
+
+
+					var from;
+					var to;
+					var onIterate;
+					var exitCondition;
+
+					if (invertVal) {
+						from = rectToVal;
+						to = rectFromVal;
+						onIterate = function(cur) { return cur - 1; };
+						exitCondition = function(cur, to) { return cur >= to };
+					}
+					else {
+						from = rectFromVal;
+						to = rectToVal;
+						onIterate = function(cur) { return cur + 1; };
+						exitCondition = function(cur, to) { return cur <= to };
+					}
 
 					if (includeStartVal) {
 						var templatedJASS = ApplyTemplate(jassTemplate_Start.innerText, {
 							PATH_START: [path, start].join("."),
 							PATH_VAR_START: pathVar1Val,
 							VAR_ROOT_NAME: rectRootVal,
-							VAR_VALUE: rectFromVal
+							VAR_VALUE: from
 						});
 
-						rectFromVal++;
+						from = onIterate(from);
+
 						output += templatedJASS;
 					}
 
-					for (var i = rectFromVal; i <= rectToVal; i++) {
+					var foo = exitCondition(from, to);
+
+					for (var i = from; exitCondition(i, to); i = onIterate(i)) {
 						var templatedJASS = ApplyTemplate(jassTemplate.innerText, {
 							PATH_VAR_START: pathVar1Val,
 							PATH_VAR_END: pathVar2Val,
