@@ -26,13 +26,35 @@ library LevelPathNode requires PermanentAlloc, Vector2, Line, SimpleList
 			local SimpleList_ListNode curConnectionNode = this.NextNode.Connections.first
 			local real curConnectionDistance
 			
+			local SimpleList_List checked = SimpleList_List.create()
+			
 			loop
 			exitwhen curConnectionNode == 0
-				set curConnectionDistance = thistype(curConnectionNode.value).ConnectingLine.GetDistanceSquaredFromPoint(position)
-				
-				if curConnectionDistance < closestDistance then
-					set closestDistance = curConnectionDistance
-					set closestConnection = curConnectionNode.value
+				if not checked.contains(curConnectionNode.value) then
+					call checked.addEnd(curConnectionNode.value)
+					
+					set curConnectionDistance = thistype(curConnectionNode.value).ConnectingLine.GetDistanceSquaredFromPoint(position)
+					
+					if curConnectionDistance < closestDistance then
+						set closestDistance = curConnectionDistance
+						set closestConnection = curConnectionNode.value
+					endif
+				endif
+			set curConnectionNode = curConnectionNode.next
+			endloop
+			
+			set curConnectionNode = this.NextNode.PreviousConnections.first
+			loop
+			exitwhen curConnectionNode == 0
+				if not checked.contains(curConnectionNode.value) then
+					call checked.addEnd(curConnectionNode.value)
+					
+					set curConnectionDistance = thistype(curConnectionNode.value).ConnectingLine.GetDistanceSquaredFromPoint(position)
+					
+					if curConnectionDistance < closestDistance then
+						set closestDistance = curConnectionDistance
+						set closestConnection = curConnectionNode.value
+					endif
 				endif
 			set curConnectionNode = curConnectionNode.next
 			endloop
@@ -40,19 +62,41 @@ library LevelPathNode requires PermanentAlloc, Vector2, Line, SimpleList
 			set curConnectionNode = this.StartNode.Connections.first
 			loop
 			exitwhen curConnectionNode == 0
-				set curConnectionDistance = thistype(curConnectionNode.value).ConnectingLine.GetDistanceSquaredFromPoint(position)
-				
-				if curConnectionDistance < closestDistance then
-					set closestDistance = curConnectionDistance
-					set closestConnection = curConnectionNode.value
+				if not checked.contains(curConnectionNode.value) then
+					call checked.addEnd(curConnectionNode.value)
+					
+					set curConnectionDistance = thistype(curConnectionNode.value).ConnectingLine.GetDistanceSquaredFromPoint(position)
+					
+					if curConnectionDistance < closestDistance then
+						set closestDistance = curConnectionDistance
+						set closestConnection = curConnectionNode.value
+					endif
 				endif
 			set curConnectionNode = curConnectionNode.next
 			endloop
 			
+			set curConnectionNode = this.StartNode.PreviousConnections.first
+			loop
+			exitwhen curConnectionNode == 0
+				if not checked.contains(curConnectionNode.value) then
+					call checked.addEnd(curConnectionNode.value)
+					
+					set curConnectionDistance = thistype(curConnectionNode.value).ConnectingLine.GetDistanceSquaredFromPoint(position)
+					
+					if curConnectionDistance < closestDistance then
+						set closestDistance = curConnectionDistance
+						set closestConnection = curConnectionNode.value
+					endif
+				endif
+			set curConnectionNode = curConnectionNode.next
+			endloop
+						
 			// call DisplayTextToPlayer(GetLocalPlayer(), 0, 0, "Closest distance was: " + R2S(closestDistance))
 			if closestDistance >= CONNECTION_MAX_DISTANCE_SQUARED then
 				set closestConnection = path.GetBestConnection(position, closestConnection, CLOSE_ENOUGH_SQUARED)
 			endif
+			
+			call checked.destroy()
 			
 			return closestConnection
 		endmethod
@@ -74,6 +118,8 @@ library LevelPathNode requires PermanentAlloc, Vector2, Line, SimpleList
 		public real ParTime
 		
 		public SimpleList_List Connections
+		public SimpleList_List PreviousConnections
+		
 		public real CumulativeDistance
 		
 		public integer DelimiterTerrainID //needed?
@@ -85,7 +131,7 @@ library LevelPathNode requires PermanentAlloc, Vector2, Line, SimpleList
 			local LevelPathNodeConnection connection = LevelPathNodeConnection.create(this, nextNode)
 			
 			call this.Connections.addEnd(connection)
-			call nextNode.Connections.add(connection)
+			call nextNode.PreviousConnections.addEnd(connection)
 		endmethod
 		public method GetConnection takes LevelPathNode nextNode returns LevelPathNodeConnection
 			local SimpleList_ListNode curConnectionNode = this.Connections.first
@@ -113,6 +159,7 @@ library LevelPathNode requires PermanentAlloc, Vector2, Line, SimpleList
 			set new.Position = position
 			
 			set new.Connections = SimpleList_List.create()
+			set new.PreviousConnections = SimpleList_List.create()
 			set new.ParTime = -1.
 			set new.CumulativeDistance = -1.
 			
