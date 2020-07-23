@@ -1,8 +1,7 @@
 library EDWLevelPaths requires LevelIDGlobals, EDWLevels, SimpleList, Teams, Levels, LevelPath
-	//! textmacro LINEAR_PATH_SERIES takes PATH_VAR_START, PATH_VAR_END, VAR_ROOT_NAME, VAR_FROM_VAL, VAR_TO_VAL
-		set $PATH_VAR_END$ = LevelPathNode.createFromRect($VAR_ROOT_NAME$
-		call $PATH_VAR_START$.AddNextNode($PATH_VAR_END$)
-	//! endtextmacro
+	globals
+		private constant boolean FINALIZE_PATHS = false
+	endglobals
 	
 	public function Initialize takes nothing returns nothing
 		local Levels_Level l
@@ -64,7 +63,9 @@ library EDWLevelPaths requires LevelIDGlobals, EDWLevels, SimpleList, Teams, Lev
 
 		call pathNodeC.AddNextNode(path.End)
 		
-		call path.Finalize()
+		static if FINALIZE_PATHS then
+			call path.Finalize()
+		endif
 		
 		//Checkpoint 1
 		set path = l.GetCheckpoint(1).Path
@@ -144,7 +145,9 @@ library EDWLevelPaths requires LevelIDGlobals, EDWLevels, SimpleList, Teams, Lev
 		
 		call pathNodeA.AddNextNode(path.End)
 		
-		call path.Finalize()
+		static if FINALIZE_PATHS then
+			call path.Finalize()
+		endif
         
         //LEVEL 2
         set l = Levels_Level(IW2_LEVEL_ID)
@@ -204,7 +207,10 @@ library EDWLevelPaths requires LevelIDGlobals, EDWLevels, SimpleList, Teams, Lev
 		set pathNodeStart = pathNodeEnd
 
 		call pathNodeStart.AddNextNode(path.End)
-		call path.Finalize()
+		
+		static if FINALIZE_PATHS then
+			call path.Finalize()
+		endif
 		
 		//Checkpoint 1
 		set path = l.GetCheckpoint(1).Path
@@ -336,7 +342,9 @@ library EDWLevelPaths requires LevelIDGlobals, EDWLevels, SimpleList, Teams, Lev
 
 		call pathNodeStart.AddNextNode(path.End)
 		
-		call path.Finalize()
+		static if FINALIZE_PATHS then
+			call path.Finalize()
+		endif
 		
 		//checkpoint 2
 		set path = l.GetCheckpoint(2).Path
@@ -547,6 +555,10 @@ library EDWLevelPaths requires LevelIDGlobals, EDWLevels, SimpleList, Teams, Lev
 		set pathNodeStart = pathNodeEnd
 
 		call pathNodeStart.AddNextNode(path.End)
+		
+		static if FINALIZE_PATHS then
+			call path.Finalize()
+		endif
 		call path.Finalize()
         
         //LEVEL 3

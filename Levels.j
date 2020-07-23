@@ -1158,6 +1158,8 @@ library Levels requires SimpleList, Teams, GameModesGlobals, LevelIDGlobals, Cin
 				set endRect = this.GetCheckpoint(endCPID).Gate
 			endif
 			
+			// call DisplayTextToPlayer(GetLocalPlayer(), 0, 0, "Initializing default path for level: " + I2S(this) + ", cp: " + I2S(startCP))
+			
 			set startCP.Path = LevelPath.createFromRect(startCP.ReviveCenter, endRect)
 			return startCP.Path
 		endmethod
@@ -1169,7 +1171,7 @@ library Levels requires SimpleList, Teams, GameModesGlobals, LevelIDGlobals, Cin
 			local rect pathEnd
 			
 			loop
-			exitwhen cpID > this.Checkpoints.count
+			exitwhen cpID >= this.Checkpoints.count
 				call this.InitializeLevelPath(cpID, cpID + 1)
 			set cpID = cpID + 1
 			endloop

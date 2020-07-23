@@ -1,6 +1,7 @@
 library LevelPath requires PermanentAlloc, Vector2, LevelPathNode, SimpleList
 	globals
-		public constant boolean DEBUG_FINALIZE = true
+		private constant boolean DEBUG_FINALIZE = true
+		private constant boolean DEBUG_FINALIZE_DETAILED = true
 	endglobals
 	
 	struct LevelPath extends array
@@ -198,6 +199,16 @@ library LevelPath requires PermanentAlloc, Vector2, LevelPathNode, SimpleList
 			call DisplayTextToPlayer(GetLocalPlayer(), 0, 0, "Total Distance: " + R2S(this.TotalDistance))
 		endmethod
 		
+		static if DEBUG_FINALIZE then
+			private static method FinalizeFailedCB takes nothing returns nothing
+				local timer t = GetExpiredTimer()
+				
+				call DisplayTextToPlayer(GetLocalPlayer(), 0, 0, "Finalize failed to complete for path: " + I2S(GetTimerData(t)))
+				
+				call ReleaseTimer(t)
+			endmethod
+		endif
+		
 		public method Finalize takes nothing returns nothing
 			local SimpleList_List branches
 			local SimpleList_ListNode curBranch
@@ -206,6 +217,9 @@ library LevelPath requires PermanentAlloc, Vector2, LevelPathNode, SimpleList
 			local real curBranchDistance
 			
 			static if DEBUG_FINALIZE then
+				local timer FinalizeFailTimer = NewTimerEx(this)
+				call TimerStart(FinalizeFailTimer, 0., false, function thistype.FinalizeFailedCB)
+				
 				if this.Finalized then
 					call DisplayTextToPlayer(GetLocalPlayer(), 0, 0, "Warning! Calling LevelPath.Finalize on an already finalized Path!")
 					call DisplayTextToPlayer(GetLocalPlayer(), 0, 0, "Path ID: " + I2S(this))
@@ -213,12 +227,19 @@ library LevelPath requires PermanentAlloc, Vector2, LevelPathNode, SimpleList
 					set this.Finalized = true
 				endif
 			endif
+			static if DEBUG_FINALIZE_DETAILED then
+				call DisplayTextToPlayer(GetLocalPlayer(), 0, 0, "Finalization started for path: " + I2S(this))
+			endif
 			
 			if this.Start.Connections.count == 0 then
 				call this.Start.AddNextNode(this.End)
 			endif
 			
 			set branches = this.GetBranches()
+			
+			static if DEBUG_FINALIZE_DETAILED then
+				call DisplayTextToPlayer(GetLocalPlayer(), 0, 0, "Got branches")
+			endif
 			
 			set curBranch = branches.first
 			loop
@@ -263,6 +284,10 @@ library LevelPath requires PermanentAlloc, Vector2, LevelPathNode, SimpleList
 			set curBranch = curBranch.next
 			endloop
 			
+			static if DEBUG_FINALIZE_DETAILED then
+				call DisplayTextToPlayer(GetLocalPlayer(), 0, 0, "Initialized distances")
+			endif
+			
 			//clean-up
 			set curBranch = branches.first
 			loop
@@ -271,6 +296,10 @@ library LevelPath requires PermanentAlloc, Vector2, LevelPathNode, SimpleList
 			set curBranch = curBranch.next
 			endloop
 			call branches.destroy()
+			
+			static if DEBUG_FINALIZE then
+				call ReleaseTimer(FinalizeFailTimer)
+			endif
 		endmethod
 						
 		//
