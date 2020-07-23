@@ -3372,7 +3372,7 @@ endglobals
 				// call User(.PID).ApplyDefaultCameras(.75)
 				
 				call ShowUnit(.Unit, false)
-				//call SetUnitPosition(.Unit, PlatformerGlobals_SAFE_X, PlatformerGlobals_SAFE_Y)
+				//call SetUnitPosition(.Unit, SAFE_X, SAFE_Y)
 				
 				static if DEBUG_CAMERA then
 					if GetLocalPlayer() == Player(0) then
@@ -3879,7 +3879,7 @@ endglobals
             set new.TVYEquation = PlatformerPropertyEquation.create()
 			set new.vJumpSpeedEquation = PlatformerPropertyEquation.create()
             
-            set new.Unit = CreateUnit(Player(pID), PLATFORMERWISP, PlatformerGlobals_SAFE_X, PlatformerGlobals_SAFE_Y, 0)
+            set new.Unit = CreateUnit(Player(pID), PLATFORMERWISP, SAFE_X, SAFE_Y, 0)
             call UnitAddAbility(new.Unit, 'Aloc')
             call ShowUnit(new.Unit, false)
 			call UnitRemoveAbility(new.Unit, 'Aloc')

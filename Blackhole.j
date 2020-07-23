@@ -152,9 +152,9 @@ library Blackhole requires ListModule, SimpleList, User, locust, MazerGlobals, I
 							static if DEBUG then
 								call DisplayTextToForce(bj_FORCE_PLAYER[0], "Blackhole absorbed revive circle")
 							endif
-							//call SetUnitX(nearbyUser.ActiveUnit, MazerGlobals_SAFE_X)
-							//call SetUnitY(nearbyUser.ActiveUnit, MazerGlobals_SAFE_Y)
-							call SetUnitPosition(nearbyUser.ActiveUnit, MazerGlobals_SAFE_X, MazerGlobals_SAFE_Y)
+							//call SetUnitX(nearbyUser.ActiveUnit, SAFE_X)
+							//call SetUnitY(nearbyUser.ActiveUnit, SAFE_Y)
+							call SetUnitPosition(nearbyUser.ActiveUnit, SAFE_X, SAFE_Y)
 							call ShowUnit(nearbyUser.ActiveUnit, false)
 						endif
 					elseif dist >= BLACKHOLE_MAXRADIUS then

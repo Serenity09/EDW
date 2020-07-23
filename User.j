@@ -1380,7 +1380,7 @@ struct User extends array
 				endif
 								
 				//moves the mazing unit
-                call SetUnitPosition(MazersArray[this], MazerGlobals_SAFE_X, MazerGlobals_SAFE_Y)
+                call SetUnitPosition(MazersArray[this], SAFE_X, SAFE_Y)
                 //removes the reg unit from the reg game loop. thereby enabling regular terrain effects
 				call StandardMazingUsers.remove(this)
                 
@@ -1402,13 +1402,13 @@ struct User extends array
                 //if the new gamemode isnt to unpause the unit then we need to undo the pause effect
                 if newGameMode != Teams_GAMEMODE_STANDARD then					
 					call ShowUnit(MazersArray[this], false)
-					call SetUnitPosition(MazersArray[this], MazerGlobals_SAFE_X, MazerGlobals_SAFE_Y)
+					call SetUnitPosition(MazersArray[this], SAFE_X, SAFE_Y)
                 endif
             elseif curGameMode == Teams_GAMEMODE_PLATFORMING_PAUSED then
                 //if the new gamemode isnt to unpause the unit then we need to undo the pause effect
                 if newGameMode != Teams_GAMEMODE_PLATFORMING then
                     call ShowUnit(.Platformer.Unit, false)
-					call SetUnitPosition(.Platformer.Unit, PlatformerGlobals_SAFE_X, PlatformerGlobals_SAFE_Y)
+					call SetUnitPosition(.Platformer.Unit, SAFE_X, SAFE_Y)
                 endif
             elseif curGameMode == Teams_GAMEMODE_DYING then
 				//no actions removing dying gamemode
@@ -1422,7 +1422,7 @@ struct User extends array
                 
                 //move the respawn circle
                 call ShowUnit(PlayerReviveCircles[this], false)
-				call SetUnitPosition(PlayerReviveCircles[this], MazerGlobals_REVIVE_CIRCLE_SAFE_X, MazerGlobals_REVIVE_CIRCLE_SAFE_Y)
+				call SetUnitPosition(PlayerReviveCircles[this], REVIVE_CIRCLE_SAFE_X, REVIVE_CIRCLE_SAFE_Y)
             endif
             
             //set the new game mode
@@ -2060,7 +2060,7 @@ struct User extends array
 		
 		static if DEBUG_CURRENT_CONNECTION then
 			set new.CurrentConnectionLine = null
-			set new.CurrentConnectionProjection = Draw_DrawPoint(new, 0, 0)
+			set new.CurrentConnectionProjection = Draw_DrawPoint(new, DEBUG_X, DEBUG_Y)
 		endif
 		
         return new

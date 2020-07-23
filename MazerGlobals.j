@@ -1,4 +1,4 @@
-library MazerGlobals initializer Init requires GameGlobalConstants, ContinueGlobals, PlayerUtils, SimpleList
+library MazerGlobals initializer Init requires GameGlobalConstants, LocationGlobals, ContinueGlobals, PlayerUtils, SimpleList
     globals
         //group of the playing mazers
 		SimpleList_List StandardMazingUsers
@@ -38,14 +38,7 @@ library MazerGlobals initializer Init requires GameGlobalConstants, ContinueGlob
 		       
         //number of regular mazers
         integer NumberMazing = 0
-        
-        
-        public constant real SAFE_X    = -12050.0 //x where to store the .Unit when not in use
-        public constant real SAFE_Y    = 12050.0 //y where to store the .Unit when not in use
-        
-        public constant real REVIVE_CIRCLE_SAFE_X  = -15755
-        public constant real REVIVE_CIRCLE_SAFE_Y  = 15505
-		
+        		
 		private constant boolean FORCE_DEBUG_TELE = false
 		private constant integer DEBUG_TELE_ITEM_ID = 'I001'
     endglobals
