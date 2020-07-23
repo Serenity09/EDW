@@ -1,6 +1,6 @@
 library EDWLevelPaths requires LevelIDGlobals, EDWLevels, SimpleList, Teams, Levels, LevelPath
 	globals
-		private constant boolean FINALIZE_PATHS = false
+		private constant boolean FINALIZE_PATHS = true
 	endglobals
 	
 	public function Initialize takes nothing returns nothing
@@ -11,6 +11,15 @@ library EDWLevelPaths requires LevelIDGlobals, EDWLevels, SimpleList, Teams, Lev
 		local LevelPathNode pathNodeA
 		local LevelPathNode pathNodeB
 		local LevelPathNode pathNodeC
+		
+		local LevelPathNode pathNodeA1
+		local LevelPathNode pathNodeA2
+		
+		local LevelPathNode pathNodeB1
+		local LevelPathNode pathNodeB2
+		
+		local LevelPathNode pathNodeC1
+		local LevelPathNode pathNodeC2
 		
 		local LevelPathNode pathNodeStart
 		local LevelPathNode pathNodeEnd
@@ -351,7 +360,7 @@ library EDWLevelPaths requires LevelIDGlobals, EDWLevels, SimpleList, Teams, Lev
 		
 		set pathNodeStart = LevelPathNode.createFromRect(gg_rct_Region_619)
 		call path.Start.AddNextNode(pathNodeStart)
-		set pathNodeB = pathNodeStart
+		set pathNodeA1 = pathNodeStart
 		
 		//alt route
 		set pathNodeA = LevelPathNode.createFromRect(gg_rct_Region_667)
@@ -365,13 +374,12 @@ library EDWLevelPaths requires LevelIDGlobals, EDWLevels, SimpleList, Teams, Lev
 		set pathNodeEnd = LevelPathNode.createFromRect(gg_rct_Region_621)
 		call pathNodeStart.AddNextNode(pathNodeEnd)
 		set pathNodeStart = pathNodeEnd
-		set pathNodeC = pathNodeStart
+		set pathNodeB1 = pathNodeStart
 
 		set pathNodeEnd = LevelPathNode.createFromRect(gg_rct_Region_622)
 		call pathNodeStart.AddNextNode(pathNodeEnd)
 		set pathNodeStart = pathNodeEnd
-		//shortcut
-		call pathNodeB.AddNextNode(pathNodeStart)
+		set pathNodeA2 = pathNodeStart
 
 		set pathNodeEnd = LevelPathNode.createFromRect(gg_rct_Region_623)
 		call pathNodeStart.AddNextNode(pathNodeEnd)
@@ -380,8 +388,7 @@ library EDWLevelPaths requires LevelIDGlobals, EDWLevels, SimpleList, Teams, Lev
 		set pathNodeEnd = LevelPathNode.createFromRect(gg_rct_Region_624)
 		call pathNodeStart.AddNextNode(pathNodeEnd)
 		set pathNodeStart = pathNodeEnd
-		//shortcut
-		call pathNodeC.AddNextNode(pathNodeStart)
+		set pathNodeB2 = pathNodeStart
 
 		set pathNodeEnd = LevelPathNode.createFromRect(gg_rct_Region_625)
 		call pathNodeStart.AddNextNode(pathNodeEnd)
@@ -530,7 +537,7 @@ library EDWLevelPaths requires LevelIDGlobals, EDWLevels, SimpleList, Teams, Lev
 		set pathNodeEnd = LevelPathNode.createFromRect(gg_rct_Region_661)
 		call pathNodeStart.AddNextNode(pathNodeEnd)
 		set pathNodeStart = pathNodeEnd
-		set pathNodeA = pathNodeStart
+		set pathNodeC1 = pathNodeStart
 
 		set pathNodeEnd = LevelPathNode.createFromRect(gg_rct_Region_662)
 		call pathNodeStart.AddNextNode(pathNodeEnd)
@@ -543,8 +550,7 @@ library EDWLevelPaths requires LevelIDGlobals, EDWLevels, SimpleList, Teams, Lev
 		set pathNodeEnd = LevelPathNode.createFromRect(gg_rct_Region_664)
 		call pathNodeStart.AddNextNode(pathNodeEnd)
 		set pathNodeStart = pathNodeEnd
-		//shortcut
-		call pathNodeA.AddNextNode(pathNodeStart)
+		set pathNodeC2 = pathNodeStart
 
 		set pathNodeEnd = LevelPathNode.createFromRect(gg_rct_Region_665)
 		call pathNodeStart.AddNextNode(pathNodeEnd)
@@ -559,7 +565,12 @@ library EDWLevelPaths requires LevelIDGlobals, EDWLevels, SimpleList, Teams, Lev
 		static if FINALIZE_PATHS then
 			call path.Finalize()
 		endif
-		call path.Finalize()
+		
+		//add shortcuts after finalization
+		//this path cant take the branches without significant optimization effort on branch representation and centralization, particularly around bottlenecks and linear segments
+		call pathNodeA1.AddNextNode(pathNodeA2)
+		call pathNodeB1.AddNextNode(pathNodeB2)
+		call pathNodeC1.AddNextNode(pathNodeC2)
         
         //LEVEL 3
         set l = Levels_Level(IW3_LEVEL_ID)
