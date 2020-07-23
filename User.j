@@ -41,6 +41,7 @@ globals
 	private constant real AFK_CAMERA_DEBUG_TIMEOUT = AFK_CAMERA_MIN_TIMEOUT
 	
 	private constant boolean DEBUG_CURRENT_CONNECTION = true
+	private constant boolean DEBUG_CURRENT_DISTANCE = true
 endglobals
 
 struct User extends array
@@ -184,10 +185,16 @@ struct User extends array
 			
 			set closestConnectionTotalDistance = closestConnection.GetTotalDistanceFromPoint(curUserPosition)
 			if closestConnectionTotalDistance > this.FurthestPathDistance then
-				// call DisplayTextToPlayer(GetLocalPlayer(), 0, 0, "Furthest distance reached: " + R2S(closestConnectionTotalDistance))
+				static if DEBUG_CURRENT_DISTANCE then
+					call DisplayTextToPlayer(GetLocalPlayer(), 0, 0, "Furthest distance reached: " + R2S(closestConnectionTotalDistance))
+				endif
 				
 				set this.FurthestPathDistance = closestConnectionTotalDistance
 				set this.FurthestPathConnection = closestConnection
+			endif
+			
+			static if DEBUG_CURRENT_DISTANCE then
+				call DisplayTextToPlayer(GetLocalPlayer(), 0, 0, "Current distance: " + R2S(closestConnectionTotalDistance))
 			endif
 			
 			static if DEBUG_CURRENT_CONNECTION then
