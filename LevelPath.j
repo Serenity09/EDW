@@ -1,9 +1,10 @@
 library LevelPath requires PermanentAlloc, Vector2, LevelPathNode, SimpleList
 	globals
 		private constant boolean DEBUG_FINALIZE = true
-		private constant boolean DEBUG_FINALIZE_DETAILED = true
+		private constant boolean DEBUG_FINALIZE_DETAILED = false
 	endglobals
 	
+	private function interface IFinalizeCB takes LevelPath path returns nothing
 	struct LevelPath extends array
 		public LevelPathNode Start
 		public LevelPathNode End
@@ -11,7 +12,7 @@ library LevelPath requires PermanentAlloc, Vector2, LevelPathNode, SimpleList
 		static if DEBUG_FINALIZE then
 			public boolean Finalized
 		endif
-			
+		
 		implement PermanentAlloc
 		
 		public method operator TotalDistance takes nothing returns real
@@ -135,16 +136,14 @@ library LevelPath requires PermanentAlloc, Vector2, LevelPathNode, SimpleList
 			call parentBranch.addEnd(curPathNode)
 			
 			if curConnectionNode == 0 then
-				//call branches.addEnd(parentBranch)
 				call branches.addEnd(parentBranch.clone())
-				
-				return branches
 			else
 				loop
 				exitwhen curConnectionNode == 0
 					if not parentBranch.contains(LevelPathNodeConnection(curConnectionNode.value).NextNode) then
 						set childBranch = parentBranch.clone()
 						set childBranches = GetBranchesRecursive(childBranch, LevelPathNodeConnection(curConnectionNode.value).NextNode)
+						
 						call branches.addEndRange(childBranches)
 						
 						call childBranch.destroy()
@@ -152,9 +151,9 @@ library LevelPath requires PermanentAlloc, Vector2, LevelPathNode, SimpleList
 					endif
 				set curConnectionNode = curConnectionNode.next
 				endloop
-				
-				return branches
 			endif
+			
+			return branches
 		endmethod
 		//returns List<List<LevelPathNode>>
 		public method GetBranches takes nothing returns SimpleList_List
@@ -209,7 +208,8 @@ library LevelPath requires PermanentAlloc, Vector2, LevelPathNode, SimpleList
 			endmethod
 		endif
 		
-		public method Finalize takes nothing returns nothing
+		
+		private static method FinalizeCB takes thistype path returns nothing
 			local SimpleList_List branches
 			local SimpleList_ListNode curBranch
 			local SimpleList_ListNode curBranchNode
@@ -217,25 +217,25 @@ library LevelPath requires PermanentAlloc, Vector2, LevelPathNode, SimpleList
 			local real curBranchDistance
 			
 			static if DEBUG_FINALIZE then
-				local timer FinalizeFailTimer = NewTimerEx(this)
+				local timer FinalizeFailTimer = NewTimerEx(path)
 				call TimerStart(FinalizeFailTimer, 0., false, function thistype.FinalizeFailedCB)
 				
-				if this.Finalized then
+				if path.Finalized then
 					call DisplayTextToPlayer(GetLocalPlayer(), 0, 0, "Warning! Calling LevelPath.Finalize on an already finalized Path!")
-					call DisplayTextToPlayer(GetLocalPlayer(), 0, 0, "Path ID: " + I2S(this))
+					call DisplayTextToPlayer(GetLocalPlayer(), 0, 0, "Path ID: " + I2S(path))
 				else
-					set this.Finalized = true
+					set path.Finalized = true
 				endif
 			endif
 			static if DEBUG_FINALIZE_DETAILED then
-				call DisplayTextToPlayer(GetLocalPlayer(), 0, 0, "Finalization started for path: " + I2S(this))
+				call DisplayTextToPlayer(GetLocalPlayer(), 0, 0, "Finalization started for path: " + I2S(path))
 			endif
 			
-			if this.Start.Connections.count == 0 then
-				call this.Start.AddNextNode(this.End)
+			if path.Start.Connections.count == 0 then
+				call path.Start.AddNextNode(path.End)
 			endif
 			
-			set branches = this.GetBranches()
+			set branches = path.GetBranches()
 			
 			static if DEBUG_FINALIZE_DETAILED then
 				call DisplayTextToPlayer(GetLocalPlayer(), 0, 0, "Got branches")
@@ -263,24 +263,6 @@ library LevelPath requires PermanentAlloc, Vector2, LevelPathNode, SimpleList
 				set curBranchNode = curBranchNode.next
 				endloop
 				
-				/*
-				//cache the relative distance of each node in the branch. if the node has an existing distance, averaging the two values. ideally, all values would be weighted the same, but i don't think it will really matter
-				set curBranchNode = SimpleList_List(curBranch.value).first
-				set curBranchDistance = 0.
-				
-				loop
-				exitwhen curBranchNode == 0 or curBranchNode.next == 0
-					if LevelPathNode(curBranchNode.value).PercentComplete == -1 then
-						set LevelPathNode(curBranchNode.value).PercentComplete = curBranchDistance / curBranchTotalDistance
-					else
-						set LevelPathNode(curBranchNode.value).PercentComplete = (LevelPathNode(curBranchNode.value).PercentComplete + (curBranchDistance / curBranchTotalDistance)) / 2.
-					endif
-					
-				set curBranchDistance = curBranchDistance + LevelPathNode(curBranchNode.value).GetConnection(curBranchNode.next.value).ConnectingLine.Magnitude
-				set curBranchNode = curBranchNode.next
-				endloop
-				*/
-				
 			set curBranch = curBranch.next
 			endloop
 			
@@ -301,8 +283,16 @@ library LevelPath requires PermanentAlloc, Vector2, LevelPathNode, SimpleList
 				call ReleaseTimer(FinalizeFailTimer)
 			endif
 		endmethod
-						
-		//
+		
+		//automatically put each finalize call into its own operation context
+		//finalize can easily hit the operation limit for a single complex path graph, or a few simple path graphs
+		//separating each finalize into its own operation context reduces the limitation to only be on a single complex graph
+		public method Finalize takes nothing returns nothing
+			local IFinalizeCB finalizeCB = thistype.FinalizeCB
+			
+			call finalizeCB.evaluate(this)
+		endmethod
+		
 		public static method create takes LevelPathNode start, LevelPathNode end returns thistype
 			local thistype new = thistype.allocate()
 			
