@@ -211,20 +211,25 @@ struct User extends array
 		endif
 	endmethod
 	public method CheckOffPath takes LevelPath path returns nothing
-		local vector2 curUserPosition = this.GetCurrentPosition()
+		local vector2 curUserPosition
 		local LevelPathNodeConnection bestConnection
 		
-		//check that the user is reasonably within the current level's boundaries and try to get their closest connection if they are
-		if this.IsUnpaused and this.CurrentPathConnection == 0 and this.Team.OnLevel.IsPointInBoundary(curUserPosition.x, curUserPosition.y, TERRAIN_TILE_SIZE * 7.) then			
-			set bestConnection = path.GetBestConnection(curUserPosition, path.Start, LevelPathNode_CLOSE_ENOUGH_SQUARED)
+		if this.IsUnpaused and this.CurrentPathConnection == 0 then
+			set curUserPosition = this.GetCurrentPosition()
 			
-			if this.CurrentPathConnection != bestConnection then
-				call this.SetConnection(bestConnection)
+			//check that the user is reasonably within the current level's boundaries and try to get their closest connection if they are
+			if this.Team.OnLevel.IsPointInBoundary(curUserPosition.x, curUserPosition.y, TERRAIN_TILE_SIZE * 7.) then			
+				set bestConnection = path.GetBestConnection(curUserPosition, path.Start, LevelPathNode_CLOSE_ENOUGH_SQUARED)
+				
+				if this.CurrentPathConnection != bestConnection then
+					call this.SetConnection(bestConnection)
+				endif
 			endif
-		endif
 
-		call curUserPosition.deallocate()
+			call curUserPosition.deallocate()
+		endif
 	endmethod
+
 	
 	// public method CreateMenu takes real time, string optionCB returns nothing
         // local real x = VOTE_TOP_LEFT_X + R2I((this + 1) / 4)
