@@ -375,6 +375,24 @@ library Levels requires SimpleList, Teams, GameModesGlobals, LevelIDGlobals, Cin
 			
 			set r = null
         endmethod
+
+		public method IsPointInBoundary takes real x, real y, real buffer returns boolean
+			local integer i = 0
+            local rect r
+			local boolean inBoundary = false
+
+			loop
+			exitwhen i >= .Boundaries.size or inBoundary
+			set r = .Boundaries[i]
+				if BufferedRectContainsCoords(r, x, y, buffer) then
+					set inBoundary = true
+				endif
+			set i = i + 1
+            endloop
+			
+			set r = null
+			return inBoundary
+		endmethod
 		
 		public method GetCheckpoint takes integer cpID returns Checkpoint
 			return .Checkpoints.get(cpID).value

@@ -21,6 +21,7 @@ globals
 	
 	// private constant real PATH_UPDATE_TIMEOUT = .5
 	private constant real PATH_UPDATE_TIMEOUT = .035
+	private constant real OFFPATH_UPDATE_TIMEOUT = 2.
 	
 	Teams_MazingTeam TriggerTeam //used with events
 	
@@ -1403,6 +1404,32 @@ public struct MazingTeam extends array
 		set curTeamNode = curTeamNode.next
         endloop
 	endmethod
+
+	private method CheckOffPathForTeam takes nothing returns nothing
+		local SimpleList_ListNode curUserNode = this.FirstUser
+		
+		if this.Path != 0 then			
+			loop
+			exitwhen curUserNode == 0
+				// call DisplayTextToPlayer(GetLocalPlayer(), 0, 0, "Checking off path: " + I2S(this.Path) + ", for user: " + I2S(curUserNode.value))
+				
+				call User(curUserNode.value).CheckOffPath(this.Path)
+			set curUserNode = curUserNode.next
+			endloop
+		endif
+	endmethod
+	private static method AutoCheckOffPath takes nothing returns nothing
+		local SimpleList_ListNode curTeamNode = thistype.AllTeams.first
+        
+        loop
+        exitwhen curTeamNode == 0
+			// call DisplayTextToPlayer(GetLocalPlayer(), 0, 0, "Auto checking off path for team: " + I2S(curTeamNode.value))
+			
+			call MazingTeam(curTeamNode.value).CheckOffPathForTeam()
+			
+		set curTeamNode = curTeamNode.next
+        endloop
+	endmethod
 		
     public static method create takes nothing returns thistype
         local thistype mt = thistype.allocate()
@@ -1435,6 +1462,7 @@ public struct MazingTeam extends array
 		set thistype.AllTeams = SimpleList_List.create()
 		
 		call TimerStart(CreateTimer(), PATH_UPDATE_TIMEOUT, true, function thistype.AutoCheckPath)
+		call TimerStart(CreateTimer(), OFFPATH_UPDATE_TIMEOUT, true, function thistype.AutoCheckOffPath)
 	endmethod
 endstruct
 

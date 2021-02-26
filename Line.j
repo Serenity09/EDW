@@ -68,7 +68,7 @@ library Line requires Alloc, Vector2
 			return distance
 		endmethod
 		public method GetDistanceFromPoint takes vector2 point returns real
-			return SquareRoot(this.GetDistanceFromPoint(point))
+			return SquareRoot(this.GetDistanceSquaredFromPoint(point))
 		endmethod
 				
 		public method DrawEx takes string fx returns lightning

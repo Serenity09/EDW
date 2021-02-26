@@ -171,41 +171,59 @@ struct User extends array
 		
 		local vector2 curProjectedPosition
 		
-		if this.IsUnpaused and this.CurrentPathConnection != 0 then
+		//check that the user is reasonably within the current level's boundaries and try to get their closest connection if they are
+		if this.IsUnpaused and this.CurrentPathConnection != 0 then			
 			set curUserPosition = this.GetCurrentPosition()
 			set closestConnection = this.CurrentPathConnection.GetClosestConnection(this.Team.Path, curUserPosition)
 			
 			if this.CurrentPathConnection != closestConnection then
 				call this.SetConnection(closestConnection)
 			endif
-			
-			//reorient position using the connection's start point as its new origin
-			set curUserPosition.x = curUserPosition.x - closestConnection.StartNode.Position.x
-			set curUserPosition.y = curUserPosition.y - closestConnection.StartNode.Position.y
-			
-			set closestConnectionTotalDistance = closestConnection.GetTotalDistanceFromPoint(curUserPosition)
-			if closestConnectionTotalDistance > this.FurthestPathDistance then
-				static if DEBUG_CURRENT_DISTANCE then
-					call DisplayTextToPlayer(GetLocalPlayer(), 0, 0, "Furthest distance reached: " + R2S(closestConnectionTotalDistance))
+
+			if closestConnection != 0 then
+				//reorient position using the connection's start point as its new origin
+				set curUserPosition.x = curUserPosition.x - closestConnection.StartNode.Position.x
+				set curUserPosition.y = curUserPosition.y - closestConnection.StartNode.Position.y
+				
+				set closestConnectionTotalDistance = closestConnection.GetTotalDistanceFromPoint(curUserPosition)
+				if closestConnectionTotalDistance > this.FurthestPathDistance then
+					static if DEBUG_CURRENT_DISTANCE then
+						call DisplayTextToPlayer(GetLocalPlayer(), 0, 0, "Furthest distance reached: " + R2S(closestConnectionTotalDistance))
+					endif
+					
+					set this.FurthestPathDistance = closestConnectionTotalDistance
+					set this.FurthestPathConnection = closestConnection
 				endif
 				
-				set this.FurthestPathDistance = closestConnectionTotalDistance
-				set this.FurthestPathConnection = closestConnection
+				static if DEBUG_CURRENT_DISTANCE then
+					call DisplayTextToPlayer(GetLocalPlayer(), 0, 0, "Current distance: " + R2S(closestConnectionTotalDistance))
+				endif
+				
+				static if DEBUG_CURRENT_CONNECTION then
+					set curProjectedPosition = closestConnection.ConnectingLine.ProjectPoint(curUserPosition)
+					call SetUnitX(this.CurrentConnectionProjection, curProjectedPosition.x + closestConnection.StartNode.Position.x)
+					call SetUnitY(this.CurrentConnectionProjection, curProjectedPosition.y + closestConnection.StartNode.Position.y)
+					call curProjectedPosition.deallocate()
+				endif
 			endif
-			
-			static if DEBUG_CURRENT_DISTANCE then
-				call DisplayTextToPlayer(GetLocalPlayer(), 0, 0, "Current distance: " + R2S(closestConnectionTotalDistance))
-			endif
-			
-			static if DEBUG_CURRENT_CONNECTION then
-				set curProjectedPosition = closestConnection.ConnectingLine.ProjectPoint(curUserPosition)
-				call SetUnitX(this.CurrentConnectionProjection, curProjectedPosition.x + closestConnection.StartNode.Position.x)
-				call SetUnitY(this.CurrentConnectionProjection, curProjectedPosition.y + closestConnection.StartNode.Position.y)
-				call curProjectedPosition.deallocate()
-			endif
-			
+
 			call curUserPosition.deallocate()
 		endif
+	endmethod
+	public method CheckOffPath takes LevelPath path returns nothing
+		local vector2 curUserPosition = this.GetCurrentPosition()
+		local LevelPathNodeConnection bestConnection
+		
+		//check that the user is reasonably within the current level's boundaries and try to get their closest connection if they are
+		if this.IsUnpaused and this.CurrentPathConnection == 0 and this.Team.OnLevel.IsPointInBoundary(curUserPosition.x, curUserPosition.y, TERRAIN_TILE_SIZE * 7.) then			
+			set bestConnection = path.GetBestConnection(curUserPosition, path.Start, LevelPathNode_CLOSE_ENOUGH_SQUARED)
+			
+			if this.CurrentPathConnection != bestConnection then
+				call this.SetConnection(bestConnection)
+			endif
+		endif
+
+		call curUserPosition.deallocate()
 	endmethod
 	
 	// public method CreateMenu takes real time, string optionCB returns nothing
