@@ -42,6 +42,9 @@ library EDWCinematicContent requires EDWLevelContent, Cinema, EDWGameTime
 	private function IsUserPlatforming takes User user returns boolean
 		return user.GameMode == Teams_GAMEMODE_PLATFORMING or user.GameMode == Teams_GAMEMODE_PLATFORMING_PAUSED
 	endfunction
+    private function IsUserUnpaused takes User user returns boolean
+        return user.IsUnpaused
+    endfunction
     private function IsUserDying takes User user returns boolean
         return user.GameMode == Teams_GAMEMODE_DYING or user.GameMode == Teams_GAMEMODE_DEAD
     endfunction
@@ -49,6 +52,10 @@ library EDWCinematicContent requires EDWLevelContent, Cinema, EDWGameTime
 	private function IsUserRedAndFree takes User user returns boolean
         return IsUserRed(user) and IsUserNotInCinema(user)
     endfunction
+    private function IsUserPlatformingAndUnmoving takes User user returns boolean
+        return user.GameMode == Teams_GAMEMODE_PLATFORMING and user.Platformer.HorizontalAxisState == 0 and user.Platformer.YVelocity == 0 and user.Platformer.XVelocity == 0
+    endfunction
+
 	
 	public function Initialize takes nothing returns nothing
 		local Cinematic cine
@@ -141,7 +148,7 @@ library EDWCinematicContent requires EDWLevelContent, Cinema, EDWGameTime
         
         set cineMsg = CinemaMessage.createEx(null, PRIMARY_SPEAKER_NAME, 'CiM1', DEFAULT_SHORT_TEXT_SPEED)
         set cine = Cinematic.create(gg_rct_SargePlatformingTile, true, false, cineMsg)
-        set cine.Priority = 2
+        set cine.Priority = 3
 		call cine.AddMessage(CinemaMessage.createEx(null, PRIMARY_SPEAKER_NAME, 'CiM2', DEFAULT_SHORT_TEXT_SPEED))
         call cine.AddMessage(CinemaMessage.createEx(null, PRIMARY_SPEAKER_NAME, 'CiM3', DEFAULT_SHORT_TEXT_SPEED))
         call cine.SetLastMessageBuffer(-1)
@@ -194,8 +201,33 @@ library EDWCinematicContent requires EDWLevelContent, Cinema, EDWGameTime
 		
         //DOORS HARD CODED
         //currently no start or stop logic
-        //call Levels_Level.CreateDoors(l, null, null, gg_rct_HubWorld_R, gg_rct_HubWorld_Vision)
-		set cineMsg = CinemaMessage.createEx(null, PRIMARY_SPEAKER_NAME, 'CDHU', DEFAULT_MEDIUM_TEXT_SPEED)
+        if GetFirstLevelID() != DOORS_LEVEL_ID then
+
+        endif
+		set cineMsg = CinemaMessage.create(gg_unit_hfoo_0011, GetEDWSpeakerMessage(PRIMARY_SPEAKER_NAME, "Well look who decided to show up.", null), DEFAULT_MEDIUM_TEXT_SPEED)
+        set cine = Cinematic.create(gg_rct_SargeDoors, false, false, cineMsg)
+        set cine.ActivationCondition = IsUserUnpaused
+		call cine.AddMessage(CinemaMessage.create(gg_unit_hfoo_0011, GetEDWSpeakerMessage(PRIMARY_SPEAKER_NAME, "Welcome to the Doors.", null), DEFAULT_SHORT_TEXT_SPEED))
+        call cine.AddMessage(CinemaMessage.create(gg_unit_hfoo_0011, GetEDWSpeakerMessage(PRIMARY_SPEAKER_NAME, "Here you can enter one of three worlds to run, skate or 2D-ify your way through.", null), DEFAULT_LONG_TEXT_SPEED))
+        call cine.AddMessage(CinemaMessage.create(gg_unit_hfoo_0011, GetEDWSpeakerMessage(PRIMARY_SPEAKER_NAME, "Win or lose, you'll end up back here either way.", null), DEFAULT_MEDIUM_TEXT_SPEED))
+        call cine.AddMessage(CinemaMessage.create(gg_unit_hfoo_0011, GetEDWSpeakerMessage(PRIMARY_SPEAKER_NAME, "You'll need to be quick though,", null), DEFAULT_SHORT_TEXT_SPEED))
+        call cine.AddMessage(CinemaMessage.create(gg_unit_hfoo_0011, GetEDWSpeakerMessage(PRIMARY_SPEAKER_NAME, StringFormat1("You only have {0} minutes before the dream ends.", I2S(R2I(GetRemainingGameTime() / 60))), null), DEFAULT_MEDIUM_TEXT_SPEED))
+		call cine.AddMessage(CinemaMessage.create(gg_unit_hfoo_0011, GetEDWSpeakerMessage(PRIMARY_SPEAKER_NAME, "One last thing,", null), DEFAULT_SHORT_TEXT_SPEED))
+        call cine.AddMessage(CinemaMessage.create(gg_unit_hfoo_0011, GetEDWSpeakerMessage(PRIMARY_SPEAKER_NAME, "Every terrain in this dream has a different effect, but you'll need to explore yourself to uncover more.", null), DEFAULT_LONG_TEXT_SPEED))
+        call cine.AddMessage(CinemaMessage.create(gg_unit_hfoo_0011, GetEDWSpeakerMessage(PRIMARY_SPEAKER_NAME, "Good luck, soldier.", null), DEFAULT_SHORT_TEXT_SPEED))
+        call cine.SetLastMessageDefaults()
+		call Levels_Level(2).AddCinematic(cine)
+
+        if RewardMode != GameModesGlobals_HARD then
+            set cineMsg = CinemaMessage.create(gg_unit_e00K_0046, GetEDWSpeakerMessage(PRIMARY_SPEAKER_NAME, "Now that's a bounce totem", null), DEFAULT_MEDIUM_TEXT_SPEED)
+            set cine = Cinematic.create(gg_rct_SargeBounce, false, false, cineMsg)
+            set cine.ActivationCondition = IsUserPlatformingAndUnmoving
+            call cine.AddMessage(CinemaMessage.create(gg_unit_e00K_0046, GetEDWSpeakerMessage(PRIMARY_SPEAKER_NAME, "Jump on it and let's bounce", null), DEFAULT_MEDIUM_TEXT_SPEED))
+            call cine.SetLastMessageDefaults()
+            call Levels_Level(2).AddCinematic(cine)
+        endif
+        
+        set cineMsg = CinemaMessage.createEx(gg_unit_hfoo_0011, PRIMARY_SPEAKER_NAME, 'CDHU', DEFAULT_MEDIUM_TEXT_SPEED)
         set cine = Cinematic.create(gg_rct_SargeHeart, true, false, cineMsg)
 		call cine.SetLastMessageDefaults()
 		call Levels_Level(2).AddCinematic(cine)
@@ -297,6 +329,27 @@ library EDWCinematicContent requires EDWLevelContent, Cinema, EDWGameTime
         //LEVEL 1
         //set l = Levels_Level.create(9, "Perspective", 4, 2, "PW1Start", "PW1Stop", gg_rct_PWR_1_1, gg_rct_PW1_Vision, gg_rct_PW1_End, 0) //gg_rct_PW1_Vision
         
+        if RewardMode != GameModesGlobals_HARD then 
+            set cineMsg = CinemaMessage.create(null, GetEDWSpeakerMessage(PRIMARY_SPEAKER_NAME, "Remember to use your arrow keys to move when you're in 2D form!", null), DEFAULT_MEDIUM_TEXT_SPEED)
+            set cine = Cinematic.create(gg_rct_SargeMovement, false, false, cineMsg)
+            set cine.ActivationCondition = IsUserPlatformingAndUnmoving
+            call cine.SetLastMessageDefaults()
+            call Levels_Level(9).AddCinematic(cine)
+
+            set cineMsg = CinemaMessage.create(null, GetEDWSpeakerMessage(PRIMARY_SPEAKER_NAME, "Press your up arrow key to jump!", null), DEFAULT_MEDIUM_TEXT_SPEED)
+            set cine = Cinematic.create(gg_rct_SargeJump2, false, false, cineMsg)
+            set cine.ActivationCondition = IsUserPlatformingAndUnmoving
+            call cine.AddMessage(CinemaMessage.create(null, GetEDWSpeakerMessage(PRIMARY_SPEAKER_NAME, "You can also wall jump by hugging a wall and pressing the up arrow key", null), DEFAULT_LONG_TEXT_SPEED))
+            call cine.SetLastMessageDefaults()
+            call Levels_Level(9).AddCinematic(cine)
+
+            set cineMsg = CinemaMessage.create(gg_unit_e00J_0188, GetEDWSpeakerMessage(PRIMARY_SPEAKER_NAME, "Now that's a gravity totem, wall jump into it and reverse gravity!", null), DEFAULT_MEDIUM_TEXT_SPEED)
+            set cine = Cinematic.create(gg_rct_SargeGravity, false, false, cineMsg)
+            set cine.ActivationCondition = IsUserPlatformingAndUnmoving
+            call cine.SetLastMessageDefaults()
+            call Levels_Level(9).AddCinematic(cine)
+        endif
+
         //LEVEL 2
         //set l = Levels_Level.create(16, "Palindrome", 5, 5, "PW2Start", "PW2Stop", gg_rct_PWR_2_1, gg_rct_PW2_Vision, gg_rct_PW2_End, l) //gg_rct_PW1_Vision
         set cineMsg = CinemaMessage.createEx(null, PRIMARY_SPEAKER_NAME, 'P2E1', DEFAULT_MEDIUM_TEXT_SPEED)

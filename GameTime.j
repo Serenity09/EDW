@@ -8,6 +8,14 @@ library EDWGameTime requires Teams, GameMessage, StringFormat
     function GetElapsedGameTime takes nothing returns real
         return TimerGetElapsed(t) + currentTime
     endfunction
+	function GetRemainingGameTime takes nothing returns real
+		//check if theres a time related victory condition
+		if VictoryTime != 0 then
+			return VictoryTime - currentTime
+		else
+			return -1.
+		endif
+	endfunction
 	
 	private function LocalizeMinutesRemaining takes integer remainingTime, User localizer returns string
 		//ColorValue(I2S(R2I(remainingTime))) + " minutes remaining"

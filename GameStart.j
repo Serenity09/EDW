@@ -160,12 +160,12 @@ library EDWGameStart initializer Init requires TimerUtils, Levels, EDWVisualVote
 		call EDWLevelPaths_Initialize()
 		// call EDWLevelContent_Initialize()
 		
-		static if DEBUG_PRELOAD_FULL then
-			call DisplayTextToForce(bj_FORCE_PLAYER[0], "Preload 3")
-		endif
+		// static if DEBUG_PRELOAD_FULL then
+		// 	call DisplayTextToForce(bj_FORCE_PLAYER[0], "Preload 3")
+		// endif
 		
 		//call cinematic initalizer after levels are ready
-		call EDWCinematicContent_Initialize()
+		// call EDWCinematicContent_Initialize()
 		
 		static if DEBUG_PRELOAD_FULL then
 			call DisplayTextToForce(bj_FORCE_PLAYER[0], "Preload 4")
