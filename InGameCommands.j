@@ -1,4 +1,8 @@
 library InGameCommands initializer init requires MazerGlobals, Platformer, RelayGenerator, Deferred, EDWQuests
+	// struct InGameCommand extends array
+	// 	implement PermanentAlloc
+	// endstruct
+	
 	function ExportPlatformingVariables takes Platformer p returns nothing
 		//display all variables on screen
 		//call DisplayTextToForce(bj_FORCE_PLAYER[p.PID], "[tvx] Terminal Velocity X: " + R2S(p.TerminalVelocityX / PlatformerGlobals_GAMELOOP_TIMESTEP))
@@ -345,6 +349,10 @@ library InGameCommands initializer init requires MazerGlobals, Platformer, Relay
 				endif
 			elseif cmd == "checkpoint" or cmd == "cp" then
 				call Levels_Level(team.OnLevel).SetCheckpointForTeam(team, intVal)
+			elseif cmd == "continue" or cmd == "continues" then
+				if intVal >= 0 then
+					call team.SetContinueCount(intVal)
+				endif
 			elseif cmd == "help" or cmd == "h" then
 				call PrintPlatformingVariables(p)
 			elseif cmd == "status" or cmd == "s" then
@@ -364,13 +372,13 @@ library InGameCommands initializer init requires MazerGlobals, Platformer, Relay
 				set unitgroup = CreateGroup()
 				call GroupEnumUnitsSelected(unitgroup, Player(pID), null)
 				call SetUnitFacing(FirstOfGroup(unitgroup), val)
-			elseif cmd == "testpocean" or cmd == "tpo" then
+			elseif cmd == "debugpocean" then
 				call team.MoveRevive(gg_rct_Region_380)
 				set team.DefaultGameMode = Teams_GAMEMODE_PLATFORMING
 				call team.RespawnTeamAtRect(gg_rct_Region_380, true)
 				
 				debug call DisplayTextToForce(bj_FORCE_PLAYER[pID], "Finished setting up plat test")
-			elseif cmd == "testpice" or cmd == "tpi" then
+			elseif cmd == "debugpice" then
 				call team.MoveRevive(gg_rct_SboxIceR)
 				set team.DefaultGameMode = Teams_GAMEMODE_PLATFORMING
 				call team.RespawnTeamAtRect(gg_rct_SboxIceR, true)
@@ -409,7 +417,7 @@ library InGameCommands initializer init requires MazerGlobals, Platformer, Relay
 				// set async = User.SyncLocalCameraIdleTime()
 				// call async.Then(OnAllCameraSync, 0, async)
 			// endif
-			elseif cmd == "path" then
+			elseif cmd == "debugpath" then
 				// call LevelPath(intVal).PrintPathByBreadth()
 				call DisplayTextToPlayer(Player(pID), 0, 0, "************************")
 				if intVal != 0 then
@@ -428,7 +436,7 @@ library InGameCommands initializer init requires MazerGlobals, Platformer, Relay
 					call DisplayTextToPlayer(Player(pID), 0, 0, "Null path for level: " + level.GetLocalizedLevelName(pID))
 					call DisplayTextToPlayer(Player(pID), 0, 0, "Checkpoint ID: " + I2S(checkpoint))
 				endif
-			elseif cmd == "drawpath" or cmd == "dp" then
+			elseif cmd == "debugdrawpath" then
 				if intVal != 0 then
 					set level = Levels_Level(intVal)
 					set checkpoint = level.GetCheckpoint(0)
@@ -443,6 +451,10 @@ library InGameCommands initializer init requires MazerGlobals, Platformer, Relay
 					call DisplayTextToPlayer(Player(pID), 0, 0, "Null path for level: " + level.GetLocalizedLevelName(pID))
 					call DisplayTextToPlayer(Player(pID), 0, 0, "Checkpoint ID: " + I2S(checkpoint))
 				endif
+			elseif cmd == "debugpathconnection" then
+				call u.SetDebugPathConnection(not u.GetDebugPathConnection())
+			elseif cmd == "debugpathdistance" then
+				set u.DebugCurrentDistance = not u.DebugCurrentDistance
 			elseif cmd == "cam" or cmd == "camera" then
 				if GetLocalPlayer() == Player(pID) then
 					call DisplayTextToPlayer(Player(pID), 0, 0, "Camera distance: " + R2S(GetCameraField(CAMERA_FIELD_TARGET_DISTANCE)))

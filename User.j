@@ -39,9 +39,6 @@ globals
 	
 	private constant boolean DEBUG_AFK = false
 	private constant real AFK_CAMERA_DEBUG_TIMEOUT = AFK_CAMERA_MIN_TIMEOUT
-	
-	private constant boolean DEBUG_CURRENT_CONNECTION = true
-	private constant boolean DEBUG_CURRENT_DISTANCE = true
 endglobals
 
 struct User extends array
@@ -96,11 +93,11 @@ struct User extends array
 	readonly LevelPathNodeConnection CurrentPathConnection
 	readonly real FurthestPathDistance
 	readonly LevelPathNodeConnection FurthestPathConnection
-	
-	static if DEBUG_CURRENT_CONNECTION then
-		private lightning CurrentConnectionLine
-		private unit CurrentConnectionProjection
-	endif
+	//TODO move to static if after level path framework 
+	private boolean DebugCurrentConnection
+	private lightning DebugCurrentConnectionLine
+	private unit DebugCurrentConnectionProjection
+	public boolean DebugCurrentDistance
 	
 	private static Cinematic ToggleCameraTrackingTutorial
     
@@ -146,13 +143,13 @@ struct User extends array
 	public method SetConnection takes LevelPathNodeConnection connection returns nothing
 		set this.CurrentPathConnection = connection
 		
-		static if DEBUG_CURRENT_CONNECTION then
-			if this.CurrentConnectionLine != null then
-				call DestroyLightning(this.CurrentConnectionLine)
-				set this.CurrentConnectionLine = null
+		if this.DebugCurrentConnection then
+			if this.DebugCurrentConnectionLine != null then
+				call DestroyLightning(this.DebugCurrentConnectionLine)
+				set this.DebugCurrentConnectionLine = null
 			endif
 			if this.CurrentPathConnection != 0 then
-				set this.CurrentConnectionLine = this.CurrentPathConnection.ConnectingLine.DrawEx(Draw_SPIRIT_LINK)
+				set this.DebugCurrentConnectionLine = this.CurrentPathConnection.ConnectingLine.DrawEx(Draw_SPIRIT_LINK)
 			endif
 		endif
 	endmethod	
@@ -187,7 +184,7 @@ struct User extends array
 				
 				set closestConnectionTotalDistance = closestConnection.GetTotalDistanceFromPoint(curUserPosition)
 				if closestConnectionTotalDistance > this.FurthestPathDistance then
-					static if DEBUG_CURRENT_DISTANCE then
+					if this.DebugCurrentDistance then
 						call DisplayTextToPlayer(GetLocalPlayer(), 0, 0, "Furthest distance reached: " + R2S(closestConnectionTotalDistance))
 					endif
 					
@@ -195,14 +192,14 @@ struct User extends array
 					set this.FurthestPathConnection = closestConnection
 				endif
 				
-				static if DEBUG_CURRENT_DISTANCE then
+				if this.DebugCurrentDistance then
 					call DisplayTextToPlayer(GetLocalPlayer(), 0, 0, "Current distance: " + R2S(closestConnectionTotalDistance))
 				endif
 				
-				static if DEBUG_CURRENT_CONNECTION then
+				if this.DebugCurrentConnection then
 					set curProjectedPosition = closestConnection.ConnectingLine.ProjectPoint(curUserPosition)
-					call SetUnitX(this.CurrentConnectionProjection, curProjectedPosition.x + closestConnection.StartNode.Position.x)
-					call SetUnitY(this.CurrentConnectionProjection, curProjectedPosition.y + closestConnection.StartNode.Position.y)
+					call SetUnitX(this.DebugCurrentConnectionProjection, curProjectedPosition.x + closestConnection.StartNode.Position.x)
+					call SetUnitY(this.DebugCurrentConnectionProjection, curProjectedPosition.y + closestConnection.StartNode.Position.y)
 					call curProjectedPosition.deallocate()
 				endif
 			endif
@@ -230,6 +227,25 @@ struct User extends array
 		endif
 	endmethod
 
+	public method GetDebugPathConnection takes nothing returns boolean
+		return this.DebugCurrentConnection
+	endmethod
+	public method SetDebugPathConnection takes boolean flag returns nothing
+		if this.DebugCurrentConnection != flag then
+			set this.DebugCurrentConnection = flag 
+
+			if this.DebugCurrentConnectionLine != null then
+				call DestroyLightning(this.DebugCurrentConnectionLine)
+				set this.DebugCurrentConnectionLine = null
+			endif
+
+			if this.DebugCurrentConnection then
+				set this.DebugCurrentConnectionProjection = Draw_DrawPoint(this, DEBUG_X, DEBUG_Y)
+			else
+				call RemoveUnit(this.DebugCurrentConnectionProjection)
+			endif
+		endif
+	endmethod
 	
 	// public method CreateMenu takes real time, string optionCB returns nothing
         // local real x = VOTE_TOP_LEFT_X + R2I((this + 1) / 4)
@@ -2088,10 +2104,10 @@ struct User extends array
 			endif
 		endif
 		
-		static if DEBUG_CURRENT_CONNECTION then
-			set new.CurrentConnectionLine = null
-			set new.CurrentConnectionProjection = Draw_DrawPoint(new, DEBUG_X, DEBUG_Y)
-		endif
+		set new.DebugCurrentConnection = false
+		set new.DebugCurrentConnectionLine = null
+		set new.DebugCurrentConnectionProjection = null
+		set new.DebugCurrentDistance = false
 		
         return new
     endmethod
