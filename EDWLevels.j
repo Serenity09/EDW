@@ -52,8 +52,8 @@ library EDWLevels requires LevelIDGlobals, Levels, PW4
 		
 		//LEVEL 5
 		if CONFIGURATION_PROFILE != RELEASE then
-			set l = Levels_Level.create(IW5_LEVEL_ID, 4, 4, "IW5Start", "IW5Stop", gg_rct_IWR_5_1, gg_rct_IW5_Vision, gg_rct_IW5_End, l)
-			call l.AddCheckpoint(gg_rct_IWCP_5_1, gg_rct_IWR_5_2)
+			// set l = Levels_Level.create(IW5_LEVEL_ID, 4, 4, "IW5Start", "IW5Stop", gg_rct_IWR_5_1, gg_rct_IW5_Vision, gg_rct_IW5_End, l)
+			// call l.AddCheckpoint(gg_rct_IWCP_5_1, gg_rct_IWR_5_2)
         endif
 		
 		//ICE WORLD B

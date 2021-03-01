@@ -179,14 +179,14 @@ library IW3 requires Recycle, Levels
 		// call Recycle_MakeUnitAndPatrolRect(GUARD, gg_rct_Rect_172, gg_rct_Rect_173)
 		call Recycle_MakeUnitAndPatrolRect(LGUARD, gg_rct_Rect_174, gg_rct_Rect_175)
 		if RewardMode == GameModesGlobals_HARD then
-		call Recycle_MakeUnitAndPatrolRect(LGUARD, gg_rct_Rect_176, gg_rct_Rect_177)
+			call Recycle_MakeUnitAndPatrolRect(LGUARD, gg_rct_Rect_176, gg_rct_Rect_177)
 		endif
 		call Recycle_MakeUnitAndPatrolRect(GUARD, gg_rct_Rect_178, gg_rct_Rect_179)
 		
-		call Recycle_MakeUnitAndPatrolRect(GUARD, gg_rct_Rect_180, gg_rct_Rect_181)
-		if RewardMode == GameModesGlobals_HARD then
-			call Recycle_MakeUnitAndPatrolRect(LGUARD, gg_rct_Rect_280, gg_rct_Rect_281)
-		endif
+		// call Recycle_MakeUnitAndPatrolRect(GUARD, gg_rct_Rect_180, gg_rct_Rect_181)
+		// if RewardMode == GameModesGlobals_HARD then
+		// 	call Recycle_MakeUnitAndPatrolRect(LGUARD, gg_rct_Rect_280, gg_rct_Rect_281)
+		// endif
 		// call Recycle_MakeUnitAndPatrolRect(LGUARD, gg_rct_Rect_182, gg_rct_Rect_183)
 		// call Recycle_MakeUnitAndPatrolRect(LGUARD, gg_rct_Rect_184, gg_rct_Rect_185)
 		// call Recycle_MakeUnitAndPatrolRect(LGUARD, gg_rct_Rect_186, gg_rct_Rect_187)

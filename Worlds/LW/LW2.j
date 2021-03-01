@@ -1,4 +1,8 @@
 library LW2 requires Recycle, Levels, EDWCollectibleResolveHandlers, ZoomChange
+	globals
+		public real RelayMoveRate
+	endglobals
+	
 	public function InitializeStartableContent takes nothing returns nothing
 		local Levels_Level l = Levels_Level(LW2_LEVEL_ID)
 		
@@ -62,12 +66,12 @@ library LW2 requires Recycle, Levels, EDWCollectibleResolveHandlers, ZoomChange
 		set wheel.SpokeCount = 2
 		
 		if RewardMode == GameModesGlobals_HARD then
-			set wheel.RotationSpeed = bj_PI / 1.45 * Wheel_TIMEOUT
+			set wheel.RotationSpeed = bj_PI / 1.9 * Wheel_TIMEOUT
 			set wheel.InitialOffset = .7 * TERRAIN_TILE_SIZE
 			set wheel.LayerCount = 7
 			call wheel.AddUnits(WWWISP, 14)
 		else
-			set wheel.RotationSpeed = bj_PI / 1.55 * Wheel_TIMEOUT
+			set wheel.RotationSpeed = bj_PI / 2.25 * Wheel_TIMEOUT
 			set wheel.InitialOffset = TERRAIN_TILE_SIZE
 			set wheel.LayerCount = 6
 			call wheel.AddUnits(WWWISP, 12)
@@ -78,15 +82,17 @@ library LW2 requires Recycle, Levels, EDWCollectibleResolveHandlers, ZoomChange
 		//
 		set wheel = Wheel.createFromPoint(gg_rct_LW2_WW2)
 		set wheel.AngleBetween = bj_PI
-		set wheel.RotationSpeed = bj_PI / 1.5 * Wheel_TIMEOUT
+		
+		
 		set wheel.DistanceBetween = .45*TERRAIN_TILE_SIZE
 		set wheel.SpokeCount = 2
-		
 		if RewardMode == GameModesGlobals_HARD then
+			set wheel.RotationSpeed = bj_PI / 2. * Wheel_TIMEOUT
 			set wheel.InitialOffset = .5 * TERRAIN_TILE_SIZE
 			set wheel.LayerCount = 7
 			call wheel.AddUnits(WWWISP, 14)
 		else
+			set wheel.RotationSpeed = bj_PI / 1.75 * Wheel_TIMEOUT
 			set wheel.InitialOffset = 1.5*TERRAIN_TILE_SIZE
 			set wheel.LayerCount = 5
 			call wheel.AddUnits(WWWISP, 10)
@@ -169,14 +175,21 @@ library LW2 requires Recycle, Levels, EDWCollectibleResolveHandlers, ZoomChange
 			call SetTerrainType(GetRectCenterX(gg_rct_LW2_WW3), GetRectCenterY(gg_rct_LW2_WW3), ABYSS, 0, 4, 1)
 		endif
 		
-		set rg = RelayGenerator.createFromPoint(gg_rct_LW2_RG1, 3, 3, 270, 38, 1.75, LW2PatternSpawn1, 6)
+		//referenced by the three main pattern spawns used in LW2
+		if RewardMode == GameModesGlobals_HARD then
+			set RelayMoveRate = 1.
+		else
+			set RelayMoveRate = .8
+		endif
+
+		set rg = RelayGenerator.createFromPoint(gg_rct_LW2_RG1, 3, 3, 270, 38, 1.75 * RelayMoveRate, LW2PatternSpawn1, 6)
 		// call rg.AddTurnSimple(180, 4)
 		// call rg.AddTurnSimple(270, 26)
 		call rg.EndTurns(270)
 		
 		call l.AddStartable(rg)
 		
-		set rg = RelayGenerator.createFromPoint(gg_rct_LW2_RG2, 2, 2, 90, 26, 1.75, LW2PatternSpawn2, 4)
+		set rg = RelayGenerator.createFromPoint(gg_rct_LW2_RG2, 2, 2, 90, 26, 1.75 * RelayMoveRate, LW2PatternSpawn2, 4)
 		call rg.AddTurnSimple(0, 7)
 		call rg.AddTurnSimple(270, 26)
 		call rg.EndTurns(270)
@@ -184,7 +197,7 @@ library LW2 requires Recycle, Levels, EDWCollectibleResolveHandlers, ZoomChange
 		call l.AddStartable(rg)
 		
 		//TODO replace with SimpleGenerator
-		set rg = RelayGenerator.createFromPoint(gg_rct_LW2_RG3, 2, 2, 270, 44, 1.25, LW2PatternSpawn3, 4)
+		set rg = RelayGenerator.createFromPoint(gg_rct_LW2_RG3, 2, 2, 270, 44, 1.25 * RelayMoveRate, LW2PatternSpawn3, 4)
 		call rg.EndTurns(270)
 		
 		call l.AddStartable(rg)

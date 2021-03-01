@@ -36,6 +36,25 @@ library IW2 requires Recycle, Levels
 		
 		if RewardMode == GameModesGlobals_HARD then
 			call SetTerrainType(GetRectCenterX(gg_rct_IW2_TC1), GetRectCenterY(gg_rct_IW2_TC1), ABYSS, 0, 1, 0)
+
+			if l.GetWeightedRandomInt(1, 3) == 3 then
+				call SetTerrainType(GetRectCenterX(gg_rct_IW2_TC3), GetRectCenterY(gg_rct_IW2_TC3), ABYSS, 0, 1, 0)
+				call SetTerrainType(GetRectCenterX(gg_rct_IW2_TC4), GetRectCenterY(gg_rct_IW2_TC4), ABYSS, 0, 1, 0)
+				call SetTerrainType(GetRectCenterX(gg_rct_IW2_TC5), GetRectCenterY(gg_rct_IW2_TC5), ABYSS, 0, 1, 0)
+				call SetTerrainType(GetRectCenterX(gg_rct_IW2_TC6), GetRectCenterY(gg_rct_IW2_TC6), ABYSS, 0, 1, 0)
+				call SetTerrainType(GetRectCenterX(gg_rct_IW2_TC7), GetRectCenterY(gg_rct_IW2_TC7), ABYSS, 0, 1, 0)
+				call SetTerrainType(GetRectCenterX(gg_rct_IW2_TC8), GetRectCenterY(gg_rct_IW2_TC8), ABYSS, 0, 1, 0)
+				call SetTerrainType(GetRectCenterX(gg_rct_IW2_TC9), GetRectCenterY(gg_rct_IW2_TC9), ABYSS, 0, 1, 0)
+				call SetTerrainType(GetRectCenterX(gg_rct_IW2_TC10), GetRectCenterY(gg_rct_IW2_TC10), ABYSS, 0, 1, 0)
+				call SetTerrainType(GetRectCenterX(gg_rct_IW2_TC11), GetRectCenterY(gg_rct_IW2_TC11), ABYSS, 0, 1, 0)
+				call SetTerrainType(GetRectCenterX(gg_rct_IW2_TC12), GetRectCenterY(gg_rct_IW2_TC12), ABYSS, 0, 1, 0)
+				call SetTerrainType(GetRectCenterX(gg_rct_IW2_TC13), GetRectCenterY(gg_rct_IW2_TC13), ABYSS, 0, 1, 0)
+				call SetTerrainType(GetRectCenterX(gg_rct_IW2_TC14), GetRectCenterY(gg_rct_IW2_TC14), ABYSS, 0, 1, 0)
+				call SetTerrainType(GetRectCenterX(gg_rct_IW2_TC15), GetRectCenterY(gg_rct_IW2_TC15), ABYSS, 0, 1, 0)
+				call SetTerrainType(GetRectCenterX(gg_rct_IW2_TC16), GetRectCenterY(gg_rct_IW2_TC16), ABYSS, 0, 1, 0)
+			endif
+		else
+			call SetTerrainType(GetRectCenterX(gg_rct_IW2_TC2), GetRectCenterY(gg_rct_IW2_TC2), SLOWICE, 0, 3, 0)
 		endif
 		
 		//sync group 1

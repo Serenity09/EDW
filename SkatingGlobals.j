@@ -4,7 +4,7 @@ library SkatingGlobals requires GameGlobalConstants
     globals
         constant real SlowIceSpeed = 8.5
         constant real MediumIceSpeed = 12.5
-        constant real FastIceSpeed = 17.5
+        constant real FastIceSpeed = 16.
         //if a unit has an increased speed due to a booster, then this is the rate that it returns to normal speed
         //this must be greater than 1, the larger it is the quicker the return to normal speed
         constant real SkateFallOff = 1.01

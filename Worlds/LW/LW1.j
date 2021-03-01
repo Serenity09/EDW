@@ -11,7 +11,9 @@ library LW1 requires Recycle, Levels
 		local PatternSpawn pattern
 		
 		local integer rand
-		
+		local real movespeed
+		local real timeout
+
 		call FastLoad.create(l, l.Checkpoints.first.value, 50., .5)
 		
 		//synced patrol set
@@ -23,11 +25,13 @@ library LW1 requires Recycle, Levels
 		call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_Rect_222))
 		set jtimber.AllOrders.last.next = jtimber.AllOrders.first
 		
-		set jtimber = nsync.AddUnit(GUARD)
-		call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_Rect_224))
-		call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_Rect_223))
-		set jtimber.AllOrders.last.next = jtimber.AllOrders.first
-		
+		if RewardMode == GameModesGlobals_HARD then
+			set jtimber = nsync.AddUnit(GUARD)
+			call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_Rect_224))
+			call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_Rect_223))
+			set jtimber.AllOrders.last.next = jtimber.AllOrders.first
+		endif
+
 		set jtimber = nsync.AddUnit(GUARD)
 		call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_Rect_225))
 		call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_Rect_226))
@@ -42,6 +46,12 @@ library LW1 requires Recycle, Levels
 		set nsync = SynchronizedGroup.create()
 		call l.AddStartable(nsync)
 		
+		if RewardMode == GameModesGlobals_HARD then
+			set rand = l.GetWeightedRandomInt(1, 5)
+		else
+			set rand = 1
+		endif
+
 		set jtimber = nsync.AddUnit(CLAWMAN)
 		set jtimber.MoveSpeed = 200
 		call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_Rect_229))
@@ -50,13 +60,15 @@ library LW1 requires Recycle, Levels
 		call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_Rect_232))
 		set jtimber.AllOrders.last.next = jtimber.AllOrders.first
 		
-		set jtimber = nsync.AddUnit(CLAWMAN)
-		set jtimber.MoveSpeed = 200
-		call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_Rect_231))
-		call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_Rect_232))
-		call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_Rect_229))
-		call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_Rect_230))
-		set jtimber.AllOrders.last.next = jtimber.AllOrders.first
+		if rand >= 2 then
+			set jtimber = nsync.AddUnit(CLAWMAN)
+			set jtimber.MoveSpeed = 200
+			call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_Rect_231))
+			call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_Rect_232))
+			call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_Rect_229))
+			call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_Rect_230))
+			set jtimber.AllOrders.last.next = jtimber.AllOrders.first
+		endif
 		
 		set jtimber = nsync.AddUnit(CLAWMAN)
 		set jtimber.MoveSpeed = 200
@@ -65,23 +77,36 @@ library LW1 requires Recycle, Levels
 		call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_Region_445))
 		call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_Region_247))
 		set jtimber.AllOrders.last.next = jtimber.AllOrders.first
-		
-		set jtimber = nsync.AddUnit(CLAWMAN)
-		set jtimber.MoveSpeed = 200
-		call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_Region_445))
-		call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_Region_247))
-		call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_Region_246))
-		call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_Rect_232))
-		set jtimber.AllOrders.last.next = jtimber.AllOrders.first
+
+		if rand >= 4 then
+			set jtimber = nsync.AddUnit(CLAWMAN)
+			set jtimber.MoveSpeed = 200
+			call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_Region_445))
+			call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_Region_247))
+			call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_Region_246))
+			call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_Rect_232))
+			set jtimber.AllOrders.last.next = jtimber.AllOrders.first
+		endif
 		
 		//inner sync group A
+		if RewardMode == GameModesGlobals_HARD then
+			set rand = l.GetWeightedRandomInt(3, 5)
+
+			set movespeed = 100 + 25 * rand
+		else
+			set rand = l.GetWeightedRandomInt(1, 3)
+
+			set movespeed = 225 + 25 * rand
+		endif
+
 		set nsync = SynchronizedGroup.create()
 		call l.AddStartable(nsync)
+
 		set jtimber = nsync.AddUnit(ICETROLL)
 		if RewardMode == GameModesGlobals_HARD then
-			set jtimber.MoveSpeed = 200
+			set jtimber.MoveSpeed = movespeed
 		else
-			set jtimber.MoveSpeed = 150
+			set jtimber.MoveSpeed = movespeed
 		endif
 		call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_Rect_233))
 		call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_Rect_234))
@@ -89,26 +114,28 @@ library LW1 requires Recycle, Levels
 		call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_Rect_236))
 		set jtimber.AllOrders.last.next = jtimber.AllOrders.first
 		
-		set jtimber = nsync.AddUnit(ICETROLL)
 		if RewardMode == GameModesGlobals_HARD then
-			set jtimber.MoveSpeed = 200
-		else
-			set jtimber.MoveSpeed = 150
+			set jtimber = nsync.AddUnit(ICETROLL)
+			if RewardMode == GameModesGlobals_HARD then
+				set jtimber.MoveSpeed = movespeed
+			else
+				set jtimber.MoveSpeed = movespeed
+			endif
+			call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_Rect_235))
+			call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_Rect_236))
+			call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_Rect_233))
+			call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_Rect_234))
+			set jtimber.AllOrders.last.next = jtimber.AllOrders.first
 		endif
-		call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_Rect_235))
-		call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_Rect_236))
-		call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_Rect_233))
-		call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_Rect_234))
-		set jtimber.AllOrders.last.next = jtimber.AllOrders.first
-		
+
 		//inner sync group B
 		set nsync = SynchronizedGroup.create()
 		call l.AddStartable(nsync)
 		set jtimber = nsync.AddUnit(ICETROLL)
 		if RewardMode == GameModesGlobals_HARD then
-			set jtimber.MoveSpeed = 200
+			set jtimber.MoveSpeed = movespeed
 		else
-			set jtimber.MoveSpeed = 150
+			set jtimber.MoveSpeed = movespeed
 		endif
 		call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_Region_442))
 		call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_Region_441))
@@ -116,17 +143,19 @@ library LW1 requires Recycle, Levels
 		call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_Region_439))
 		set jtimber.AllOrders.last.next = jtimber.AllOrders.first
 		
-		set jtimber = nsync.AddUnit(ICETROLL)
 		if RewardMode == GameModesGlobals_HARD then
-			set jtimber.MoveSpeed = 200
-		else
-			set jtimber.MoveSpeed = 150
+			set jtimber = nsync.AddUnit(ICETROLL)
+			if RewardMode == GameModesGlobals_HARD then
+				set jtimber.MoveSpeed = movespeed
+			else
+				set jtimber.MoveSpeed = movespeed
+			endif
+			call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_Region_440))
+			call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_Region_439))
+			call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_Region_442))
+			call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_Region_441))
+			set jtimber.AllOrders.last.next = jtimber.AllOrders.first
 		endif
-		call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_Region_440))
-		call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_Region_439))
-		call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_Region_442))
-		call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_Region_441))
-		set jtimber.AllOrders.last.next = jtimber.AllOrders.first
 		
 		//width 3 behavior diagonal cross
 		set pattern = LinePatternSpawn.createFromRect(LW1PatternSpawn1, 4, gg_rct_LW1_Generator1, TERRAIN_TILE_SIZE)
@@ -162,9 +191,9 @@ library LW1 requires Recycle, Levels
 		//width 4 spawn
 		set pattern = LinePatternSpawn.createFromRect(W4APatternSpawn, 5, gg_rct_LW1_Generator2, TERRAIN_TILE_SIZE)
 		set pattern.CycleVariations = 3
-		set sg = SimpleGenerator.create(pattern, 2.2, 90, 22)
+		set sg = SimpleGenerator.create(pattern, 2.6, 90, 22)
 		if RewardMode == GameModesGlobals_HARD then
-			set sg.SpawnTimeStep = 1.8
+			set sg.SpawnTimeStep = 2.2
 			call sg.SetMoveSpeed(175.)
 		else
 			call sg.SetMoveSpeed(150.)
@@ -175,7 +204,7 @@ library LW1 requires Recycle, Levels
 		//width 3 spawn
 		set pattern = LinePatternSpawn.createFromRect(W3APatternSpawn, 3, gg_rct_LW1_Generator3, TERRAIN_TILE_SIZE)
 		set pattern.CycleVariations = 4
-		set sg = SimpleGenerator.create(pattern, 1.4, 270, 16)
+		set sg = SimpleGenerator.create(pattern, 1.5, 270, 16)
 		call sg.SetMoveSpeed(350.)
 		call l.AddStartable(sg)
 		
@@ -203,10 +232,12 @@ library LW1 requires Recycle, Levels
 		call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_Rect_238))
 		set jtimber.AllOrders.last.next = jtimber.AllOrders.first
 		
-		set jtimber = nsync.AddUnit(GUARD)
-		call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_Rect_239))
-		call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_Rect_240))
-		set jtimber.AllOrders.last.next = jtimber.AllOrders.first
+		if RewardMode == GameModesGlobals_HARD then
+			set jtimber = nsync.AddUnit(GUARD)
+			call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_Rect_239))
+			call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_Rect_240))
+			set jtimber.AllOrders.last.next = jtimber.AllOrders.first
+		endif
 		
 		set jtimber = nsync.AddUnit(GUARD)
 		call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_Rect_241))
@@ -247,7 +278,7 @@ library LW1 requires Recycle, Levels
 		call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_Region_459))
 		set jtimber.AllOrders.last.next = jtimber.AllOrders.first
 		
-		//right sync group		
+		//right sync group
 		set jtimber = nsync.AddUnit(ICETROLL)
 		if RewardMode == GameModesGlobals_HARD then
 			set jtimber.MoveSpeed = 180
@@ -264,18 +295,20 @@ library LW1 requires Recycle, Levels
 		set nsync = SynchronizedGroup.create()
 		call l.AddStartable(nsync)
 		
-		//top sync group
-		set jtimber = nsync.AddUnit(CLAWMAN)
 		if RewardMode == GameModesGlobals_HARD then
-			set jtimber.MoveSpeed = 360
-		else
-			set jtimber.MoveSpeed = 320
+			//top sync group
+			set jtimber = nsync.AddUnit(CLAWMAN)
+			if RewardMode == GameModesGlobals_HARD then
+				set jtimber.MoveSpeed = 360
+			else
+				set jtimber.MoveSpeed = 320
+			endif
+			call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_Region_467))
+			call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_Region_462))
+			call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_Region_461))
+			call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_Region_466))
+			set jtimber.AllOrders.last.next = jtimber.AllOrders.first
 		endif
-		call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_Region_467))
-		call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_Region_462))
-		call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_Region_461))
-		call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_Region_466))
-		set jtimber.AllOrders.last.next = jtimber.AllOrders.first
 				
 		//bottom sync group		
 		set jtimber = nsync.AddUnit(CLAWMAN)
@@ -309,16 +342,24 @@ library LW1 requires Recycle, Levels
 		call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_Region_477))
 		set jtimber.AllOrders.last.next = jtimber.AllOrders.first
 		
+		if RewardMode == GameModesGlobals_HARD then
+			set rand = l.GetWeightedRandomInt(2, 3)
+		else
+			set rand = 1
+		endif
+
 		//inner sync group
 		//left unit
-		set nsync = SynchronizedGroup.create()
-		call l.AddStartable(nsync)
-		set jtimber = nsync.AddUnit(ICETROLL)
-		call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_Region_469))
-		call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_Region_468))
-		call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_Region_471))
-		call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_Region_470))
-		set jtimber.AllOrders.last.next = jtimber.AllOrders.first
+		if rand == 3 then
+			set nsync = SynchronizedGroup.create()
+			call l.AddStartable(nsync)
+			set jtimber = nsync.AddUnit(ICETROLL)
+			call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_Region_469))
+			call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_Region_468))
+			call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_Region_471))
+			call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_Region_470))
+			set jtimber.AllOrders.last.next = jtimber.AllOrders.first
+		endif
 		
 		//center unit
 		set jtimber = nsync.AddUnit(ICETROLL)
@@ -329,12 +370,14 @@ library LW1 requires Recycle, Levels
 		set jtimber.AllOrders.last.next = jtimber.AllOrders.first
 		
 		//right unit
-		set jtimber = nsync.AddUnit(ICETROLL)
-		call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_Region_474))
-		call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_Region_475))
-		call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_Region_472))
-		call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_Region_473))
-		set jtimber.AllOrders.last.next = jtimber.AllOrders.first
+		if rand >= 2 then
+			set jtimber = nsync.AddUnit(ICETROLL)
+			call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_Region_474))
+			call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_Region_475))
+			call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_Region_472))
+			call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_Region_473))
+			set jtimber.AllOrders.last.next = jtimber.AllOrders.first
+		endif
 	endfunction
 	
 	function LW1Start takes nothing returns nothing
@@ -342,14 +385,17 @@ library LW1 requires Recycle, Levels
 		
 		//patrols
 		//P1
-		call Recycle_MakeUnitAndPatrolRect(LGUARD, gg_rct_Rect_209, gg_rct_Rect_210)
+		if RewardMode == GameModesGlobals_HARD then
+			call Recycle_MakeUnitAndPatrolRect(LGUARD, gg_rct_Rect_209, gg_rct_Rect_210)
+		endif
 		call Recycle_MakeUnitAndPatrolRect(LGUARD, gg_rct_Rect_212, gg_rct_Rect_211)
 		
 		call Recycle_MakeUnitAndPatrolRect(GUARD, gg_rct_Rect_213, gg_rct_Rect_214)
 		call Recycle_MakeUnitAndPatrolRect(GUARD, gg_rct_Rect_216, gg_rct_Rect_215)
 		call Recycle_MakeUnitAndPatrolRect(LGUARD, gg_rct_Rect_217, gg_rct_Rect_218)
-		call Recycle_MakeUnitAndPatrolRect(GUARD, gg_rct_Rect_219, gg_rct_Rect_220)
-		
+		if RewardMode == GameModesGlobals_HARD then
+			call Recycle_MakeUnitAndPatrolRect(GUARD, gg_rct_Rect_219, gg_rct_Rect_220)
+		endif
 		// call Recycle_MakeUnitAndPatrolRect(GUARD, gg_rct_Rect_221, gg_rct_Rect_222)
 		// call Recycle_MakeUnitAndPatrolRect(GUARD, gg_rct_Rect_224, gg_rct_Rect_223)
 		// call Recycle_MakeUnitAndPatrolRect(GUARD, gg_rct_Rect_225, gg_rct_Rect_226)
