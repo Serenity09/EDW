@@ -1,4 +1,4 @@
-library ComplexTerrainPathing initializer init requires TerrainGlobals, Vector2
+library ComplexTerrainPathing initializer init requires TerrainGlobals, Vector2, Alloc
 globals
     constant real SIN_45            = .7071
     
@@ -137,11 +137,7 @@ public function GetAngleForUnitVector takes vector2 unitVector returns real
     return 0.
 endfunction
 
-struct ComplexTerrainPathingResult extends array
-    private static integer instanceCount = 0
-    private static thistype recycle = 0
-    private thistype recycleNext
-    
+struct ComplexTerrainPathingResult extends array  
     //should be one of the above 10 directional values
     public integer TerrainPathingForPoint
     
@@ -170,6 +166,8 @@ struct ComplexTerrainPathingResult extends array
     //public real OriginPointY
     //public real DestinationPointX
     //public real DestinationPointY
+
+    implement Alloc
 	
 	public method Print takes nothing returns nothing
 		call DisplayTextToForce(bj_FORCE_PLAYER[0], "Pathing: " + I2S(.TerrainPathingForPoint) + ", Quadrant " + I2S(.QuadrantForPoint))
@@ -191,50 +189,21 @@ struct ComplexTerrainPathingResult extends array
 	endmethod
 	
     public static method CreateSimple takes integer pathingType, real terrainMidX, real terrainMidY returns thistype
-        local thistype new 
-
-        //first check to see if there are any structs waiting to be recycled
-        if (recycle == 0) then
-            //if recycle is 0, there are no structs, so increase instance count
-            set instanceCount = instanceCount + 1
-            set new = instanceCount
-        else
-            //a struct is waiting to be recycled, so use it
-            set new = recycle
-            set recycle = recycle.recycleNext
-            
-            set new.QuadrantForPoint = 0
-            set new.RelevantXTerrainTypeID = 0
-            set new.RelevantYTerrainTypeID = 0
-        endif
-        
-        //debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "Create Simple, CTPR Count: " + I2S(RecycleCount))
-        
+        local thistype new = thistype.allocate()
+        set new.QuadrantForPoint = 0
+        set new.RelevantXTerrainTypeID = 0
+        set new.RelevantYTerrainTypeID = 0
+               
         set new.TerrainPathingForPoint = pathingType
-        //set new.RelevantXTerrainTypeID = relevantTerrainType
         set new.TerrainMidpointX = terrainMidX
         set new.TerrainMidpointY = terrainMidY
                 
         return new
     endmethod
     public static method CreateComplex takes integer pathingType, real terrainMidX, real terrainMidY, integer quadrant, integer terrainPushedX, integer terrainPushedY returns thistype
-        local thistype new 
-        
-        //first check to see if there are any structs waiting to be recycled
-        if (recycle == 0) then
-            //if recycle is 0, there are no structs, so increase instance count
-            set instanceCount = instanceCount + 1
-            set new = instanceCount
-        else
-            //a struct is waiting to be recycled, so use it
-            set new = recycle
-            set recycle = recycle.recycleNext
-        endif
-        
-        //debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "Create Complex, CTPR Count: " + I2S(RecycleCount))
+        local thistype new = thistype.allocate()
         
         set new.TerrainPathingForPoint = pathingType
-        //set new.RelevantXTerrainTypeID = relevantTerrainType
         set new.TerrainMidpointX = terrainMidX
         set new.TerrainMidpointY = terrainMidY
         
@@ -245,24 +214,13 @@ struct ComplexTerrainPathingResult extends array
         return new
     endmethod
     public static method create takes integer pathingType returns thistype
-        local thistype new
+        local thistype new = thistype.allocate()
         
-        //first check to see if there are any structs waiting to be recycled
-        if (recycle == 0) then
-            //if recycle is 0, there are no structs, so increase instance count
-            set instanceCount = instanceCount + 1
-            set new = instanceCount
-        else
-            //a struct is waiting to be recycled, so use it
-            set new = recycle
-            set recycle = recycle.recycleNext
-            
-            set new.TerrainMidpointX = 0
-            set new.TerrainMidpointY = 0
-            set new.QuadrantForPoint = 0
-            set new.RelevantXTerrainTypeID = 0
-            set new.RelevantYTerrainTypeID = 0
-        endif
+        set new.TerrainMidpointX = 0
+        set new.TerrainMidpointY = 0
+        set new.QuadrantForPoint = 0
+        set new.RelevantXTerrainTypeID = 0
+        set new.RelevantYTerrainTypeID = 0
         
         set new.TerrainPathingForPoint = pathingType
         
@@ -270,9 +228,15 @@ struct ComplexTerrainPathingResult extends array
     endmethod
     
     public method destroy takes nothing returns nothing
+        set this.TerrainMidpointX = 0
+        set this.TerrainMidpointY = 0
+        set this.QuadrantForPoint = 0
+        set this.RelevantXTerrainTypeID = 0
+        set this.RelevantYTerrainTypeID = 0
+        set this.TerrainPathingForPoint = 0
+        
         //add to recycle stack
-        set recycleNext = recycle
-        set recycle = this
+        call this.deallocate()
     endmethod
 endstruct
 
@@ -505,23 +469,6 @@ private function init takes nothing returns nothing
     set SE_UnitVector = vector2.create(SIN_45, -SIN_45)
     set SW_UnitVector = vector2.create(-SIN_45, -SIN_45)
     set NW_UnitVector = vector2.create(-SIN_45, SIN_45)
-    
-    /*
-    set NE_UnitVector = vector2.create(SIN_45, -SIN_45)
-    set SE_UnitVector = vector2.create(SIN_45, SIN_45)
-    set SW_UnitVector = vector2.create(SIN_45, -SIN_45)
-    set NW_UnitVector = vector2.create(SIN_45, SIN_45)
-    */
-    
-//    debug call DisplayTextToForce(bj_FORCE_PLAYER[0], I2S(Up_UnitVector))
-//    debug call DisplayTextToForce(bj_FORCE_PLAYER[0], I2S(Down_UnitVector))
-//    debug call DisplayTextToForce(bj_FORCE_PLAYER[0], I2S(Left_UnitVector))
-//    debug call DisplayTextToForce(bj_FORCE_PLAYER[0], I2S(Right_UnitVector))
-//    
-//    debug call DisplayTextToForce(bj_FORCE_PLAYER[0], I2S(NE_UnitVector))
-//    debug call DisplayTextToForce(bj_FORCE_PLAYER[0], I2S(SE_UnitVector))
-//    debug call DisplayTextToForce(bj_FORCE_PLAYER[0], I2S(SW_UnitVector))
-//    debug call DisplayTextToForce(bj_FORCE_PLAYER[0], I2S(NW_UnitVector))    
 endfunction
     
 endlibrary

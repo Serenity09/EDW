@@ -52,7 +52,7 @@ globals
     private constant boolean DEBUG_TERRAIN_KILL = false
     private constant boolean DEBUG_TERRAIN_CHANGE = false
 	private constant boolean DEBUG_GRASS_GRAVITY = false
-    private constant boolean DEBUG_JUMPING = false
+    private constant boolean DEBUG_JUMPING = true
 	
 	private constant boolean DEBUG_CAMERA = false
 	
@@ -172,7 +172,7 @@ endglobals
         endmethod
                 
         //assuming that the point has been checked to escape the diagonal, and has been projected along the current one, there are only a few options left for where it could go next
-        //there are only 3-4 possibilities for the next diagonal that should make this check less expensive than the full ComplexTerrainPathing_GetPathingForPoint check
+        //there are only 3-4 possibilities for the next diagonal that should make this check less expensive than the full GetPathingForPoint check
         //corner piece: diagonal ends, continues as-is, or turns 45deg up or down
         //straight edge piece: continues as-is, or turns 45deg up or down
         public static method GetNextDiagonal takes ComplexTerrainPathingResult currentDiagonal, real currentX, real currentY, vector2 newPosition returns ComplexTerrainPathingResult
@@ -1157,8 +1157,6 @@ endglobals
 						
                         //this is way more intense then i need here, and i can't even handle any of the cases appropriately as things are setup now
                         //would a CheckAndApplyNewDiagonal(.DiagonalPathing, .XPosition, .YPosition, newX, newY) function make sense?
-                        //set pathingResult = ComplexTerrainPathing_GetPathingForPoint(.XPosition + newX, .YPosition + newY)
-                        //debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "Escaping diagonal manually!")
                         static if DEBUG_DIAGONAL_ESCAPE then
                             call DisplayTextToForce(bj_FORCE_PLAYER[0], "Escaping diagonal manually! " + R2S(.XPosition) + "," + R2S(.YPosition) + "; " + R2S(newX) + "," + R2S(newY))
                         endif
@@ -1237,9 +1235,6 @@ endglobals
                                     call DisplayTextToForce(bj_FORCE_PLAYER[0], "Warning, unhandled case for escaping a diagonal into an unhandled destination terrain pathing type " + I2S(pathingResult.TerrainPathingForPoint))
                                 endif
                             endif
-                            
-                            call pathingResult.destroy()
-                            set pathingResult = 0
                         endif
                         //debug else
                         //    debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "Warning, unhandled case for escaping a diagonal into an unpathable destination")
@@ -1438,12 +1433,6 @@ endglobals
 											
 											set .YVelocity = 0
                                         endif
-                                        
-                                        //this only works when obstructing wall is square, if obstructing wall is diag then this glitches
-                                        //its not very smooth when unit goes from diagonal to wall collision to free falling to diagonal... better to pretend we stayed on the same diagonal
-                                        //to do this right we'd need a corner state for all 8 corners
-                                        //call pathingResult.destroy()
-                                        //set pathingResult = .DiagonalPathing
                                     else
                                         //continued onto square matching previous diagonal surface
                                         if .DiagonalPathing.TerrainPathingForPoint == ComplexTerrainPathing_Left then
@@ -2086,17 +2075,12 @@ endglobals
                             call SetUnitY(.Unit, .YPosition)
                             
                             set .PushedAgainstVector = 0
-                        endif
-                        
-                        //finally release the pathing result as there's no point in storing an open pathing result
-                        call pathingResult.destroy()
-                                                
+                        endif                                                
                         //debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "Open Space")
                         //debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "Moved to open space x, y: " + R2S(.XPosition) + ", " + R2S(.YPosition) + "; new x: " + R2S(newX) + ", new Y: " + R2S(newY))
                     elseif pathingResult.TerrainPathingForPoint == ComplexTerrainPathing_Inside then
                         //--T-O-D-O-- consider iterating when we hit an inside point
                         //debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "Warning, going too fast for pathing and hit inside area of diagonal tiles")
-                        call pathingResult.destroy()
                     elseif pathingResult.TerrainPathingForPoint == ComplexTerrainPathing_Square then
                         //need to evaluate x and y separately so that one can be applied even if the other can't
                         //apply x first
@@ -2108,7 +2092,9 @@ endglobals
                         //set pathingResult = GetPathingForPoint(newX, .CurrentY)
                         if newPosition.x != 0 then
 							//TODO does this all really need to happen or can i just check TerrainGlobals_IsTerrainPathable(GetTerrainType(.XPosition + newPosition.x + directionX*wOFFSET, .YPosition))
-                            call pathingResult.destroy()
+                            if pathingResult != 0 then
+                                call pathingResult.destroy()
+                            endif
                             set pathingResult = ComplexTerrainPathing_GetPathingForPoint(.XPosition + newPosition.x + directionX*wOFFSET, .YPosition)
                             
                             //debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "New x: " + R2S(newPosition.x) + ", velocity x: " + R2S(.XVelocity))
@@ -2154,7 +2140,9 @@ endglobals
                         //debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "square x, y velocity: " + R2S(.XVelocity) + ", " + R2S(.YVelocity))
                         
                         if newPosition.y != 0 then
-                            call pathingResult.destroy()
+                            if pathingResult != 0 then
+                                call pathingResult.destroy()
+                            endif
                             set pathingResult = ComplexTerrainPathing_GetPathingForPoint(.XPosition, .YPosition + newPosition.y + directionY*wOFFSET)
                             
 							static if DEBUG_SQUARE then
@@ -2215,9 +2203,6 @@ endglobals
                                 set .PushedAgainstVector = ComplexTerrainPathing_Right_UnitVector
                             endif
                         endif
-                        
-                        //not storing square pathing description for now
-                        call pathingResult.destroy()
                         
                         //debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "square x, y: " + R2S(.XPosition) + ", " + R2S(.YPosition))
                     else //now on a diagonal tile!
@@ -2428,8 +2413,6 @@ endglobals
                     call newPosition.destroy()
                 endif
             else //there was no movement in the x or y directions at all, possible or not
-                
-                
                 if .OnDiagonal then
                     //check if we escape the diagonal's stickyness
 					//won't ever escape a diagonal by not moving
@@ -2517,6 +2500,10 @@ endglobals
 			static if DEBUG_PHYSICS_LOOP then
 				call DisplayTextToForce(bj_FORCE_PLAYER[0], "Finished physics ---")
 			endif
+
+            if pathingResult != 0 and pathingResult != this.DiagonalPathing then
+                call pathingResult.destroy()
+            endif
         endmethod
                 
         private method RemoveTerrainEffect takes nothing returns nothing
@@ -3517,7 +3504,7 @@ endglobals
             local real l
             
             static if DEBUG_JUMPING then
-                //call DisplayTextToForce(bj_FORCE_PLAYER[0], "Pressed up")
+                call DisplayTextToForce(bj_FORCE_PLAYER[pID], "Pressed up")
             endif
             
             //only apply logic if player is platforming
@@ -3646,25 +3633,13 @@ endglobals
 								call DisplayTextToForce(bj_FORCE_PLAYER[0], "Found vertical opposition above")
 							endif
 							
-							call pathingResult.destroy()
+                            call pathingResult.destroy()
 							return false
 						endif
 						
-						call pathingResult.destroy()
-						
-						// if TerrainGlobals_IsTerrainJumpable(GetTerrainType(p.XPosition, p.YPosition + vjBUFFER)) then
-                            // set p.YVelocity = -p.vJumpSpeed
-                            
-                            // //Objects\Spawnmodels\Other\ToonBoom\ToonBoom.mdl
-                            // call DestroyEffect(AddSpecialEffect(VERTICAL_JUMP_FX, p.XPosition, p.YPosition))
-                            // //debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "Vert jump " + R2S(p.YVelocity))
-                            
-							// static if DEBUG_JUMPING then
-								// call DisplayTextToForce(bj_FORCE_PLAYER[0], "Found vertical opposition above")
-							// endif
-							
-                            // return false
-                        // endif
+						if pathingResult != 0 then
+                            call pathingResult.destroy()
+                        endif
                     elseif (p.YVelocity == 0 and p.GravitationalAccel < 0) or p.YVelocity < 0 then
                         set pathingResult = ComplexTerrainPathing_GetPathingForPoint(p.XPosition, p.YPosition - vjBUFFER)
 						// call DisplayTextToForce(bj_FORCE_PLAYER[0], "Pathing below: " + I2S(pathingResult.TerrainPathingForPoint))
@@ -3684,20 +3659,9 @@ endglobals
 							return false
 						endif
 						
-						call pathingResult.destroy()
-						
-						// if TerrainGlobals_IsTerrainJumpable(GetTerrainType(p.XPosition, p.YPosition - vjBUFFER)) then                    
-                            // set p.YVelocity = p.vJumpSpeed
-                        
-                            // call DestroyEffect(AddSpecialEffect(VERTICAL_JUMP_FX, p.XPosition, p.YPosition))
-                            // //debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "Vert jump " + R2S(p.YVelocity))
-                            
-							// static if DEBUG_JUMPING then
-								// call DisplayTextToForce(bj_FORCE_PLAYER[0], "Found vertical opposition below")
-							// endif
-							
-                            // return false
-                        // endif
+						if pathingResult != 0 then
+                            call pathingResult.destroy()
+                        endif
                     endif
                     
                     //check left of x
@@ -3732,8 +3696,10 @@ endglobals
 						return false
 					endif
 					
-					call pathingResult.destroy()
-					
+                    if pathingResult != 0 then
+					    call pathingResult.destroy()
+					endif
+
 					//check right of x
 					set pathingResult = ComplexTerrainPathing_GetPathingForPoint(p.XPosition + hjBUFFER, p.YPosition)
 						
@@ -3766,7 +3732,9 @@ endglobals
 						return false
 					endif
 					
-					call pathingResult.destroy()
+					if pathingResult != 0 then
+					    call pathingResult.destroy()
+					endif
 										
                     // if TerrainGlobals_IsTerrainWallJumpable(GetTerrainType(p.XPosition - hjBUFFER, p.YPosition)) and TerrainGlobals_IsTerrainSquare(GetTerrainType(p.XPosition - hjBUFFER, p.YPosition)) then
                         // //apply a percentage, given by v2hJumpRatio, of vJumpSpeed as immediate YVelocity

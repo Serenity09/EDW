@@ -79,6 +79,7 @@ library InGameCommands initializer init requires MazerGlobals, Platformer, Relay
 			call DisplayTextToForce(bj_FORCE_PLAYER[pID], "SimpleListNode: " + I2S(SimpleList_ListNode.calculateMemoryUsage()))
 			call DisplayTextToForce(bj_FORCE_PLAYER[pID], "PlatformerPropertyEquation: " + I2S(PlatformerPropertyEquation.calculateMemoryUsage()))
 			call DisplayTextToForce(bj_FORCE_PLAYER[pID], "PlatformerPropertyAdjustment: " + I2S(PlatformerPropertyAdjustment.calculateMemoryUsage()))
+			call DisplayTextToForce(bj_FORCE_PLAYER[pID], "ComplexTerrainPathingResult: " + I2S(ComplexTerrainPathingResult.calculateMemoryUsage()))
 			call DisplayTextToForce(bj_FORCE_PLAYER[pID], "RelayUnit: " + I2S(RelayUnit.calculateMemoryUsage()))
 			call DisplayTextToForce(bj_FORCE_PLAYER[pID], "Deferred: " + I2S(Deferred.calculateMemoryUsage()))
 			call DisplayTextToForce(bj_FORCE_PLAYER[pID], "Deferred Awaiter: " + I2S(DeferredAwaiter.calculateMemoryUsage()))
