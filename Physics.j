@@ -1893,7 +1893,10 @@ endglobals
                             
                             //finally update pathing if its changed
                             if pathingResult != .DiagonalPathing then
-                                call .DiagonalPathing.destroy()
+                                if .DiagonalPathing != 0 then
+                                    call .DiagonalPathing.destroy()
+                                endif
+
                                 set .DiagonalPathing = pathingResult
                                 
                                 if pathingResult == 0 then
