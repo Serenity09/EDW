@@ -52,7 +52,7 @@ globals
     private constant boolean DEBUG_TERRAIN_KILL = false
     private constant boolean DEBUG_TERRAIN_CHANGE = false
 	private constant boolean DEBUG_GRASS_GRAVITY = false
-    private constant boolean DEBUG_JUMPING = true
+    private constant boolean DEBUG_JUMPING = false
 	
 	private constant boolean DEBUG_CAMERA = false
 	
@@ -1893,6 +1893,7 @@ endglobals
                             
                             //finally update pathing if its changed
                             if pathingResult != .DiagonalPathing then
+                                //DiagonalPathing can be null by the time it's final update is called, ex when changing from diagonal to square
                                 if .DiagonalPathing != 0 then
                                     call .DiagonalPathing.destroy()
                                 endif
@@ -3505,6 +3506,8 @@ endglobals
 			local ComplexTerrainPathingResult pathingResult
 			//ComplexTerrainPathing_GetPathingForPoint(.XPosition + newX, .YPosition + newY)
             local real l
+
+            local integer xTerrainPushedAgainst
             
             static if DEBUG_JUMPING then
                 call DisplayTextToForce(bj_FORCE_PLAYER[pID], "Pressed up")
@@ -3570,7 +3573,7 @@ endglobals
                         endif
                         
                         return false
-                    elseif p.PushedAgainstVector == ComplexTerrainPathing_Up_UnitVector or p.PushedAgainstVector == ComplexTerrainPathing_Down_UnitVector and TerrainGlobals_IsTerrainJumpable(p.YTerrainPushedAgainst) then
+                    elseif p.PushedAgainstVector == ComplexTerrainPathing_Up_UnitVector or p.PushedAgainstVector == ComplexTerrainPathing_Down_UnitVector then
                         set p.YVelocity = p.vJumpSpeed * p.PushedAgainstVector.y
                         
                         //experimental
@@ -3585,32 +3588,44 @@ endglobals
 						call p.ApplyPhysics()
                         
                         return false
-                    elseif p.PushedAgainstVector == ComplexTerrainPathing_Left_UnitVector or p.PushedAgainstVector == ComplexTerrainPathing_Right_UnitVector and TerrainGlobals_IsTerrainWallJumpable(p.XTerrainPushedAgainst) then
-                        set p.XVelocity = p.hJumpSpeed * p.PushedAgainstVector.x
+                    elseif p.PushedAgainstVector == ComplexTerrainPathing_Left_UnitVector or p.PushedAgainstVector == ComplexTerrainPathing_Right_UnitVector then
+                        set xTerrainPushedAgainst = p.XTerrainPushedAgainst
                         
-						if TerrainGlobals_IsTerrainGoodFooting(p.XTerrainPushedAgainst) then
-							if p.GravitationalAccel < 0 then
-								set p.YVelocity = p.vJumpSpeed * p.v2hJumpRatio
-							elseif p.GravitationalAccel > 0 then
-								set p.YVelocity = -p.vJumpSpeed * p.v2hJumpRatio
-							endif
-						else
-							if p.GravitationalAccel < 0 then
-								set p.YVelocity = p.YVelocity + p.vJumpSpeed * p.v2hJumpRatio
-							elseif p.GravitationalAccel > 0 then
-								set p.YVelocity = p.YVelocity + -p.vJumpSpeed * p.v2hJumpRatio
-							endif
-						endif
-						
-						static if DEBUG_VELOCITY then
-                            call DisplayTextToForce(bj_FORCE_PLAYER[0], "X Velocity: " + R2S(p.XVelocity) + ", Y Velocity: " + R2S(p.YVelocity))
+                        if xTerrainPushedAgainst == 0 then
+                            if p.PushedAgainstVector == ComplexTerrainPathing_Left_UnitVector then
+                                set xTerrainPushedAgainst = GetTerrainType(p.XPosition + hjBUFFER, p.YPosition)
+                            else
+                                set xTerrainPushedAgainst = GetTerrainType(p.XPosition - hjBUFFER, p.YPosition)
+                            endif
                         endif
-                        
-                        call DestroyEffect(AddSpecialEffect(NON_VERTICAL_JUMP_FX, p.XPosition, p.YPosition))
-                        
-						call p.ApplyPhysics()
-						
-                        return false
+
+                        if TerrainGlobals_IsTerrainWallJumpable(xTerrainPushedAgainst) then
+                            set p.XVelocity = p.hJumpSpeed * p.PushedAgainstVector.x
+                            
+                            if TerrainGlobals_IsTerrainGoodFooting(xTerrainPushedAgainst) then
+                                if p.GravitationalAccel < 0 then
+                                    set p.YVelocity = p.vJumpSpeed * p.v2hJumpRatio
+                                elseif p.GravitationalAccel > 0 then
+                                    set p.YVelocity = -p.vJumpSpeed * p.v2hJumpRatio
+                                endif
+                            else
+                                if p.GravitationalAccel < 0 then
+                                    set p.YVelocity = p.YVelocity + p.vJumpSpeed * p.v2hJumpRatio
+                                elseif p.GravitationalAccel > 0 then
+                                    set p.YVelocity = p.YVelocity + -p.vJumpSpeed * p.v2hJumpRatio
+                                endif
+                            endif
+                            
+                            static if DEBUG_VELOCITY then
+                                call DisplayTextToForce(bj_FORCE_PLAYER[0], "X Velocity: " + R2S(p.XVelocity) + ", Y Velocity: " + R2S(p.YVelocity))
+                            endif
+                            
+                            call DestroyEffect(AddSpecialEffect(NON_VERTICAL_JUMP_FX, p.XPosition, p.YPosition))
+                            
+                            call p.ApplyPhysics()
+                            
+                            return false
+                        endif
                     endif
                 else
                     //double check that there's nothing close by for the sake of playability -- this only applies when not on a diagonal
@@ -3625,7 +3640,7 @@ endglobals
                     if (p.YVelocity == 0 and p.GravitationalAccel > 0) or p.YVelocity > 0 then
                         set pathingResult = ComplexTerrainPathing_GetPathingForPoint(p.XPosition, p.YPosition + vjBUFFER)
 						
-						if (pathingResult.TerrainPathingForPoint == ComplexTerrainPathing_Square or pathingResult.TerrainPathingForPoint == ComplexTerrainPathing_Bottom) and TerrainGlobals_IsTerrainJumpable(pathingResult.GetYTerrainType()) then
+						if pathingResult.TerrainPathingForPoint == ComplexTerrainPathing_Square or pathingResult.TerrainPathingForPoint == ComplexTerrainPathing_Bottom then
 							set p.YVelocity = -p.vJumpSpeed
                             
                             //Objects\Spawnmodels\Other\ToonBoom\ToonBoom.mdl
@@ -3647,7 +3662,7 @@ endglobals
                         set pathingResult = ComplexTerrainPathing_GetPathingForPoint(p.XPosition, p.YPosition - vjBUFFER)
 						// call DisplayTextToForce(bj_FORCE_PLAYER[0], "Pathing below: " + I2S(pathingResult.TerrainPathingForPoint))
 						
-						if (pathingResult.TerrainPathingForPoint == ComplexTerrainPathing_Square or pathingResult.TerrainPathingForPoint == ComplexTerrainPathing_Top) and TerrainGlobals_IsTerrainJumpable(pathingResult.GetYTerrainType()) then
+						if pathingResult.TerrainPathingForPoint == ComplexTerrainPathing_Square or pathingResult.TerrainPathingForPoint == ComplexTerrainPathing_Top then
 							set p.YVelocity = p.vJumpSpeed
                             
                             //Objects\Spawnmodels\Other\ToonBoom\ToonBoom.mdl
