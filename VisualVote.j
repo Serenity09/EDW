@@ -1,4 +1,4 @@
-library VisualVote requires Vector2, Alloc, Table, PlayerUtils, SimpleList, locust, TimerUtils
+library VisualVote requires Vector2, Alloc, Table, PlayerUtils, SimpleList, locust, TimerUtils, EDWVisualVoteCallback
     globals
         public constant real    MENU_DESTROY_TIMEOUT = .5
         public constant integer CONTAINER_BORDER_MARGIN = 64
@@ -21,6 +21,8 @@ library VisualVote requires Vector2, Alloc, Table, PlayerUtils, SimpleList, locu
         public constant integer TEXT_HEADER2_SIZE = 16
 		
 		public constant real MENU_VISION_BUFFER = TERRAIN_TILE_SIZE * 2.
+
+        public constant boolean DEBUG_DESTROY_VISUAL_VOTE = true
         
         public VisualVote_voteMenu LastFinishedMenu
     endglobals
@@ -187,14 +189,15 @@ library VisualVote requires Vector2, Alloc, Table, PlayerUtils, SimpleList, locu
                     call .parent.parent.parent.applyPlayerVote()
                 endif
             else
-                call DisplayTextToPlayer(GetLocalPlayer(), 0, 0, LocalizeContent(.parent.contentID, User(pID).LanguageCode) + " - " + LocalizeContent(.contentID, User(pID).LanguageCode) + " is not available yet, check back soon!")
+                //call DisplayTextToPlayer(GetLocalPlayer(), 0, 0, LocalizeContent(.parent.contentID, User(pID).LanguageCode) + " - " + LocalizeContent(.contentID, User(pID).LanguageCode) + " is not available yet, check back soon!")
             endif
         endmethod
         
-		public method refresh takes User forUser returns nothing
-			if GetLocalPlayer() == Player(forUser) then
-				call SetTextTagText(.gameText, LocalizeContent(.contentID, forUser.LanguageCode), TextTagSize2Height(TEXT_OPTION_SIZE))
-			endif
+		public method refresh takes string majorityLanguage returns nothing
+			// if GetLocalPlayer() == Player(forUser) then
+			// 	call SetTextTagText(.gameText, LocalizeContent(.contentID, forUser.LanguageCode), TextTagSize2Height(TEXT_OPTION_SIZE))
+			// endif
+            call SetTextTagText(.gameText, LocalizeContent(.contentID, majorityLanguage), TextTagSize2Height(TEXT_OPTION_SIZE))
 		endmethod
 		
         public method render takes real x, real y returns real
@@ -229,15 +232,6 @@ library VisualVote requires Vector2, Alloc, Table, PlayerUtils, SimpleList, locu
             return y - TEXT_OPTION_SIZE * TEXT_HEIGHT
                         
             //display the container header
-//            set .gameText = CreateTextTag()
-//            
-//            call SetTextTagText(.gameText, .text, TextTagSize2Height(TEXT_HEADER2_SIZE))
-//            call SetTextTagPermanent(.gameText, true)
-//            call SetTextTagPos(.gameText, x, y, TEXT_OFFSET_HEIGHT)
-//            
-//            call SetTextTagVisibility(.gameText, true)
-//            
-//            return y - TEXT_HEADER2_SIZE * TEXT_HEIGHT
         endmethod
               
         public method destroy takes nothing returns nothing
@@ -260,14 +254,6 @@ library VisualVote requires Vector2, Alloc, Table, PlayerUtils, SimpleList, locu
             call RemoveUnit(voteUnit)
             set voteUnit = null
             
-//            loop
-//            exitwhen iP >= NUMBER_PLAYERS
-//                if playerVoteUnits[iP] != null then
-//                    call RemoveUnit(playerVoteUnits[iP])
-//                    set playerVoteUnits[iP] = null
-//                endif
-//            set iP = iP + 1
-//            endloop
         endmethod
         
         public static method create takes integer contentID, string callback returns thistype
@@ -314,20 +300,22 @@ library VisualVote requires Vector2, Alloc, Table, PlayerUtils, SimpleList, locu
 			return .parent.parent
 		endmethod
 		
-		public method refresh takes User forUser returns nothing
+		public method refresh takes string majorityLanguage returns nothing
 			local integer iVO = 0
             local voteOption vo
 			
-			if GetLocalPlayer() == Player(forUser) then
-				// call SetTextTagText(.gameText, .text, TextTagSize2Height(TEXT_HEADER2_SIZE))
-				call SetTextTagText(.gameText, LocalizeContent(.contentID, forUser.LanguageCode), TextTagSize2Height(TEXT_OPTION_SIZE))
-			endif
+			// if GetLocalPlayer() == Player(forUser) then
+			// 	// call SetTextTagText(.gameText, .text, TextTagSize2Height(TEXT_HEADER2_SIZE))
+			// 	call SetTextTagText(.gameText, LocalizeContent(.contentID, forUser.LanguageCode), TextTagSize2Height(TEXT_OPTION_SIZE))
+			// endif
+
+            call SetTextTagText(.gameText, LocalizeContent(.contentID, majorityLanguage), TextTagSize2Height(TEXT_OPTION_SIZE))
 			
 			loop
             exitwhen iVO >= .optionCount
                 set vo = .options[iVO]
                 
-                call vo.refresh(forUser)
+                call vo.refresh(majorityLanguage)
             set iVO = iVO + 1
             endloop
 		endmethod
@@ -572,7 +560,7 @@ library VisualVote requires Vector2, Alloc, Table, PlayerUtils, SimpleList, locu
         
         implement Alloc
         
-		public method refresh takes User forUser returns nothing
+		public method refresh takes string majorityLanguage returns nothing
             local integer iVC = 0
             local voteContainer vc
                         
@@ -581,7 +569,7 @@ library VisualVote requires Vector2, Alloc, Table, PlayerUtils, SimpleList, locu
                 set vc = voteContainers[iVC]
                 
                 //call DisplayTextToForce(bj_FORCE_PLAYER[0], "rendering container: " + I2S(iVC))
-                call vc.refresh(forUser)
+                call vc.refresh(majorityLanguage)
             set iVC = iVC + 1
             endloop
         endmethod
@@ -724,7 +712,7 @@ library VisualVote requires Vector2, Alloc, Table, PlayerUtils, SimpleList, locu
         //implement Alloc
         implement List
         
-		public method refresh takes User forUser returns nothing
+		public method refresh takes string majorityLanguage returns nothing
 			local integer iVC = 0
             local voteColumn vc
 			
@@ -739,7 +727,7 @@ library VisualVote requires Vector2, Alloc, Table, PlayerUtils, SimpleList, locu
                 exitwhen iVC >= voteColumnCount
                     set vc = voteColumns[iVC]
                     
-					call vc.refresh(forUser)
+					call vc.refresh(majorityLanguage)
                 set iVC = iVC + 1
                 endloop
 			endif
@@ -784,12 +772,13 @@ library VisualVote requires Vector2, Alloc, Table, PlayerUtils, SimpleList, locu
                 set .enabled = true
 				
 				//localize text for all players
-				set curUserNode = .forPlayers.first
-				loop
-				exitwhen curUserNode == 0
-					call .refresh(curUserNode.value)
-				set curUserNode = curUserNode.next
-				endloop
+                call .refresh(Teams_MazingTeam.GetMajorityLanguage())
+				// set curUserNode = .forPlayers.first
+				// loop
+				// exitwhen curUserNode == 0
+				// 	call .refresh(curUserNode.value)
+				// set curUserNode = curUserNode.next
+				// endloop
             endif
         endmethod
         
@@ -807,6 +796,7 @@ library VisualVote requires Vector2, Alloc, Table, PlayerUtils, SimpleList, locu
         public method enforceVoteMode takes nothing returns nothing
             local SimpleList_ListNode fp
             local timer t
+            local fogmodifier fog
             
             if rendered then
                 set fp = forPlayers.first
@@ -823,10 +813,11 @@ library VisualVote requires Vector2, Alloc, Table, PlayerUtils, SimpleList, locu
                 
                 loop
                 exitwhen fp == 0
+                    //for some reason, this will only work properly for all effected players when applied only to each effected player locally. Otherwise, only the first player see's it
+                    set fog = CreateFogModifierRect(Player(fp.value), FOG_OF_WAR_VISIBLE, Rect(topLeft.x - MENU_VISION_BUFFER, botRight.y - MENU_VISION_BUFFER, botRight.x + MENU_VISION_BUFFER, topLeft.y + MENU_VISION_BUFFER), false, true)
+                    call FogModifierStart(fog)
+
                     if GetLocalPlayer() == Player(fp.value) then
-						//for some reason, this will only work properly for all effected players when applied only to each effected player locally. Otherwise, only the first player see's it
-                        call FogModifierStart(CreateFogModifierRect(Player(fp.value), FOG_OF_WAR_VISIBLE, Rect(topLeft.x - MENU_VISION_BUFFER, botRight.y - MENU_VISION_BUFFER, botRight.x + MENU_VISION_BUFFER, topLeft.y + MENU_VISION_BUFFER), false, true))
-						
 						//only show timer dialog for players it effects
                         call TimerDialogDisplay(.td, true)
 						
@@ -836,12 +827,24 @@ library VisualVote requires Vector2, Alloc, Table, PlayerUtils, SimpleList, locu
 						// call PanCameraToTimed((topLeft.x + botRight.x) / 2, (topLeft.y + botRight.y) / 2, 0.01)
                         
                         //pivot camera to top down view
-                        //static if Library_Platformer then
                         call CameraSetupApply(Platformer.PlatformingCamera, false, false)
-                        //endif
                     endif
                 set fp = fp.next
                 endloop
+
+                // //for some reason, this will only work properly for all effected players when applied only to each effected player locally. Otherwise, only the first player see's it
+                // call FogModifierStart(CreateFogModifierRect(Player(fp.value), FOG_OF_WAR_VISIBLE, Rect(topLeft.x - MENU_VISION_BUFFER, botRight.y - MENU_VISION_BUFFER, botRight.x + MENU_VISION_BUFFER, topLeft.y + MENU_VISION_BUFFER), false, true))
+                
+                // //only show timer dialog for players it effects
+                // call TimerDialogDisplay(.td, true)
+                
+                // call SetCameraBounds(topLeft.x, topLeft.y, topLeft.x, botRight.y, botRight.x, botRight.y, botRight.x, topLeft.y)
+                // // call SetCameraBounds(topLeft.x - MENU_VISION_BUFFER, topLeft.y + MENU_VISION_BUFFER, topLeft.x - MENU_VISION_BUFFER, botRight.y - MENU_VISION_BUFFER, botRight.x + MENU_VISION_BUFFER, botRight.y - MENU_VISION_BUFFER, botRight.x + MENU_VISION_BUFFER, topLeft.y + MENU_VISION_BUFFER)
+                // call User(fp.value).PanCamera((topLeft.x + botRight.x) / 2, (topLeft.y + botRight.y) / 1.5, 0.01)
+                // // call PanCameraToTimed((topLeft.x + botRight.x) / 2, (topLeft.y + botRight.y) / 2, 0.01)
+                
+                // //pivot camera to top down view
+                // call CameraSetupApply(Platformer.PlatformingCamera, false, false)
                 
                 set t = null
             debug else
@@ -853,13 +856,17 @@ library VisualVote requires Vector2, Alloc, Table, PlayerUtils, SimpleList, locu
             local timer expired = GetExpiredTimer()
             local voteMenu menuExpired = GetTimerData(expired)
             
-            debug call DisplayTextToPlayer(Player(0), 0, 0, "Menu started destroying")
+            static if DEBUG_DESTROY_VISUAL_VOTE then
+                call DisplayTextToPlayer(GetLocalPlayer(), 0, 0, "Menu started destroying")
+            endif
             
             call menuExpired.destroy()
             call ReleaseTimer(expired)
             set expired = null
             
-            debug call DisplayTextToPlayer(Player(0), 0, 0, "Menu finished destroying")
+            static if DEBUG_DESTROY_VISUAL_VOTE then
+                call DisplayTextToPlayer(GetLocalPlayer(), 0, 0, "Menu finished destroying")
+            endif
         endmethod
         
         public method applyPlayerVote takes nothing returns nothing
@@ -912,6 +919,9 @@ library VisualVote requires Vector2, Alloc, Table, PlayerUtils, SimpleList, locu
 				
                 //create a timer to expire in a little bit to clean up the vote menu struct
                 //don't do it right away in case any selection events are finishing up
+                static if DEBUG_DESTROY_VISUAL_VOTE then
+                    call DisplayTextToPlayer(GetLocalPlayer(), 0, 0, "Starting destroy menu callback timer")
+                endif
                 call TimerStart(NewTimerEx(this), MENU_DESTROY_TIMEOUT, false, function voteMenu.destroyMenuCallback)
             endif
         endmethod
@@ -1037,6 +1047,7 @@ library VisualVote requires Vector2, Alloc, Table, PlayerUtils, SimpleList, locu
 			
             call .listRemove()
             
+            
             loop
             exitwhen iVC >= voteColumnCount
                 set vc = voteColumns[iVC]
@@ -1061,9 +1072,12 @@ library VisualVote requires Vector2, Alloc, Table, PlayerUtils, SimpleList, locu
             
             call this.deallocate()
             
+            call InitializeGameForGlobals()
+            /*
             if .onDestroyFinish != null then
                 call ExecuteFunc(.onDestroyFinish)
             endif
+            */
         endmethod
         
         public static method create takes real topLeftX, real topLeftY, real time, string onOptionFinishCallback returns thistype
