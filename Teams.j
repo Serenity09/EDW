@@ -1099,6 +1099,58 @@ public struct MazingTeam extends array
             set curTeamNode = curTeamNode.next
         endloop
 	endmethod
+
+	public static method GetMajorityLanguage takes nothing returns string
+		local SimpleList_List languageUserCounts = SimpleList_List.create()
+		local SimpleList_ListNode languageUserCountNode
+		local integer iLanguageCode = 1
+
+		local SimpleList_ListNode curTeamNode = thistype.AllTeams.first
+		local SimpleList_ListNode curUserNode
+		
+		local string leadLanguageCode = GetLanguageCodeFromID(LocalizationData_ENGLISH_ID)
+		local integer leadLanguageCount = 0
+		
+		//initialize languageUserCounts as all 0's
+		loop
+		exitwhen iLanguageCode > LocalizationData_LANGUAGE_COUNT
+			call languageUserCounts.addEnd(0)
+		set iLanguageCode = iLanguageCode + 1
+		endloop
+
+		//accumulate all user's language into languageUserCounts using language ID as index
+		loop
+		exitwhen curTeamNode == 0
+			set curUserNode = thistype(curTeamNode.value).Users.first
+
+			loop
+			exitwhen curUserNode == 0
+				if User(curUserNode.value).IsPlaying then
+					set languageUserCountNode = languageUserCounts.get(GetIDForLanguageCode(User(curUserNode.value).LanguageCode) - 1)
+
+					set languageUserCountNode.value = languageUserCountNode.value + 1
+				endif
+			set curUserNode = curUserNode.next
+			endloop
+		set curTeamNode = curTeamNode.next
+		endloop
+
+		//determine the language with the most user's
+		set languageUserCountNode = languageUserCounts.first
+		set iLanguageCode = 1
+		loop
+		exitwhen languageUserCountNode == 0
+			if languageUserCountNode.value > leadLanguageCount then
+				set leadLanguageCode = GetLanguageCodeFromID(iLanguageCode)
+				set leadLanguageCount = languageUserCountNode.value
+			endif
+		set languageUserCountNode = languageUserCountNode.next
+		set iLanguageCode = iLanguageCode + 1
+		endloop
+
+		call languageUserCounts.destroy()
+		return leadLanguageCode
+	endmethod
 	
 	public method PauseTeam takes boolean flag returns nothing
 		local SimpleList_ListNode curPlayerNode = .FirstUser

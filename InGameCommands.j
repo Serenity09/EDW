@@ -397,6 +397,8 @@ library InGameCommands initializer init requires MazerGlobals, Platformer, Relay
 				if GetLocalPlayer() == Player(u) then
 					call DisplayTextToPlayer(Player(u), 0, 0, "Localized: " + LocalizeContent(intVal, u.LanguageCode))
 				endif
+			elseif cmd == "majoritylanguage" then
+				call DisplayTextToPlayer(Player(u), 0, 0, "Majority Language: " + Teams_MazingTeam.GetMajorityLanguage())
 			elseif cmd == "a" or cmd == "animate" then
 				set unitgroup = CreateGroup()
 				call GroupEnumUnitsSelected(unitgroup, Player(pID), null)
