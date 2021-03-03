@@ -295,7 +295,9 @@ public struct MazingTeam extends array
                 
         loop
         exitwhen u == 0
-            call User(u.value).AddCinematicToQueue(cinema)
+			if User(u.value).IsPlaying then
+            	call User(u.value).AddCinematicToQueue(cinema)
+			endif
         set u = u.next
         endloop
     endmethod
@@ -329,7 +331,7 @@ public struct MazingTeam extends array
         
         loop
         exitwhen fp == 0
-            call User(fp.value).DisplayLocalizedMessage(contentID, 0)
+			call User(fp.value).DisplayLocalizedMessage(contentID, 0)
         set fp = fp.next
         endloop
     endmethod
