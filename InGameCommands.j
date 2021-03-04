@@ -423,7 +423,8 @@ library InGameCommands initializer init requires MazerGlobals, Platformer, Relay
 			// elseif cmd == "afk" then
 				// set async = User.SyncLocalCameraIdleTime()
 				// call async.Then(OnAllCameraSync, 0, async)
-			// endif
+			elseif cmd == "order" then
+				call DisplayTextToPlayer(Player(pID), 0, 0, "Current order id: " + I2S(GetUnitCurrentOrder(u.ActiveUnit)) + ", order name: " + OrderId2String(GetUnitCurrentOrder(u.ActiveUnit)))
 			elseif cmd == "debugpath" then
 				// call LevelPath(intVal).PrintPathByBreadth()
 				call DisplayTextToPlayer(Player(pID), 0, 0, "************************")

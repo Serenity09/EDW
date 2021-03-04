@@ -85,6 +85,7 @@ struct User extends array
 	private static real LocalCameraTargetDistance
 	
 	private static trigger AFKSyncEvent
+	readonly static vector2 LocalUnitPosition
 	readonly static vector2 LocalCameraTargetPosition
 	private static real LocalCameraIdleTime
 	private static real LocalAFKThreshold
@@ -1926,13 +1927,23 @@ struct User extends array
 		if not this.IsTransitioning then
 			//call async AFK logic
 			if GetLocalPlayer() == Player(this) then
+				if this.GameMode == Teams_GAMEMODE_STANDARD or this.GameMode == Teams_GAMEMODE_STANDARD_PAUSED or this.GameMode == Teams_GAMEMODE_PLATFORMING or this.GameMode == Teams_GAMEMODE_PLATFORMING_PAUSED then
+					set newTime = thistype.LocalCameraIdleTime + timeElapsed
+				endif
+
 				if this.GameMode == Teams_GAMEMODE_PLATFORMING or this.GameMode == Teams_GAMEMODE_PLATFORMING_PAUSED then				
 					if this.Platformer.HorizontalAxisState != 0 then
-						set newTime = 0
-					else
-						set newTime = thistype.LocalCameraIdleTime + timeElapsed
+						set newTime = 0						
 					endif
 				else
+					if this.GameMode == Teams_GAMEMODE_STANDARD or this.GameMode == Teams_GAMEMODE_STANDARD_PAUSED then
+						if not this.IsAFK then
+							if OrderId2String(GetUnitCurrentOrder(this.ActiveUnit)) != null and (GetUnitX(this.ActiveUnit) != thistype.LocalUnitPosition.x or GetUnitY(this.ActiveUnit) != thistype.LocalUnitPosition.y) then
+								set newTime = 0
+							endif
+						endif
+					endif
+					
 					//check if the user's camera has moved a specified distance away from its original position
 					set x = GetCameraTargetPositionX() - LocalCameraTargetPosition.x
 					set x = x*x
@@ -1943,9 +1954,6 @@ struct User extends array
 					//TODO also check mouse position, if that ever gets an async API
 					if SquareRoot(x + y) >= CAMERA_TARGET_POSITION_FLEX then
 						set newTime = 0
-					else
-						// call DisplayTextToPlayer(GetLocalPlayer(), 0, 0, "Difference for camera destination x: " + R2S(RAbsBJ(GetCameraTargetPositionX() - LocalCameraTargetPosition.x)) + ", y: " + R2S(RAbsBJ(GetCameraTargetPositionY() - LocalCameraTargetPosition.y)))
-						set newTime = thistype.LocalCameraIdleTime + timeElapsed
 					endif
 				endif
 								
@@ -1962,6 +1970,9 @@ struct User extends array
 						
 						set thistype.LocalCameraTargetPosition.x = GetCameraTargetPositionX()
 						set thistype.LocalCameraTargetPosition.y = GetCameraTargetPositionY()
+					
+						set thistype.LocalUnitPosition.x = GetUnitX(this.ActiveUnit)
+						set thistype.LocalUnitPosition.y = GetUnitY(this.ActiveUnit)
 					endif
 				endif
 			endif
@@ -2137,6 +2148,7 @@ struct User extends array
 		call TriggerAddCondition(thistype.AFKSyncEvent, Condition(function thistype.ToggleAFKCallback))
 		set User.LocalCameraIdleTime = 0.
 		set User.LocalCameraTargetPosition = vector2.create(0., 0.)
+		set User.LocalUnitPosition = vector2.create(0., 0.)
 		
 		// set User.AFKMouseEvent = CreateTrigger()
 		// call TriggerAddCondition(thistype.AFKMouseEvent, Condition(function thistype.CheckAFKMouseEventCallback))
