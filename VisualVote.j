@@ -22,7 +22,7 @@ library VisualVote requires Vector2, Alloc, Table, PlayerUtils, SimpleList, locu
 		
 		public constant real MENU_VISION_BUFFER = TERRAIN_TILE_SIZE * 2.
 
-        public constant boolean DEBUG_DESTROY_VISUAL_VOTE = true
+        public constant boolean DEBUG_DESTROY_VISUAL_VOTE = false
         
         public VisualVote_voteMenu LastFinishedMenu
     endglobals

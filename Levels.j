@@ -577,7 +577,7 @@ library Levels requires SimpleList, Teams, GameModesGlobals, LevelIDGlobals, Cin
 			call mt.ChangeScore(score)
 			
 			//update continues
-			if CONFIGURATION_PROFILE != DEV and RewardMode != GameModesGlobals_CHEAT then
+			if not ShouldUse99Continues() then
 				if RewardMode == GameModesGlobals_EASY then
 					if mt.GetContinueCount() > EASY_MAX_CONTINUE_ROLLOVER then
 						set rolloverContinues = EASY_MAX_CONTINUE_ROLLOVER

@@ -46,13 +46,15 @@ library IntroWorld requires Recycle, Levels
 		if RewardMode == GameModesGlobals_HARD then
 			set boundedSpoke.InitialOffset = 2.25*TERRAIN_TILE_SIZE
 			set boundedSpoke.LayerOffset = 2.25*TERRAIN_QUADRANT_SIZE
-			call boundedSpoke.AddUnits('e00A', 3)
+			// call boundedSpoke.AddUnits(WWSKUL, 3)
+			call boundedSpoke.AddUnits(WWWISP, 3)
 			
 			set boundedSpoke.CurrentRotationSpeed = bj_PI / l.GetWeightedRandomReal(6., 8.) * BoundedSpoke_TIMESTEP
 		else
 			set boundedSpoke.InitialOffset = 2.5*TERRAIN_TILE_SIZE
 			set boundedSpoke.LayerOffset = 3.25*TERRAIN_QUADRANT_SIZE
-			call boundedSpoke.AddUnits('e00A', 2)
+			// call boundedSpoke.AddUnits(WWSKUL, 2)
+			call boundedSpoke.AddUnits(WWWISP, 2)
 			
 			set boundedSpoke.CurrentRotationSpeed = bj_PI / 8. * BoundedSpoke_TIMESTEP
 		endif

@@ -323,37 +323,42 @@ library EDWVisualVoteCallback requires GameModesGlobals, ConfigurationMode, Time
         static if DEBUG_GAME_INITIALIZATION then
             call DisplayTextToPlayer(GetLocalPlayer(), 0, 0, "Finished Multiboard Init")
         endif
-				
-		if GameMode == GameModesGlobals_SOLO then
-			set cineMsg = CinemaMessage.createEx(null, null, 'CiTS', DEFAULT_MEDIUM_TEXT_SPEED)
-			set welcomeCineTime = welcomeCineTime + DEFAULT_MEDIUM_TEXT_SPEED
-		elseif GameMode == GameModesGlobals_TEAMALL then
-			set cineMsg = CinemaMessage.createEx(null, null, 'CiTO', DEFAULT_MEDIUM_TEXT_SPEED)
-			set welcomeCineTime = welcomeCineTime + DEFAULT_MEDIUM_TEXT_SPEED
-		else //TEAMRANDOM
-			set cineMsg = CinemaMessage.createEx(null, null, 'CiTR', DEFAULT_MEDIUM_TEXT_SPEED)
-			set welcomeCineTime = welcomeCineTime + DEFAULT_MEDIUM_TEXT_SPEED
-		endif
 		
-		set welcomeCine = Cinematic.create(null, true, true, cineMsg)
-		
-		if RewardMode == GameModesGlobals_EASY then
-			call welcomeCine.AddMessage(CinemaMessage.createEx(null, null, 'CiDE', DEFAULT_MEDIUM_TEXT_SPEED))
-			set welcomeCineTime = welcomeCineTime + DEFAULT_MEDIUM_TEXT_SPEED
-		elseif RewardMode == GameModesGlobals_HARD then
-			call welcomeCine.AddMessage(CinemaMessage.createEx(null, null, 'CiDH', DEFAULT_SHORT_TEXT_SPEED))
-			set welcomeCineTime = welcomeCineTime + DEFAULT_SHORT_TEXT_SPEED
-		else //CHEAT
-			call welcomeCine.AddMessage(CinemaMessage.createEx(null, null, 'CiDC', DEFAULT_LONG_TEXT_SPEED))
-			set welcomeCineTime = welcomeCineTime + DEFAULT_LONG_TEXT_SPEED
-		endif
-		
-		call TimerStart(NewTimer(), welcomeCineTime + .5, false, function MultiboardMinimizeCB)
-		
-		call welcomeCine.SetLastMessageBuffer(1)
-		set welcomeCineTime = welcomeCineTime + 1
+        if ShouldShowSettingVoteMenu() then
+            if GameMode == GameModesGlobals_SOLO then
+                set cineMsg = CinemaMessage.createEx(null, null, 'CiTS', DEFAULT_MEDIUM_TEXT_SPEED)
+                set welcomeCineTime = welcomeCineTime + DEFAULT_MEDIUM_TEXT_SPEED
+            elseif GameMode == GameModesGlobals_TEAMALL then
+                set cineMsg = CinemaMessage.createEx(null, null, 'CiTO', DEFAULT_MEDIUM_TEXT_SPEED)
+                set welcomeCineTime = welcomeCineTime + DEFAULT_MEDIUM_TEXT_SPEED
+            else //TEAMRANDOM
+                set cineMsg = CinemaMessage.createEx(null, null, 'CiTR', DEFAULT_MEDIUM_TEXT_SPEED)
+                set welcomeCineTime = welcomeCineTime + DEFAULT_MEDIUM_TEXT_SPEED
+            endif
+            
+            set welcomeCine = Cinematic.create(null, true, true, cineMsg)
+            
+            if RewardMode == GameModesGlobals_EASY then
+                call welcomeCine.AddMessage(CinemaMessage.createEx(null, null, 'CiDE', DEFAULT_MEDIUM_TEXT_SPEED))
+                set welcomeCineTime = welcomeCineTime + DEFAULT_MEDIUM_TEXT_SPEED
+            elseif RewardMode == GameModesGlobals_HARD then
+                call welcomeCine.AddMessage(CinemaMessage.createEx(null, null, 'CiDH', DEFAULT_SHORT_TEXT_SPEED))
+                set welcomeCineTime = welcomeCineTime + DEFAULT_SHORT_TEXT_SPEED
+            else //CHEAT
+                call welcomeCine.AddMessage(CinemaMessage.createEx(null, null, 'CiDC', DEFAULT_LONG_TEXT_SPEED))
+                set welcomeCineTime = welcomeCineTime + DEFAULT_LONG_TEXT_SPEED
+            endif
+            
+            call TimerStart(NewTimer(), welcomeCineTime + .5, false, function MultiboardMinimizeCB)
+            
+            call welcomeCine.SetLastMessageBuffer(1)
+            set welcomeCineTime = welcomeCineTime + 1
 
-		call welcomeCine.AddMessage(CinemaMessage.createEx(null, FINAL_BOSS_PRE_REVEAL, 'CiW1', DEFAULT_TINY_TEXT_SPEED))
+            call welcomeCine.AddMessage(CinemaMessage.createEx(null, FINAL_BOSS_PRE_REVEAL, 'CiW1', DEFAULT_TINY_TEXT_SPEED))
+        else
+            set welcomeCine = Cinematic.create(null, true, true, CinemaMessage.createEx(null, FINAL_BOSS_PRE_REVEAL, 'CiW1', DEFAULT_TINY_TEXT_SPEED))
+        endif
+		
         call welcomeCine.AddMessage(CinemaMessage.createEx(null, FINAL_BOSS_PRE_REVEAL, 'CiW2', DEFAULT_TINY_TEXT_SPEED))
         call welcomeCine.AddMessage(CinemaMessage.createEx(null, FINAL_BOSS_PRE_REVEAL, 'CiW3', DEFAULT_SHORT_TEXT_SPEED))
 		
@@ -404,7 +409,7 @@ library EDWVisualVoteCallback requires GameModesGlobals, ConfigurationMode, Time
         //apply the player's (custom) Default camerasetup and pan to their default mazer
         //call SelectAndPanAllDefaultUnits()
         
-		if CONFIGURATION_PROFILE == DEV or RewardMode == GameModesGlobals_CHEAT then
+		if ShouldUse99Continues() then
 			set i = 0
 			loop
 				call team[i].SetContinueCount(99)

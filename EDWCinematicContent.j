@@ -202,7 +202,7 @@ library EDWCinematicContent requires EDWLevelContent, Cinema, EDWGameTime
 		
         //DOORS HARD CODED
         //currently no start or stop logic
-        if GetFirstLevelID() != DOORS_LEVEL_ID then
+        if GetFirstLevelID() == INTRO_LEVEL_ID then
             set cineMsg = CinemaMessage.createEx(gg_unit_hfoo_0011, PRIMARY_SPEAKER_NAME, 'Cis1', DEFAULT_MEDIUM_TEXT_SPEED)
             set cine = Cinematic.create(gg_rct_SargeDoors, false, false, cineMsg)
             set cine.ActivationCondition = IsUserUnpaused

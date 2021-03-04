@@ -14,7 +14,9 @@ library ConfigurationMode requires GameModesGlobals
 		constant integer DEBUG_TEAM_MODE = GameModesGlobals_TEAMALL 	//the team mode will automatically be set to this value (only when CONFIGURATION_PROFILE != RELEASE)
 		constant boolean DEBUG_USE_FULL_VISIBILITY = false	//the entire maps visibility will be enabled or disabled depending on this value (only when CONFIGURATION_PROFILE != RELEASE)
 	endglobals
-	
+endlibrary
+
+library ConfigurationBehaviors requires GameModesGlobals, ConfigurationMode, PlayerUtils
 	function GetFirstLevelID takes nothing returns Levels_Level
         if DEBUG_MODE or CONFIGURATION_PROFILE != RELEASE then
             //3 == first ice level
@@ -36,6 +38,9 @@ library ConfigurationMode requires GameModesGlobals
 	endfunction
 	
 	function ShouldShowSettingVoteMenu takes nothing returns boolean
-		return /* CONFIGURATION_PROFILE == RELEASE or */ FORCE_SETTING_MENU
+		return /* CONFIGURATION_PROFILE == RELEASE or */ FORCE_SETTING_MENU or (GetPlayersCount() == 1 and CONFIGURATION_PROFILE == RELEASE)
+	endfunction
+	function ShouldUse99Continues takes nothing returns boolean
+		return CONFIGURATION_PROFILE == DEV or RewardMode == GameModesGlobals_CHEAT
 	endfunction
 endlibrary
