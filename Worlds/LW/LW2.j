@@ -256,13 +256,15 @@ library LW2 requires Recycle, Levels, EDWCollectibleResolveHandlers, ZoomChange
 		set nsync = SynchronizedGroup.create()
 		call l.AddStartable(nsync)
 		
-		set jtimber = nsync.AddUnit(ICETROLL)
-		set jtimber.MoveSpeed = 375
-		call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_LW2_SG2_2))
-		call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_LW2_SG2_3))
-		call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_LW2_SG2_4))
-		call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_LW2_SG2_1))
-		set jtimber.AllOrders.last.next = jtimber.AllOrders.first
+		if RewardMode == GameModesGlobals_HARD then
+			set jtimber = nsync.AddUnit(ICETROLL)
+			set jtimber.MoveSpeed = 375
+			call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_LW2_SG2_2))
+			call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_LW2_SG2_3))
+			call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_LW2_SG2_4))
+			call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_LW2_SG2_1))
+			set jtimber.AllOrders.last.next = jtimber.AllOrders.first
+		endif
 		
 		set jtimber = nsync.AddUnit(ICETROLL)
 		set jtimber.MoveSpeed = 375
@@ -273,16 +275,18 @@ library LW2 requires Recycle, Levels, EDWCollectibleResolveHandlers, ZoomChange
 		set jtimber.AllOrders.last.next = jtimber.AllOrders.first
 		
 		//top inner
-		set nsync = SynchronizedGroup.create()
-		call l.AddStartable(nsync)
+		if RewardMode == GameModesGlobals_HARD then
+			set nsync = SynchronizedGroup.create()
+			call l.AddStartable(nsync)
 		
-		set jtimber = nsync.AddUnit(ICETROLL)
-		set jtimber.MoveSpeed = 250
-		call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_LW2_SG4_4))
-		call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_LW2_SG4_1))
-		call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_LW2_SG4_2))
-		call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_LW2_SG4_3))
-		set jtimber.AllOrders.last.next = jtimber.AllOrders.first
+			set jtimber = nsync.AddUnit(ICETROLL)
+			set jtimber.MoveSpeed = 250
+			call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_LW2_SG4_4))
+			call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_LW2_SG4_1))
+			call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_LW2_SG4_2))
+			call jtimber.AllOrders.addEnd(vector2.createFromRect(gg_rct_LW2_SG4_3))
+			set jtimber.AllOrders.last.next = jtimber.AllOrders.first
+		endif
 		
 		set jtimber = nsync.AddUnit(ICETROLL)
 		set jtimber.MoveSpeed = 250

@@ -78,13 +78,7 @@ library IndexedUnit requires UnitDefaultRadius, MovementSpeedHelpers
 					call SetUnitColor(new.Unit, PLAYER_COLOR_LAVENDER)
 				endif
 			elseif unitTypeID == TRUCK then
-				set rand = GetRandomInt(0, 10)
-				
-				if rand == 0 then
-					call SetUnitColor(new.Unit, PLAYER_COLOR_RED)
-				else
-					call SetUnitColor(new.Unit, PLAYER_COLOR_AQUA)
-				endif
+				call SetUnitColor(new.Unit, PLAYER_COLOR_RED)
 			endif
 			
 			//defaults
