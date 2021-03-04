@@ -1,61 +1,87 @@
 library EDWVisualVoteCallback requires GameModesGlobals, ConfigurationMode, TimerUtils, Teams, SimpleList, Levels, Cinema, EDWLevelContent, EDWCinematicContent
+    globals
+        constant boolean DEBUG_MODE_INITIALIZATION = false
+        private constant boolean DEBUG_GAME_INITIALIZATION = false
+    endglobals
+
+    
     function GameModeSolo takes nothing returns nothing
-        //call DisplayTextToPlayer(Player(0), 0, 0, "solo")
+        static if DEBUG_MODE_INITIALIZATION then
+            call DisplayTextToPlayer(GetLocalPlayer(), 0, 0, "solo")
+        endif
                 
         set GameMode = GameModesGlobals_SOLO
     endfunction
     
     function GameModeRandom takes nothing returns nothing
-        //call DisplayTextToPlayer(Player(0), 0, 0, "random")
+        static if DEBUG_MODE_INITIALIZATION then
+            call DisplayTextToPlayer(GetLocalPlayer(), 0, 0, "random")
+        endif
         
         set GameMode = GameModesGlobals_TEAMRANDOM
     endfunction
     
     function GameModeAllIsOne takes nothing returns nothing        
-        //call DisplayTextToPlayer(Player(0), 0, 0, "all is one")
+        static if DEBUG_MODE_INITIALIZATION then
+            call DisplayTextToPlayer(GetLocalPlayer(), 0, 0, "all is one")
+        endif
         
         set GameMode = GameModesGlobals_TEAMALL
     endfunction
     
     function RewardStandard takes nothing returns nothing
-        //call DisplayTextToPlayer(Player(0), 0, 0, "standard")
+        static if DEBUG_MODE_INITIALIZATION then
+            call DisplayTextToPlayer(GetLocalPlayer(), 0, 0, "standard")
+        endif
         
         set RewardMode = GameModesGlobals_EASY
     endfunction
     
     function RewardChallenge takes nothing returns nothing
-        //call DisplayTextToPlayer(Player(0), 0, 0, "challenge")
+        static if DEBUG_MODE_INITIALIZATION then
+            call DisplayTextToPlayer(GetLocalPlayer(), 0, 0, "challenge")
+        endif
         
         set RewardMode = GameModesGlobals_HARD
     endfunction
     
     function Reward99AndNone takes nothing returns nothing
-        //call DisplayTextToPlayer(Player(0), 0, 0, "99 and none")
+        static if DEBUG_MODE_INITIALIZATION then
+            call DisplayTextToPlayer(GetLocalPlayer(), 0, 0, "99 and none")
+        endif
         
         set RewardMode = GameModesGlobals_CHEAT
     endfunction
     
     function MinigamesOn takes nothing returns nothing
-        //call DisplayTextToPlayer(Player(0), 0, 0, "minigames on (actually off)")
+        static if DEBUG_MODE_INITIALIZATION then
+            call DisplayTextToPlayer(GetLocalPlayer(), 0, 0, "minigames on (actually off)")
+        endif
         
         //no minigames yet!
         set MinigamesMode = false
         //set MinigamesMode = true
     endfunction
     function MinigamesOff takes nothing returns nothing
-        //call DisplayTextToPlayer(Player(0), 0, 0, "minigames off")
+        static if DEBUG_MODE_INITIALIZATION then
+            call DisplayTextToPlayer(GetLocalPlayer(), 0, 0, "minigames off")
+        endif
         
         set MinigamesMode = false
     endfunction
     
     function InstantRespawnOn takes nothing returns nothing
-        //call DisplayTextToPlayer(Player(0), 0, 0, "respawn ASAP on")
+        static if DEBUG_MODE_INITIALIZATION then
+            call DisplayTextToPlayer(GetLocalPlayer(), 0, 0, "respawn ASAP on")
+        endif
         
         set RespawnASAPMode = true
 		set RespawnPauseTime = 2.5
     endfunction
     function InstantRespawnOff takes nothing returns nothing
-        //call DisplayTextToPlayer(Player(0), 0, 0, "respawn ASAP off")
+        static if DEBUG_MODE_INITIALIZATION then
+            call DisplayTextToPlayer(GetLocalPlayer(), 0, 0, "respawn ASAP off")
+        endif
         
         set RespawnASAPMode = false
 		set RespawnPauseTime = 1.5
@@ -92,6 +118,7 @@ library EDWVisualVoteCallback requires GameModesGlobals, ConfigurationMode, Time
 		call ReleaseTimer(GetExpiredTimer())
 	endfunction
     
+    
 	function InitializeGameForGlobals takes nothing returns nothing
 		local SimpleList_ListNode fp = PlayerUtils_FirstPlayer
         
@@ -112,7 +139,7 @@ library EDWVisualVoteCallback requires GameModesGlobals, ConfigurationMode, Time
 		local Cinematic welcomeCine
         local CinemaMessage cineMsg
         
-        static if DEBUG_MODE_INITIALIZATION then
+        static if DEBUG_GAME_INITIALIZATION then
             call DisplayTextToPlayer(GetLocalPlayer(), 0, 0, "Initializing Game For Globals")
             call DisplayTextToPlayer(GetLocalPlayer(), 0, 0, "Human count: " + I2S(count))
         endif
@@ -125,14 +152,14 @@ library EDWVisualVoteCallback requires GameModesGlobals, ConfigurationMode, Time
 		//now that difficulty is set, we can initialize all startable content
 		call EDWLevelContent_Initialize()
 
-        static if DEBUG_MODE_INITIALIZATION then
+        static if DEBUG_GAME_INITIALIZATION then
             call DisplayTextToPlayer(GetLocalPlayer(), 0, 0, "Finished Level Content Init")
         endif
 
         //call cinematic initalizer after levels are ready
 		call EDWCinematicContent_Initialize()
 
-        static if DEBUG_MODE_INITIALIZATION then
+        static if DEBUG_GAME_INITIALIZATION then
             call DisplayTextToPlayer(GetLocalPlayer(), 0, 0, "Finished Cinematic Content Init")
         endif
 		
@@ -142,7 +169,7 @@ library EDWVisualVoteCallback requires GameModesGlobals, ConfigurationMode, Time
             set VictoryScore = Levels_Level.GetTotalRawScore()
         endif
 
-        if GameMode == 0 then
+        if GameMode == GameModesGlobals_SOLO then
             //create a team for each player
             set i = 0
             loop
@@ -155,7 +182,7 @@ library EDWVisualVoteCallback requires GameModesGlobals, ConfigurationMode, Time
             endloop
             
             set teamCount = i
-        elseif GameMode == 1 then
+        elseif GameMode == GameModesGlobals_TEAMALL then
             //one team for all players
             set team[0] = Teams_MazingTeam.create()
             loop
@@ -165,7 +192,7 @@ library EDWVisualVoteCallback requires GameModesGlobals, ConfigurationMode, Time
             endloop
             
             set team[0].Weight = 1
-        elseif GameMode == 2 then
+        else //if GameMode == GameModesGlobals_TEAMRANDOM then
             //define team sizes
             if count == 1 or count == 2 or count == 3 then
                 if GetRandomInt(0, 1) == 0 then
@@ -233,16 +260,19 @@ library EDWVisualVoteCallback requires GameModesGlobals, ConfigurationMode, Time
                 endif
             endif
 
-            static if DEBUG_MODE_INITIALIZATION then
+            static if DEBUG_GAME_INITIALIZATION then
                 call DisplayTextToPlayer(GetLocalPlayer(), 0, 0, "Team Count: " + I2S(teamCount))
             endif
 
             //create teams
             set i = 0
             loop
-                //debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "Team Size: " + I2S(teamSize[i]))
                 set team[i] = Teams_MazingTeam.create()
                 set teamSlotsRemaining[i] = teamSize[i]
+
+                static if DEBUG_GAME_INITIALIZATION then
+                    call DisplayTextToPlayer(GetLocalPlayer(), 0, 0, "Created Team: " + I2S(team[i]) + ", Team Size: " + I2S(teamSize[i]))
+                endif
                 
                 set i = i + 1
             exitwhen i >= teamCount
@@ -261,7 +291,9 @@ library EDWVisualVoteCallback requires GameModesGlobals, ConfigurationMode, Time
                     if teamSlotsRemaining[i] != 0 and teamSlotsRemaining[i] >= rand then
                         call team[i].AddPlayer(fp.value)
                         //call PauseUnit(MazersArray[fp.value], false)
-                        //call DisplayTextToForce(bj_FORCE_PLAYER[0], "Added player: " + I2S(fp.value) + " to team: " + I2S(i))
+                        static if DEBUG_GAME_INITIALIZATION then
+                            call DisplayTextToPlayer(GetLocalPlayer(), 0, 0, "Added player: " + I2S(fp.value) + " to team: " + I2S(team[i]))
+                        endif
                         
                         set count = count - 1
                         set teamSlotsRemaining[i] = teamSlotsRemaining[i] - 1
@@ -269,7 +301,10 @@ library EDWVisualVoteCallback requires GameModesGlobals, ConfigurationMode, Time
                         set flag = true //this loop ends after a player is added to a random group
                     else
                         set rand = rand - teamSlotsRemaining[i]
-                        //call DisplayTextToForce(bj_FORCE_PLAYER[0], "No room in team: " + I2S(i))
+                        
+                        static if DEBUG_GAME_INITIALIZATION then
+                            call DisplayTextToPlayer(GetLocalPlayer(), 0, 0, "No room in team: " + I2S(i))
+                        endif
                     endif
                     
                     set i = i + 1
@@ -277,9 +312,6 @@ library EDWVisualVoteCallback requires GameModesGlobals, ConfigurationMode, Time
                 endloop
             set fp = fp.next
             endloop            
-        else
-            call DisplayTextToForce(bj_FORCE_PLAYER[0], "Invalid Gamemode!")
-            return
         endif
         
         //determine starting continues
@@ -288,12 +320,10 @@ library EDWVisualVoteCallback requires GameModesGlobals, ConfigurationMode, Time
 		//initialize multiboard
 		call Teams_MazingTeam.MultiboardSetupInit()
 
-        static if DEBUG_MODE_INITIALIZATION then
+        static if DEBUG_GAME_INITIALIZATION then
             call DisplayTextToPlayer(GetLocalPlayer(), 0, 0, "Finished Multiboard Init")
         endif
-		
-        //call firstLevel.Start()
-		
+				
 		if GameMode == GameModesGlobals_SOLO then
 			set cineMsg = CinemaMessage.createEx(null, null, 'CiTS', DEFAULT_MEDIUM_TEXT_SPEED)
 			set welcomeCineTime = welcomeCineTime + DEFAULT_MEDIUM_TEXT_SPEED
@@ -305,7 +335,7 @@ library EDWVisualVoteCallback requires GameModesGlobals, ConfigurationMode, Time
 			set welcomeCineTime = welcomeCineTime + DEFAULT_MEDIUM_TEXT_SPEED
 		endif
 		
-		set welcomeCine = Cinematic.create(null, false, true, cineMsg)
+		set welcomeCine = Cinematic.create(null, true, true, cineMsg)
 		
 		if RewardMode == GameModesGlobals_EASY then
 			call welcomeCine.AddMessage(CinemaMessage.createEx(null, null, 'CiDE', DEFAULT_MEDIUM_TEXT_SPEED))
@@ -332,15 +362,16 @@ library EDWVisualVoteCallback requires GameModesGlobals, ConfigurationMode, Time
         set i = 0
         loop            
             call team[i].ApplyTeamDefaultCameras()
-		
-			if false and ShouldShowSettingVoteMenu() or FORCE_INTRO_REVEAL then
+
+			if ShouldShowSettingVoteMenu() or FORCE_INTRO_REVEAL then
+            // if false and ShouldShowSettingVoteMenu() or FORCE_INTRO_REVEAL then
 				call team[i].AddTeamCinema(welcomeCine, team[i].FirstUser.value)
 			endif
 						
-			call firstLevel.StartLevelForTeam(team[i])
+		    call firstLevel.StartLevelForTeam(team[i])
 			
-			if false and ShouldShowSettingVoteMenu() or FORCE_INTRO_REVEAL then
-				call team[i].CancelAutoUnpauseForTeam()
+			if ShouldShowSettingVoteMenu() or FORCE_INTRO_REVEAL then
+			 	call team[i].CancelAutoUnpauseForTeam()
 			endif
 						
             //debug call DisplayTextToPlayer(Player(0), 0, 0, "Team " + I2S(team[i]) + " on level: " + I2S(team[i].OnLevel))
@@ -348,7 +379,7 @@ library EDWVisualVoteCallback requires GameModesGlobals, ConfigurationMode, Time
         exitwhen i >= teamCount
         endloop
 				
-		if false and ShouldShowSettingVoteMenu() or FORCE_INTRO_REVEAL then
+		if ShouldShowSettingVoteMenu() or FORCE_INTRO_REVEAL then
 			call EnableUserUI(false)
 			call SetCineFilterTexture("ReplaceableTextures\\CameraMasks\\Black_mask.blp")
 			call SetCineFilterBlendMode(BLEND_MODE_BLEND)
@@ -373,7 +404,7 @@ library EDWVisualVoteCallback requires GameModesGlobals, ConfigurationMode, Time
         //apply the player's (custom) Default camerasetup and pan to their default mazer
         //call SelectAndPanAllDefaultUnits()
         
-		if not ShouldShowSettingVoteMenu() or RewardMode == GameModesGlobals_CHEAT then
+		if CONFIGURATION_PROFILE == DEV or RewardMode == GameModesGlobals_CHEAT then
 			set i = 0
 			loop
 				call team[i].SetContinueCount(99)
@@ -386,7 +417,6 @@ library EDWVisualVoteCallback requires GameModesGlobals, ConfigurationMode, Time
             call DisplayTextToPlayer(GetLocalPlayer(), 0, 0, "Finished Initializing Game For Globals!")
         endif
 	endfunction
-
 endlibrary
 
 
@@ -397,46 +427,108 @@ library EDWVisualVote requires ConfigurationMode, VisualVote, Teams, PlayerUtils
         private constant real VOTE_TIME_ROUND_ONE = 10
 		private constant real VOTE_TIME_ROUND_TWO = 10
 
-        private constant boolean DEBUG_MODE_INITIALIZATION = true
+        private constant integer DIFFICULTY_CONTAINER_CONTENT_ID = 'VVDT'
+        private constant integer DIFFICULTY_EASY_CONTENT_ID = 'VVDE'
+        private constant integer DIFFICULTY_HARD_CONTENT_ID = 'VVDC'
+        private constant integer DIFFICULTY_99_CONTENT_ID = 'VVD9'
+
+        private constant integer TEAM_CONTAINER_CONTENT_ID = 'VVTT'
+        private constant integer TEAM_SOLO_CONTENT_ID = 'VVTS'
+        private constant integer TEAM_RANDOM_CONTENT_ID = 'VVTR'
+        private constant integer TEAM_ALL_CONTENT_ID = 'VVTO'
     endglobals
-	    
-	public function OnRoundOneFinishCB takes nothing returns nothing
-		local VisualVote_voteMenu MyMenu
-		local VisualVote_voteColumn col
-        local VisualVote_voteContainer con
-        local VisualVote_voteOption opt   
+
+    private function InitializeGlobalsForVote takes nothing returns nothing
+        local VisualVote_voteMenu menu = VisualVote_LastFinishedMenu
+        
+        local integer iVC = 0
+        local VisualVote_voteColumn vc
+        local integer iVCont
+        local VisualVote_voteContainer vCont
+
+        local VisualVote_voteOption majorityOption
+
+        static if DEBUG_MODE_INITIALIZATION then
+            call DisplayTextToPlayer(GetLocalPlayer(), 0, 0, "Initializing Globals For Vote")
+            call DisplayTextToPlayer(GetLocalPlayer(), 0, 0, "Vote Menu: " + I2S(menu))
+        endif
+
+        //execute majority option for each container, regardless of if everyones voted or not
+        set iVC = 0
+        loop
+        exitwhen iVC >= menu.voteColumnCount
+            set vc = menu.voteColumns[iVC]
+            set iVCont = 0
+            
+            set majorityOption = 0
+            loop
+            exitwhen iVCont > vc.voteContainerCount
+                set vCont = vc.voteContainers[iVCont]
+                set majorityOption = vCont.getMajorityOption()
+
+                if majorityOption.contentID == DIFFICULTY_EASY_CONTENT_ID then
+                    call RewardStandard()
+                elseif majorityOption.contentID == DIFFICULTY_HARD_CONTENT_ID then
+                    call RewardChallenge()
+                elseif majorityOption.contentID == DIFFICULTY_99_CONTENT_ID then
+                    call Reward99AndNone()
+                elseif majorityOption.contentID == TEAM_SOLO_CONTENT_ID then
+                    call GameModeSolo()
+                elseif majorityOption.contentID == TEAM_RANDOM_CONTENT_ID then
+                    call GameModeRandom()
+                elseif majorityOption.contentID == TEAM_ALL_CONTENT_ID then
+                    call GameModeAllIsOne()
+                endif
+            set iVCont = iVCont + 1
+            endloop
+        set iVC = iVC + 1
+        endloop
+    endfunction
+    public function OnVoteFinish takes nothing returns nothing
+        if ShouldShowSettingVoteMenu() then
+            call InitializeGlobalsForVote()
+        endif
+
+        call InitializeGameForGlobals()
+    endfunction
+
+	// public function OnRoundOneFinishCB takes nothing returns nothing
+	// 	local VisualVote_voteMenu MyMenu
+	// 	local VisualVote_voteColumn col
+    //     local VisualVote_voteContainer con
+    //     local VisualVote_voteOption opt   
 		
-		if GameMode != 0 then
-			/*
-			//start round 2 of voting!
-			set MyMenu = VisualVote_voteMenu.create(3060, 5800, VOTE_TIME_ROUND_TWO, "EDWVisualVote_InitializeGameForGlobals")
-			call MyMenu.addAllPlayersToMenu()
+	// 	if GameMode != 0 then
+	// 		/*
+	// 		//start round 2 of voting!
+	// 		set MyMenu = VisualVote_voteMenu.create(3060, 5800, VOTE_TIME_ROUND_TWO, "EDWVisualVote_InitializeGameForGlobals")
+	// 		call MyMenu.addAllPlayersToMenu()
 			
-			set col = MyMenu.addColumn(512)
+	// 		set col = MyMenu.addColumn(512)
             
-            set con = col.addContainer("Respawn Wait Style")
-            set con.required = true
+    //         set con = col.addContainer("Respawn Wait Style")
+    //         set con.required = true
             
-            call con.addOption("Leeeeeroy Jenkinsss", "EDWVisualVote_InstantRespawnOn")
-            set opt = con.addOption("We Band of Brothers", "EDWVisualVote_InstantRespawnOff")
-            set con.defaultOption = opt
+    //         call con.addOption("Leeeeeroy Jenkinsss", "EDWVisualVote_InstantRespawnOn")
+    //         set opt = con.addOption("We Band of Brothers", "EDWVisualVote_InstantRespawnOff")
+    //         set con.defaultOption = opt
 			
-			call MyMenu.render()
-            call MyMenu.enforceVoteMode()
-			*/
+	// 		call MyMenu.render()
+    //         call MyMenu.enforceVoteMode()
+	// 		*/
 			
-			//I think I actually like just always setting game to We Band of Brothers
-			set RespawnASAPMode = false
-			set MinigamesMode = false
+	// 		//I think I actually like just always setting game to We Band of Brothers
+	// 		set RespawnASAPMode = false
+	// 		set MinigamesMode = false
 			
-			call InitializeGameForGlobals()
-		else
-			set RespawnASAPMode = true
-			set MinigamesMode = false
+	// 		call InitializeGameForGlobals()
+	// 	else
+	// 		set RespawnASAPMode = true
+	// 		set MinigamesMode = false
 			
-			call InitializeGameForGlobals()
-		endif
-	endfunction
+	// 		call InitializeGameForGlobals()
+	// 	endif
+	// endfunction
     
 	public function CreateMenu takes nothing returns nothing
 		local VisualVote_voteMenu MyMenu
@@ -444,20 +536,30 @@ library EDWVisualVote requires ConfigurationMode, VisualVote, Teams, PlayerUtils
         local VisualVote_voteContainer con
         local VisualVote_voteOption opt        
 		
+        //defaults
+        set GameMode = DEBUG_TEAM_MODE
+        set RewardMode = DEBUG_DIFFICULTY_MODE
+        //respawn as soon as you die
+        call InstantRespawnOff()
+        //set RespawnASAPMode = false
+        //currently unimplemented
+        call MinigamesOff()
+        //set MinigamesMode = false
+
 		if not ShouldShowSettingVoteMenu() then
 			//TODO replace with awaiting an .All promise for User async property init
 			if DEBUG_USE_FULL_VISIBILITY then
 				call CreateFogModifierRectBJ(true, Player(0), FOG_OF_WAR_VISIBLE, GetPlayableMapRect())
 			endif
 				
-			set GameMode = DEBUG_TEAM_MODE
-			set RewardMode = DEBUG_DIFFICULTY_MODE
-			//respawn as soon as you die
-			call InstantRespawnOff()
-			//set RespawnASAPMode = false
-			//currently unimplemented
-			call MinigamesOff()
-			//set MinigamesMode = false
+			// set GameMode = DEBUG_TEAM_MODE
+			// set RewardMode = DEBUG_DIFFICULTY_MODE
+			// //respawn as soon as you die
+			// call InstantRespawnOff()
+			// //set RespawnASAPMode = false
+			// //currently unimplemented
+			// call MinigamesOff()
+			// //set MinigamesMode = false
 			
 			call InitializeGameForGlobals()
 			
@@ -474,49 +576,47 @@ library EDWVisualVote requires ConfigurationMode, VisualVote, Teams, PlayerUtils
 			call InstantRespawnOn()
 			call MinigamesOff()
 			
-			set MyMenu = VisualVote_voteMenu.create(3060, 5800, VOTE_TIME_ROUND_ONE, null)
-            set MyMenu.onDestroyFinish = "InitializeGameForGlobals"
+			set MyMenu = VisualVote_voteMenu.create(3060, 5800, VOTE_TIME_ROUND_ONE, "EDWVisualVote_OnVoteFinish")
             call MyMenu.addAllPlayersToMenu()
 			
 			set col = MyMenu.addColumn(512)
 			
 			//difficulty
-			set con = col.addContainer('VVDT')
+			set con = col.addContainer(DIFFICULTY_CONTAINER_CONTENT_ID)
             set con.required = true
 			
-			set opt = con.addOption('VVDE', "EDWVisualVote_RewardStandard")
-            call con.addOption('VVDC', "EDWVisualVote_RewardChallenge")
-            call con.addOption('VVD9', "EDWVisualVote_Reward99AndNone")
+			set opt = con.addOption(DIFFICULTY_EASY_CONTENT_ID)
+            call con.addOption(DIFFICULTY_HARD_CONTENT_ID)
+            call con.addOption(DIFFICULTY_99_CONTENT_ID)
 			
             set con.defaultOption = opt
 			
 			call MyMenu.render()
             call MyMenu.enforceVoteMode()
         else
-            set MyMenu = VisualVote_voteMenu.create(3060, 5800, VOTE_TIME_ROUND_ONE, null)
-            set MyMenu.onDestroyFinish = "EDWVisualVote_OnRoundOneFinishCB"
+            set MyMenu = VisualVote_voteMenu.create(3060, 5800, VOTE_TIME_ROUND_ONE, "EDWVisualVote_OnVoteFinish")
             call MyMenu.addAllPlayersToMenu()
             //set MyMenu = VisualVote_voteMenu.create(-1600, 7556)
             
             set col = MyMenu.addColumn(512)
 			//teams
-            set con = col.addContainer('VVTT')
+            set con = col.addContainer(TEAM_CONTAINER_CONTENT_ID)
             set con.required = true
 			
-            call con.addOption('VVTS', "EDWVisualVote_GameModeSolo")
+            call con.addOption(TEAM_SOLO_CONTENT_ID)
 			if User.ActivePlayers > 3 then
-				call con.addOption('VVTR', "EDWVisualVote_GameModeRandom")
+				call con.addOption(TEAM_RANDOM_CONTENT_ID)
 			endif
-            set opt = con.addOption('VVTO', "EDWVisualVote_GameModeAllIsOne")
+            set opt = con.addOption(TEAM_ALL_CONTENT_ID)
             set con.defaultOption = opt
 			//debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "Default: " + con.defaultOption.text)
             
 			//difficulty
-			set con = col.addContainer('VVDT')
+			set con = col.addContainer(DIFFICULTY_CONTAINER_CONTENT_ID)
             set con.required = true
 			
-			set opt = con.addOption('VVDE', "EDWVisualVote_RewardStandard")
-            call con.addOption('VVDC', "EDWVisualVote_RewardChallenge")
+			set opt = con.addOption(DIFFICULTY_EASY_CONTENT_ID)
+            call con.addOption(DIFFICULTY_HARD_CONTENT_ID)
             // call con.addOption('VVD9', "EDWVisualVote_Reward99AndNone")
 			
             set con.defaultOption = opt

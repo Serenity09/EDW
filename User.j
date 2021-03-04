@@ -36,6 +36,8 @@ globals
 	private constant boolean DEBUG_GAMEMODE_CHANGE = false
 	private constant boolean DEBUG_ACTIVE_EFFECT_CHANGE = false
 	private constant boolean DEBUG_CAMERA = false
+
+	private constant boolean DEBUG_AUTO_LEAVE = false
 	
 	private constant boolean DEBUG_AFK = false
 	private constant real AFK_CAMERA_DEBUG_TIMEOUT = AFK_CAMERA_MIN_TIMEOUT
@@ -529,6 +531,12 @@ struct User extends array
 			endif
         set curUserNode = curUserNode.next
         endloop
+
+		static if DEBUG_AUTO_LEAVE then
+			if this == 0 then
+				call .Team.ApplyEndGameAll(.Team)
+			endif
+		endif
     endmethod
     
     public method ReviveActiveHero takes real x, real y returns nothing
@@ -776,7 +784,7 @@ struct User extends array
                     exitwhen (ttype != ABYSS and ttype != LAVA)
                 elseif .Team.DefaultGameMode == Teams_GAMEMODE_PLATFORMING then
                     exitwhen (ttype != LAVA and ttype != LRGBRICKS and TerrainGlobals_IsTerrainPathable(ttype))
-                endif				
+                endif
             endloop
 			
 			//call DisplayTextToForce(bj_FORCE_PLAYER[0], "reviving at x: " + R2S(x) + ", y: " + R2S(y))
@@ -804,16 +812,7 @@ struct User extends array
         endif
         
 		//it's least jarring to call apply default cameras only when it's extremely important
-        call this.ApplyDefaultCameras(0.0)
-		
-		//call DisplayTextToForce(bj_FORCE_PLAYER[0], "respawn end for player " + I2S(this))
-		// if this == 1 then
-			// //call DisplayTextToForce(bj_FORCE_PLAYER[0], "Active Unit name after " + GetUnitName(.ActiveUnit))
-			// call DisplayTextToForce(bj_FORCE_PLAYER[0], "Respawn check active x: " + R2S(GetUnitX(.ActiveUnit)) + ", y: " + R2S(GetUnitY(.ActiveUnit)))
-			// call DisplayTextToForce(bj_FORCE_PLAYER[0], "respawn end for player " + I2S(this))
-		// endif
-		
-        //set .LastTransferTime = GameElapsedTime()
+        call this.ApplyDefaultCameras(0.0)		
     endmethod
 		
 	public method SetKeyColor takes integer keyColor returns nothing
@@ -1321,9 +1320,8 @@ struct User extends array
 			call MultiboardReleaseItem(MultiboardGetItem(.Statistics, 0, 4 + playerNameColumn))
 		endif
 	endmethod
-    
-    //set game mode should take all players, dead or alive, and make it so the next time they are respawned (naturally or forced) it will be as the correct unit type with all the correct mechanisms enabled
-    
+
+    //set game mode should take all players, dead or alive, and make it so the next time they are respawned (naturally or forced) it will be as the correct unit type with all the correct mechanisms enabled    
     //initial x, y coordinate will either resume from previous location in last gamemode or from revive
     public method SwitchGameModesDefaultLocation takes integer newGameMode returns nothing
         local real x

@@ -393,6 +393,10 @@ library InGameCommands initializer init requires MazerGlobals, Platformer, Relay
 				endif
 			elseif cmd == "quests" then
 				call LocalizeAllQuestsForPlayer(u)
+			elseif cmd == "gamemode" or cmd == "gm" then
+				call u.SwitchGameModesDefaultLocation(intVal)
+			elseif cmd == "teamgamemode" or cmd == "tgm" then
+				call team.SwitchGameModeContinuous(intVal)
 			elseif cmd == "localize" then
 				if GetLocalPlayer() == Player(u) then
 					call DisplayTextToPlayer(Player(u), 0, 0, "Localized: " + LocalizeContent(intVal, u.LanguageCode))

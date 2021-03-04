@@ -1,6 +1,6 @@
-library VisualVote requires Vector2, Alloc, Table, PlayerUtils, SimpleList, locust, TimerUtils, EDWVisualVoteCallback
+library VisualVote requires Vector2, Alloc, Table, PlayerUtils, SimpleList, locust, TimerUtils, EDWVisualVoteCallback    
     globals
-        public constant real    MENU_DESTROY_TIMEOUT = .5
+        public constant real    MENU_DESTROY_TIMEOUT = 1.
         public constant integer CONTAINER_BORDER_MARGIN = 64
         
         public constant integer COLUMN_MARGIN_RIGHT = 128
@@ -26,6 +26,8 @@ library VisualVote requires Vector2, Alloc, Table, PlayerUtils, SimpleList, locu
         
         public VisualVote_voteMenu LastFinishedMenu
     endglobals
+
+    function interface VisualVoteCallback takes voteMenu menu returns nothing
         
     public struct voteBorder extends array
         public static constant integer LIGHTNING_BLUE = 0
@@ -50,9 +52,7 @@ library VisualVote requires Vector2, Alloc, Table, PlayerUtils, SimpleList, locu
         public texttag gameText 
         // public string text //deprecate for localized content ID
 		public integer contentID
-        public boolean enabled
-        public string onVoteWinCallback
-        
+        public boolean enabled        
         
         public SimpleList_List playerVotesKeys
         public Table playerVotes
@@ -256,7 +256,7 @@ library VisualVote requires Vector2, Alloc, Table, PlayerUtils, SimpleList, locu
             
         endmethod
         
-        public static method create takes integer contentID, string callback returns thistype
+        public static method create takes integer contentID returns thistype
             local thistype new = thistype.allocate()
             
             set new.playerVotes = Table.create()
@@ -267,7 +267,6 @@ library VisualVote requires Vector2, Alloc, Table, PlayerUtils, SimpleList, locu
             set new.enabled = true
             
             set new.contentID = contentID
-            set new.onVoteWinCallback = callback
             
             return new
         endmethod
@@ -389,8 +388,8 @@ library VisualVote requires Vector2, Alloc, Table, PlayerUtils, SimpleList, locu
             return 0
         endmethod
                 
-        public method addOption takes integer contentID, string callback returns voteOption
-            local voteOption option = voteOption.create(contentID, callback)
+        public method addOption takes integer contentID returns voteOption
+            local voteOption option = voteOption.create(contentID)
             set option.parent = this
             set option.enabled = this.enabled
             
@@ -462,22 +461,6 @@ library VisualVote requires Vector2, Alloc, Table, PlayerUtils, SimpleList, locu
             
             return 0
         endmethod
-        public method executeMajorityOption takes nothing returns nothing
-            local voteOption majority
-            
-            if .enabled then
-                set majority = .getMajorityOption()
-                
-                if majority != 0 then
-                    //execute vote option, on vote succeed function
-                    //call TriggerAddAction(theExecutioner, majority.onVoteWinCallback)
-                    //debug call DisplayTextToPlayer(Player(0), 0, 0, "Executing callback: " + majority.onVoteWinCallback)
-                    if majority.onVoteWinCallback != null and majority.onVoteWinCallback != "" then
-                        call ExecuteFunc(majority.onVoteWinCallback)
-                    endif
-                endif
-            endif
-        endmethod
         
         public method tallyNumberVotes takes nothing returns integer
             local integer iVO = 0
@@ -544,9 +527,6 @@ library VisualVote requires Vector2, Alloc, Table, PlayerUtils, SimpleList, locu
             return new
         endmethod
     
-//        public static method onInit takes nothing returns nothing
-//            set voteContainer.theExecutioner = CreateTrigger()
-//        endmethod
     endstruct
     
     public struct voteColumn extends array
@@ -892,30 +872,13 @@ library VisualVote requires Vector2, Alloc, Table, PlayerUtils, SimpleList, locu
                     endif
                 set fp = fp.next
                 endloop
-                
-                //execute majority option for each container, regardless of if everyones voted or not
-                set iVC = 0
-                loop
-                exitwhen iVC >= .voteColumnCount
-                    set vc = .voteColumns[iVC]
-                    set iVCont = 0
-                    
-                    loop
-                    exitwhen iVCont > vc.voteContainerCount
-                        set vCont = vc.voteContainers[iVCont]
-                        
-                        call vCont.executeMajorityOption()
-                    set iVCont = iVCont + 1
-                    endloop
-                set iVC = iVC + 1
-                endloop
-                
+                                
                 //callback for after options have been applied -- mostly useful for when logic requires all options to be decided first
                 set LastFinishedMenu = this
-				
 				if .onOptionExecuteFinish != null then
 					call ExecuteFunc(.onOptionExecuteFinish)
                 endif
+                set LastFinishedMenu = 0
 				
                 //create a timer to expire in a little bit to clean up the vote menu struct
                 //don't do it right away in case any selection events are finishing up
@@ -1072,12 +1035,9 @@ library VisualVote requires Vector2, Alloc, Table, PlayerUtils, SimpleList, locu
             
             call this.deallocate()
             
-            call InitializeGameForGlobals()
-            /*
             if .onDestroyFinish != null then
                 call ExecuteFunc(.onDestroyFinish)
             endif
-            */
         endmethod
         
         public static method create takes real topLeftX, real topLeftY, real time, string onOptionFinishCallback returns thistype

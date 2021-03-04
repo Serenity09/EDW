@@ -21,6 +21,7 @@ library Levels requires SimpleList, Teams, GameModesGlobals, LevelIDGlobals, Cin
 		private constant boolean DEBUG_START_STOP = false
 		private constant boolean DEBUG_LEVEL_CHANGE = false
 		private constant boolean DEBUG_CHECKPOINT_CHANGE = false
+		private constant boolean DEBUG_START_FOR_TEAM = false
 		
 		//used with events
 		Levels_Level EventCurrentLevel
@@ -576,7 +577,7 @@ library Levels requires SimpleList, Teams, GameModesGlobals, LevelIDGlobals, Cin
 			call mt.ChangeScore(score)
 			
 			//update continues
-			if ShouldShowSettingVoteMenu() and RewardMode != GameModesGlobals_CHEAT then				
+			if CONFIGURATION_PROFILE != DEV and RewardMode != GameModesGlobals_CHEAT then
 				if RewardMode == GameModesGlobals_EASY then
 					if mt.GetContinueCount() > EASY_MAX_CONTINUE_ROLLOVER then
 						set rolloverContinues = EASY_MAX_CONTINUE_ROLLOVER
@@ -641,6 +642,10 @@ library Levels requires SimpleList, Teams, GameModesGlobals, LevelIDGlobals, Cin
 			local integer i = 0
             local rect r
 			
+			static if DEBUG_START_FOR_TEAM then
+				call DisplayTextToPlayer(GetLocalPlayer(), 0, 0, "Starting level for team: " + I2S(mt))
+			endif
+
 			set EventCurrentLevel = this
             set this.CBTeam = mt
 			
@@ -649,9 +654,17 @@ library Levels requires SimpleList, Teams, GameModesGlobals, LevelIDGlobals, Cin
 				call this.OnLevelStart.fire()
 			endif
 			
+			static if DEBUG_START_FOR_TEAM then
+				call DisplayTextToPlayer(GetLocalPlayer(), 0, 0, "Level content started")
+			endif
+
             set mt.OnLevel = this
             call this.ActiveTeams.add(mt)
             
+			static if DEBUG_START_FOR_TEAM then
+				call DisplayTextToPlayer(GetLocalPlayer(), 0, 0, "Team added to level")
+			endif
+
 			loop
 			exitwhen i >= .Boundaries.size
 			set r = .Boundaries[i]
@@ -659,13 +672,25 @@ library Levels requires SimpleList, Teams, GameModesGlobals, LevelIDGlobals, Cin
 			set i = i + 1
 			endloop
 			set r = null
+
+			static if DEBUG_START_FOR_TEAM then
+				call DisplayTextToPlayer(GetLocalPlayer(), 0, 0, "Team vision given for all boundaries")
+			endif
 						
-            //debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "Started")
-            //team tele, respawn update, vision, pause + unpause
+            // //debug call DisplayTextToForce(bj_FORCE_PLAYER[0], "Started")
+            // //team tele, respawn update, vision, pause + unpause
             call this.SetCheckpointForTeam(mt, 0)
 			
+			static if DEBUG_START_FOR_TEAM then
+				call DisplayTextToPlayer(GetLocalPlayer(), 0, 0, "Team checkpoint set")
+			endif
+
 			call mt.PartialUpdateMultiboard(MULTIBOARD_LEVELNAME)
 			call mt.UpdateMultiboardLevelIcon()
+
+			static if DEBUG_START_FOR_TEAM then
+				call DisplayTextToPlayer(GetLocalPlayer(), 0, 0, "Level finished starting for team")
+			endif
 		endmethod
 		
         //update level continuously or discontinuously from one to the next. IE lvl 1 -> 2 -> 3 -> 4 OR 1 -> 4 -> 2 etc
