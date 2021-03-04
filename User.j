@@ -1949,7 +1949,7 @@ struct User extends array
 					endif
 				endif
 								
-				if (this.IsAFK and newTime < thistype.LocalAFKThreshold) or (not this.IsAFK and newTime >= thistype.LocalAFKThreshold) then
+				if this.Team.OnLevel != INTRO_LEVEL_ID and this.Team.OnLevel != DOORS_LEVEL_ID and (this.IsAFK and newTime < thistype.LocalAFKThreshold) or (not this.IsAFK and newTime >= thistype.LocalAFKThreshold) then
 					// call DisplayTextToPlayer(GetLocalPlayer(), 0, 0, "On sync event, idle time: " + R2S(thistype.LocalCameraIdleTime))
 					call BlzSendSyncData(AFK_SYNC_EVENT_PREFIX, I2S(this))
 				//only update local values when not syncing a change in AFK state
