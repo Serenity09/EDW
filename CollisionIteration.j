@@ -48,6 +48,11 @@ private function AfterMazerReviveCB takes nothing returns nothing
     //check that the unit is still paused
     if User(pID).GameMode == Teams_GAMEMODE_STANDARD_PAUSED then
         call User(pID).SwitchGameModesDefaultLocation(Teams_GAMEMODE_STANDARD)
+
+		//if reviving a unit on lava make em hurt so they don't abuse you back
+		if GetTerrainType(GetUnitX(User(pID).ActiveUnit), GetUnitY(User(pID).ActiveUnit)) == LAVA then
+			call SetUnitState(MazersArray[pID], UNIT_STATE_LIFE, 100)
+		endif
 	elseif User(pID).GameMode == Teams_GAMEMODE_PLATFORMING_PAUSED then
 		call User(pID).SwitchGameModesDefaultLocation(Teams_GAMEMODE_PLATFORMING)
     endif
