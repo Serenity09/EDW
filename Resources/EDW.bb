@@ -8,7 +8,7 @@
 [color=#B8DBD9]Mind your surroundings[/color]
 [color=#586F7C]Avoid strangers[/color]
 [color=#2F4550]Face your inner demons[/color]
-[b][color=#000000]Stay away from the dark[/color][/b]
+[B][color=#000000]Stay away from the dark[/color][/B]
 
 
 [color=#e1c492]
@@ -19,7 +19,7 @@ Easy now, what will show?
 [/color][/Center][color=#e1c492]
 
 [LEFT]Welcome to Dream World! It's time to escape! In Dream World, all terrain tiles have unique, game-changing effects. Navigate these effects, and the suspicious characters you come across, to win the game! You'll need to run, dodge, slide and 2Dify your way to victory over up to 4 worlds and 10 levels. Good luck!
-Join the EDW discord to find other people to play with, or submit a world record! https://discord.gg/h2Tmzvz
+Join the EDW discord to find other people to play with, or submit a world record! [URL='https://discord.gg/h2Tmzvz']Join the Escape Dream World Discord Server![/URL]
 
 [Tabs]
 [Tab=Worlds]
@@ -28,27 +28,24 @@ Learn how the basics of the game in a easy-does-it tutorial level. While on the 
 
 Past the intro you'll find the Doors to different worlds. Each world has a different theme, mostly meaning the types of terrain and obstacles. There are three worlds for players to see, but a full game for new players will probably only see part of one world.
 
-[otablei][tr][td][img]https://i.imgur.com/9wHeihe.jpg?2[/img][/td][td]The land world is about optimal movement, but also being able to pause for a second when necessary. It's probably the most beginner friendly world, focusing on fun elements while keeping the gameplay familiar[/td][/tr]
-[tr][td][img]https://i.imgur.com/OazufW9.jpg?2[/img][/td][td]The Ice world focuses on movement mechanics. It's meant to highlight your understanding and dexterity of movement. This world is pretty hard to start, and then picks up drastically from Level 3 onward[/td][/tr]
-[tr][td][img]https://i.imgur.com/GvmzNBL.jpg?2[/img][/td][td]The 2.5D world focuses on changing perspective. It's meant to highlight how the same experience can play out so many different ways. This world isn't easy, but fun is definitely prioritized over difficulty[/td][/tr][/otablei]
+[otablei][tr][td][IMG]https://i.imgur.com/9wHeihe.jpg?2[/IMG][/td][td]The land world is about optimal movement, but also being able to pause for a second when necessary. It's probably the most beginner friendly world, focusing on fun elements while keeping the gameplay familiar[/td][/tr]
+[tr][td][IMG]https://i.imgur.com/OazufW9.jpg?2[/IMG][/td][td]The Ice world focuses on movement mechanics. It's meant to highlight your understanding and dexterity of movement. This world is pretty hard to start, and then picks up drastically from Level 3 onward[/td][/tr]
+[tr][td][IMG]https://i.imgur.com/GvmzNBL.jpg?2[/IMG][/td][td]The 2.5D world focuses on changing perspective. It's meant to highlight how the same experience can play out so many different ways. This world isn't easy, but fun is definitely prioritized over difficulty[/td][/tr][/otablei]
 
 As you advance through a world, you'll gain and lose continues, and (hopefully) gain in score. Run out of continues, though, and you'll be booted back to the Doors, where you can start another world. Want to retry a world? Go again and you'll be sent back to the last level you started. Your team cannot replay a world that they have already fully finished.
 [/Tab]
 [Tab=Game Modes]
-[hidden=Teams]
-[otablei]
-[tr][td]Solo[/td][td]Everyones on their own team! Recommended for 1+ players[/td][/tr]
-[tr][td]Teams - Mixer*[/td][td]Hope you remember how to talk to people! Only available/recommended with 4+ players[/td][/tr]
-[tr][td]Teams - One for All[/td][td]Everyone, get in here! Recommended for 2+ players and/or new players[/td][/tr]
-[/otablei]
+Everyone plays through Dream World on the same team. You and your team will need to react through environments that affect how you play, and often how you move. You may have seen ice, but you've probably never seen this... In Warcraft III... Depending on how many games you've played.
+Dying will leave a revive circle in your wake. Any living player can revive a dead player by moving into their revive circle.
 
-When playing in a team mode, dying will leave a revive circle in your wake. [B]Any player[/B], not just their teammates, can revive a dead player.[/hidden]
+If you beat the game and submit proof I'll send you hard mode. Beat that and I'll give you tournament mode.
 
+The following difficulties are available for in-game selection in single player only:
 [hidden=Difficulty]
 [otablei]
 [tr][td]Vanilla[/td][td]More continues, more checkpoints, fewer enemies, basic glory[/td][/tr]
 [tr][td]Chocolate[/td][td]Fewer continues, fewer checkpoints, more enemies, advance glory[/td][/tr]
-[tr][td]99 and None*[/td][td]Like Vanilla difficulty, except you start with 99 continues and never get anymore. Meant to be a more wholesome alternative to save/loading and memory editing. Still only comes in Vanilla, because you're clearly too basic for Chocolate (only available when there's 1 player)[/td][/tr]
+[tr][td]99 and None[/td][td]Like Vanilla difficulty, except you start with 99 continues and never get anymore. Meant to be a more wholesome alternative to save/loading and memory editing. Still only comes in Vanilla, because you're clearly too basic for Chocolate[/td][/tr]
 [/otablei]
 [/hidden]
 [/Tab]
@@ -162,15 +159,22 @@ It is easy to add **basic** support for a new language, so feel free to request 
 You can also enable / disable "Camera Tracking" by pressing the escape key! This mode is useful if you have a hard time with ice in general.
 [/Tab]
 [Tab=Screenshots]Submit your screenshots to this thread or via PM!
-[img]https://i.imgur.com/bo5u9VT.jpg[/img]
-[img]https://i.imgur.com/xNvvfqc.jpg[/img]
-[img]https://i.imgur.com/L03LRZF.jpg[/img]
-[img]https://i.imgur.com/kIfKwBO.png[/img]
+[IMG]https://i.imgur.com/bo5u9VT.jpg[/IMG]
+[IMG]https://i.imgur.com/xNvvfqc.jpg[/IMG]
+[IMG]https://i.imgur.com/L03LRZF.jpg[/IMG]
+[IMG]https://i.imgur.com/kIfKwBO.png[/IMG]
 [/Tab]
 [Tab=Videos]Submit links to your videos to this thread or via PM!
 [/Tab]
-[Tab=Changelog][2020-02-12](v1.3.0) Reforged optimizations and Quality of  Life (thank you Blizzard, deepstrasz and SlowWillyy). This update includes 33 minor versions, here are the highlights:
-All game content is now optimized for native SD [b]and[/b] HD assets. Huge shout out to Blizzard for models and engine improvements
+[Tab=Changelog][2021-03-04](v1.4.0) Fix for ongoing desync issues seen on some clients in the latest patches. As a result of this, I'm removing the in game vote, and replacing it with preselected gamemodes. See the tab on Game Modes for more details. You know, it might be a better game for not giving configuration options in game.
+Fix for 2d jumping. Jumping should be a lot more reliable, no more trust issues here!
+Infrastructure for additional PvP metrics. Please report any performance or bugs seen on the Ice levels here.
+Level balances, particularly for easy mode.
+All trucks are now red trucks, like they should have been from the start.
+AFK detection improved.
+
+[2020-02-12](v1.3.0) Reforged optimizations and Quality of  Life (thank you Blizzard, deepstrasz and SlowWillyy). This update includes 33 minor versions, here are the highlights:
+All game content is now optimized for native SD [B]and[/B] HD assets. Huge shout out to Blizzard for models and engine improvements
 3d Snow completely overhauled! Should feel much more like skiing now; you can control your momentum by weaving back and forth (no full stop necessary). Feedback by almost everyone that's played! This is my favorite change post release!
 2d Ice now gives much more feedback from VFX
 Camera automatically zooms out when player is in some areas (and back in after they leave those areas). Camera also zooms out while on the teleportation terrain tile. Feedback & suggestion by deepstrasz
@@ -247,27 +251,27 @@ Hasbro - Frogger (influenced land level designs)
 Guides:
 aznricepuff - My favorite guide to understanding vJASS's OOP design and intended usage (vJASS OOP Lesson)
 Nestheasarus - A guide to optimizing vJASS's syntactic sugar (where did you go)
-Codemonkey11 - A guide to scaling group enums in WC3's engine (https://www.hiveworkshop.com/threads/vjass-optimization-using-a-first-of-group-loop-for-enumeration.223140/)
-BloodRaven - A guide to WE doodads & terrain (https://www.hiveworkshop.com/threads/advanced-terraining-tutorial.203428/)
-SD_Ryoko - A guide to creating and importing custom terrain tiles in WC3 (http://world-editor-tutorials.thehelper.net/tilesets.php)
-Jeff Pang - Online vanilla JASS documentation (http://jass.sourceforge.net/index.shtml)
-Tyrande-ma3x - WC3 Terrain raw codes (https://www.thehelper.net/threads/terrain-type-raw-value.105981/)
-Raen7 - WC3 playercolors to hex codes (https://docs.google.com/spreadsheets/d/1wzWIYzRW9pqpo1ZuEcU-qJTg-H4z5-PaTnHIXPezaRQ/edit#gid=1812483906)
-Rufus - Map Description guide & templates (https://www.hiveworkshop.com/threads/description-guide-maps.287829/)
-Mayday - Reforged Custom Loading Screen (https://www.hiveworkshop.com/threads/high-resolution-loading-screens.322172/)
+Codemonkey11 - A guide to scaling group enums in WC3's engine ([URL='https://www.hiveworkshop.com/threads/vjass-optimization-using-a-first-of-group-loop-for-enumeration.223140/']vJass Optimization: Using a First of Group Loop for Enumeration[/URL])
+BloodRaven - A guide to WE doodads & terrain ([URL='https://www.hiveworkshop.com/threads/advanced-terraining-tutorial.203428/']Advanced Terraining Tutorial[/URL])
+SD_Ryoko - A guide to creating and importing custom terrain tiles in WC3 ([URL='http://world-editor-tutorials.thehelper.net/tilesets.php']Creating Custom Tile Sets[/URL])
+Jeff Pang - Online vanilla JASS documentation ([URL='http://jass.sourceforge.net/index.shtml']JASS Tools[/URL])
+Tyrande-ma3x - WC3 Terrain raw codes ([URL='https://www.thehelper.net/threads/terrain-type-raw-value.105981/']Terrain type Raw Value[/URL])
+Raen7 - WC3 playercolors to hex codes ([URL='https://docs.google.com/spreadsheets/d/1wzWIYzRW9pqpo1ZuEcU-qJTg-H4z5-PaTnHIXPezaRQ/edit#gid=1812483906']WC3 World Editor Player Colors[/URL])
+Rufus - Map Description guide & templates ([URL='https://www.hiveworkshop.com/threads/description-guide-maps.287829/']Description Guide - Maps[/URL])
+Mayday - Reforged Custom Loading Screen ([URL='https://www.hiveworkshop.com/threads/high-resolution-loading-screens.322172/']High Resolution Loading Screens[/URL])
 
 Help:
-Pat1487 - Too many answers to list all (https://tmmm.forumotion.com/)
-Anitarf, PurgeandFire111, Bannar - Questions about globals (http://www.wc3c.net/showthread.php?p=1134646#post1134646)
-Anitarf, PurgeandFire111, BBQ, Fledermaus - Questions about structs (http://www.wc3c.net/showthread.php?p=1132076#post1132076)
-Anitarf, BBQ, Bribe - Wisp Wheel (http://www.wc3c.net/showthread.php?p=1131278#post1131278)
-Dr Super Good - Too many answers to list all, but among which are tips to generating random points (https://www.hiveworkshop.com/threads/get-evenly-weighted-random-point-in-rectangle.294547/), unit rotation mechanics (https://www.hiveworkshop.com/threads/unit-turning-mechanics.300224/), MPQ localization (https://www.hiveworkshop.com/threads/data-storage-in-mpq.320370/), help fixing red minimap caused by the abyss (https://www.hiveworkshop.com/threads/1-32-red-minimap.322340/) and general sass about things I could have if only I used Starcraft 2's engine or, more recently, Lua
--Manuel- - Fix to setting unit immobile/mobile (https://www.hiveworkshop.com/threads/prevent-movement.312061/#post-3321807)
-Pyrogasm & Wrda - Approach to making units locally visible/invisible (https://www.hiveworkshop.com/threads/make-units-locally-visible.310326/)
-wc3neverdies - A fix for selecting terrain in the World Editor (https://www.hiveworkshop.com/threads/world-editor-crash.320150/#post-3384554)
-Lep, Drake53, Pyrogasm, DSG, Tasyen - WC localization/language storage & auto-detection (https://www.hiveworkshop.com/threads/data-storage-in-mpq.320370/#post-3386304)
-TriggerHappy - Additional help on WC localization/language auto-detection via PM (primarily referencing https://www.hiveworkshop.com/threads/how-to-localize-map.304594/)
-deepstrasz, wolfman, x3GlikE - Hiding unit health bars (https://www.hiveworkshop.com/threads/hide-health-bar.193287/)
+Pat1487 - Too many answers to list all ([URL='https://tmmm.forumotion.com/']Clan TMMM - Home[/URL])
+Anitarf, PurgeandFire111, Bannar - Questions about globals ([URL]http://www.wc3c.net/showthread.php?p=1134646#post1134646[/URL])
+Anitarf, PurgeandFire111, BBQ, Fledermaus - Questions about structs ([URL]http://www.wc3c.net/showthread.php?p=1132076#post1132076[/URL])
+Anitarf, BBQ, Bribe - Wisp Wheel ([URL]http://www.wc3c.net/showthread.php?p=1131278#post1131278[/URL])
+Dr Super Good - Too many answers to list all, but among which are tips to generating random points ([URL]https://www.hiveworkshop.com/threads/get-evenly-weighted-random-point-in-rectangle.294547/[/URL]), unit rotation mechanics ([URL]https://www.hiveworkshop.com/threads/unit-turning-mechanics.300224/[/URL]), MPQ localization ([URL]https://www.hiveworkshop.com/threads/data-storage-in-mpq.320370/[/URL]), help fixing red minimap caused by the abyss ([URL]https://www.hiveworkshop.com/threads/1-32-red-minimap.322340/[/URL]) and general sass about things I could have if only I used Starcraft 2's engine or, more recently, Lua
+-Manuel- - Fix to setting unit immobile/mobile ([URL]https://www.hiveworkshop.com/threads/prevent-movement.312061/#post-3321807[/URL])
+Pyrogasm & Wrda - Approach to making units locally visible/invisible ([URL]https://www.hiveworkshop.com/threads/make-units-locally-visible.310326/[/URL])
+wc3neverdies - A fix for selecting terrain in the World Editor ([URL]https://www.hiveworkshop.com/threads/world-editor-crash.320150/#post-3384554[/URL])
+Lep, Drake53, Pyrogasm, DSG, Tasyen - WC localization/language storage & auto-detection ([URL]https://www.hiveworkshop.com/threads/data-storage-in-mpq.320370/#post-3386304[/URL])
+TriggerHappy - Additional help on WC localization/language auto-detection via PM (primarily referencing [URL]https://www.hiveworkshop.com/threads/how-to-localize-map.304594/[/URL])
+deepstrasz, wolfman, x3GlikE - Hiding unit health bars ([URL]https://www.hiveworkshop.com/threads/hide-health-bar.193287/[/URL])
 Otherknownoise - bug reports for Respawning Gateways MUI, player dropped during gameload
 Veronnis - help migrating from .blp terrain tile to .dds
 
